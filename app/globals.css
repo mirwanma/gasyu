@@ -1,29 +1,49 @@
 @import "tailwindcss";
 
-/* Token brand Ramein — lihat docs/BRAND.md. Jangan menambah warna di luar daftar ini. */
+/* Token UI Ramein (tema gelap) — lihat docs/BRAND.md. Jangan menambah warna di luar daftar ini. */
 @theme {
   --font-sans: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-outfit), "Outfit", var(--font-jakarta), sans-serif;
 
-  --color-merchant: #F06A2A;
-  --color-merchant-text: #B8481A;
-  --color-merchant-tint: #FDE9DF;
-  --color-komunitas: #0F8B6D;
-  --color-komunitas-text: #0B6E57;
-  --color-komunitas-tint: #E2F3EE;
-  --color-warga: #2D4FCF;
-  --color-warga-tint: #E6EBFB;
-  --color-ink: #17212B;
-  --color-ink-soft: #4A5560;
-  --color-line: #E4DED3;
+  /* Permukaan */
+  --color-bg: #0D1024;
+  --color-surface: #171B33;
+  --color-surface-deep: #12152C;
+  --color-line: #2A3058;
+  --color-line-strong: #3A4072;
+
+  /* Teks */
+  --color-fg: #F3F4FA;
+  --color-fg-label: #C9CCE4;
+  --color-fg-soft: #A3A8C7;
+  --color-fg-muted: #8A8FB4;
   --color-cream: #FAF7F2;
-  --color-danger: #B42318;
-  --color-danger-tint: #FBEDEB;
 
-  --radius-card: 16px;
+  /* Aksi dan aksen */
+  --color-primary: #5B5BF0;
+  --color-primary-soft: #8F93FF;
+  --color-link: #A9ACFF;
+  --color-hero-from: #4B45E0;
+  --color-hero-to: #6D2FD8;
+  --color-on-hero: #E3E1FF;
+  --color-avatar: #2A2F63;
+  --color-avatar-ring: #6D5BF0;
+  --color-xp: #5CCBF5;
+  --color-points: #F7A1C2;
+  --color-hot: #F0508A;
+  --color-success: #34D399;
+  --color-warn: #F5B544;
+  --color-danger: #FF8A8A;
+  --color-danger-tint: #3A1620;
+
+  /* Warna tiga pihak (logo, label merchant/komunitas/warga) */
+  --color-merchant: #F06A2A;
+  --color-komunitas: #0F8B6D;
+  --color-warga: #2D4FCF;
 }
 
 body {
-  background: var(--color-cream);
-  color: var(--color-ink);
+  background: var(--color-bg);
+  color: var(--color-fg);
   font-family: var(--font-sans);
 }
