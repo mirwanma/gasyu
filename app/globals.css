@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+/* Token brand Ramein — lihat docs/BRAND.md. Jangan menambah warna di luar daftar ini. */
+@theme {
+  --font-sans: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-merchant: #F06A2A;
+  --color-merchant-text: #B8481A;
+  --color-merchant-tint: #FDE9DF;
+  --color-komunitas: #0F8B6D;
+  --color-komunitas-text: #0B6E57;
+  --color-komunitas-tint: #E2F3EE;
+  --color-warga: #2D4FCF;
+  --color-warga-tint: #E6EBFB;
+  --color-ink: #17212B;
+  --color-ink-soft: #4A5560;
+  --color-line: #E4DED3;
+  --color-cream: #FAF7F2;
+  --color-danger: #B42318;
+  --color-danger-tint: #FBEDEB;
+
+  --radius-card: 16px;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}

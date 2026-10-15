@@ -1,0 +1,1183 @@
+# Ramein — Alur Sistem
+
+Versi 0.7 · 16 Oktober 2026 · Pilot Kota Cimahi
+Perubahan 0.7: aturan domisili peserta, yaitu hanya warga wilayah event atau semua warga (bagian 6).
+Perubahan 0.6: pembuat event mengatur kapan tiap misi tampil ke warga (bagian 9e).
+Perubahan 0.5: admin bisa membuat event atas nama Ramein dan langsung menambahkan merchant/komunitas yang terlibat (bagian 10c).
+Perubahan 0.4: empat entitas dengan dashboard masing-masing (bagian 1 dan 20); "bisnis/brand" diganti Merchant/UMKM; istilah "organizer" tidak dipakai lagi di aplikasi.
+Perubahan 0.3: aktivitas berbayar dengan pembayaran di luar aplikasi (bagian 8) dan misi di dalam event/challenge (bagian 9).
+Perubahan 0.2: keanggotaan komunitas (bagian 12), kebijakan bergabung, dan aktivitas khusus member.
+Dokumen pendamping: `DESAIN-DATABASE.md` (struktur data), `CLAUDE.md` (aturan kerja), PRD.
+
+Semua diagram ditulis dalam Mermaid, jadi bisa dibaca langsung di GitHub, VS Code (ekstensi Mermaid), atau [mermaid.live](https://mermaid.live). Nama tabel dan fungsi di diagram sama persis dengan `DESAIN-DATABASE.md`.
+
+## Daftar isi
+
+1. Entitas dan peta sistem
+2. Peran dan hak akses
+3. Login dan onboarding warga
+4. Registrasi merchant/UMKM dan komunitas
+5. Undangan anggota tim
+6. Membuat aktivitas
+7. Siklus hidup aktivitas
+8. Event berbayar
+9. Misi
+10. Kolaborasi: undangan, open call, dan event buatan admin
+11. Grup warga
+12. Keanggotaan komunitas
+13. Join aktivitas (pribadi dan grup)
+14. Check-in QR dan pemberian XP/poin
+15. Progress dan penyelesaian challenge
+16. Tukar poin dan pakai voucher
+17. Leaderboard, level, dan badge
+18. Proses terjadwal (cron)
+19. Moderasi admin dan anti-curang
+20. Dashboard dan peta halaman
+
+---
+
+## 1. Entitas dan peta sistem
+
+Ramein punya empat entitas. Masing-masing punya dashboard sendiri.
+
+| # | Entitas | Siapa | Aplikasi | Dashboard |
+| --- | --- | --- | --- | --- |
+| 1 | **Admin** | Pemilik aplikasi (tim Ramein) | Web, desktop-first, di `admin.ramein.id` | Verifikasi merchant dan komunitas, review aktivitas, moderasi, metrik kota, pengaturan aturan main |
+| 2 | **Merchant/UMKM** | UMKM atau usaha apa pun yang mendaftar (kedai, kafe, toko, jasa, bengkel, dll.); dikelola pemilik, staf, kasir | Mobile PWA | Aktivitas, peserta dan pembayaran, misi, QR, kasir voucher, reward dan budget poin, outlet, kolaborasi, tim |
+| 3 | **Komunitas** | Komunitas apa pun yang mendaftar: olahraga (lari, sepeda, futsal, dll.), musik, seni, hobi, sosial, lingkungan, dan lainnya; dikelola ketua dan pengurus | Mobile PWA | Aktivitas, peserta dan pembayaran, misi, QR, member, kolaborasi, tim |
+| 4 | **Warga** | Semua pengguna terdaftar | Mobile PWA | Level dan XP, aktivitas yang diikuti dan misinya, poin dan voucher, peringkat, grup, komunitas saya |
+
+**Tidak ada batasan jenis.** Merchant mencakup semua jenis usaha, dari UMKM rumahan sampai bisnis dengan beberapa cabang. Komunitas mencakup semua jenis komunitas warga. Kategori (lihat bagian 4) hanya dipakai untuk penyaringan dan pencarian, bukan syarat pendaftaran; jika kategorinya tidak ada, pilih "Lainnya".
+
+**Satu akun, beberapa mode.** Setiap orang mendaftar sebagai warga. Akun yang sama bisa menjadi pemilik/staf merchant atau ketua/pengurus komunitas (bahkan beberapa sekaligus). Di PWA, warga melihat dashboard warga secara default dan bisa berpindah ke dashboard merchant atau komunitas lewat pemilih mode di profil. Admin tidak memakai PWA; dashboard admin hanya bisa dibuka dari web oleh akun `is_admin`.
+
+**Istilah.** Di aplikasi dan dokumen ini, merchant dan komunitas disebut bersama sebagai **penyelenggara** bila aturannya berlaku untuk keduanya. Di database keduanya tetap satu tabel induk `organizers` (tipe `merchant` atau `community`), sehingga aktivitas, kolaborasi, checkpoint, dan misi bisa menunjuk ke keduanya dengan satu relasi. Kata "organizer" tidak tampil di aplikasi.
+
+Gambaran besar: siapa memakai apa, dan di mana logika penting dijalankan. Semua aturan XP, poin, dan hak akses dijalankan di server (fungsi database dan server action), tidak di HP pengguna.
+
+```mermaid
+flowchart LR
+    subgraph Pengguna
+        W[Warga]
+        B[Merchant/UMKM<br/>pemilik, staf, kasir]
+        K[Komunitas<br/>ketua, pengurus]
+        A[Admin Ramein]
+    end
+
+    subgraph PWA["Ramein PWA - mobile"]
+        UW[Dashboard warga<br/>jelajah, join, check-in, misi,<br/>dompet, grup, peringkat]
+        UM[Dashboard merchant<br/>aktivitas, misi, peserta,<br/>QR, kasir, reward, outlet]
+        UK[Dashboard komunitas<br/>aktivitas, misi, peserta,<br/>QR, member]
+    end
+
+    subgraph WEB["Ramein Admin - web"]
+        UA[Dashboard admin<br/>verifikasi, review,<br/>moderasi, metrik, pengaturan]
+    end
+
+    subgraph App["Next.js di Vercel - satu codebase"]
+        SA[Server actions<br/>dan route handler]
+        CR[Cron job]
+    end
+
+    subgraph Supabase
+        AU[Auth<br/>Google, OTP email]
+        DB[(Postgres<br/>tabel + RLS)]
+        FN[Fungsi database<br/>perform_checkin,<br/>redeem_reward, dll.]
+        ST[Storage<br/>logo, cover, bukti]
+    end
+
+    W --> UW
+    B --> UM
+    K --> UK
+    A --> UA
+    UW --> SA
+    UM --> SA
+    UK --> SA
+    UA --> SA
+    SA --> AU
+    SA --> FN
+    SA --> DB
+    SA --> ST
+    FN --> DB
+    CR --> FN
+```
+
+**Prinsip arsitektur**
+
+| Prinsip | Penerapan |
+| --- | --- |
+| Akses dijaga database | Setiap tabel memakai Row Level Security; UI hanya menyembunyikan, database yang menolak |
+| Uang permainan hanya ditulis server | XP dan poin hanya masuk lewat fungsi `security definer`, client tidak punya izin `insert` ke ledger |
+| Saldo dari ledger | Saldo XP dan poin dihitung dari `xp_ledger` dan `point_ledger`, tidak ada kolom saldo |
+| Satu akun banyak peran | Akun warga bisa menjadi pemilik merchant dan pengurus komunitas sekaligus |
+| Zona waktu tunggal | Semua batas harian dan bulanan memakai `Asia/Jakarta` |
+
+---
+
+## 2. Peran dan hak akses
+
+```mermaid
+flowchart TB
+    U[Akun Supabase] --> P[profiles<br/>semua orang adalah warga]
+    P -->|is_admin = true| AD[Admin]
+    P -->|organizer_members| OM{Tipe penyelenggara}
+    OM -->|merchant| BR[owner atau staff]
+    OM -->|community| KR[chair atau officer]
+    P -->|community_memberships| CM[Member komunitas<br/>tanpa akses dashboard]
+```
+
+Ada dua jenis keterikatan warga dengan komunitas, dan keduanya terpisah:
+
+- **Tim komunitas** (`organizer_members`, peran chair/officer): mengelola komunitas di dashboard komunitas.
+- **Member komunitas** (`community_memberships`): warga biasa yang tergabung di komunitas. Member tidak punya akses dashboard; mereka mendapat akses ke aktivitas khusus member dan notifikasi aktivitas baru. Ketua dan pengurus otomatis tercatat sebagai member aktif.
+
+| Kemampuan | Warga | Staf merchant | Pemilik merchant | Pengurus komunitas | Ketua komunitas | Admin |
+| --- | --- | --- | --- | --- | --- | --- |
+| Join aktivitas, check-in, tukar poin | Ya | Ya | Ya | Ya | Ya | Ya |
+| Buat dan kelola grup | Ya | Ya | Ya | Ya | Ya | Ya |
+| Gabung/keluar sebagai member komunitas | Ya | Ya | Ya | Ya | Ya | Ya |
+| Ikut aktivitas khusus member | Member aktif | Member aktif | Member aktif | Ya | Ya | - |
+| Kelola member (setujui, tolak, keluarkan) | - | - | - | Ya | Ya | - |
+| Atur kebijakan bergabung komunitas | - | - | - | - | Ya | - |
+| Buat dan edit draft aktivitas | - | Ya | Ya | Ya | Ya | - |
+| Ajukan aktivitas ke admin | - | - | Ya | - | Ya | - |
+| Tampilkan QR check-in dan QR misi | - | Ya | Ya | Ya | Ya | - |
+| Kelola misi (tambah, ubah, nonaktifkan) | - | Ya | Ya | Ya | Ya | - |
+| Tinjau bukti foto misi, tandai misi manual | - | Ya | Ya | Ya | Ya | - |
+| Atur harga aktivitas berbayar | - | - | Ya | - | Ya | - |
+| Konfirmasi pembayaran peserta | - | Ya | Ya | Ya | Ya | - |
+| Atur budget poin dan voucher | - | - | Ya | - | - | - |
+| Mode kasir (pakai voucher) | - | Ya | Ya | - | - | - |
+| Undang/terima partner, buka open call | - | - | Ya | - | Ya | - |
+| Undang anggota tim | - | - | Ya | - | Ya | - |
+| Buka dashboard merchant/komunitas miliknya | - | Ya | Ya | Ya | Ya | - |
+| Buka dashboard admin (web) | - | - | - | - | - | Ya |
+| Verifikasi penyelenggara, review aktivitas, tinjau flag | - | - | - | - | - | Ya |
+| Buat event/challenge atas nama Ramein | - | - | - | - | - | Ya |
+| Tambahkan merchant/komunitas langsung ke event Ramein | - | - | - | - | - | Ya |
+| Keluar dari event Ramein sebelum berjalan | - | - | Ya | - | Ya | - |
+
+Untuk event Ramein, admin memegang semua kemampuan tim penyelenggara host: membuat draft, mengatur harga, mengelola misi, menampilkan QR checkpoint Ramein, mengonfirmasi pembayaran, dan meninjau bukti misi.
+
+---
+
+## 3. Login dan onboarding warga
+
+Login tanpa password. Tautan undangan (grup, tim, aktivitas) disimpan sebagai `next` supaya pengguna kembali ke tujuan setelah onboarding.
+
+```mermaid
+flowchart TD
+    S([Buka Ramein atau tautan undangan]) --> L{Sudah login?}
+    L -- Ya --> O
+    L -- Tidak --> M{Pilih metode}
+    M -->|Google| G[OAuth Google]
+    M -->|Email| E[Masukkan email]
+    E --> OT[Kirim OTP 6 digit<br/>berlaku 10 menit]
+    OT --> IN[Masukkan kode]
+    IN --> V{Kode benar?}
+    V -- Tidak --> R{Percobaan lebih dari 5<br/>dalam 15 menit?}
+    R -- Ya --> BL[Tunggu 15 menit] --> E
+    R -- Tidak --> IN
+    V -- Ya --> SES
+    G --> SES[Sesi dibuat<br/>baris profiles dibuat otomatis]
+    SES --> O{onboarded_at terisi?}
+    O -- Ya --> NX
+    O -- Tidak --> F1[Isi nama panggilan<br/>dan nama lengkap]
+    F1 --> F2[Pilih kelurahan asal<br/>atau Luar Cimahi]
+    F2 --> F3[Setujui S&K dan<br/>kebijakan privasi]
+    F3 --> F4[Simpan profil<br/>onboarded_at = now]
+    F4 --> XP[Tambah 50 XP<br/>reason profile_complete]
+    XP --> NX{Ada tujuan next?}
+    NX -- Ya --> T[Arahkan ke grup,<br/>aktivitas, atau undangan tim]
+    NX -- Tidak --> H[Beranda: aktivitas<br/>di kelurahan saya]
+```
+
+**Aturan tambahan**
+
+- Middleware Next.js mengalihkan semua halaman ke onboarding selama `onboarded_at` kosong.
+- Nama panggilan harus unik (case-insensitive), 3–20 karakter.
+- Kelurahan asal bisa diganti maksimal sekali per 90 hari (`home_village_changed_at`).
+- Tidak ada batas usia dan tidak ada persetujuan orang tua selama pilot.
+- Hapus akun: data pribadi di `profiles` dikosongkan dan `deleted_at` diisi; baris ledger tetap ada demi audit, tetapi tidak lagi terhubung ke identitas yang bisa dikenali.
+
+---
+
+## 4. Registrasi merchant/UMKM dan komunitas
+
+Dua formulir berbeda, satu alur verifikasi.
+
+```mermaid
+flowchart TD
+    S([Warga login memilih<br/>Daftarkan penyelenggara]) --> T{Jenis}
+    T -->|Merchant/UMKM| B1[Nama usaha, kategori usaha,<br/>WhatsApp, logo, NIB opsional]
+    B1 --> B2[Tambah minimal 1 outlet:<br/>alamat, kelurahan, titik peta, jam buka]
+    B2 --> B3[Unggah foto tempat usaha]
+    T -->|Komunitas| K1[Nama, kategori minat<br/>olahraga, musik, seni, dll.,<br/>area kegiatan, WhatsApp, logo]
+    K1 --> K2[Akun media sosial,<br/>perkiraan anggota, basecamp opsional]
+    K2 --> K2B[Kebijakan bergabung member:<br/>terbuka atau perlu persetujuan]
+    K2B --> K3[Unggah bukti: tautan medsos<br/>atau foto kegiatan]
+    B3 --> C[Buat organizers status pending<br/>+ merchant_profiles + merchant_outlets<br/>+ organizer_members role owner]
+    K3 --> D[Buat organizers status pending<br/>+ community_profiles<br/>+ organizer_members role chair<br/>+ community_memberships ketua active]
+    C --> Q[Masuk antrean verifikasi admin]
+    D --> Q
+    Q --> AD{Admin memeriksa}
+    AD -->|Setujui| OK[status approved<br/>email notifikasi]
+    AD -->|Tolak| NO[status rejected + review_note<br/>email notifikasi]
+    NO --> FX[Pendaftar memperbaiki data] --> Q
+    OK --> FULL[Bisa mengajukan aktivitas,<br/>membuka open call, mengundang tim]
+```
+
+Selama `pending`, penyelenggara sudah bisa mengisi profil dan membuat draft aktivitas, tetapi tombol "Ajukan" dan "Buka open call" terkunci (dicek di fungsi database, bukan hanya UI).
+
+---
+
+## 5. Undangan anggota tim
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor P as Pemilik / Ketua
+    participant App as Ramein
+    participant DB as Database
+    actor S as Calon staf / pengurus
+    P->>App: Undang anggota (peran staff atau officer)
+    App->>DB: insert organizer_invites (token acak, kedaluwarsa 7 hari)
+    DB-->>App: tautan undangan
+    P->>S: Kirim tautan lewat WhatsApp
+    S->>App: Buka tautan
+    alt Belum login
+        App->>S: Login dan onboarding dulu (tautan disimpan sebagai next)
+    end
+    App->>DB: accept_organizer_invite(token)
+    DB->>DB: cek token valid, belum dipakai, belum kedaluwarsa
+    DB->>DB: insert organizer_members
+    opt Penyelenggara bertipe komunitas
+        DB->>DB: upsert community_memberships status active
+    end
+    DB-->>App: berhasil
+    App-->>S: Masuk ke dashboard merchant/komunitas
+```
+
+Peran yang boleh diundang mengikuti tipe: merchant hanya `staff`, komunitas hanya `officer`. Pemilik/ketua bisa mencabut anggota kapan saja; minimal harus tersisa satu pemilik/ketua. Pengurus komunitas yang dicabut dari tim tetap menjadi member biasa, kecuali ketua juga mengeluarkannya dari keanggotaan.
+
+Undangan tim berbeda dengan keanggotaan komunitas (bagian 12): undangan tim memberi akses dashboard, sedangkan keanggotaan hanya menghubungkan warga dengan komunitasnya.
+
+---
+
+## 6. Membuat aktivitas
+
+```mermaid
+flowchart TD
+    S([Penyelenggara: Buat aktivitas]) --> T{Tipe}
+    T -->|Event| E1[Tanggal dan jam,<br/>lokasi tunggal]
+    T -->|Challenge| C1[Rentang tanggal,<br/>target: jumlah check-in,<br/>checkpoint berbeda, atau misi]
+    E1 --> G
+    C1 --> C2{Cakupan target}
+    C2 -->|Individu| G
+    C2 -->|Grup| C3[Target kolektif grup] --> G
+    G[Tujuan campaign:<br/>awareness, visit, sales, membership] --> D[Judul, deskripsi, cover,<br/>syarat usia jika ada - teks bebas]
+    D --> W[Wilayah cakupan,<br/>kuota, tingkat kesulitan]
+    W --> J[Mode pendaftaran:<br/>individu, grup, keduanya<br/>+ ukuran grup min-maks]
+    J --> AU{Host komunitas?}
+    AU -- Ya --> AU2[Audiens: publik<br/>atau khusus member]
+    AU -- Tidak, merchant --> AU3[Audiens: publik]
+    AU2 --> RES
+    AU3 --> RES
+    RES{Siapa boleh ikut?}
+    RES -->|Semua warga| PAY
+    RES -->|Hanya warga wilayah event| RES2[Sesuai wilayah cakupan:<br/>kota, kecamatan, atau kelurahan] --> PAY
+    PAY{Berbayar?}
+    PAY -- Gratis --> CP
+    PAY -- Berbayar --> PAY2[Harga per orang,<br/>instruksi bayar: rekening/QRIS/kontak,<br/>batas waktu bayar] --> CP
+    CP[Checkpoint: pilih outlet<br/>atau titik peta + radius]
+    CP --> MS[Misi opsional:<br/>judul, cara verifikasi, XP, wajib atau bonus]
+    MS --> RW{Host merchant?}
+    RW -- Ya --> PB[Poin per penyelesaian<br/>+ budget poin]
+    RW -- Tidak, komunitas --> NP[Tanpa poin sendiri<br/>poin hanya dari sponsor merchant]
+    PB --> COL
+    NP --> COL
+    COL{Kolaborasi?}
+    COL -->|Tidak| SV[Simpan draft]
+    COL -->|Undang partner| INV[Pilih penyelenggara + peran<br/>+ kontribusi]
+    COL -->|Buka open call| OC[Isi kebutuhan, manfaat,<br/>tenggat]
+    INV --> SV
+    OC --> SV
+    SV --> SUB{Ajukan?}
+    SUB -->|Nanti| END1([Tetap draft])
+    SUB -->|Ya| CHK{Validasi submit_activity}
+    CHK -->|Gagal| ERR[Tampilkan kekurangan] --> SV
+    CHK -->|Ada partner belum menjawab| AW[status awaiting_partners]
+    CHK -->|Lengkap| RV[status in_review]
+```
+
+**Validasi `submit_activity`**
+
+- Penyelenggara host berstatus `approved`, dan pemanggil adalah `owner` atau `chair`. Untuk event Ramein (host `platform`), pemanggil harus admin, dan aktivitas langsung `published` tanpa antrean review (bagian 10c).
+- Waktu mulai di masa depan; waktu selesai setelah mulai.
+- Minimal satu checkpoint aktif.
+- Jika `points_per_completion > 0`, total budget poin dari partner merchant minimal sama dengan `points_per_completion`.
+- Challenge wajib punya `challenge_targets`.
+- `group_min` dan `group_max` di antara 2 dan 10 jika mode grup dipakai.
+- `audience = members_only` hanya boleh jika host bertipe komunitas.
+- `residency_rule = residents_only` wajib punya wilayah cakupan (`scope_region_id`).
+- Jika `is_paid = true`: `price_idr` minimal Rp1.000 dan `payment_instructions` terisi.
+- Misi: setiap misi aktif punya cara verifikasi yang lengkap (misi QR punya checkpoint, misi kode punya kode rahasia); XP tiap misi 10–100 dan total XP misi per aktivitas maksimal 500.
+- Challenge dengan target berbasis misi wajib punya minimal satu misi aktif (dan minimal satu misi wajib untuk `required_missions`).
+- Open call yang terhubung ke aktivitas otomatis ditutup.
+
+**Aturan domisili peserta (`residency_rule`).** Penyelenggara memilih siapa yang boleh mendaftar:
+
+| Pilihan | Yang boleh ikut | Contoh |
+| --- | --- | --- |
+| `open` (default) | Semua warga Ramein, termasuk yang kelurahan asalnya "Luar Cimahi" atau kota lain | Konser, festival kuliner, fun run terbuka |
+| `residents_only` | Hanya warga yang kelurahan asalnya berada di dalam wilayah cakupan event. Jika cakupannya kota, berlaku untuk seluruh warga kota itu; jika kecamatan atau kelurahan, hanya warga di sana | Lomba antarkelurahan, program kota untuk warga Cimahi, kerja bakti RW |
+
+- Domisili dicek dari kelurahan asal di profil saat mendaftar. Data ini diisi sendiri oleh warga (bukan verifikasi KTP), tetapi hanya bisa diganti sekali per 90 hari, sehingga sulit dipakai untuk berpindah-pindah demi ikut event.
+- Warga yang pindah kelurahan setelah terdaftar tetap boleh ikut sampai selesai.
+- Pendaftaran grup: setiap anggota yang dipilih harus memenuhi aturan domisili.
+- Bisa digabung dengan aturan lain: misalnya event khusus member komunitas sekaligus khusus warga Cimahi; kedua syarat harus terpenuhi.
+- Event tetap terlihat oleh semua warga dengan label "Khusus warga [wilayah]", supaya warga lain tahu event itu ada.
+
+**Aktivitas khusus member.** Tetap tampil di beranda dan halaman komunitas (dengan label "Khusus member"), supaya warga lain tahu dan tertarik bergabung, tetapi tombol join hanya aktif untuk member aktif komunitas host. Aturan XP, poin, dan check-in sama dengan aktivitas publik.
+
+---
+
+## 7. Siklus hidup aktivitas
+
+```mermaid
+stateDiagram-v2
+    [*] --> draft
+    draft --> awaiting_partners: ajukan, partner belum semua menjawab
+    draft --> in_review: ajukan, tanpa partner tertunda
+    draft --> published: admin menerbitkan event Ramein
+    awaiting_partners --> in_review: semua partner menjawab
+    awaiting_partners --> draft: host menarik kembali
+    in_review --> published: admin menyetujui
+    in_review --> draft: admin menolak + review_note
+    published --> running: cron, starts_at tercapai
+    running --> ended: cron, ends_at tercapai
+    ended --> settled: cron, 48 jam setelah berakhir
+    draft --> cancelled: host membatalkan
+    published --> cancelled: host atau admin membatalkan
+    running --> cancelled: admin membatalkan
+    settled --> [*]
+    cancelled --> [*]
+```
+
+| Status | Bisa diedit | Kelola misi | Warga bisa join | Check-in dan misi |
+| --- | --- | --- | --- | --- |
+| draft | Semua | Semua | - | - |
+| awaiting_partners | Hanya partner | Partner menambah misi di checkpoint miliknya | - | - |
+| in_review | Tidak | Tidak | - | - |
+| published | Hanya deskripsi dan cover | Tambah misi baru, nonaktifkan misi | Ya | - |
+| running | Hanya deskripsi | Tambah misi baru, nonaktifkan misi | Ya, jika kuota masih ada | Ya |
+| ended | Tidak | Tidak (tinjau bukti foto masih bisa) | - | Kirim bukti foto ditutup |
+| settled | Tidak | Tidak | - | - |
+| cancelled | Tidak | Tidak | - | - |
+
+Harga dan status berbayar/gratis tidak bisa diubah setelah `published`, supaya peserta yang sudah mendaftar tidak dirugikan.
+
+Masa 48 jam antara `ended` dan `settled` dipakai admin dan host untuk meninjau check-in yang ditandai dan bukti foto misi yang masih menunggu. Setelah `settled`, laporan akhir dikunci.
+
+---
+
+## 8. Event berbayar
+
+Merchant dan komunitas sama-sama bisa membuat aktivitas berbayar (event maupun challenge). Selama pilot, **uang tidak lewat Ramein**: warga membayar langsung ke penyelenggara (transfer bank, QRIS, atau tunai), dan tim penyelenggara menandai pembayaran itu lunas di dashboard. Ramein hanya mencatat harga dan status bayar.
+
+```mermaid
+flowchart TD
+    S([Warga join aktivitas berbayar]) --> R[participations registered<br/>payment_status unpaid<br/>payment_due_at = now + batas waktu]
+    R --> I[Tampilkan harga dan instruksi bayar<br/>dari penyelenggara]
+    I --> P{Warga membayar di luar aplikasi}
+    P -->|Unggah bukti opsional| U[payment_status awaiting_confirmation<br/>notifikasi ke tim]
+    P -->|Bayar tunai di lokasi| L[Tetap unpaid sampai<br/>tim menandai lunas]
+    U --> C{Tim memeriksa}
+    L --> C
+    C -->|Lunas| OK[payment_status paid<br/>bisa check-in dan mengerjakan misi]
+    C -->|Bukti tidak sesuai| BK[kembali ke unpaid<br/>+ catatan ke warga]
+    BK --> P
+    R --> EXP{Lewat payment_due_at<br/>dan belum paid?}
+    EXP -- Ya --> X[Cron: partisipasi cancelled<br/>kursi kuota kembali]
+```
+
+**Aturan aktivitas berbayar**
+
+| Aturan | Keterangan |
+| --- | --- |
+| Siapa yang bisa | Host merchant maupun komunitas; harga diatur pemilik/ketua host |
+| Harga | Satu harga per orang (`price_idr`), sama untuk pendaftar pribadi dan grup |
+| Batas waktu bayar | Diatur per aktivitas (default 24 jam setelah join); jika pendaftaran dekat dengan waktu mulai, batasnya dipotong ke `starts_at` |
+| Kuota | Pendaftar `unpaid` dan `awaiting_confirmation` ikut memakan kuota sampai dibatalkan |
+| Bayar di lokasi | Tim bisa menandai lunas saat hari H, lalu warga langsung bisa check-in |
+| Check-in dan misi | Hanya untuk `payment_status = paid` (aktivitas gratis memakai `not_required`) |
+| Grup | Tiap anggota membayar dan dikonfirmasi sendiri-sendiri |
+| Pembatalan oleh warga | Diizinkan sebelum check-in pertama; pengembalian dana diurus langsung dengan penyelenggara, tim menandai `refunded` jika dana dikembalikan |
+| Aktivitas dibatalkan | Peserta yang sudah `paid` mendapat notifikasi; tim wajib menandai `refunded` setelah mengembalikan dana, dan admin bisa melihat yang belum |
+| XP dan poin | Sama dengan aktivitas gratis; membayar tidak memberi XP |
+| Bukti bayar | Disimpan di Storage privat, hanya bisa dilihat warga pemilik dan tim penyelenggara host |
+
+**Di luar cakupan pilot:** payment gateway, pencairan dana, komisi Ramein, dan faktur. Struktur `payment_status` sudah disiapkan supaya gateway bisa ditambahkan nanti tanpa mengubah alur peserta.
+
+---
+
+## 9. Misi
+
+Misi adalah tugas di dalam sebuah aktivitas (event atau challenge) yang dibuat dan dikelola tim penyelenggara. Setiap misi punya satu cara verifikasi yang dipilih sesuai bentuk tantangannya, dan dianggap selesai menurut cara itu.
+
+### 9a. Cara verifikasi misi
+
+| Cara (`verification`) | Cocok untuk | Selesai ketika | XP masuk |
+| --- | --- | --- | --- |
+| `qr_scan` | "Kunjungi booth sponsor", "Mampir ke pos 3" | Warga memindai QR misi (berganti tiap 60 detik) di dalam radius | Langsung |
+| `secret_code` | "Ikuti sesi talkshow sampai akhir", "Temukan kode di mural" | Warga mengetik kode yang diumumkan/disembunyikan di lokasi | Langsung |
+| `photo` | "Foto bersama tim", "Foto sampah yang kamu kumpulkan" | Tim penyelenggara menyetujui foto yang diunggah | Saat disetujui |
+| `manual` | "Menang lomba", "Selesaikan rute lari 5K" | Tim penyelenggara menandai peserta yang berhasil | Saat ditandai |
+
+### 9b. Membuat dan mengelola misi
+
+```mermaid
+flowchart TD
+    S([Tim penyelenggara: Tambah misi]) --> F[Judul, deskripsi, ikon,<br/>urutan tampil]
+    F --> K{Wajib atau bonus?}
+    K --> X[XP misi 10-100]
+    X --> V{Cara verifikasi}
+    V -->|qr_scan| Q[Pilih checkpoint<br/>radius ikut checkpoint]
+    V -->|secret_code| C[Tentukan kode<br/>disimpan sebagai hash]
+    V -->|photo| P[Tulis instruksi foto<br/>yang akan diterima]
+    V -->|manual| M[Tulis kriteria berhasil]
+    Q --> W[Jendela waktu opsional:<br/>mulai dan selesai misi]
+    C --> W
+    P --> W
+    M --> W
+    W --> RV{Kapan tampil ke warga?<br/>lihat 9e}
+    RV -->|Saat event terbit| SV
+    RV -->|Pada jam tertentu| RV2[Isi reveal_at] --> SV
+    RV -->|Dibuka manual| SV
+    RV -->|Setelah misi lain selesai| RV3[Pilih misi prasyarat] --> SV
+    SV[Simpan activity_missions]
+    SV --> ED{Sudah ada yang<br/>menyelesaikan misi ini?}
+    ED -- Belum --> E1[Semua kolom bisa diubah]
+    ED -- Sudah --> E2[XP dan cara verifikasi terkunci;<br/>hanya teks yang bisa diubah,<br/>atau misi dinonaktifkan]
+```
+
+- Partner yang punya checkpoint di aktivitas boleh membuat misi `qr_scan` di checkpoint miliknya; misi itu tercatat atas nama partner tersebut untuk atribusi.
+- Misi yang dinonaktifkan hilang dari daftar warga, tetapi XP yang sudah diberikan tetap.
+- Setiap misi hanya bisa diselesaikan sekali per warga.
+- Tim penyelenggara selalu melihat semua misi di dashboard-nya, termasuk yang belum tampil ke warga, lengkap dengan label statusnya ("Tersembunyi", "Terbuka 19.00", "Terkunci, menunggu misi X").
+
+### 9c. Warga mengerjakan misi
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor W as Warga
+    participant App as Ramein PWA
+    participant DB as complete_mission
+    actor T as Tim penyelenggara
+    W->>App: Buka daftar misi di halaman aktivitas
+    App->>DB: complete_mission(mission_id, bukti)
+    DB->>DB: cek aktivitas running, misi aktif, sudah terbuka untuk warga ini, dan dalam jendela waktu
+    DB->>DB: cek partisipasi registered/in_progress dan payment_status not_required/paid
+    DB->>DB: cek misi belum pernah diselesaikan warga ini
+    alt qr_scan
+        DB->>DB: cek token QR misi + jarak ke checkpoint (di luar radius = flagged)
+        DB->>DB: mission_completions approved
+    else secret_code
+        DB->>DB: cek kode (maks. 5 percobaan per 15 menit per misi)
+        DB->>DB: mission_completions approved
+    else photo
+        DB->>DB: mission_completions pending_review + proof_path
+        DB-->>T: notifikasi bukti baru
+        T->>DB: review_mission_completion(setujui atau tolak + catatan)
+    else manual
+        T->>DB: mark_missions_manual(mission_id, daftar peserta)
+        DB->>DB: mission_completions approved untuk tiap peserta
+    end
+    DB->>DB: saat approved: insert xp_ledger reason mission_complete (ikut batas 1.000/hari)
+    DB->>DB: evaluate_completion(participation): cek syarat selesai aktivitas
+    DB-->>App: XP, progress misi, status selesai
+```
+
+- Foto yang ditolak boleh diunggah ulang selama aktivitas masih `running`.
+- Bukti foto yang masih `pending_review` saat aktivitas `settled` otomatis ditolak (warga mendapat notifikasi).
+- Menyelesaikan misi `qr_scan` atau `secret_code` di hari yang belum ada check-in tidak otomatis dihitung sebagai check-in; check-in kehadiran tetap lewat QR checkpoint.
+
+### 9d. Kapan aktivitas dianggap selesai
+
+Fungsi `evaluate_completion` dipanggil setiap ada check-in atau misi yang disetujui.
+
+| Jenis aktivitas | Selesai ketika |
+| --- | --- |
+| Event tanpa misi wajib | Warga check-in (seperti sebelumnya) |
+| Event dengan misi wajib | Warga check-in **dan** semua misi wajib disetujui |
+| Challenge target `total_checkins` / `distinct_checkpoints` | Target check-in tercapai (misi hanya menambah XP) |
+| Challenge target `required_missions` | Semua misi wajib disetujui |
+| Challenge target `missions_completed` | Jumlah misi disetujui (wajib maupun bonus) mencapai `target_count` |
+
+Misi bonus selalu opsional: menambah XP, tetapi tidak menghalangi status selesai. Misi wajib yang **belum pernah dibuka** (misalnya mode manual yang tidak jadi dibuka panitia) tidak dihitung sebagai syarat; begitu terbuka, ia langsung menjadi syarat. Hadiah penyelesaian (XP challenge dan poin dari budget) tetap diberikan sekali, saat status menjadi `completed`.
+
+### 9e. Kapan misi tampil ke warga
+
+Misi tidak harus langsung terlihat saat event terbit. Pembuat event mengatur cara tampil setiap misi, misalnya untuk kejutan di tengah acara, misi bertahap, atau misi yang baru dibuka setelah sesi tertentu.
+
+| Cara tampil (`reveal_mode`) | Misi muncul ke warga | Contoh pemakaian |
+| --- | --- | --- |
+| `on_publish` | Saat event terbit (default) | Misi utama yang perlu diketahui sejak awal |
+| `scheduled` | Otomatis pada jam `reveal_at` | "Misi malam" yang terbuka pukul 19.00 saat konser dimulai |
+| `manual` | Saat tim penyelenggara menekan "Buka misi" | Misi kejutan yang diumumkan MC di panggung |
+| `after_mission` | Per warga, setelah misi prasyarat miliknya disetujui | Rute bertahap: selesai pos 1 baru terbuka pos 2 |
+
+Selain itu, setiap misi yang belum terbuka bisa diatur **ditampilkan sebagai teaser** (`show_teaser`) atau **disembunyikan sepenuhnya**:
+
+- **Teaser**: warga melihat kartu terkunci tanpa judul dan isi, hanya keterangan kapan atau bagaimana misi terbuka ("Misi rahasia, terbuka pukul 19.00", "Selesaikan Pos 1 untuk membuka"). Jumlah XP boleh ditampilkan supaya penasaran.
+- **Tersembunyi**: misi sama sekali tidak muncul sampai terbuka.
+
+```mermaid
+stateDiagram-v2
+    [*] --> tersembunyi: event terbit, reveal_mode bukan on_publish
+    [*] --> terbuka: event terbit, reveal_mode on_publish
+    tersembunyi --> terbuka: scheduled, reveal_at tercapai
+    tersembunyi --> terbuka: manual, panitia menekan Buka misi
+    tersembunyi --> terbuka: after_mission, prasyarat warga ini disetujui
+    terbuka --> selesai: warga menyelesaikan misi
+    terbuka --> ditutup: available_until lewat atau misi dinonaktifkan
+```
+
+**Aturan tampil misi**
+
+| Aturan | Keterangan |
+| --- | --- |
+| Terbuka tidak bisa ditutup lagi | Misi yang sudah terbuka tidak bisa disembunyikan kembali; untuk menghentikannya, nonaktifkan misi |
+| Notifikasi | Saat misi `scheduled` atau `manual` terbuka, peserta terdaftar mendapat notifikasi "Misi baru terbuka"; untuk `after_mission`, notifikasi dikirim ke warga yang bersangkutan |
+| Tampil vs bisa dikerjakan | Terbuka berarti terlihat. Misi tetap hanya bisa dikerjakan saat aktivitas `running` dan di dalam jendela `available_from`–`available_until` |
+| Prasyarat | `after_mission` menunjuk satu misi lain di aktivitas yang sama; tidak boleh berputar. Misi wajib hanya boleh berprasyarat misi wajib, supaya warga tidak bisa melewatkan misi wajib dengan sengaja tidak membuka rantainya |
+| Pengunjung yang belum daftar | Melihat misi yang sudah terbuka dan teaser, supaya tertarik ikut; tidak bisa mengerjakannya |
+| QR dan kode | Memindai QR atau mengetik kode misi yang belum terbuka ditolak dengan pesan "Misi belum dibuka" |
+| Event Ramein | Admin yang menekan "Buka misi" untuk misi manual milik Ramein; partner membuka misi miliknya sendiri |
+
+Halaman aktivitas di PWA warga mengambil daftar misi lewat `get_activity_missions`, sehingga tiap warga hanya menerima misi yang memang sudah terbuka untuknya; misi tersembunyi tidak pernah terkirim ke HP.
+
+---
+
+## 10. Kolaborasi: undangan, open call, dan event buatan admin
+
+Kolaborasi berlaku untuk semua kombinasi: komunitas–komunitas, komunitas–merchant, merchant–merchant.
+
+### 10a. Jalur undangan
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor H as Host
+    participant DB as Database
+    actor P as Penyelenggara partner
+    H->>DB: invite_partner(activity, penyelenggara, role, kontribusi)
+    DB->>DB: cek peran sesuai tipe (sponsor poin hanya merchant)
+    DB-->>P: notifikasi undangan
+    P->>DB: respond_partner_invite(accept atau decline)
+    alt Diterima
+        DB->>DB: activity_partners.status = accepted
+        opt Partner merchant menyumbang poin
+            P->>DB: set points_budget
+        end
+        opt Partner punya lokasi
+            P->>DB: tambah activity_checkpoints miliknya
+        end
+    else Ditolak
+        DB->>DB: status = declined, dikeluarkan dari aktivitas
+    end
+    DB->>DB: jika semua sudah menjawab dan status awaiting_partners maka in_review
+```
+
+### 10b. Jalur open call
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor H as Host (mis. komunitas)
+    participant DB as Database
+    participant PB as Papan kolaborasi
+    actor O as Penyelenggara lain
+    H->>DB: buat collab_posts (kind collab atau sponsor, kebutuhan, manfaat, tenggat)
+    DB-->>PB: tampil untuk penyelenggara terverifikasi
+    O->>PB: saring per kelurahan, kategori, jenis
+    O->>DB: apply_open_call(post, peran, kontribusi, pesan)
+    DB-->>H: notifikasi pengajuan baru
+    H->>DB: decide_application(terima atau tolak)
+    alt Diterima
+        DB->>DB: collab_applications.status = accepted
+        DB->>DB: insert activity_partners (source open_call, status accepted)
+    else Ditolak
+        DB->>DB: status = rejected
+    end
+    Note over DB: Post ditutup otomatis pada deadline atau saat aktivitas diajukan ke admin
+```
+
+**Aturan kolaborasi**
+
+| Aturan | Keterangan |
+| --- | --- |
+| Peran `sponsor` dengan poin | Hanya penyelenggara merchant (`points_budget > 0` hanya untuk merchant) |
+| Sponsor non-poin | Komunitas boleh, kontribusinya dicatat sebagai teks (tenaga, perlengkapan, publikasi) |
+| Atribusi | Setiap check-in mencatat `partner_organizer_id` pemilik checkpoint; setiap pemakaian voucher mencatat outlet |
+| Privasi | Partner hanya melihat identitas peserta yang check-in di checkpoint miliknya; selebihnya angka agregat |
+| Budget gabungan | Budget poin aktivitas = jumlah `points_budget` semua partner merchant yang `accepted`; pemakaian dicatat per partner secara proporsional |
+| Tampilan warga | Halaman aktivitas menampilkan daftar "Didukung oleh" dari partner `accepted` |
+
+### 10c. Event buatan admin
+
+Admin bisa membuat event atau challenge atas nama **Ramein**, misalnya festival kota, lomba antarkelurahan, atau program bersama pemerintah kota. Di dalamnya admin memilih merchant dan komunitas yang terlibat dan **langsung menambahkan mereka** tanpa menunggu persetujuan, karena kesepakatannya biasanya sudah dibuat di luar aplikasi.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor A as Admin
+    participant DB as Database
+    actor P as Merchant / komunitas
+    A->>DB: buat aktivitas, host = organizer Ramein (type platform)
+    loop Untuk tiap merchant/komunitas yang terlibat
+        A->>DB: admin_add_partner(activity, organizer, peran, catatan kontribusi)
+        DB->>DB: activity_partners status accepted, source admin
+        DB-->>P: notifikasi "Kamu ditambahkan ke event Ramein"
+    end
+    A->>DB: tambah checkpoint dan misi (atas nama Ramein atau atas nama partner)
+    opt Merchant mau memberi poin
+        P->>DB: set_partner_budget(points_budget)
+    end
+    A->>DB: submit_activity
+    DB->>DB: validasi sama seperti aktivitas lain
+    DB-->>A: status published (tanpa antrean review)
+    opt Partner keberatan
+        P->>DB: leave_activity(partner_id) selama belum running
+        DB-->>A: notifikasi partner keluar
+    end
+```
+
+**Aturan event Ramein**
+
+| Aturan | Keterangan |
+| --- | --- |
+| Host | Satu baris `organizers` khusus bertipe `platform` bernama "Ramein"; dikelola semua akun admin, tidak lewat `organizer_members` |
+| Menambah partner | Admin menambahkan merchant atau komunitas yang `approved` langsung sebagai `accepted` (peran cohost atau sponsor); mereka mendapat notifikasi |
+| Hak partner | Partner yang ditambahkan admin punya hak yang sama dengan partner biasa: melihat aktivitas di dashboard-nya, menampilkan QR checkpoint miliknya, membuat dan meninjau misi di checkpoint miliknya |
+| Keluar | Partner boleh keluar selama aktivitas belum `running`; checkpoint dan misinya ikut nonaktif |
+| Poin | Ramein tidak punya budget poin sendiri. Poin hanya ada jika merchant partner mengisi budget poinnya sendiri; admin tidak bisa mengisikan budget atas nama merchant |
+| Checkpoint | Admin bisa membuat checkpoint atas nama Ramein (QR ditampilkan admin/panitia Ramein) atau atas nama partner di outlet atau basecamp-nya (QR ditampilkan tim partner) |
+| Review | Tidak lewat antrean review karena pembuatnya admin; tetap dicatat di `admin_actions` |
+| Berbayar | Boleh; panitia Ramein (admin) yang mengonfirmasi pembayaran |
+| Audiens | Selalu publik (`members_only` hanya untuk host komunitas); aturan domisili `open` atau `residents_only` tetap bisa dipilih |
+| Tampilan warga | Event tampil dengan label "Event Ramein" dan daftar "Didukung oleh" berisi partner yang terlibat |
+
+---
+
+## 11. Grup warga
+
+```mermaid
+flowchart TD
+    S([Warga: Buat grup]) --> N[Isi nama grup]
+    N --> CK{Sudah di 3 grup?}
+    CK -- Ya --> X[Tolak: maksimal 3 grup]
+    CK -- Tidak --> G[Buat groups + invite_code<br/>pembuat menjadi leader]
+    G --> SH[Bagikan kode atau tautan]
+    SH --> J([Warga lain membuka tautan])
+    J --> L[Login dan onboarding<br/>jika belum]
+    L --> V{Grup penuh 10 orang<br/>atau warga sudah di 3 grup?}
+    V -- Ya --> X2[Tolak dengan alasan]
+    V -- Tidak --> M[group_members status active]
+```
+
+- Ketua bisa mengeluarkan anggota dan menyerahkan peran ketua. Jika ketua keluar, peran ketua otomatis pindah ke anggota paling lama.
+- Grup dengan anggota aktif kurang dari 2 tetap ada, tetapi tidak bisa mendaftar ke aktivitas.
+
+---
+
+## 12. Keanggotaan komunitas
+
+Khusus penyelenggara bertipe komunitas. Warga bisa menjadi member komunitas yang ia ikuti di dunia nyata, dan tim komunitas mengelola daftar member dari dashboard. Merchant tidak punya fitur ini.
+
+### 12a. Warga bergabung
+
+```mermaid
+flowchart TD
+    S([Warga membuka halaman komunitas]) --> ST{Komunitas approved?}
+    ST -- Tidak --> X0[Tombol gabung tidak tampil]
+    ST -- Ya --> AL{Sudah member aktif<br/>atau permintaan tertunda?}
+    AL -- Ya --> X1[Tampilkan status saat ini]
+    AL -- Tidak --> SU{Akun dibekukan?}
+    SU -- Ya --> X2[Tolak]
+    SU -- Tidak --> RQ[request_membership<br/>+ pesan opsional]
+    RQ --> JP{join_policy}
+    JP -->|open| AC[status active<br/>joined_at = now]
+    JP -->|approval| PD[status pending]
+    PD --> NT[Notifikasi ke ketua dan pengurus]
+    NT --> DC{Tim memutuskan}
+    DC -->|Terima| AC
+    DC -->|Tolak| RJ[status rejected<br/>notifikasi ke warga]
+    DC -->|Tidak dijawab 30 hari| EX[status rejected otomatis<br/>oleh cron]
+    AC --> NW[Notifikasi selamat bergabung<br/>+ akses aktivitas khusus member]
+```
+
+### 12b. Tim mengelola member
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor T as Ketua / pengurus
+    participant DB as Database
+    actor W as Warga
+    T->>DB: lihat daftar member (nickname, kelurahan, tanggal gabung, keaktifan)
+    T->>DB: decide_membership(membership_id, terima atau tolak)
+    DB-->>W: notifikasi hasil
+    opt Mengeluarkan member
+        T->>DB: remove_member(membership_id, alasan)
+        DB->>DB: status removed, catat removed_by dan alasan
+        DB-->>W: notifikasi dikeluarkan
+    end
+    opt Warga keluar sendiri
+        W->>DB: leave_community(community_id)
+        DB->>DB: status left
+    end
+```
+
+**Aturan keanggotaan**
+
+| Aturan | Keterangan |
+| --- | --- |
+| Kebijakan bergabung | Ketua memilih `open` (langsung aktif) atau `approval` (perlu persetujuan); bisa diubah kapan saja, tidak berlaku mundur ke permintaan yang sudah ada |
+| Jumlah komunitas | Warga boleh menjadi member di banyak komunitas, tanpa batas |
+| Tim otomatis member | Ketua dan pengurus selalu member aktif; ketua tidak bisa keluar sebelum menyerahkan peran ketua |
+| Bergabung ulang | Member yang `left` boleh meminta lagi kapan saja; yang `removed` atau `rejected` baru boleh meminta lagi setelah 30 hari |
+| Privasi | Tim melihat nickname, kelurahan, tanggal gabung, dan jumlah check-in member di aktivitas komunitas itu; tidak pernah nama lengkap. Publik hanya melihat jumlah member aktif |
+| XP | Bergabung tidak memberi XP, supaya tidak jadi celah farming |
+| Komunitas dibekukan | Keanggotaan tetap tersimpan; aktivitas khusus member ikut tidak bisa diikuti |
+| Grup warga | Terpisah dari keanggotaan; grup bisa berisi warga dari komunitas berbeda |
+
+**Manfaat member**
+
+- Bisa ikut aktivitas khusus member (`audience = members_only`).
+- Notifikasi otomatis saat komunitasnya menerbitkan aktivitas baru.
+- Komunitas tampil di profil warga ("Member di ...").
+- Statistik member di dashboard komunitas: jumlah member aktif, member baru bulan ini, dan berapa persen member yang hadir di aktivitas 30 hari terakhir.
+
+---
+
+## 13. Join aktivitas (pribadi dan grup)
+
+```mermaid
+flowchart TD
+    S([Warga membuka aktivitas]) --> ST{Status published<br/>atau running?}
+    ST -- Tidak --> X0[Tombol join nonaktif]
+    ST -- Ya --> AUD{audience members_only?}
+    AUD -- Ya, bukan member aktif --> XM[Tombol join nonaktif<br/>ajakan gabung komunitas]
+    AUD -- Tidak, atau member aktif --> RS{residents_only dan<br/>kelurahan asal di luar cakupan?}
+    RS -- Ya --> XR[Tombol join nonaktif<br/>Khusus warga wilayah ini]
+    RS -- Tidak --> MD{join_mode}
+    MD -->|individual| P
+    MD -->|group| GR
+    MD -->|both| CH{Pilih cara ikut}
+    CH -->|Sendiri| P
+    CH -->|Bersama grup| GR
+
+    P[Join pribadi] --> Q1{Kuota tersisa<br/>dan belum terdaftar?}
+    Q1 -- Tidak --> X1[Tolak: kuota penuh<br/>atau sudah terdaftar]
+    Q1 -- Ya --> R1[participations status registered]
+    R1 --> PD{Aktivitas berbayar?}
+    PD -- Tidak --> PN[payment_status not_required]
+    PD -- Ya --> PU[payment_status unpaid<br/>lanjut alur bagian 8]
+
+    GR[Ketua memilih grup<br/>dan anggota yang ikut] --> Q2{Jumlah anggota di antara<br/>group_min dan group_max,<br/>kuota cukup untuk semua?}
+    Q2 -- Tidak --> X2[Tolak dengan alasan]
+    Q2 -- Ya --> R2[participations status invited<br/>untuk tiap anggota, group_id terisi]
+    R2 --> NT[Notifikasi ke anggota]
+    NT --> CF{Anggota konfirmasi?}
+    CF -- Ya --> R3[status registered]
+    CF -- Tolak --> R4[status cancelled<br/>kursi kuota kembali]
+    CF -- Tidak menjawab sampai aktivitas mulai --> R4
+```
+
+- Kuota dihitung per orang: `registered + in_progress + completed + invited`.
+- Satu warga hanya punya satu partisipasi per aktivitas (pribadi atau lewat satu grup).
+- Join tidak memberi XP; XP baru masuk saat check-in atau misi selesai.
+- Warga bisa membatalkan sebelum check-in pertama; kursinya kembali ke kuota.
+- Aktivitas berbayar lewat grup: setiap anggota yang mengonfirmasi mendapat `payment_status unpaid` dan batas waktu bayarnya sendiri.
+- Untuk aktivitas khusus member, pendaftaran grup hanya bisa memilih anggota grup yang juga member aktif komunitas host.
+- Member yang keluar atau dikeluarkan setelah terdaftar tetap boleh ikut aktivitas itu sampai selesai; syarat member hanya dicek saat mendaftar.
+
+---
+
+## 14. Check-in QR dan pemberian XP/poin
+
+Ini alur paling kritis. Semua langkah setelah pemindaian terjadi di satu fungsi database `perform_checkin` dalam satu transaksi.
+
+### 14a. QR dinamis
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor S as Staf penyelenggara
+    participant App as Dashboard merchant/komunitas
+    participant DB as Database
+    loop Setiap 60 detik
+        App->>DB: get_checkpoint_qr(checkpoint_id)
+        DB->>DB: cek pemanggil anggota penyelenggara pemilik checkpoint
+        DB->>DB: token = HMAC(qr_secret, checkpoint_id + menit_ke_n)
+        DB-->>App: payload QR (checkpoint_id, token)
+        App-->>S: tampilkan QR baru di layar
+    end
+```
+
+Token berlaku untuk menit berjalan dan satu menit sebelumnya (toleransi jam HP dan jaringan). Rahasia `qr_secret` tidak pernah dikirim ke client.
+
+### 14b. Pemindaian oleh warga
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor W as Warga
+    participant App as Ramein PWA
+    participant DB as perform_checkin
+    W->>App: Pindai QR di HP staf
+    App->>W: Minta izin lokasi (hanya pertama kali)
+    App->>DB: perform_checkin(checkpoint_id, token, lat, lng)
+    DB->>DB: 1. token cocok dengan menit ini atau menit sebelumnya
+    DB->>DB: 2. aktivitas berstatus running
+    DB->>DB: 3. warga punya partisipasi registered atau in_progress
+    DB->>DB: 3b. payment_status not_required atau paid
+    DB->>DB: 4. belum check-in di aktivitas ini hari ini (WIB)
+    alt Ada pemeriksaan yang gagal
+        DB-->>App: tolak + alasan
+        App-->>W: pesan kesalahan
+    else Lolos
+        DB->>DB: 5. hitung jarak ke checkpoint
+        DB->>DB: 6. insert checkins (review_status ok atau flagged jika di luar radius)
+        DB->>DB: 7. hitung XP (lihat tabel di bawah) dan potong ke batas 1.000 per hari
+        DB->>DB: 8. insert xp_ledger
+        DB->>DB: 9. perbarui progress, lalu evaluate_completion (bagian 9d)
+        opt Syarat selesai terpenuhi
+            DB->>DB: 10. tandai completed
+            opt Budget poin masih cukup
+                DB->>DB: 11. insert point_ledger (+poin, kedaluwarsa 6 bulan)
+            end
+        end
+        DB->>DB: 12. cek bonus grup dan badge
+        DB-->>App: hasil: XP, poin, level, badge baru
+        App-->>W: animasi hadiah
+    end
+```
+
+### 14c. Perhitungan XP
+
+| Komponen | Kapan | Nilai |
+| --- | --- | --- |
+| Dasar event | Check-in di event | 100 XP |
+| Dasar challenge | Saat challenge selesai | 150 / 250 / 400 XP (easy / medium / hard) |
+| Misi | Saat misi disetujui (langsung untuk QR/kode, saat ditinjau untuk foto/manual) | 10–100 XP per misi sesuai pengaturan penyelenggara; total per aktivitas maks. 500 XP; tidak kena bonus kolaborasi dan grup |
+| Kunjungan pertama | Pertama kali check-in di penyelenggara itu | +50 XP |
+| Kolaborasi | Aktivitas punya lebih dari satu partner accepted | +25% XP dasar |
+| Bonus grup | Minimal 3 anggota grup yang sama check-in di aktivitas yang sama hari itu | +20% XP dasar untuk semua anggota yang hadir |
+| Batas harian | Total XP per warga per hari (WIB) | Maksimal 1.000 XP; kelebihan dipotong |
+
+**Bonus grup** diberikan sekali per anggota per aktivitas per hari. Saat anggota ketiga check-in, fungsi menambahkan bonus untuk ketiganya sekaligus; anggota keempat dan seterusnya langsung mendapat bonus saat check-in.
+
+**Check-in di luar radius** tetap memberi XP (supaya warga dengan GPS kurang akurat tidak dirugikan), tetapi ditandai `flagged`. Jika admin menolaknya, fungsi `reverse_checkin` menulis baris XP dan poin bernilai negatif.
+
+---
+
+## 15. Progress dan penyelesaian challenge
+
+```mermaid
+flowchart TD
+    C([Check-in atau misi disetujui<br/>di challenge]) --> SC{target_scope}
+    SC -->|individual| I1[progress pribadi = jumlah check-in,<br/>checkpoint berbeda, atau misi disetujui<br/>sesuai target_kind]
+    I1 --> I2{progress >= target_count?}
+    I2 -- Tidak --> I3[status in_progress]
+    I2 -- Ya --> DONE[Warga completed<br/>+ XP penyelesaian + poin jika ada budget]
+    SC -->|group| G1[progress grup = jumlah<br/>dari semua anggota grup]
+    G1 --> G2{progress grup >= target_count?}
+    G2 -- Tidak --> G3[anggota in_progress<br/>leaderboard grup diperbarui]
+    G2 -- Ya --> G4[Semua anggota yang sudah<br/>berkontribusi minimal 1 kali]
+    G4 --> DONE2[completed + XP + poin<br/>untuk tiap kontributor]
+    G4 --> NC[Anggota tanpa kontribusi:<br/>tidak dapat hadiah penyelesaian]
+```
+
+- Jenis target: `total_checkins` (jumlah check-in), `distinct_checkpoints` (checkpoint berbeda, cocok untuk "jelajah 5 kedai"), `required_missions` (semua misi wajib selesai), dan `missions_completed` (jumlah misi selesai mencapai target, contoh "selesaikan 4 dari 6 misi").
+- Target grup berbasis misi: `missions_completed` dihitung dari jumlah misi disetujui seluruh anggota grup (misi yang sama oleh dua anggota dihitung dua). `required_missions` tidak tersedia untuk target grup.
+- Satu check-in per aktivitas per hari tetap berlaku untuk challenge; misi tidak dibatasi per hari, hanya sekali per misi per warga.
+- Challenge yang berakhir sebelum target tercapai: partisipasi tetap `in_progress`, lalu cron mengubahnya menjadi tidak selesai saat `settled`. XP dari check-in harian tetap dimiliki warga.
+
+---
+
+## 16. Tukar poin dan pakai voucher
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor W as Warga
+    participant DB as Database
+    actor K as Kasir merchant
+    W->>DB: redeem_reward(reward_id)
+    DB->>DB: cek reward aktif, stok > 0, masih berlaku
+    DB->>DB: cek saldo poin belum kedaluwarsa >= harga
+    alt Tidak memenuhi
+        DB-->>W: tolak + alasan
+    else Memenuhi
+        DB->>DB: insert point_ledger (-harga, reason redemption)
+        DB->>DB: kurangi stok reward
+        DB->>DB: insert redemptions (kode unik 8 karakter, status active)
+        DB-->>W: kode voucher + QR
+    end
+    W->>K: Tunjukkan kode di kasir
+    K->>DB: use_voucher(kode, outlet_id) dari mode kasir
+    DB->>DB: cek kasir anggota merchant pemilik reward
+    DB->>DB: cek status active dan belum kedaluwarsa
+    DB->>DB: status used, catat used_by dan outlet
+    DB-->>K: berhasil: nama reward dan nama panggilan warga
+```
+
+- Poin dipakai dengan urutan FIFO: poin yang paling cepat kedaluwarsa dipakai lebih dulu.
+- Voucher yang sudah ditukar tidak bisa dikembalikan menjadi poin. Pengecualian: jika merchant menonaktifkan reward sebelum voucher dipakai, fungsi `refund_redemption` mengembalikan poinnya.
+- Komunitas tidak punya mode kasir dan tidak bisa membuat `rewards`.
+
+---
+
+## 17. Leaderboard, level, dan badge
+
+```mermaid
+flowchart LR
+    XL[(xp_ledger)] --> LV[v_user_level<br/>total XP seumur hidup<br/>ke tabel level]
+    XL --> LU[v_leaderboard_users_month<br/>XP bulan berjalan<br/>per kelurahan dan se-kota]
+    XL --> LK[v_leaderboard_villages_month<br/>rata-rata XP per warga aktif<br/>minimal 10 warga aktif]
+    CI[(checkins)] --> AK[v_village_active_month<br/>jumlah warga aktif<br/>tab Kelurahan Teraktif]
+    CI --> LG[v_group_progress<br/>leaderboard grup per aktivitas]
+    CI --> OR[v_organizer_reputation<br/>hadir, penyelesaian, kolaborasi]
+    CI --> BD[award_badges<br/>dicek setelah check-in]
+    BD --> UB[(user_badges)]
+```
+
+**Level**
+
+| Level | Nama | XP kumulatif |
+| --- | --- | --- |
+| 1 | Warga Baru | 0 |
+| 2 | Penjelajah | 500 |
+| 3 | Penggerak | 1.500 |
+| 4 | Jawara | 4.000 |
+| 5 | Legenda Cimahi | 10.000 |
+
+**Leaderboard kelurahan.** XP dihitung ke kelurahan yang tercatat di `xp_ledger.village_id` saat XP diberikan (snapshot), sehingga pindah kelurahan tidak memindahkan XP lama. Warga "Luar Cimahi" (`village_id` kosong) tidak dihitung. Juara bulan lalu disimpan oleh cron ke `monthly_village_winners`.
+
+**Badge awal**
+
+| Kode | Nama | Syarat |
+| --- | --- | --- |
+| first_step | Langkah Pertama | Check-in pertama |
+| village_explorer | Penjelajah Kelurahan | Check-in di 5 kelurahan berbeda |
+| regular | Langganan | Check-in di penyelenggara yang sama 5 kali |
+| collaborator | Kolaborator | Ikut 3 aktivitas kolaborasi |
+| consistent | Konsisten | Streak 4 minggu |
+| one_team | Satu Tim | Ikut 3 aktivitas sebagai grup |
+
+---
+
+## 18. Proses terjadwal (cron)
+
+Dijalankan dengan `pg_cron` di Supabase (atau Vercel Cron yang memanggil fungsi database). Semua job idempoten: aman dijalankan ulang.
+
+```mermaid
+flowchart TB
+    subgraph T5["Setiap 5 menit"]
+        J1[advance_activity_status<br/>published ke running,<br/>running ke ended]
+        J2[expire_group_invitations<br/>undangan grup yang belum<br/>dikonfirmasi saat aktivitas mulai]
+        J10[expire_unpaid_participations<br/>lewat batas waktu bayar]
+        J12[reveal_scheduled_missions<br/>buka misi yang reveal_at-nya tercapai]
+    end
+    subgraph TH["Setiap jam"]
+        J3[close_expired_collab_posts<br/>open call lewat tenggat]
+        J4[settle_ended_activities<br/>ended lebih dari 48 jam ke settled<br/>challenge belum selesai ditutup,<br/>bukti foto misi tertunda ditolak]
+    end
+    subgraph TD1["Setiap hari 00.05 WIB"]
+        J5[expire_points<br/>tulis baris negatif untuk<br/>poin lewat 6 bulan yang belum dipakai]
+        J6[expire_redemptions<br/>voucher lewat masa berlaku]
+        J7[award_streak<br/>hari Senin: bonus streak mingguan]
+        J9[expire_membership_requests<br/>permintaan member tertunda<br/>lebih dari 30 hari]
+        J11[prune_code_attempts<br/>hapus log percobaan kode<br/>lebih dari 1 hari]
+    end
+    subgraph TM["Tanggal 1 pukul 00.10 WIB"]
+        J8[snapshot_monthly_winners<br/>simpan juara kelurahan bulan lalu]
+    end
+```
+
+| Job | Jadwal | Efek |
+| --- | --- | --- |
+| advance_activity_status | 5 menit | Mengubah status berdasarkan `starts_at` dan `ends_at` |
+| expire_group_invitations | 5 menit | Partisipasi `invited` di aktivitas yang sudah mulai menjadi `cancelled` |
+| reveal_scheduled_missions | 1 menit | Misi `scheduled` yang `reveal_at`-nya tercapai diisi `revealed_at` dan peserta diberi notifikasi; tampilan ke warga sudah dihitung dari jam, cron ini hanya untuk notifikasi dan pencatatan |
+| expire_unpaid_participations | 5 menit | Partisipasi `unpaid` yang lewat `payment_due_at` menjadi `cancelled` + notifikasi; `awaiting_confirmation` tidak disentuh supaya bukti yang sudah dikirim tetap ditinjau |
+| close_expired_collab_posts | 1 jam | `collab_posts.status = closed` setelah `deadline` |
+| settle_ended_activities | 1 jam | `ended` lebih dari 48 jam menjadi `settled`; partisipasi yang belum memenuhi syarat selesai menjadi `not_completed`; `mission_completions` yang masih `pending_review` menjadi `rejected` |
+| expire_points | Harian | Baris `point_ledger` negatif `reason = expiry` untuk sisa poin yang kedaluwarsa |
+| expire_redemptions | Harian | Voucher `active` lewat `expires_at` menjadi `expired` |
+| award_streak | Senin | +50 XP untuk warga dengan minimal satu check-in di setiap minggu berturut-turut |
+| expire_membership_requests | Harian | `community_memberships` berstatus `pending` lebih dari 30 hari menjadi `rejected` + notifikasi ke warga |
+| prune_code_attempts | Harian | Menghapus baris `mission_code_attempts` yang lebih dari 1 hari |
+| snapshot_monthly_winners | Bulanan | Insert `monthly_village_winners` untuk bulan lalu |
+
+Leaderboard bulanan tidak perlu di-reset: view menyaring XP berdasarkan bulan berjalan, sehingga otomatis mulai dari nol tiap tanggal 1.
+
+---
+
+## 19. Moderasi admin dan anti-curang
+
+```mermaid
+flowchart TD
+    subgraph Antrean["Dashboard admin (web)"]
+        Q1[Penyelenggara pending]
+        Q2[Aktivitas in_review]
+        Q3[Check-in dan misi QR flagged]
+        Q4[Laporan pola mencurigakan]
+        Q5[Aktivitas dibatalkan dengan<br/>pembayaran belum refunded]
+    end
+    Q5 --> D5[Hubungi penyelenggara<br/>catat di admin_actions]
+    Q1 --> D1{Setujui?}
+    D1 -->|Ya| A1[approved]
+    D1 -->|Tidak| A2[rejected + catatan]
+    Q2 --> D2{Setujui?}
+    D2 -->|Ya| A3[published]
+    D2 -->|Tidak| A4[draft + review_note]
+    Q3 --> D3{Sah?}
+    D3 -->|Ya| A5[review_status approved]
+    D3 -->|Tidak| A6[reverse_checkin<br/>XP dan poin dibalik]
+    Q4 --> D4{Tindakan}
+    D4 -->|Peringatan| A7[catat di fraud_flags]
+    D4 -->|Bekukan akun| A8[profiles.suspended_at diisi<br/>tidak bisa check-in dan menukar]
+    D4 -->|Bekukan penyelenggara| A9[organizers.status suspended<br/>aktivitas running dibatalkan]
+```
+
+**Lapisan anti-curang**
+
+| Lapisan | Mencegah |
+| --- | --- |
+| QR berganti tiap 60 detik | Foto QR disebar ke grup chat |
+| Cek radius GPS 150 m | Check-in dari rumah dengan QR curian |
+| Satu check-in per aktivitas per hari | Memindai berkali-kali |
+| Batas 1.000 XP per hari | Farming XP besar-besaran |
+| XP/poin hanya dari fungsi server | Memanipulasi request dari HP |
+| Budget poin per aktivitas | Poin tak terbatas yang membebani merchant |
+| Deteksi pola (`fraud_flags`) | Banyak akun dari satu lokasi dan waktu yang sama, check-in beruntun di lokasi berjauhan dalam waktu tidak wajar |
+| Kode voucher sekali pakai | Voucher dipakai ulang |
+| QR misi berganti tiap 60 detik + cek radius | Foto QR misi disebar |
+| Batas percobaan kode misi (5 per 15 menit) | Menebak kode rahasia |
+| XP misi 10–100, total maks. 500 per aktivitas | Penyelenggara membuat misi XP besar untuk mendongkrak warga tertentu |
+| Misi foto dan manual dicatat siapa peninjaunya | Panitia menyetujui temannya sendiri tanpa jejak; admin bisa mengaudit |
+
+Bukti foto misi ditinjau oleh tim penyelenggara, bukan admin. Admin hanya turun tangan lewat laporan atau pola mencurigakan (misalnya satu peninjau menyetujui ratusan foto dalam beberapa menit).
+
+---
+
+## 20. Dashboard dan peta halaman
+
+Satu codebase Next.js melayani dua aplikasi: **Ramein PWA** (warga, merchant, komunitas) di `ramein.id` dan **Ramein Admin** (web) di `admin.ramein.id`. Middleware memilih tata letak berdasarkan host; dashboard admin menolak akun yang bukan `is_admin`.
+
+### 20a. Isi dashboard per entitas
+
+**Dashboard warga** (`/beranda`, tampilan awal PWA; dimuat sekaligus lewat `get_citizen_dashboard()`)
+
+| Bagian | Isi | Sumber data |
+| --- | --- | --- |
+| Kartu level | Level, XP total, XP menuju level berikutnya, streak minggu ini | `v_user_level`, `xp_ledger` |
+| Aktivitasku | Aktivitas yang diikuti hari ini dan mendatang, status bayar, misi yang belum selesai | `participations`, `v_participation_missions` |
+| Dompet ringkas | Saldo poin, poin yang akan kedaluwarsa 30 hari lagi, voucher aktif | `v_user_points_balance`, `redemptions` |
+| Peringkat | Posisi di kelurahan dan se-kota bulan ini, posisi kelurahan saya | `get_leaderboard` |
+| Rekomendasi | Aktivitas di kelurahan saya dan dari komunitas yang saya ikuti | `activities`, `community_memberships` |
+| Badge terbaru | Badge yang baru didapat | `user_badges` |
+
+**Dashboard merchant** (`/merchant/[id]`)
+
+| Bagian | Isi | Sumber data |
+| --- | --- | --- |
+| Ringkasan | Aktivitas berjalan, peserta, check-in hari ini, warga baru vs kembali | `v_merchant_dashboard`, `v_activity_stats` |
+| Perlu tindakan | Pembayaran menunggu konfirmasi, bukti foto misi menunggu tinjauan, undangan kolaborasi | `v_activity_payment_stats`, `v_mission_stats`, `activity_partners` |
+| Poin dan voucher | Budget poin terpakai dan sisa, voucher ditukar dan dipakai per outlet | `v_activity_budget`, `v_activity_partner_stats` |
+| Misi | Tingkat penyelesaian tiap misi | `v_mission_stats` |
+| Reputasi | Skor hadir, penyelesaian, kolaborasi 90 hari | `v_organizer_reputation` |
+
+**Dashboard komunitas** (`/komunitas/[id]`)
+
+| Bagian | Isi | Sumber data |
+| --- | --- | --- |
+| Ringkasan | Aktivitas berjalan, peserta, check-in hari ini | `v_community_dashboard`, `v_activity_stats` |
+| Member | Member aktif, member baru bulan ini, permintaan menunggu, persentase member yang hadir 30 hari terakhir | `v_community_member_stats` |
+| Perlu tindakan | Permintaan bergabung, pembayaran menunggu konfirmasi, bukti foto misi, undangan kolaborasi | `community_memberships`, `v_activity_payment_stats`, `v_mission_stats` |
+| Misi | Tingkat penyelesaian tiap misi | `v_mission_stats` |
+| Reputasi | Skor hadir, penyelesaian, kolaborasi 90 hari | `v_organizer_reputation` |
+
+**Dashboard admin** (`admin.ramein.id`)
+
+| Bagian | Isi | Sumber data |
+| --- | --- | --- |
+| Metrik kota | Warga aktif mingguan, aktivitas berjalan, merchant dan komunitas aktif, poin beredar vs ditukar, kelurahan teraktif | `v_admin_overview`, `v_village_active_month` |
+| Event Ramein | Buat dan kelola event/challenge Ramein, tambahkan merchant/komunitas, konfirmasi pembayaran, tinjau bukti misi | `activities`, `activity_partners`, `v_activity_stats` |
+| Antrean | Merchant/komunitas menunggu verifikasi, aktivitas menunggu review, check-in dan misi flagged, laporan pola mencurigakan | `organizers`, `activities`, `checkins`, `mission_completions`, `fraud_flags` |
+| Pembayaran | Aktivitas dibatalkan yang masih punya peserta `paid` belum `refunded` | `v_activity_payment_stats` |
+| Pengguna | Cari warga, merchant, komunitas; bekukan atau aktifkan | `profiles`, `organizers` |
+| Pengaturan | Angka aturan main (XP, batas, radius, kedaluwarsa) | `app_settings` |
+| Audit | Riwayat tindakan admin | `admin_actions` |
+
+### 20b. Peta halaman
+
+```mermaid
+flowchart LR
+    ROOT([Ramein PWA]) --> AUTH[/masuk<br/>/onboarding/]
+    ROOT --> WG[Warga]
+    ROOT --> MC[Merchant]
+    ROOT --> KM[Komunitas]
+    ADM([Ramein Admin - web]) --> AD[Admin]
+
+    WG --> W1[/beranda: dashboard warga/]
+    WG --> W2[/jelajah: aktivitas sekitar/]
+    WG --> W3[/aktivitas/id detail, join,<br/>status bayar, daftar misi/]
+    WG --> W4[/scan: check-in dan misi QR/]
+    WG --> W5[/dompet: poin, voucher/]
+    WG --> W6[/grup/]
+    WG --> W7[/komunitas-saya/]
+    WG --> W8[/peringkat/]
+    WG --> W9[/profil: level, badge, riwayat,<br/>pemilih mode/]
+    WG --> W10[/m/slug dan /k/slug<br/>profil publik merchant dan komunitas/]
+    WG --> W11[/daftar/merchant dan<br/>/daftar/komunitas/]
+
+    MC --> M1[/merchant/id: dashboard/]
+    MC --> M2[/merchant/id/aktivitas/]
+    M2 --> M21[/aktivitas/aid/misi<br/>kelola misi, tinjau bukti/]
+    M2 --> M22[/aktivitas/aid/peserta<br/>daftar, konfirmasi bayar/]
+    MC --> M3[/merchant/id/qr/]
+    MC --> M4[/merchant/id/kasir/]
+    MC --> M5[/merchant/id/reward/]
+    MC --> M6[/merchant/id/outlet/]
+    MC --> M7[/merchant/id/kolaborasi/]
+    MC --> M8[/merchant/id/tim/]
+    MC --> M9[/merchant/id/profil/]
+
+    KM --> K1[/komunitas/id: dashboard/]
+    KM --> K2[/komunitas/id/aktivitas/]
+    K2 --> K21[/aktivitas/aid/misi/]
+    K2 --> K22[/aktivitas/aid/peserta/]
+    KM --> K3[/komunitas/id/qr/]
+    KM --> K4[/komunitas/id/member/]
+    KM --> K5[/komunitas/id/kolaborasi/]
+    KM --> K6[/komunitas/id/tim/]
+    KM --> K7[/komunitas/id/profil/]
+
+    AD --> A0[/ ringkasan metrik/]
+    AD --> A1[/verifikasi: merchant dan komunitas/]
+    AD --> A2[/aktivitas: review dan<br/>event Ramein/]
+    AD --> A3[/moderasi: flag dan laporan/]
+    AD --> A4[/pembayaran/]
+    AD --> A5[/pengguna/]
+    AD --> A6[/pengaturan/]
+    AD --> A7[/audit/]
+```
+
+- Navigasi bawah PWA mengikuti mode aktif: mode warga (Beranda, Jelajah, Scan, Dompet, Profil), mode merchant (Dashboard, Aktivitas, QR, Kasir, Lainnya), mode komunitas (Dashboard, Aktivitas, QR, Member, Lainnya).
+- Pemilih mode hanya menampilkan merchant dan komunitas tempat akun itu tercatat di `organizer_members`. Akun yang mengelola beberapa merchant atau komunitas memilih salah satunya.
+- Staf merchant hanya melihat menu yang sesuai perannya (lihat bagian 2); misalnya kasir tetap bisa membuka QR dan Kasir, tetapi tidak Reward atau Tim.
