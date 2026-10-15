@@ -1,8 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { safeNext } from "@/lib/safe-next";
 
-// Memperbarui sesi Supabase di setiap request.
-// Irisan 1 akan menambahkan: alihkan ke /onboarding jika profiles.onboarded_at kosong.
+// Halaman yang boleh dibuka tanpa login.
+const PUBLIC_PATHS = ["/masuk", "/auth"];
+const ONBOARDING_PATH = "/onboarding";
+
+function matches(path: string, base: string) {
+  return path === base || path.startsWith(`${base}/`);
+}
+
+// Memperbarui sesi Supabase di setiap request, lalu:
+// - belum login → ke /masuk
+// - sudah login tapi belum onboarding → ke /onboarding
+// - sudah onboarding tapi membuka /masuk atau /onboarding → ke tujuan (`next`) atau beranda
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -26,7 +37,45 @@ export async function updateSession(request: NextRequest) {
   );
 
   // Jangan menaruh kode lain di antara createServerClient dan getClaims().
-  await supabase.auth.getClaims();
+  const { data } = await supabase.auth.getClaims();
+  const userId = data?.claims?.sub;
+
+  const { pathname, search } = request.nextUrl;
+  const here = `${pathname}${search}`;
+
+  // Redirect sambil membawa cookie sesi yang baru diperbarui.
+  const redirectTo = (target: string) => {
+    const redirect = NextResponse.redirect(new URL(target, request.url));
+    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+    return redirect;
+  };
+
+  const isPublic = PUBLIC_PATHS.some((base) => matches(pathname, base));
+  const isOnboarding = matches(pathname, ONBOARDING_PATH);
+
+  if (!userId) {
+    if (isPublic) return response;
+    return redirectTo(`/masuk?next=${encodeURIComponent(here)}`);
+  }
+
+  // Callback login selalu dibiarkan lewat supaya sesi sempat dibuat.
+  if (matches(pathname, "/auth")) return response;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("onboarded_at")
+    .eq("id", userId)
+    .maybeSingle();
+  const onboarded = Boolean(profile?.onboarded_at);
+  const next = safeNext(request.nextUrl.searchParams.get("next"));
+
+  if (!onboarded) {
+    if (isOnboarding) return response;
+    const target = isPublic ? next : here;
+    return redirectTo(`${ONBOARDING_PATH}?next=${encodeURIComponent(target)}`);
+  }
+
+  if (isOnboarding || isPublic) return redirectTo(next);
 
   return response;
 }
