@@ -5,17 +5,17 @@ import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "@/lib/safe-next";
 import { OUTSIDE_CIMAHI } from "./constants";
 
-export type OnboardingState = { error?: string };
+// `step` = langkah formulir yang perlu dibuka lagi untuk memperbaiki error.
+export type OnboardingState = { error?: string; step?: 1 | 2 | 3 };
 
-// Kode error dari fungsi database complete_onboarding → pesan untuk warga.
-const ERROR_MESSAGES: Record<string, string> = {
-  invalid_nickname: "Nama panggilan harus 3–20 karakter.",
-  invalid_full_name: "Nama lengkap belum diisi.",
-  invalid_village: "Kelurahan tidak ditemukan. Pilih lagi dari daftar, ya.",
-  nickname_taken: "Nama panggilan ini sudah dipakai. Coba yang lain.",
-  already_onboarded: "Profil kamu sudah lengkap.",
-  account_inactive: "Akun ini sedang tidak aktif. Hubungi tim Ramein.",
-  not_authenticated: "Sesi kamu habis. Masuk lagi, ya.",
+// Kode error dari fungsi database complete_onboarding → pesan dan langkah formulir.
+const ERRORS: Record<string, { message: string; step: 1 | 2 | 3 }> = {
+  invalid_nickname: { message: "Nama panggilan harus 3–20 karakter.", step: 1 },
+  nickname_taken: { message: "Nama panggilan ini sudah dipakai. Coba yang lain.", step: 1 },
+  invalid_full_name: { message: "Nama lengkap belum diisi.", step: 1 },
+  invalid_village: { message: "Kelurahan tidak ditemukan. Pilih lagi, ya.", step: 2 },
+  account_inactive: { message: "Akun ini sedang tidak aktif. Hubungi tim Ramein.", step: 3 },
+  not_authenticated: { message: "Sesi kamu habis. Masuk lagi, ya.", step: 3 },
 };
 
 export async function completeOnboarding(
@@ -27,11 +27,11 @@ export async function completeOnboarding(
   const village = String(formData.get("village") ?? "");
   const next = safeNext(formData.get("next"));
 
-  if (formData.get("terms") !== "on") {
-    return { error: "Setujui syarat & ketentuan dan kebijakan privasi dulu, ya." };
-  }
   if (!village) {
-    return { error: "Pilih kelurahan asal kamu, atau Luar Cimahi." };
+    return { error: "Pilih kelurahan asal kamu, atau Luar Cimahi.", step: 2 };
+  }
+  if (formData.get("terms") !== "on") {
+    return { error: "Setujui syarat & ketentuan dan kebijakan privasi dulu, ya.", step: 3 };
   }
 
   const supabase = await createClient();
@@ -43,7 +43,10 @@ export async function completeOnboarding(
 
   if (error) {
     if (error.message === "already_onboarded") redirect(next);
-    return { error: ERROR_MESSAGES[error.message] ?? "Profil belum tersimpan. Coba lagi, ya." };
+    const known = ERRORS[error.message];
+    return known
+      ? { error: known.message, step: known.step }
+      : { error: "Profil belum tersimpan. Coba lagi, ya.", step: 3 };
   }
 
   redirect(next);

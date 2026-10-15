@@ -1,8 +1,10 @@
-# Ramein — Brand Identity v1.0
+# Ramein — Brand Identity v1.1
 
-Panduan brand untuk desain dan pengembangan aplikasi. Simpan di repo sebagai `docs/BRAND.md`, lalu tambahkan satu baris ini ke `CLAUDE.md` di bagian Stack:
+Panduan brand untuk desain dan pengembangan aplikasi. `CLAUDE.md` merujuk ke file ini:
 
 > Brand dan UI: ikuti `docs/BRAND.md` (warna, tipografi, logo, gaya bahasa). Jangan membuat warna atau font di luar token di sana.
+
+Perubahan 1.1: UI aplikasi memakai **tema gelap** mengikuti artifact **Ramein UI Mockup** (versi 15 Oktober 2026), dengan font judul **Outfit**. Palet krem v1.0 tetap dipakai untuk materi cetak dan presentasi (bagian 2b).
 
 ## 1. Logo
 
@@ -30,7 +32,7 @@ Posisi dan warna lingkaran tidak boleh ditukar.
 | `png/apple-touch-icon-180.png` | Ikon iOS |
 | `favicon.ico` · `svg/ramein-favicon.svg` | Favicon (versi tanpa titik tengah, tetap jelas di 16–32 px) |
 
-Wordmark di semua file sudah berupa outline, jadi tampil sama walau font belum terpasang.
+Wordmark di semua file sudah berupa outline, jadi tampil sama walau font belum terpasang. Di aplikasi, logo dipakai lewat komponen `Logo` (`components/ui.tsx`): simbol 48 px + wordmark krem `#FAF7F2`.
 
 **Aturan**
 
@@ -39,53 +41,73 @@ Wordmark di semua file sudah berupa outline, jadi tampil sama walau font belum t
 - Jangan memutar, menggepengkan, mengganti warna, menukar posisi lingkaran, mengganti huruf wordmark, atau menambah bayangan dan gradien.
 - Wordmark selalu huruf kecil: **ramein**. Dalam kalimat, tulis nama sebagai "Ramein".
 
-## 2. Warna
+## 2. Warna UI aplikasi (tema gelap)
+
+Sumber: artifact "Ramein UI Mockup". Token didefinisikan di `app/globals.css`; pakai nama token, jangan hex langsung.
 
 | Token | Hex | Pakai untuk |
 | --- | --- | --- |
-| `merchant` | `#F06A2A` | Aksen merchant, poin, voucher. Teks di atasnya selalu `ink` |
-| `merchant-text` | `#B8481A` | Teks oranye di latar terang (kontras ≥ 4.5:1) |
-| `merchant-tint` | `#FDE9DF` | Latar label/kartu merchant dan poin |
-| `komunitas` | `#0F8B6D` | Aksen komunitas, status sukses. Teks putih di atasnya hanya untuk teks tebal ≥ 18 px |
-| `komunitas-text` | `#0B6E57` | Teks hijau di latar terang |
-| `komunitas-tint` | `#E2F3EE` | Latar label komunitas, pesan sukses |
-| `warga` | `#2D4FCF` | XP, level, peringkat, tautan |
-| `warga-tint` | `#E6EBFB` | Latar label XP |
-| `ink` | `#17212B` | Teks utama, tombol utama, latar gelap |
-| `ink-soft` | `#4A5560` | Teks sekunder |
-| `line` | `#E4DED3` | Garis dan border kartu |
-| `cream` | `#FAF7F2` | Latar halaman |
-| `white` | `#FFFFFF` | Kartu, permukaan |
-| `danger` | `#B42318` | Error, aksi berbahaya |
-| `danger-tint` | `#FBEDEB` | Latar pesan error |
+| `bg` | `#0D1024` | Latar halaman |
+| `surface` | `#171B33` | Kartu, input, chip |
+| `surface-deep` | `#12152C` | Navigasi bawah |
+| `line` | `#2A3058` | Garis dan border |
+| `line-strong` | `#3A4072` | Border putus-putus (pilihan khusus, mis. "Luar Cimahi") |
+| `fg` | `#F3F4FA` | Teks utama; latar tombol terang (Google) |
+| `fg-label` | `#C9CCE4` | Label formulir, teks chip |
+| `fg-soft` | `#A3A8C7` | Teks sekunder |
+| `fg-muted` | `#8A8FB4` | Teks redup, ikon nonaktif, judul grup |
+| `cream` | `#FAF7F2` | Wordmark |
+| `primary` | `#5B5BF0` | Tombol utama, chip terpilih |
+| `primary-soft` | `#8F93FF` | Fokus input, progres langkah |
+| `link` | `#A9ACFF` | Tautan dan tombol teks |
+| `hero-from` → `hero-to` | `#4B45E0` → `#6D2FD8` | Gradien kartu level (135°), satu-satunya gradien di UI |
+| `on-hero` | `#E3E1FF` | Teks sekunder di atas kartu level |
+| `avatar` / `avatar-ring` | `#2A2F63` / `#6D5BF0` | Lingkaran inisial pengguna |
+| `xp` | `#5CCBF5` | XP, bar progres level |
+| `points` | `#F7A1C2` | Poin |
+| `hot` | `#F0508A` | Tombol Scan, titik notifikasi |
+| `success` | `#34D399` | Sukses, siap check-in, badge |
+| `warn` | `#F5B544` | Menunggu, peringkat |
+| `danger` / `danger-tint` | `#FF8A8A` / `#3A1620` | Pesan error |
+| `merchant` / `komunitas` / `warga` | `#F06A2A` / `#0F8B6D` / `#2D4FCF` | Warna tiga pihak di logo dan label pihak |
 
-Versi untuk latar gelap: `merchant #F47B42`, `komunitas #1FB08D`, `warga #5B78E6`.
 Warna irisan (`#7E7A2C`, `#9A4E80`, `#1A6AA6`) hanya untuk logo dan ilustrasi, bukan UI.
 
-Porsi: sekitar 60% krem/putih, 25% tinta, 15% tiga warna pihak.
+### 2b. Warna materi cetak dan presentasi (latar terang, v1.0)
+
+`cream #FAF7F2` (latar), `ink #17212B` (teks, tombol), `ink-soft #4A5560`, `line #E4DED3`, `merchant-text #B8481A`, `merchant-tint #FDE9DF`, `komunitas-text #0B6E57`, `komunitas-tint #E2F3EE`, `warga-tint #E6EBFB`, `danger #B42318`, `danger-tint #FBEDEB`. Porsi: sekitar 60% krem/putih, 25% tinta, 15% tiga warna pihak.
 
 ## 3. Tipografi
 
-Satu keluarga: **Plus Jakarta Sans** (Google Fonts, bobot 400, 500, 600, 800).
+Dua keluarga dari Google Fonts:
 
-| Gaya | Ukuran / baris | Bobot | Catatan |
-| --- | --- | --- | --- |
-| display | 40 / 44 | 800 | letter-spacing -0.03em |
-| title | 24 / 30 | 800 | |
-| subtitle | 17 / 24 | 600 | |
-| body | 15 / 22 | 400 | |
-| caption | 13 / 18 | 500 | warna `ink-soft` |
-| label | 12 / 16 | 600 | huruf kapital, letter-spacing 0.08em |
-| number | 32 | 800 | `font-variant-numeric: tabular-nums` untuk XP, poin, peringkat |
+- **Outfit** (500, 600, 700) untuk judul dan angka besar: kelas Tailwind `font-display`.
+- **Plus Jakarta Sans** (400–800) untuk teks lain: bawaan `font-sans`.
+
+| Gaya | Font | Ukuran | Bobot | Catatan |
+| --- | --- | --- | --- | --- |
+| hero | Outfit | 32 / 1.15 | 700 | judul layar masuk |
+| title | Outfit | 28 | 700 | judul layar |
+| section | Outfit | 19 | 600 | judul bagian ("Aktivitasku") |
+| number | Outfit | 34 (XP), 22–24 | 700 | `tabular-nums` untuk XP, poin, peringkat |
+| body | Jakarta | 15 / 1.55 | 400 | |
+| body-sm | Jakarta | 14 / 1.55 | 400 | intro layar |
+| caption | Jakarta | 13 | 500 | warna `fg-soft` |
+| label | Jakarta | 13 | 600 | label formulir, warna `fg-label` |
+| group | Jakarta | 12 | 700 | huruf kapital, letter-spacing 0.06em, warna `fg-muted` |
+| nav | Jakarta | 11 | 600 | navigasi bawah |
 
 ## 4. Elemen UI
 
-- **Tombol**: tinggi 48 px, sudut penuh (`rounded-full`). Utama: latar `ink`, teks `cream`. Sekunder: garis 1.5 px `ink`.
-- **Kartu**: sudut 16 px, border `line`, tanpa bayangan.
-- **Label/chip**: sudut penuh, latar `*-tint`, teks `*-text`.
-- **Ikon**: garis 2 px, ujung membulat (gaya Lucide).
+- **Tombol utama**: tinggi 54 px, sudut 16 px, latar `primary`, teks putih 16 px semibold. **Tombol terang** (Google): latar `fg`, teks `bg`. Kelas siap pakai: `buttonStyles` di `components/styles.ts`.
+- **Input**: tinggi 52 px, sudut 14 px, latar `surface`, border `line`, fokus `primary-soft`.
+- **Kartu**: sudut 18–20 px, latar `surface`, border `line`, tanpa bayangan. Kartu level: sudut 24 px dengan gradien `hero`.
+- **Chip pilihan**: tinggi 44 px, sudut penuh, latar `surface`; terpilih: latar dan border `primary`, teks putih.
+- **Kode OTP**: 6 kotak 52 px, sudut 12 px, latar `bg`, angka Outfit 22 px.
+- **Progres langkah**: 3 bar 5 px; selesai `primary-soft`, belum `line`.
+- **Navigasi bawah**: Beranda, Jelajah, Scan (tombol bulat 60 px `hot` yang menonjol ke atas), Dompet, Profil.
+- **Ikon**: garis 1.8–2 px, ujung membulat (gaya Lucide).
 - **Target sentuh** minimal 44 × 44 px.
-- **Level/badge**: lingkaran dengan cincin `warga`, angka level di tengah.
 
 ## 5. Gaya bahasa
 
@@ -100,75 +122,11 @@ Satu keluarga: **Plus Jakarta Sans** (Google Fonts, bobot 400, 500, 600, 800).
 
 Tagline: **Bikin kota makin rame, bareng-bareng.**
 
-## 6. Kode siap pakai
+## 6. Kode
 
-**`app/globals.css`** (Tailwind v4)
-
-```css
-@import "tailwindcss";
-
-@theme {
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-
-  --color-merchant: #F06A2A;
-  --color-merchant-text: #B8481A;
-  --color-merchant-tint: #FDE9DF;
-  --color-komunitas: #0F8B6D;
-  --color-komunitas-text: #0B6E57;
-  --color-komunitas-tint: #E2F3EE;
-  --color-warga: #2D4FCF;
-  --color-warga-tint: #E6EBFB;
-  --color-ink: #17212B;
-  --color-ink-soft: #4A5560;
-  --color-line: #E4DED3;
-  --color-cream: #FAF7F2;
-  --color-danger: #B42318;
-  --color-danger-tint: #FBEDEB;
-
-  --radius-card: 16px;
-}
-
-body {
-  background: var(--color-cream);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-}
-```
-
-**`app/layout.tsx`** (font)
-
-```tsx
-import { Plus_Jakarta_Sans } from "next/font/google";
-
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "800"],
-  variable: "--font-sans",
-});
-// <html lang="id" className={jakarta.variable}>
-```
-
-**`app/manifest.ts`** (PWA)
-
-```ts
-import type { MetadataRoute } from "next";
-
-export default function manifest(): MetadataRoute.Manifest {
-  return {
-    name: "Ramein",
-    short_name: "Ramein",
-    description: "Bikin kota makin rame, bareng-bareng.",
-    start_url: "/",
-    display: "standalone",
-    background_color: "#FAF7F2",
-    theme_color: "#17212B",
-    icons: [
-      { src: "/icons/ramein-ikon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/icons/ramein-ikon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: "/icons/ramein-ikon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
-    ],
-  };
-}
-```
+- Token warna dan font: `app/globals.css` (`@theme`).
+- Font: `app/layout.tsx` (`Plus_Jakarta_Sans` → `--font-jakarta`, `Outfit` → `--font-outfit`).
+- PWA: `app/manifest.ts` dengan `background_color` dan `theme_color` `#0D1024`.
+- Komponen dasar: `components/ui.tsx` (Logo, SubmitButton, ErrorMessage, GoogleIcon), `components/styles.ts` (kelas tombol, input, kartu), `components/otp-input.tsx`, `components/bottom-nav.tsx`.
 
 Taruh `favicon.ico` di `app/`, `apple-touch-icon-180.png` sebagai `app/apple-icon.png`, ikon PNG di `public/icons/`, dan SVG logo di `public/brand/`.

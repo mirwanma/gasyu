@@ -9,6 +9,7 @@ export type LoginState = {
   step: "email" | "code";
   email?: string;
   error?: string;
+  sentAt?: number; // waktu kode terakhir dikirim, untuk mengulang hitung mundur
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -32,12 +33,13 @@ export async function loginWithEmail(_prev: LoginState, formData: FormData): Pro
     if (error) {
       return { step: "email", email, error: friendlyAuthError(error.status) };
     }
-    return { step: "code", email };
+    return { step: "code", email, sentAt: Date.now() };
   }
 
+  const sentAt = Number(formData.get("sent_at")) || undefined;
   const token = String(formData.get("token") ?? "").replace(/\s/g, "");
   if (!/^\d{6}$/.test(token)) {
-    return { step: "code", email, error: "Kodenya 6 angka. Cek lagi email kamu, ya." };
+    return { step: "code", email, sentAt, error: "Kodenya 6 angka. Cek lagi email kamu, ya." };
   }
 
   const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
@@ -46,7 +48,7 @@ export async function loginWithEmail(_prev: LoginState, formData: FormData): Pro
       error.status === 429
         ? friendlyAuthError(429)
         : "Kode salah atau sudah kedaluwarsa. Coba lagi, atau minta kode baru.";
-    return { step: "code", email, error: message };
+    return { step: "code", email, sentAt, error: message };
   }
 
   // Proxy akan mengarahkan ke onboarding jika profil belum lengkap.
