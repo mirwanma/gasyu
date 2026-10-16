@@ -4,8 +4,8 @@ Panduan kerja untuk Claude di proyek ini. Baca seluruh file ini di awal setiap s
 
 **Sumber kebenaran** (baca bagian yang relevan sebelum menulis kode):
 
-- `docs/ALUR-SISTEM.md` — alur, peran, aturan bisnis (v0.7)
-- `docs/DESAIN-DATABASE.md` — tabel, enum, fungsi, RLS, urutan migrasi (v0.7)
+- `docs/ALUR-SISTEM.md` — alur, peran, aturan bisnis (v0.8)
+- `docs/DESAIN-DATABASE.md` — tabel, enum, fungsi, RLS, urutan migrasi (v0.8)
 - `docs/BRAND.md` — warna, tipografi, logo, gaya bahasa
 - PRD (PDF milik pemilik proyek, tidak disimpan di repo)
 
@@ -49,6 +49,7 @@ Pilot: Kota Cimahi (3 kecamatan, 15 kelurahan). Struktur wilayah harus generik u
 | Poin | mata uang reward, dari budget merchant | `point_ledger`, `point_allocations` |
 | Reward / voucher | hadiah dari merchant | `rewards`, `redemptions` |
 | Event Gasyu | event buatan admin, host organizer `platform` | `organizers.type = 'platform'` |
+| Saran | saran warga untuk merchant/komunitas, dibalas tim | `suggestions` |
 
 ## Aturan yang tidak boleh dilanggar
 
@@ -115,4 +116,4 @@ docs/
 
 Ikuti `docs/DESAIN-DATABASE.md` bagian 9 (irisan 1–11).
 
-Irisan saat ini: **selesai (1–11)** — pemolesan, E2E, dan rilis pilot — perbarui baris ini setiap pindah irisan.
+Irisan saat ini: **selesai (1–11)** + fitur saran warga (migrasi 0014) — pemolesan, E2E, dan rilis pilot — perbarui baris ini setiap pindah irisan.

@@ -9,6 +9,7 @@ import { SubmitButton } from "@/components/ui";
 import { removeTeamMember, resubmitOrganizer } from "@/lib/actions/organizer";
 import { ROLE_LABELS, STATUS_LABELS, getVillageOptions, type MemberRole } from "@/lib/data/organizers";
 import { formatDate } from "@/lib/format";
+import { countNewSuggestions } from "@/lib/data/suggestions";
 import { createClient } from "@/lib/supabase/server";
 
 type Kind = "merchant" | "community";
@@ -20,7 +21,8 @@ export function LainnyaPage({ id, type, akses }: { id: string; type: Kind; akses
   const base = basePath(type, id);
   return (
     <OrganizerShell organizerId={id} type={type} active="Lainnya" title="Lainnya">
-      {({ org }) => {
+      {async ({ org }) => {
+        const newSuggestions = await countNewSuggestions(id);
         // Staf/pengurus tidak melihat Tim dan Reward (lihat ALUR-SISTEM bagian 2).
         const isLeader = org.role === "owner" || org.role === "chair";
         return (
@@ -39,6 +41,7 @@ export function LainnyaPage({ id, type, akses }: { id: string; type: Kind; akses
               ...(type === "merchant" && isLeader ? [{ label: "Reward & budget poin", href: `${base}/reward` }] : []),
               ...(type === "merchant" ? [{ label: "Kasir", href: `${base}/kasir` }] : []),
               { label: "Kolaborasi", href: `${base}/kolaborasi` },
+              { label: newSuggestions > 0 ? `Saran warga · ${newSuggestions} baru` : "Saran warga", href: `${base}/saran` },
             ]}
           />
           <Link href="/" className="flex h-12 items-center justify-center rounded-2xl border border-line-strong text-[14px] font-semibold text-fg">

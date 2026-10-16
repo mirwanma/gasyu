@@ -184,6 +184,10 @@ async function ProfileContent() {
           Komunitas saya
           <Icon name="chevron" size={16} className="text-fg-muted" />
         </a>
+        <a href="/saran" className="flex h-[52px] items-center justify-between border-b border-line px-4 text-[14px] font-medium text-fg">
+          Saran saya
+          <Icon name="chevron" size={16} className="text-fg-muted" />
+        </a>
         <a href="/peringkat" className="flex h-[52px] items-center justify-between border-b border-line px-4 text-[14px] font-medium text-fg">
           Peringkat
           <Icon name="chevron" size={16} className="text-fg-muted" />

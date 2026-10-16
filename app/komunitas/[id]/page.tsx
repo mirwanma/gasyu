@@ -6,6 +6,7 @@ import { formatSchedule } from "@/lib/activities";
 import { listOrganizerActivities } from "@/lib/data/activities";
 import { getCommunityDashboard } from "@/lib/data/dashboards";
 import { createClient } from "@/lib/supabase/server";
+import { countNewSuggestions } from "@/lib/data/suggestions";
 
 // Dashboard komunitas, mengikuti artboard "Komunitas · Dashboard".
 // Angka dari v_community_dashboard dan v_community_member_stats.
@@ -28,10 +29,11 @@ async function Dashboard({ params }: Pick<PageProps<"/komunitas/[id]">, "params"
 
 async function DashboardBody({ id, org }: { id: string; org: { status: string } }) {
   const supabase = await createClient();
-  const [{ data: stats }, d, activities] = await Promise.all([
+  const [{ data: stats }, d, activities, newSuggestions] = await Promise.all([
     supabase.from("v_community_member_stats").select("*").eq("community_id", id).maybeSingle(),
     getCommunityDashboard(id),
     listOrganizerActivities(id),
+    countNewSuggestions(id),
   ]);
   const s = (stats ?? {}) as { active_members?: number; pending_requests?: number; new_members_month?: number; attending_members_30d?: number };
   const active = Number(s.active_members ?? 0);
@@ -48,6 +50,7 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string } 
   if (d && d.partner_invites_pending > 0) todos.push({ n: d.partner_invites_pending, title: "Undangan kolaborasi", sub: "Jawab di menu Kolaborasi", href: `${base}/kolaborasi`, tone: "primary" });
   if (d && d.awaiting_partner_activities > 0) todos.push({ n: d.awaiting_partner_activities, title: "Menunggu jawaban partner", sub: "Aktivitas belum bisa diajukan ke tim Gasyu", href: `${base}/aktivitas`, tone: "info" });
   if (d && d.draft_activities > 0) todos.push({ n: d.draft_activities, title: "Draft belum diajukan", sub: "Lengkapi checkpoint lalu ajukan", href: `${base}/aktivitas`, tone: "info" });
+  if (newSuggestions > 0) todos.push({ n: newSuggestions, title: "Saran baru dari warga", sub: "Baca dan balas di menu Saran warga", href: `${base}/saran`, tone: "primary" });
 
   return (
     <>

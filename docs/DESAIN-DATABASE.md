@@ -1,6 +1,7 @@
 # Gasyu — Desain Database
 
-Versi 0.7 · 16 Oktober 2026 · Supabase (Postgres 15+)
+Versi 0.8 · 16 Oktober 2026 · Supabase (Postgres 15+)
+Perubahan 0.8: saran warga (`suggestions`, enum `suggestion_category` dan `suggestion_status`, view `v_organizer_suggestions`, fungsi `submit_suggestion` dan `respond_suggestion`).
 Perubahan 0.7: kolom `activities.residency_rule` (enum `residency_rule`) dan helper `is_resident_of`.
 Perubahan 0.6: pengaturan tampil misi (`reveal_mode`, `reveal_at`, `prerequisite_mission_id`, `show_teaser`, `revealed_at`), fungsi `reveal_mission` dan `get_activity_missions`.
 Perubahan 0.5: event buatan admin (tipe organizer `platform`, sumber partner `admin`, fungsi `admin_add_partner`, `leave_activity`, `set_partner_budget`).
@@ -431,6 +432,8 @@ erDiagram
 | `redemption_status` | active, used, expired, refunded |
 | `flag_kind` | out_of_radius, impossible_travel, shared_device, burst_accounts, manual |
 | `flag_status` | open, dismissed, actioned |
+| `suggestion_category` | activity, product, service, place, other |
+| `suggestion_status` | new, in_progress, done, archived |
 
 ---
 
@@ -895,7 +898,9 @@ Unik: `(activity_id, user_id, local_date)`.
 
 **fraud_flags**: `id`, `user_id`, `checkin_id` opsional, `mission_completion_id` opsional, `kind flag_kind`, `detail jsonb`, `status flag_status` default open, `reviewed_by`, `reviewed_at`.
 
-**notifications**: `id`, `user_id`, `kind text` (partner_invite, application_received, group_registration, activity_approved, organizer_verified, badge_awarded, voucher_expiring, partner_added_by_admin, partner_left, membership_requested, membership_approved, membership_rejected, membership_removed, community_new_activity, payment_proof_submitted, payment_confirmed, payment_rejected, payment_expired, payment_refund_due, mission_proof_submitted, mission_approved, mission_rejected, mission_revealed), `payload jsonb`, `read_at`.
+**notifications**: `id`, `user_id`, `kind text` (partner_invite, application_received, group_registration, activity_approved, organizer_verified, badge_awarded, voucher_expiring, partner_added_by_admin, partner_left, membership_requested, membership_approved, membership_rejected, membership_removed, community_new_activity, payment_proof_submitted, payment_confirmed, payment_rejected, payment_expired, payment_refund_due, mission_proof_submitted, mission_approved, mission_rejected, mission_revealed, suggestion_received, suggestion_answered), `payload jsonb`, `read_at`.
+
+**suggestions** — saran warga untuk merchant/komunitas: `id`, `organizer_id` (merchant/komunitas approved), `user_id` pengirim, `category suggestion_category`, `body text` (10–1.000 karakter), `is_anonymous boolean`, `status suggestion_status` default new, `reply text` opsional, `replied_at`, `replied_by`, `status_changed_at`, `created_at`, `updated_at`. Ditulis hanya lewat fungsi. Tim membaca lewat `v_organizer_suggestions`.
 
 **admin_actions** — jejak audit tindakan admin: `id`, `admin_id`, `action text`, `target_table text`, `target_id uuid`, `note text`.
 
@@ -925,6 +930,7 @@ Unik: `(activity_id, user_id, local_date)`.
 | mission.code_max_attempts / mission.code_window_minutes | 5 / 15 |
 | payment.min_price_idr | 1000 |
 | payment.default_window_hours | 24 |
+| suggestion.daily_limit_per_organizer | 3 |
 
 ---
 
@@ -946,6 +952,7 @@ Unik: `(activity_id, user_id, local_date)`.
 | `v_mission_stats` | per misi: diselesaikan, menunggu tinjauan, ditolak, tingkat penyelesaian | dashboard organizer, halaman kelola misi |
 | `v_activity_payment_stats` | per aktivitas berbayar: jumlah `unpaid`, `awaiting_confirmation`, `paid`, `refunded`, dan perkiraan nilai (jumlah × `price_idr`, hanya informasi) | dashboard organizer, admin (pembatalan belum refund) |
 | `v_community_member_stats` | `community_id`, `active_members`, `pending_requests`, `new_members_month`, `attending_members_30d` (member aktif yang check-in di aktivitas komunitas itu 30 hari terakhir) | dashboard komunitas, halaman profil komunitas (hanya `active_members` yang publik) |
+| `v_organizer_suggestions` | saran untuk satu organizer; `user_id`, `nickname`, `village_name` kosong jika anonim; nickname penanggap; disaring `is_team_member()` atau admin | halaman Saran warga, to-do dashboard |
 | `v_organizer_reputation` | (tanpa organizer `platform`) `organizer_id`, skor dari hadir, tingkat penyelesaian, jumlah kolaborasi (90 hari terakhir) | papan kolaborasi, peringkat organizer |
 | `v_merchant_dashboard` | per merchant: aktivitas berjalan, peserta, check-in hari ini, warga baru vs kembali, pembayaran menunggu, bukti misi menunggu, budget poin terpakai/sisa, voucher dipakai per outlet | dashboard merchant |
 | `v_community_dashboard` | per komunitas: aktivitas berjalan, peserta, check-in hari ini, pembayaran menunggu, bukti misi menunggu, permintaan member menunggu | dashboard komunitas |
@@ -972,6 +979,8 @@ Semua fungsi yang mengubah XP, poin, status, atau hak akses berjenis `security d
 | `leave_community(community_id)` | warga | left; ditolak jika pemanggil masih chair |
 | `set_join_policy(community_id, policy)` | chair | ubah `community_profiles.join_policy` |
 | `review_organizer(organizer_id, approve, note)` | admin | approved/rejected + `admin_actions` |
+| `submit_suggestion(organizer_id, category, body, is_anonymous)` | warga | cek tujuan approved dan bukan tim sendiri, batas harian; simpan + notifikasi ke tim |
+| `respond_suggestion(suggestion_id, status, reply)` | tim organizer | ubah status (tidak ke `new`) dan/atau balasan; notifikasi ke pengirim jika ada balasan baru atau status jadi in_progress/done |
 | `submit_activity(activity_id)` | owner/chair host | validasi (termasuk harga dan misi), `awaiting_partners` atau `in_review`, tutup open call |
 | `review_activity(activity_id, approve, note)` | admin (tidak dipakai untuk host `platform`, yang langsung published lewat `submit_activity`) | published atau kembali ke draft; saat published, kirim `community_new_activity` ke member aktif komunitas host |
 | `cancel_activity(activity_id, reason)` | host/admin | cancelled + notifikasi peserta; peserta `paid` mendapat `payment_refund_due` |
@@ -1052,6 +1061,7 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 | monthly_village_winners | R | R | R | R |
 | fraud_flags, admin_actions | - | - | - | R, U |
 | notifications | R, U (read_at) miliknya | - | - | R |
+| suggestions | R miliknya; I fn | - | R lewat `v_organizer_suggestions` (tanpa identitas jika anonim); U fn | R |
 | app_settings | R | R | R | R, U |
 
 **Catatan privasi antar-partner.** Policy `participations` dan `checkins` untuk tim organizer hanya mengizinkan baris yang `checkins.partner_organizer_id` = organizer mereka. Host melihat semua peserta yang mendaftar, tetapi partner lain hanya melihat peserta yang pernah check-in di checkpoint mereka. Angka total untuk semua partner disajikan lewat `v_activity_stats` yang hanya berisi agregat.
@@ -1116,6 +1126,9 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 | 10 Misi | `0010_missions.sql` | enum misi, `target_kind` baru, `activity_missions`, `mission_completions`, `mission_code_attempts`, bucket `mission-proofs`, fungsi misi, `evaluate_completion` (menggantikan logika selesai di `perform_checkin`), `v_participation_missions`, `v_mission_stats`, kolom dan fungsi tampil misi (`reveal_mission`, `get_activity_missions`), cron `prune_code_attempts` dan `reveal_scheduled_missions` |
 | 11 Aktivitas berbayar | `0011_paid_activities.sql` | kolom bayar di `activities` dan `participations`, enum `payment_status`, bucket `payment-proofs`, fungsi bayar, cek bayar di `perform_checkin` dan `complete_mission`, `v_activity_payment_stats`, cron `expire_unpaid_participations` |
 
+| Pengerasan | `0012_hardening.sql` | cabut hak `anon`/`public` dari fungsi security definer, kunci `search_path` |
+| Ganti nama | `0013_rename_gasyu.sql` | organizer platform dan teks badge menjadi Gasyu |
+| Saran warga | `0014_suggestions.sql` | enum saran, `suggestions`, `v_organizer_suggestions`, `submit_suggestion`, `respond_suggestion`, `app_settings` batas harian |
 Setiap migrasi membawa RLS policy untuk tabel barunya dan file uji SQL sederhana (`supabase/tests/`) untuk aturan yang tidak boleh dilanggar.
 
 ---

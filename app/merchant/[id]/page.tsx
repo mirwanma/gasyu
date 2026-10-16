@@ -3,6 +3,7 @@ import { Kpi, OrganizerShell, StatusBanner, TodoItem } from "@/components/organi
 import { cardClass } from "@/components/styles";
 import { getMerchantDashboard, getReputation, listOutletVouchers } from "@/lib/data/dashboards";
 import { formatDate } from "@/lib/format";
+import { countNewSuggestions } from "@/lib/data/suggestions";
 
 // Dashboard merchant, mengikuti artboard "Merchant · Dashboard".
 // Semua angka dari v_merchant_dashboard, v_merchant_outlet_vouchers, v_organizer_reputation.
@@ -24,7 +25,7 @@ async function Dashboard({ params }: Pick<PageProps<"/merchant/[id]">, "params">
 }
 
 async function DashboardBody({ id, org }: { id: string; org: { status: string; name: string } }) {
-  const [d, outlets, rep] = await Promise.all([getMerchantDashboard(id), listOutletVouchers(id), getReputation(id)]);
+  const [d, outlets, rep, newSuggestions] = await Promise.all([getMerchantDashboard(id), listOutletVouchers(id), getReputation(id), countNewSuggestions(id)]);
   const base = `/merchant/${id}`;
   if (!d) {
     return (
@@ -45,6 +46,7 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string; n
   if (d.partner_invites_pending > 0) todos.push({ n: d.partner_invites_pending, title: "Undangan kolaborasi", sub: "Jawab di menu Kolaborasi", href: `${base}/kolaborasi`, tone: "primary" });
   if (d.partner_budget_empty > 0) todos.push({ n: d.partner_budget_empty, title: "Isi budget poin", sub: "Kamu partner di aktivitas lain tanpa budget poin", href: `${base}/kolaborasi`, tone: "primary" });
   if (d.draft_activities > 0) todos.push({ n: d.draft_activities, title: "Draft belum diajukan", sub: "Lengkapi checkpoint lalu ajukan ke tim Gasyu", href: `${base}/aktivitas` });
+  if (newSuggestions > 0) todos.push({ n: newSuggestions, title: "Saran baru dari warga", sub: "Baca dan balas di menu Saran warga", href: `${base}/saran`, tone: "primary" });
 
   return (
     <>

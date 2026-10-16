@@ -44,6 +44,7 @@ delete from public.collab_applications where organizer_id in (select id from dm_
 delete from public.collab_posts where organizer_id in (select id from dm_orgs) or activity_id in (select id from dm_acts);
 delete from public.activity_partners where activity_id in (select id from dm_acts) or organizer_id in (select id from dm_orgs);
 delete from public.activities where id in (select id from dm_acts);
+delete from public.suggestions where user_id in (select id from dm_users) or organizer_id in (select id from dm_orgs);
 delete from public.notifications where user_id in (select id from dm_users);
 delete from public.admin_actions where admin_id in (select id from dm_users) or target_id in (select id from dm_orgs) or target_id in (select id from dm_acts);
 delete from public.merchant_outlets where organizer_id in (select id from dm_orgs);
