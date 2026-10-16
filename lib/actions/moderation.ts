@@ -1,0 +1,68 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+
+// Aksi moderasi admin (irisan 8). Semua keputusan dieksekusi fungsi database
+// security definer yang memeriksa is_admin(); di sini hanya meneruskan form.
+
+const ERRORS: Record<string, string> = {
+  not_allowed: "Hanya admin yang bisa melakukan ini.",
+  invalid_checkin: "Check-in tidak ditemukan atau sudah ditinjau.",
+  already_rejected: "Check-in ini sudah ditolak sebelumnya.",
+  flag_unavailable: "Laporan ini sudah ditinjau.",
+  invalid_action: "Tindakan tidak dikenal.",
+  cannot_suspend_self: "Kamu tidak bisa membekukan akunmu sendiri.",
+  cannot_suspend_admin: "Akun admin tidak bisa dibekukan dari sini.",
+  invalid_user: "Pengguna tidak ditemukan.",
+  invalid_organizer: "Penyelenggara tidak ditemukan.",
+  already_suspended: "Penyelenggara sudah dibekukan.",
+  not_suspended: "Penyelenggara tidak sedang dibekukan.",
+};
+
+function message(error: { message: string } | null) {
+  if (!error) return null;
+  const key = Object.keys(ERRORS).find((k) => error.message.includes(k));
+  return key ? ERRORS[key] : "Tindakan gagal. Coba lagi.";
+}
+
+function back(path: string, error: { message: string } | null, ok: string) {
+  revalidatePath("/admin", "layout");
+  const msg = message(error);
+  redirect(`${path}${path.includes("?") ? "&" : "?"}${msg ? `error=${encodeURIComponent(msg)}` : `hasil=${ok}`}`);
+}
+
+export async function approveCheckin(formData: FormData) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("approve_checkin", { p_checkin_id: String(formData.get("checkin_id")), p_note: String(formData.get("note") ?? "") || null });
+  back("/admin/moderasi", error, "sah");
+}
+
+export async function reverseCheckin(formData: FormData) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("reverse_checkin", { p_checkin_id: String(formData.get("checkin_id")), p_note: String(formData.get("note") ?? "") || null });
+  back("/admin/moderasi", error, "balik");
+}
+
+export async function reviewFlag(formData: FormData) {
+  const supabase = await createClient();
+  const action = String(formData.get("flag_action"));
+  const { error } = await supabase.rpc("review_fraud_flag", { p_flag_id: String(formData.get("flag_id")), p_action: action, p_note: String(formData.get("note") ?? "") || null });
+  back("/admin/moderasi", error, action);
+}
+
+export async function suspendUser(formData: FormData) {
+  const supabase = await createClient();
+  const suspend = formData.get("suspend") === "1";
+  const { error } = await supabase.rpc("suspend_user", { p_user_id: String(formData.get("user_id")), p_suspend: suspend, p_note: String(formData.get("note") ?? "") || null });
+  const kembali = String(formData.get("kembali") ?? "/admin/pengguna");
+  back(kembali, error, suspend ? "beku" : "aktif");
+}
+
+export async function suspendOrganizer(formData: FormData) {
+  const supabase = await createClient();
+  const suspend = formData.get("suspend") === "1";
+  const { error } = await supabase.rpc("suspend_organizer", { p_organizer_id: String(formData.get("organizer_id")), p_suspend: suspend, p_note: String(formData.get("note") ?? "") || null });
+  back("/admin/pengguna?tab=penyelenggara", error, suspend ? "beku" : "aktif");
+}

@@ -14,6 +14,7 @@ import { InvitePartnerForm } from "@/components/organizer/collab-forms";
 import { listActivityPartners, listApprovedOrganizers, listMyPartnerships } from "@/lib/data/collab";
 import { OrganizerAvatar } from "@/components/avatar";
 import { getActivityBudget } from "@/lib/data/rewards";
+import { getActivityStats, listPartnerStats } from "@/lib/data/dashboards";
 import { DIFFICULTY_LABELS, JOIN_MODE_LABELS, PARTICIPATION_LABELS, PAYMENT_LABELS, formatPrice, formatSchedule, targetLabel, typeLabel, type ParticipationStatus, type PaymentStatus } from "@/lib/activities";
 import { getActivityCard, getCheckpoints, listOrganizerActivities } from "@/lib/data/activities";
 import { getVillageOptions } from "@/lib/data/organizers";
@@ -180,6 +181,8 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
     ? await Promise.all([getActivityBudget(aid, id), supabase.from("activity_partners").select("id").eq("activity_id", aid).eq("organizer_id", id).maybeSingle()])
     : [null, { data: null }];
   const pointsEditable = ["draft", "awaiting_partners"].includes(card.status);
+  const live = ["running", "ended", "settled"].includes(card.status);
+  const [stats, partnerStats] = live ? await Promise.all([getActivityStats(aid), listPartnerStats(aid)]) : [null, []];
 
   return (
     <>
@@ -240,6 +243,43 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
           </div>
         ))}
       </div>
+
+      {stats && (
+        <section className={`${cardClass} flex flex-col gap-3 p-4`}>
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-display text-[18px] font-semibold">Statistik</h2>
+            <span className="text-[12px] text-fg-soft">{stats.checkins_today} check-in hari ini</span>
+          </div>
+          <div className="grid grid-cols-4 gap-2 text-center">
+            {[
+              [stats.attended, "hadir"],
+              [stats.completed, "selesai"],
+              [stats.new_citizens, "warga baru"],
+              [stats.returning_citizens, "kembali"],
+            ].map(([v, k]) => (
+              <div key={k} className="flex flex-col gap-0.5 rounded-xl bg-bg px-2 py-2.5">
+                <span className="font-display text-[20px] font-semibold">{v}</span>
+                <span className="text-[11px] text-fg-soft">{k}</span>
+              </div>
+            ))}
+          </div>
+          {stats.checkins_flagged > 0 && <span className="text-[12px] text-warn">{stats.checkins_flagged} check-in di luar radius menunggu tinjauan tim Ramein.</span>}
+          {partnerStats.length > 1 && (
+            <div className="flex flex-col gap-1.5 border-t border-line pt-3">
+              {partnerStats.map((p) => (
+                <div key={p.organizer_id} className="flex items-center justify-between text-[12px]">
+                  <span className="font-semibold">
+                    {p.organizer_name} <span className="font-normal text-fg-soft">· {p.role}</span>
+                  </span>
+                  <span className="text-fg-soft">
+                    {p.checkins} check-in · {p.citizens} warga{p.organizer_type === "merchant" ? ` · ${p.vouchers_used}/${p.vouchers_redeemed} voucher` : ""}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="flex flex-col gap-2.5">
         <div className="flex items-baseline justify-between">

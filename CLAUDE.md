@@ -115,4 +115,4 @@ docs/
 
 Ikuti `docs/DESAIN-DATABASE.md` bagian 9 (irisan 1–11).
 
-Irisan saat ini: **8 (Dashboard)** — Irisan 1–7 selesai — perbarui baris ini setiap pindah irisan.
+Irisan saat ini: **9 (Leaderboard & badge)** — Irisan 1–8 selesai — perbarui baris ini setiap pindah irisan.

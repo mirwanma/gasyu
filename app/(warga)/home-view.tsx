@@ -16,6 +16,7 @@ export function HomeView({
   unread,
   myActivities,
   wallet,
+  rank,
 }: {
   nickname: string;
   villageName?: string;
@@ -25,6 +26,7 @@ export function HomeView({
   unread: number;
   myActivities: { card: Card; participation: Participation }[];
   wallet: { balance: number; activeVouchers: number; expiring30d: number };
+  rank?: { village: number | null; city: number | null; xpMonth: number };
 }) {
   const level = levelFor(totalXp, levels);
   const currentMin = levels.find((row) => row.level === level.level)?.min_xp ?? 0;
@@ -77,6 +79,17 @@ export function HomeView({
             <span>{villageName ? `Kel. ${villageName}` : "Luar Cimahi"}</span>
           </div>
         </div>
+        {rank && rank.xpMonth > 0 && (
+          <div className="flex items-center justify-between rounded-2xl bg-[#0D1024]/35 px-3.5 py-2.5 text-[12px] text-on-hero">
+            <span>
+              Bulan ini <b className="text-[#F3F4FA]">{rank.xpMonth.toLocaleString("id-ID")} XP</b>
+            </span>
+            <span>
+              {rank.village ? `#${rank.village} di ${villageName}` : rank.city ? `#${rank.city} se-Cimahi` : "Luar leaderboard kelurahan"}
+              {rank.village && rank.city ? ` · #${rank.city} kota` : ""}
+            </span>
+          </div>
+        )}
       </section>
 
       <a href="/dompet" className={`${cardClass} flex items-center gap-4 p-4 text-fg`}>

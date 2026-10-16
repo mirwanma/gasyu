@@ -20,9 +20,18 @@ async function AdminGuard() {
   const user = await getCurrentUser();
   if (!user?.isAdmin) redirect("/profil?akses=admin");
   const supabase = await createClient();
-  const [{ count: pendingOrganizers }, { count: pendingActivities }] = await Promise.all([
+  const [{ count: pendingOrganizers }, { count: pendingActivities }, { count: flaggedCheckins }, { count: openFlags }] = await Promise.all([
     supabase.from("organizers").select("id", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("activities").select("id", { count: "exact", head: true }).eq("status", "in_review"),
+    supabase.from("checkins").select("id", { count: "exact", head: true }).eq("review_status", "flagged"),
+    supabase.from("fraud_flags").select("id", { count: "exact", head: true }).eq("status", "open").neq("kind", "out_of_radius"),
   ]);
-  return <AdminSidebar pendingOrganizers={pendingOrganizers ?? 0} pendingActivities={pendingActivities ?? 0} nickname={user.nickname} />;
+  return (
+    <AdminSidebar
+      pendingOrganizers={pendingOrganizers ?? 0}
+      pendingActivities={pendingActivities ?? 0}
+      openFlags={(flaggedCheckins ?? 0) + (openFlags ?? 0)}
+      nickname={user.nickname}
+    />
+  );
 }

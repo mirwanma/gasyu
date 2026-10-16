@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { HomeView } from "./home-view";
 import { BottomNav, CITIZEN_NAV } from "@/components/bottom-nav";
 import { listMyActivities } from "@/lib/data/activities";
+import { getCitizenDashboard } from "@/lib/data/dashboards";
 import { getWallet, listMyVouchers } from "@/lib/data/rewards";
 import { getCurrentUser, getUnreadCount } from "@/lib/data/user";
 import { greetingFor } from "@/lib/format";
@@ -27,13 +28,14 @@ async function CitizenHome() {
   if (!user) return null;
   const supabase = await createClient();
 
-  const [{ data: xpRows }, { data: levels }, unread, myActivities, wallet, vouchers] = await Promise.all([
+  const [{ data: xpRows }, { data: levels }, unread, myActivities, wallet, vouchers, dashboard] = await Promise.all([
     supabase.from("xp_ledger").select("amount").eq("user_id", user.id),
     supabase.from("levels").select("level, name, min_xp"),
     getUnreadCount(user.id),
     listMyActivities(user.id),
     getWallet(),
     listMyVouchers(user.id),
+    getCitizenDashboard(),
   ]);
 
   return (
@@ -46,6 +48,7 @@ async function CitizenHome() {
       unread={unread}
       myActivities={myActivities}
       wallet={{ balance: wallet.balance, activeVouchers: vouchers.filter((v) => v.status === "active").length, expiring30d: wallet.expiring_30d }}
+      rank={dashboard ? { village: dashboard.rank_village, city: dashboard.rank_city, xpMonth: dashboard.xp_month } : undefined}
     />
   );
 }
