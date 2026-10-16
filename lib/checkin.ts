@@ -10,9 +10,14 @@ export type CheckinResult = {
   distance_m: number | null;
   flagged: boolean;
   completed: boolean;
+  target_scope: "individual" | "group";
+  progress: number;
+  group_progress: number | null;
+  target_count: number;
   xp_base: number;
   xp_first_visit: number;
   xp_collab: number;
+  xp_group: number;
   xp_total: number;
   total_xp: number;
 };

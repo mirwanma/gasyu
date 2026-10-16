@@ -1,6 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import type { ActivityStatus, ActivityType, Audience, JoinMode, PaymentStatus, ParticipationStatus, ResidencyRule } from "@/lib/activities";
+import type { ActivityStatus, ActivityType, Audience, Difficulty, JoinMode, PaymentStatus, ParticipationStatus, ResidencyRule, TargetKind, TargetScope } from "@/lib/activities";
 
 export type ActivityCard = {
   id: string;
@@ -14,7 +14,7 @@ export type ActivityCard = {
   starts_at: string;
   ends_at: string;
   quota: number | null;
-  difficulty: string | null;
+  difficulty: Difficulty | null;
   xp_base: number;
   points_per_completion: number;
   join_mode: JoinMode;
@@ -32,6 +32,11 @@ export type ActivityCard = {
   scope_region_level: string | null;
   seats_taken: number;
   partner_count: number;
+  target_scope: TargetScope;
+  group_min: number | null;
+  group_max: number | null;
+  target_kind: TargetKind | null;
+  target_count: number | null;
 };
 
 export type Checkpoint = {
@@ -49,6 +54,7 @@ export type Checkpoint = {
 export type Participation = {
   id: string;
   activity_id: string;
+  group_id: string | null;
   status: ParticipationStatus;
   payment_status: PaymentStatus;
   payment_due_at: string | null;
@@ -105,7 +111,7 @@ export async function getMyParticipation(activityId: string, userId: string): Pr
   const supabase = await createClient();
   const { data } = await supabase
     .from("participations")
-    .select("id, activity_id, status, payment_status, payment_due_at, progress")
+    .select("id, activity_id, group_id, status, payment_status, payment_due_at, progress")
     .eq("activity_id", activityId)
     .eq("user_id", userId)
     .maybeSingle();
@@ -117,7 +123,7 @@ export async function listMyActivities(userId: string) {
   const supabase = await createClient();
   const { data: parts } = await supabase
     .from("participations")
-    .select("id, activity_id, status, payment_status, progress")
+    .select("id, activity_id, group_id, status, payment_status, progress")
     .eq("user_id", userId)
     .in("status", ["invited", "registered", "in_progress", "completed"]);
   const ids = (parts ?? []).map((p) => p.activity_id);

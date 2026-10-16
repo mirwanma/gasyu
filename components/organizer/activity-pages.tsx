@@ -8,7 +8,7 @@ import { OrganizerShell, type OrganizerContext } from "@/components/organizer/sh
 import { cardClass, chipClass, smallButton, tagClass, textareaClass } from "@/components/styles";
 import { SubmitButton } from "@/components/ui";
 import { changeActivityStatus, toggleCheckpoint } from "@/lib/actions/activities";
-import { PARTICIPATION_LABELS, PAYMENT_LABELS, formatPrice, formatSchedule, typeLabel, type ParticipationStatus, type PaymentStatus } from "@/lib/activities";
+import { DIFFICULTY_LABELS, JOIN_MODE_LABELS, PARTICIPATION_LABELS, PAYMENT_LABELS, formatPrice, formatSchedule, targetLabel, typeLabel, type ParticipationStatus, type PaymentStatus } from "@/lib/activities";
 import { getActivityCard, getCheckpoints, listOrganizerActivities } from "@/lib/data/activities";
 import { getVillageOptions } from "@/lib/data/organizers";
 import { formatDateTime, timeAgo } from "@/lib/format";
@@ -85,7 +85,7 @@ export function AktivitasBaruPage({ id, type }: { id: string; type: Kind }) {
       {() => (
         <>
           <BackLink href={`${base}/aktivitas`} label="Aktivitas" />
-          <h1 className="font-display text-[24px] font-bold">Buat event</h1>
+          <h1 className="font-display text-[24px] font-bold">Buat aktivitas</h1>
           <FormLoader id={id} type={type} />
         </>
       )}
@@ -136,7 +136,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
       <>
         <BackLink href={self} label={card.title} />
         <h1 className="font-display text-[24px] font-bold">Ubah draft</h1>
-        <FormLoader id={id} type={type} initial={{ id: aid, goal: card.goal as ActivityFormValues["goal"], title: card.title, description: card.description ?? "", scope_region_id: card.scope_region_id, starts_at: card.starts_at, ends_at: card.ends_at, quota: card.quota, residency_rule: card.residency_rule, audience: card.audience }} />
+        <FormLoader id={id} type={type} initial={{ id: aid, type: card.type, difficulty: card.difficulty, target_scope: card.target_scope, target_kind: card.target_kind, target_count: card.target_count, join_mode: card.join_mode, group_min: card.group_min, group_max: card.group_max, goal: card.goal as ActivityFormValues["goal"], title: card.title, description: card.description ?? "", scope_region_id: card.scope_region_id, starts_at: card.starts_at, ends_at: card.ends_at, quota: card.quota, residency_rule: card.residency_rule, audience: card.audience }} />
       </>
     );
   }
@@ -165,6 +165,10 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
               Cakupan {card.scope_region_name}{card.residency_rule === "residents_only" ? " · khusus warga" : ""}
             </span>
           )}
+          <span className="text-[12px] text-fg-soft">
+            Pendaftaran: {JOIN_MODE_LABELS[card.join_mode]}{card.join_mode !== "individual" ? ` (${card.group_min}–${card.group_max} orang)` : ""}
+            {card.type === "challenge" ? ` · ${DIFFICULTY_LABELS[card.difficulty ?? "easy"]} · target ${targetLabel(card.target_kind, card.target_count, card.target_scope)}` : ""}
+          </span>
           {card.status === "draft" && raw?.review_note && (
             <p className="rounded-xl bg-danger-tint px-3 py-2 text-[12px] text-danger">Catatan tim Ramein: {raw.review_note}</p>
           )}

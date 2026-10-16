@@ -49,7 +49,7 @@ export function ActivityCard({ card, href, footer }: { card: Card; href: string;
           <span className="font-display text-[17px] font-semibold leading-tight">{card.title}</span>
           <span className="text-[12px] text-fg-soft">{card.host_name}</span>
           <span className="text-[12px] text-fg-soft">
-            {formatSchedule(card.starts_at, card.ends_at)} · {card.join_mode === "individual" ? "individu" : "grup"}
+            {formatSchedule(card.starts_at, card.ends_at)} · {card.join_mode === "individual" ? "individu" : card.join_mode === "both" ? "individu / grup" : `grup ${card.group_min}–${card.group_max} orang`}
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] font-bold">

@@ -175,10 +175,13 @@ function Reward({ result, levels }: { result: CheckinResult; levels: LevelRow[] 
   const currentMin = levels.find((l) => l.level === level.level)?.min_xp ?? 0;
   const pct = level.nextMinXp === null ? 100 : Math.round(((result.total_xp - currentMin) / (level.nextMinXp - currentMin)) * 100);
   const rows: [string, number][] = [
-    [result.activity_type === "event" ? "Check-in event" : "Check-in challenge", result.xp_base],
+    [result.activity_type === "event" ? "Check-in event" : "Challenge selesai", result.xp_base],
     ["Kunjungan pertama", result.xp_first_visit],
     ["Bonus kolaborasi 25%", result.xp_collab],
+    ["Bonus grup 20%", result.xp_group],
   ];
+  const isChallenge = result.activity_type === "challenge";
+  const shown = result.target_scope === "group" ? (result.group_progress ?? result.progress) : result.progress;
   return (
     <div className="flex min-h-screen flex-col items-center gap-[18px] px-5 pb-7 pt-12" style={{ background: "radial-gradient(circle at 50% 18%, #3B2F8F 0%, #0D1024 60%)" }}>
       <div className="flex size-24 items-center justify-center rounded-full bg-success text-bg shadow-[0_0_0_12px_rgba(52,211,153,0.15)]">
@@ -188,10 +191,10 @@ function Reward({ result, levels }: { result: CheckinResult; levels: LevelRow[] 
         <span className="text-[13px] text-fg-label">
           {result.partner_name} · {result.checkpoint_name}
         </span>
-        <h1 className="font-display text-[28px] font-bold">{result.completed ? "Check-in berhasil!" : "Check-in tercatat!"}</h1>
+        <h1 className="font-display text-[28px] font-bold">{isChallenge && result.completed ? "Challenge selesai!" : "Check-in berhasil!"}</h1>
         <span className="text-[14px] text-fg-soft">
           {result.activity_title}
-          {result.completed ? " · selesai" : ""}
+          {isChallenge ? ` · ${Math.min(shown, result.target_count)} dari ${result.target_count}${result.target_scope === "group" ? " (grup)" : ""}` : result.completed ? " · selesai" : ""}
         </span>
       </div>
       <div className="flex w-full gap-3">

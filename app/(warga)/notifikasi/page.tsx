@@ -35,6 +35,8 @@ function describe(n: Notification): { title: string; body?: string; href?: strin
       return { title: `"${p.title}" dibatalkan penyelenggara`, body: typeof p.reason === "string" ? p.reason : undefined };
     case "community_new_activity":
       return { title: `Aktivitas baru dari ${community}: ${p.title}`, body: "Lihat detail dan daftar sebelum kuota penuh.", href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
+    case "group_registration":
+      return { title: `${p.leader_nickname} mendaftarkan ${p.group_name} ke ${p.title}`, body: "Jawab undangan di halaman Grup sebelum aktivitas mulai.", href: "/grup" };
     case "payment_refund_due":
       return { title: `Ada peserta "${p.title}" yang perlu refund`, body: "Peserta sudah bayar lalu aktivitas dibatalkan atau ia membatalkan." };
     default:

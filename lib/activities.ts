@@ -63,6 +63,30 @@ export const PAYMENT_LABELS: Record<PaymentStatus, string> = {
   refunded: "Refund",
 };
 
+export type Difficulty = "easy" | "medium" | "hard";
+export type TargetKind = "total_checkins" | "distinct_checkpoints" | "required_missions" | "missions_completed";
+export type TargetScope = "individual" | "group";
+
+export const DIFFICULTY_LABELS: Record<Difficulty, string> = { easy: "Mudah", medium: "Sedang", hard: "Sulit" };
+export const TARGET_KIND_LABELS: Record<TargetKind, string> = {
+  total_checkins: "Jumlah check-in",
+  distinct_checkpoints: "Checkpoint berbeda",
+  required_missions: "Semua misi wajib",
+  missions_completed: "Jumlah misi selesai",
+};
+export const JOIN_MODE_LABELS: Record<JoinMode, string> = { individual: "Individu", group: "Grup", both: "Individu atau grup" };
+
+// Teks target challenge, mis. "4 checkpoint berbeda · target grup".
+export function targetLabel(kind: TargetKind | null | undefined, count: number | null | undefined, scope: TargetScope | null | undefined) {
+  if (!kind) return "";
+  const base =
+    kind === "total_checkins" ? `${count ?? 1}× check-in`
+    : kind === "distinct_checkpoints" ? `${count ?? 1} checkpoint berbeda`
+    : kind === "required_missions" ? "semua misi wajib"
+    : `${count ?? 1} misi selesai`;
+  return scope === "group" ? `${base} · target grup` : base;
+}
+
 export function typeLabel(type: ActivityType) {
   return type === "event" ? "Event" : "Challenge";
 }

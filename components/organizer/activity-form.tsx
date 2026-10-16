@@ -2,13 +2,21 @@
 
 import { useActionState, useState } from "react";
 import { createActivity, updateActivity, type ActivityActionState } from "@/lib/actions/activities";
-import { GOAL_OPTIONS, toLocalInput, type ActivityGoal } from "@/lib/activities";
+import { DIFFICULTY_LABELS, GOAL_OPTIONS, JOIN_MODE_LABELS, TARGET_KIND_LABELS, toLocalInput, type ActivityGoal, type ActivityType, type Difficulty, type JoinMode, type TargetKind, type TargetScope } from "@/lib/activities";
 import { cardClass, chipClass, inputClass, labelClass, textareaClass } from "@/components/styles";
 import { ErrorMessage, SubmitButton, SuccessMessage } from "@/components/ui";
 
 type District = { id: string; name: string; villages: { id: string; name: string }[] };
 export type ActivityFormValues = {
   id?: string;
+  type: ActivityType;
+  difficulty: Difficulty | null;
+  target_scope: TargetScope;
+  target_kind: TargetKind | null;
+  target_count: number | null;
+  join_mode: JoinMode;
+  group_min: number | null;
+  group_max: number | null;
   goal: ActivityGoal;
   title: string;
   description: string;
@@ -43,7 +51,13 @@ export function ActivityForm({
   const [scope, setScope] = useState(initial?.scope_region_id ?? "");
   const [residency, setResidency] = useState(initial?.residency_rule ?? "open");
   const [audience, setAudience] = useState(initial?.audience ?? "public");
+  const [kind, setKind] = useState<ActivityType>(initial?.type ?? "event");
+  const [difficulty, setDifficulty] = useState<Difficulty>(initial?.difficulty ?? "easy");
+  const [targetKind, setTargetKind] = useState<TargetKind>(initial?.target_kind ?? "total_checkins");
+  const [targetScope, setTargetScope] = useState<TargetScope>(initial?.target_scope ?? "individual");
+  const [joinMode, setJoinMode] = useState<JoinMode>(initial?.join_mode ?? "individual");
   const last = step === STEPS.length - 1;
+  const chip = (on: boolean) => `${chipClass.base} ${on ? chipClass.selected : chipClass.idle}`;
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
@@ -53,6 +67,11 @@ export function ActivityForm({
       <input type="hidden" name="goal" value={goal} />
       <input type="hidden" name="residency_rule" value={residency} />
       <input type="hidden" name="audience" value={audience} />
+      <input type="hidden" name="type" value={kind} />
+      <input type="hidden" name="difficulty" value={difficulty} />
+      <input type="hidden" name="target_kind" value={targetKind} />
+      <input type="hidden" name="target_scope" value={targetScope} />
+      <input type="hidden" name="join_mode" value={joinMode} />
 
       <div className="flex flex-col gap-2">
         <span className="text-[12px] font-semibold text-fg-soft">
@@ -70,6 +89,20 @@ export function ActivityForm({
 
       {/* Langkah 1: dasar. Semua langkah tetap ter-render supaya nilainya ikut terkirim. */}
       <section className={`${cardClass} flex flex-col gap-3 p-4 ${step === 0 ? "" : "hidden"}`}>
+        <div className="flex flex-col gap-2">
+          <span className={labelClass}>Jenis aktivitas</span>
+          <div className="grid grid-cols-2 gap-2">
+            {([["event", "Event", "Satu waktu, satu check-in"], ["challenge", "Challenge", "Rentang tanggal, ada target"]] as const).map(([value, label, hint]) => {
+              const on = kind === value;
+              return (
+                <button key={value} type="button" aria-pressed={on} onClick={() => { setKind(value); if (value === "event") { setTargetScope("individual"); } }} className={`flex flex-col gap-0.5 rounded-2xl border p-3 text-left ${on ? "border-primary bg-primary-tint" : "border-line bg-surface"}`}>
+                  <span className={`text-[14px] font-bold ${on ? "text-link" : "text-fg"}`}>{label}</span>
+                  <span className="text-[11px] leading-[1.4] text-fg-soft">{hint}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="title" className={labelClass}>Judul aktivitas</label>
           <input id="title" name="title" required minLength={3} maxLength={100} defaultValue={initial?.title} placeholder="contoh: Workshop Latte Art" className={inputClass} />
@@ -134,6 +167,66 @@ export function ActivityForm({
 
       {/* Langkah 3: aturan ikut */}
       <section className={`${cardClass} flex flex-col gap-4 p-4 ${step === 2 ? "" : "hidden"}`}>
+        {kind === "challenge" && (
+          <>
+            <div className="flex flex-col gap-2">
+              <span className={labelClass}>Tingkat kesulitan (menentukan XP)</span>
+              <div className="flex flex-wrap gap-2">
+                {(Object.keys(DIFFICULTY_LABELS) as Difficulty[]).map((value) => (
+                  <button key={value} type="button" aria-pressed={difficulty === value} onClick={() => setDifficulty(value)} className={chip(difficulty === value)}>
+                    {DIFFICULTY_LABELS[value]}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <span className={labelClass}>Target</span>
+              <div className="flex flex-wrap gap-2">
+                {(["total_checkins", "distinct_checkpoints"] as TargetKind[]).map((value) => (
+                  <button key={value} type="button" aria-pressed={targetKind === value} onClick={() => setTargetKind(value)} className={chip(targetKind === value)}>
+                    {TARGET_KIND_LABELS[value]}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <input name="target_count" type="number" min={1} max={100} inputMode="numeric" defaultValue={initial?.target_count ?? 3} aria-label="Jumlah target" className={`${inputClass} w-24`} />
+                <span className="text-[12px] text-fg-soft">{targetKind === "total_checkins" ? "kali check-in (maks. 1 per hari)" : "checkpoint berbeda"}</span>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <span className={labelClass}>Cakupan target</span>
+              <div className="flex flex-wrap gap-2">
+                {([["individual", "Per orang"], ["group", "Kolektif grup"]] as const).map(([value, label]) => (
+                  <button key={value} type="button" aria-pressed={targetScope === value} onClick={() => { setTargetScope(value); if (value === "group") setJoinMode("group"); }} className={chip(targetScope === value)}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+        <div className="flex flex-col gap-2">
+          <span className={labelClass}>Cara mendaftar</span>
+          <div className="flex flex-wrap gap-2">
+            {(Object.keys(JOIN_MODE_LABELS) as JoinMode[]).map((value) => {
+              const disabled = targetScope === "group" && value !== "group";
+              return (
+                <button key={value} type="button" disabled={disabled} aria-pressed={joinMode === value} onClick={() => setJoinMode(value)} className={`${chip(joinMode === value)} disabled:opacity-40`}>
+                  {JOIN_MODE_LABELS[value]}
+                </button>
+              );
+            })}
+          </div>
+          {joinMode !== "individual" && (
+            <div className="flex items-center gap-2 text-[13px] text-fg-label">
+              Grup
+              <input name="group_min" type="number" min={2} max={10} inputMode="numeric" defaultValue={initial?.group_min ?? 2} aria-label="Anggota minimal" className={`${inputClass} w-20`} />
+              sampai
+              <input name="group_max" type="number" min={2} max={10} inputMode="numeric" defaultValue={initial?.group_max ?? 10} aria-label="Anggota maksimal" className={`${inputClass} w-20`} />
+              orang
+            </div>
+          )}
+        </div>
         <div className="flex flex-col gap-2">
           <span className={labelClass}>Siapa yang boleh ikut</span>
           <div className="flex flex-wrap gap-2">
@@ -158,7 +251,7 @@ export function ActivityForm({
           </div>
         )}
         <p className="rounded-2xl bg-info-tint px-4 py-3 text-[12px] leading-[1.5] text-info">
-          XP dasar event mengikuti pengaturan Ramein. Poin, harga, dan misi bisa diatur setelah fitur reward dan misi dirilis.
+          XP dasar mengikuti pengaturan Ramein (event 100 XP; challenge sesuai kesulitan). Poin, harga, dan misi bisa diatur setelah fitur reward dan misi dirilis.
           Setelah tersimpan sebagai draft, tambahkan checkpoint lalu ajukan ke tim Ramein.
         </p>
       </section>

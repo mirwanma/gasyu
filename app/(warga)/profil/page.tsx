@@ -143,9 +143,10 @@ async function ProfileContent() {
           Notifikasi
           <Icon name="chevron" size={16} className="text-fg-muted" />
         </a>
-        <span className="flex h-[52px] items-center justify-between border-b border-line px-4 text-[14px] font-medium text-fg-muted">
-          Grup saya <span className="text-[11px]">segera hadir</span>
-        </span>
+        <a href="/grup" className="flex h-[52px] items-center justify-between border-b border-line px-4 text-[14px] font-medium text-fg">
+          Grup saya
+          <Icon name="chevron" size={16} className="text-fg-muted" />
+        </a>
         <span className="flex h-[52px] items-center justify-between border-b border-line px-4 text-[14px] font-medium text-fg-muted">
           Peringkat <span className="text-[11px]">segera hadir</span>
         </span>
