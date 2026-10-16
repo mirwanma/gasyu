@@ -89,7 +89,7 @@ npx supabase login               # sekali saja
 npx supabase link --project-ref <ref>   # hubungkan ke project Supabase
 npx supabase migration new <nama>       # buat file migrasi
 npx supabase db push             # terapkan migrasi ke project Supabase
-npx supabase gen types typescript --linked > lib/supabase/database.types.ts
+npx supabase gen types typescript --linked > lib/supabase/database.types.ts   # ulangi setiap ada migrasi baru
 ```
 
 ## Struktur folder (target)
@@ -103,7 +103,7 @@ app/                  # route Next.js
   masuk/, onboarding/
 components/
 lib/
-  supabase/           # client.ts (browser), server.ts, proxy.ts (sesi)
+  supabase/           # client.ts (browser), server.ts, proxy.ts (sesi), database.types.ts (otomatis), types.ts
   gamification/       # helper tampilan XP, level, badge (aturan tetap di database)
 proxy.ts              # pengganti middleware: refresh sesi, wajib onboarding
 supabase/
@@ -117,4 +117,4 @@ docs/
 
 Ikuti `docs/DESAIN-DATABASE.md` bagian 9 (irisan 1–11).
 
-Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016) — pemolesan, E2E, dan rilis pilot — perbarui baris ini setiap pindah irisan.
+Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016), foto profil (0017) — pemolesan, E2E, dan rilis pilot — perbarui baris ini setiap pindah irisan.

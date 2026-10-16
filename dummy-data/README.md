@@ -62,3 +62,4 @@ Skrip ini aman dijalankan berulang.
 
 - Email akun dummy tetap memakai domain `@dummy.ramein.id` dan kata sandi `RameinDummy2026!`. Keduanya hanya penanda data dummy, jadi sengaja tidak diubah supaya login dan skrip bersih-bersih tetap jalan.
 - Kalau gambar cover dibuat ulang (`python3 dummy-data/buat-gambar.py`), unggah ulang cover saja dengan `node dummy-data/unggah-cover.cjs`.
+- Foto profil contoh untuk akun rani (`gambar/avatar-rani.jpg`) dipasang oleh `unggah-gambar.cjs` dan dihapus oleh `bersihkan.sql`.

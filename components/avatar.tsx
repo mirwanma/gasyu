@@ -42,7 +42,18 @@ export function OrganizerAvatar({
   );
 }
 
-export function UserAvatar({ nickname, size = 48 }: { nickname: string; size?: number }) {
+export function UserAvatar({ nickname, size = 48, avatarUrl }: { nickname: string; size?: number; avatarUrl?: string | null }) {
+  if (avatarUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- foto profil dari bucket publik avatars
+      <img
+        src={avatarUrl}
+        alt=""
+        style={{ width: size, height: size, objectFit: "cover" }}
+        className="shrink-0 rounded-full border-2 border-avatar-ring bg-avatar"
+      />
+    );
+  }
   return (
     <span
       style={{ width: size, height: size, fontSize: Math.round(size / 2.8) }}

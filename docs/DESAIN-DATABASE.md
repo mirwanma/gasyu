@@ -974,6 +974,7 @@ Semua fungsi yang mengubah XP, poin, status, atau hak akses berjenis `security d
 | `update_my_profile(nickname, full_name)` | warga | ubah nama panggilan (unik) dan nama lengkap |
 | `change_home_village(village_id)` | warga | cek `profile.village_change_days`, perbarui kelurahan (null = Luar Cimahi) |
 | `delete_my_account(confirm)` | warga | soft delete: batalkan pendaftaran belum berjalan, keluar grup/komunitas/tim, hapus notifikasi, kosongkan data pribadi, isi `deleted_at`; tolak jika satu-satunya pemilik/ketua, ada pembayaran aktif, atau admin |
+| `set_my_avatar(url)` | warga | simpan URL foto di folder avatars miliknya; null = hapus foto |
 | `set_team_role(organizer_id, user_id, role)` | owner/chair | ubah peran anggota tim (serah terima pemilik/ketua); minimal satu pemilik/ketua tersisa; notifikasi `team_role_changed` |
 | `register_organizer(type, data jsonb)` | warga | buat organizer + profil tipe + outlet + member owner/chair; komunitas: + `community_memberships` ketua active |
 | `create_organizer_invite(organizer_id, role)` | owner/chair | token undangan |
@@ -1071,7 +1072,9 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 
 **Catatan privasi antar-partner.** Policy `participations` dan `checkins` untuk tim organizer hanya mengizinkan baris yang `checkins.partner_organizer_id` = organizer mereka. Host melihat semua peserta yang mendaftar, tetapi partner lain hanya melihat peserta yang pernah check-in di checkpoint mereka. Angka total untuk semua partner disajikan lewat `v_activity_stats` yang hanya berisi agregat.
 
-**Kolom yang tidak boleh diubah warga di `profiles`:** `is_admin`, `suspended_at`, `onboarded_at`, `home_village_changed_at`. Diterapkan dengan `revoke update` per kolom, lalu `grant update (nickname, full_name, avatar_url)`.
+**Kolom yang tidak boleh diubah warga di `profiles`:** `is_admin`, `suspended_at`, `onboarded_at`, `home_village_changed_at`. Diterapkan dengan `revoke update` per kolom, lalu `grant update (nickname, full_name)`. Sejak 0017, `avatar_url` hanya bisa diubah lewat `set_my_avatar`, yang memastikan URL menunjuk ke folder `avatars/<user_id>/` miliknya.
+
+**Foto profil.** Bucket publik `avatars` (maks. 2 MB, gambar). Warga hanya bisa menulis, mengganti, dan menghapus file di folder `avatars/<user_id>/`.
 
 **`qr_secret`** (di `activity_checkpoints` dan `activity_missions`) dan **`code_hash`** di-`revoke select` dari role `authenticated` dan `anon`; hanya fungsi `security definer` yang membacanya.
 
@@ -1136,6 +1139,7 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 | Saran warga | `0014_suggestions.sql` | enum saran, `suggestions`, `v_organizer_suggestions`, `submit_suggestion`, `respond_suggestion`, `app_settings` batas harian |
 | Akun warga | `0015_citizen_account.sql` | `update_my_profile`, `change_home_village`, `delete_my_account`, pengaturan `profile.village_change_days` dan kontak bantuan |
 | Peran tim | `0016_team_roles.sql` | `set_team_role` untuk serah terima pemilik/ketua |
+| Foto profil | `0017_avatars.sql` | bucket `avatars` + policy, `set_my_avatar`, cabut update langsung `avatar_url`; perbaikan nickname pengganti di `delete_my_account` |
 Setiap migrasi membawa RLS policy untuk tabel barunya dan file uji SQL sederhana (`supabase/tests/`) untuk aturan yang tidak boleh dilanggar. Semua uji dijalankan dari database kosong dengan `supabase/tests/run.sh` (juga otomatis di GitHub Actions).
 
 ---

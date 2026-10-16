@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { OrganizerAvatar } from "@/components/avatar";
+import { OrganizerAvatar, UserAvatar } from "@/components/avatar";
 import { MenuList, OrganizerShell, type OrganizerContext } from "@/components/organizer/shell";
 import { ProfileForm } from "@/components/organizer/profile-form";
 import { TeamInvite } from "@/components/organizer/team-invite";
@@ -68,7 +68,7 @@ async function TeamBody({ ctx, id, type, error, hasil }: { ctx: OrganizerContext
   if (ctx.org.role !== "owner" && ctx.org.role !== "chair") redirect(`${basePath(type, id)}/lainnya?akses=peran`);
   const supabase = await createClient();
   const { data: team } = await supabase.from("v_organizer_team").select("*").eq("organizer_id", id).order("created_at");
-  const members = (team ?? []) as { user_id: string; role: MemberRole; nickname: string; created_at: string }[];
+  const members = (team ?? []) as { user_id: string; role: MemberRole; nickname: string; avatar_url: string | null; created_at: string }[];
   const isLeader = ctx.org.role === "owner" || ctx.org.role === "chair";
   const roleName = type === "merchant" ? "staf" : "pengurus";
   const leaderRole: MemberRole = type === "merchant" ? "owner" : "chair";
@@ -96,6 +96,7 @@ async function TeamBody({ ctx, id, type, error, hasil }: { ctx: OrganizerContext
       <section className={`${cardClass} flex flex-col overflow-hidden`}>
         {members.map((m, i) => (
           <div key={m.user_id} className={`flex min-h-14 items-center gap-3 px-3.5 py-2 ${i > 0 ? "border-t border-line" : ""}`}>
+            <UserAvatar nickname={m.nickname} avatarUrl={m.avatar_url} size={36} />
             <span className="flex flex-1 flex-col gap-0.5">
               <span className="text-[14px] font-semibold">
                 {m.nickname}{" "}

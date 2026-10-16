@@ -201,6 +201,7 @@ flowchart TD
 - Middleware Next.js mengalihkan semua halaman ke onboarding selama `onboarded_at` kosong.
 - Nama panggilan harus unik (case-insensitive), 3–20 karakter.
 - Warga mengubah nama panggilan dan nama lengkap di `/profil/ubah` (`update_my_profile`).
+- Foto profil juga di `/profil/ubah`: foto dipotong persegi dan diperkecil ke 512 px di HP sebelum diunggah ke bucket publik `avatars` (folder milik warga sendiri), lalu disimpan lewat `set_my_avatar`. Foto lama dihapus otomatis. Foto tampil di profil dan beranda warga sendiri, dan di daftar tim penyelenggara tempat ia bergabung. Saat akun dihapus, foto ikut dihapus.
 - Kelurahan asal bisa diganti maksimal sekali per `profile.village_change_days` hari, awal 90 (`change_home_village`, `home_village_changed_at`). Penggantian pertama setelah onboarding langsung dihitung.
 - Tidak ada batas usia dan tidak ada persetujuan orang tua selama pilot.
 - Hapus akun (`/profil/hapus`, `delete_my_account`, warga mengetik HAPUS): data pribadi di `profiles` dikosongkan dan `deleted_at` diisi; baris ledger tetap ada demi audit, tetapi tidak lagi terhubung ke identitas yang bisa dikenali. Pendaftaran yang belum berjalan dibatalkan, warga keluar dari grup, komunitas, dan tim, notifikasinya dihapus. Ditolak jika ia satu-satunya pemilik/ketua, masih punya pembayaran lunas/menunggu di aktivitas yang belum selesai, atau akun admin. Sesi akun terhapus selalu dikeluarkan dan email yang sama tidak bisa dipakai masuk lagi.

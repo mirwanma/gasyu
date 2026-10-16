@@ -116,6 +116,51 @@ select pg_temp.assert_fails($$select public.update_my_profile('kembali', 'Kembal
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
 select pg_temp.assert((select count(*) = 1 from public.v_organizer_team where organizer_id = (select v from ids where k = 'm')), 'tim merchant tinggal pemilik');
 
+-- ---------------------------------------------------------------------------
+-- 4. Hapus akun dengan pendaftaran aktivitas
+-- ---------------------------------------------------------------------------
+select pg_temp.login('00000000-0000-0000-0000-00000000000e');
+select public.review_organizer((select v from ids where k = 'm'), true, null);
+select pg_temp.login('00000000-0000-0000-0000-00000000000a');
+insert into ids select 'outlet', id from public.merchant_outlets where organizer_id = (select v from ids where k = 'm');
+-- Aktivitas gratis
+insert into ids select 'free', public.create_activity((select v from ids where k = 'm'), json_build_object(
+  'title', 'Ngopi Bareng', 'starts_at', '2030-01-01T10:00+07', 'ends_at', '2030-01-01T14:00+07')::jsonb);
+select public.add_checkpoint((select v from ids where k = 'free'), json_build_object('outlet_id', (select v from ids where k = 'outlet'))::jsonb);
+select public.submit_activity((select v from ids where k = 'free'));
+-- Aktivitas berbayar
+insert into ids select 'paid', public.create_activity((select v from ids where k = 'm'), json_build_object(
+  'title', 'Kelas Latte Art', 'starts_at', '2030-01-02T10:00+07', 'ends_at', '2030-01-02T14:00+07',
+  'is_paid', true, 'price_idr', '50000', 'payment_instructions', 'Transfer BCA 1234567')::jsonb);
+select public.add_checkpoint((select v from ids where k = 'paid'), json_build_object('outlet_id', (select v from ids where k = 'outlet'))::jsonb);
+select public.submit_activity((select v from ids where k = 'paid'));
+select pg_temp.login('00000000-0000-0000-0000-00000000000e');
+select public.review_activity((select v from ids where k = 'free'), true, null);
+select public.review_activity((select v from ids where k = 'paid'), true, null);
+
+-- W2 ikut aktivitas gratis lalu menghapus akun: pendaftarannya dibatalkan
+select pg_temp.login('00000000-0000-0000-0000-0000000000d2');
+select public.join_activity((select v from ids where k = 'free'));
+select public.delete_my_account('HAPUS');
+reset role;
+select pg_temp.assert((select status = 'cancelled' from public.participations
+  where activity_id = (select v from ids where k = 'free') and user_id = '00000000-0000-0000-0000-0000000000d2'), 'hapus akun membatalkan pendaftaran yang belum berjalan');
+set local role authenticated;
+
+-- W1 ikut aktivitas berbayar dan sudah kirim bukti: hapus akun ditolak
+select pg_temp.login('00000000-0000-0000-0000-0000000000d1');
+select public.join_activity((select v from ids where k = 'paid'));
+select public.submit_payment_proof(
+  (select id from public.participations where activity_id = (select v from ids where k = 'paid') and user_id = auth.uid()),
+  (select v from ids where k = 'paid') || '/00000000-0000-0000-0000-0000000000d1/bukti.jpg');
+select pg_temp.assert_fails($$select public.delete_my_account('HAPUS')$$, 'active_paid_participation', 'pembayaran menunggu konfirmasi menahan hapus akun');
+-- Setelah membatalkan pendaftaran sendiri (refund jadi urusan penyelenggara), akun bisa dihapus
+select public.cancel_participation((select id from public.participations where activity_id = (select v from ids where k = 'paid') and user_id = auth.uid()));
+select public.delete_my_account('HAPUS');
+reset role;
+select pg_temp.assert((select deleted_at is not null from public.profiles where id = '00000000-0000-0000-0000-0000000000d1'), 'setelah pendaftaran berbayar dibatalkan, akun bisa dihapus');
+set local role authenticated;
+
 -- anon tidak bisa memanggil fungsi
 reset role;
 set local role anon;

@@ -106,5 +106,17 @@ const COVERS = [
   // Ulasan Ayu di challenge kopi (menunggu tinjauan Wisnu)
   let { data: ch } = await sb.from("activities").select("id").eq("title", "Jelajah 3 Kedai Kopi Lereng").single();
   await sendPhoto("ayu@dummy.ramein.id", ch.id, "Ulasan di media sosial", "foto-kopi-nadia.png").catch((e) => log("ulasan Ayu dilewati:", e.message));
+  // Foto profil Rani (contoh fitur foto profil, migrasi 0017)
+  sb = await as("rani@dummy.ramein.id");
+  {
+    const { data: me } = await sb.auth.getUser();
+    const path = `${me.user.id}/avatar-dummy.jpg`;
+    const { error: upErr } = await sb.storage.from("avatars").upload(path, IMG("avatar-rani.jpg"), { contentType: "image/jpeg", upsert: true });
+    if (upErr) log("foto profil Rani dilewati:", upErr.message);
+    else {
+      const { error } = await sb.rpc("set_my_avatar", { p_url: sb.storage.from("avatars").getPublicUrl(path).data.publicUrl });
+      log(error ? `foto profil Rani dilewati: ${error.message}` : "foto profil Rani");
+    }
+  }
   log("SELESAI. Semua gambar dummy terpasang.");
 })().catch((e) => { console.error(e.message); process.exit(1); });

@@ -55,7 +55,7 @@ async function ProfileContent() {
   return (
     <>
       <div className="flex items-center gap-3.5">
-        <UserAvatar nickname={user.nickname} size={68} />
+        <UserAvatar nickname={user.nickname} avatarUrl={user.avatarUrl} size={68} />
         <div className="flex flex-col gap-[3px]">
           <span className="font-display text-[22px] font-bold">{user.nickname}</span>
           <span className="text-[13px] text-fg-soft">{user.villageName ?? "Luar Cimahi"}</span>
@@ -69,7 +69,7 @@ async function ProfileContent() {
         <span className="text-[12px] font-bold tracking-[0.05em] text-fg-muted">GUNAKAN SEBAGAI</span>
 
         <div className="flex min-h-14 items-center gap-3 rounded-[14px] border border-avatar-ring bg-primary-tint px-3 py-2">
-          <UserAvatar nickname={user.nickname} size={40} />
+          <UserAvatar nickname={user.nickname} avatarUrl={user.avatarUrl} size={40} />
           <span className="flex flex-1 flex-col gap-0.5">
             <span className="text-[14px] font-semibold">Warga</span>
             <span className="text-[12px] text-fg-soft">Akun pribadi</span>

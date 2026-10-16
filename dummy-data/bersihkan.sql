@@ -20,6 +20,7 @@ begin
   if to_regclass('storage.objects') is not null then
     delete from storage.objects where bucket_id in ('logos', 'organizer-proofs') and split_part(name, '/', 1) in (select id::text from dm_orgs);
     delete from storage.objects where bucket_id in ('covers', 'payment-proofs', 'mission-proofs') and split_part(name, '/', 1) in (select id::text from dm_acts);
+    delete from storage.objects where bucket_id = 'avatars' and split_part(name, '/', 1) in (select id::text from dm_users);
   end if;
 end $$;
 

@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { AvatarForm } from "./avatar-form";
 import { ProfileForm, VillageForm } from "./forms";
 import { BottomNav, CITIZEN_NAV } from "@/components/bottom-nav";
 import { Icon } from "@/components/icons";
@@ -44,6 +45,7 @@ async function Content() {
 
   return (
     <>
+      <AvatarForm nickname={user.nickname} avatarUrl={user.avatarUrl} />
       <ProfileForm nickname={user.nickname} fullName={user.fullName ?? ""} />
       <VillageForm current={user.homeVillageId ?? "luar"} districts={districts} lockedUntil={lockedUntil} days={days} />
       <a href="/profil/hapus" className={`${cardClass} flex items-center justify-between p-4 text-[14px] font-semibold text-danger`}>
