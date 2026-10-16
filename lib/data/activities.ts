@@ -58,6 +58,7 @@ export type Participation = {
   status: ParticipationStatus;
   payment_status: PaymentStatus;
   payment_due_at: string | null;
+  payment_note?: string | null;
   progress: number;
 };
 
@@ -111,7 +112,7 @@ export async function getMyParticipation(activityId: string, userId: string): Pr
   const supabase = await createClient();
   const { data } = await supabase
     .from("participations")
-    .select("id, activity_id, group_id, status, payment_status, payment_due_at, progress")
+    .select("id, activity_id, group_id, status, payment_status, payment_due_at, payment_note, progress")
     .eq("activity_id", activityId)
     .eq("user_id", userId)
     .maybeSingle();

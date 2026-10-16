@@ -5,7 +5,7 @@ import { Icon } from "@/components/icons";
 import { ActivityForm, ActivityLiteForm, type ActivityFormValues } from "@/components/organizer/activity-form";
 import { CheckpointForm } from "@/components/organizer/checkpoint-form";
 import { OrganizerShell, type OrganizerContext } from "@/components/organizer/shell";
-import { cardClass, chipClass, smallButton, tagClass, textareaClass } from "@/components/styles";
+import { cardClass, chipClass, smallButton, textareaClass } from "@/components/styles";
 import { SubmitButton } from "@/components/ui";
 import { changeActivityStatus, toggleCheckpoint } from "@/lib/actions/activities";
 import { saveActivityPoints } from "@/lib/actions/rewards";
@@ -15,7 +15,9 @@ import { listActivityPartners, listApprovedOrganizers, listMyPartnerships } from
 import { OrganizerAvatar } from "@/components/avatar";
 import { getActivityBudget } from "@/lib/data/rewards";
 import { getActivityStats, listPartnerStats } from "@/lib/data/dashboards";
-import { DIFFICULTY_LABELS, JOIN_MODE_LABELS, PARTICIPATION_LABELS, PAYMENT_LABELS, formatPrice, formatSchedule, targetLabel, typeLabel, type ParticipationStatus, type PaymentStatus } from "@/lib/activities";
+import { getPaymentStats } from "@/lib/data/payments";
+import { PesertaBody } from "@/components/organizer/participants";
+import { DIFFICULTY_LABELS, JOIN_MODE_LABELS, formatPrice, formatSchedule, targetLabel, typeLabel } from "@/lib/activities";
 import { getActivityCard, getCheckpoints, listOrganizerActivities } from "@/lib/data/activities";
 import { getVillageOptions } from "@/lib/data/organizers";
 import { formatDateTime, timeAgo } from "@/lib/format";
@@ -110,21 +112,21 @@ export function AktivitasBaruPage({ id, type }: { id: string; type: Kind }) {
   const base = basePath(type, id);
   return (
     <OrganizerShell organizerId={id} type={type} active="Aktivitas">
-      {() => (
+      {(ctx) => (
         <>
           <BackLink href={`${base}/aktivitas`} label="Aktivitas" />
           <h1 className="font-display text-[24px] font-bold">Buat aktivitas</h1>
-          <FormLoader id={id} type={type} />
+          <FormLoader id={id} type={type} canSetPrice={ctx.org.role === "owner" || ctx.org.role === "chair"} />
         </>
       )}
     </OrganizerShell>
   );
 }
 
-async function FormLoader({ id, type, initial }: { id: string; type: Kind; initial?: ActivityFormValues }) {
+async function FormLoader({ id, type, initial, canSetPrice }: { id: string; type: Kind; initial?: ActivityFormValues; canSetPrice: boolean }) {
   const supabase = await createClient();
   const [districts, { data: city }] = await Promise.all([getVillageOptions(), supabase.from("regions").select("id").eq("level", "city").eq("is_active", true).limit(1).maybeSingle()]);
-  return <ActivityForm organizerId={id} type={type} cityId={(city?.id as string | undefined) ?? null} districts={districts} initial={initial} />;
+  return <ActivityForm organizerId={id} type={type} cityId={(city?.id as string | undefined) ?? null} districts={districts} initial={initial} canSetPrice={canSetPrice} />;
 }
 
 // ---- Kelola satu aktivitas ----------------------------------------------
@@ -150,7 +152,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
   const [card, checkpoints, { data: raw }, { count: participants }] = await Promise.all([
     getActivityCard(aid),
     getCheckpoints(aid),
-    supabase.from("activities").select("review_note, created_at").eq("id", aid).maybeSingle(),
+    supabase.from("activities").select("review_note, created_at, payment_instructions, payment_window_hours").eq("id", aid).maybeSingle(),
     supabase.from("participations").select("id", { count: "exact", head: true }).eq("activity_id", aid).in("status", ["invited", "registered", "in_progress", "completed"]),
   ]);
   if (!card) notFound();
@@ -171,7 +173,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
       <>
         <BackLink href={self} label={card.title} />
         <h1 className="font-display text-[24px] font-bold">Ubah draft</h1>
-        <FormLoader id={id} type={type} initial={{ id: aid, type: card.type, difficulty: card.difficulty, target_scope: card.target_scope, target_kind: card.target_kind, target_count: card.target_count, join_mode: card.join_mode, group_min: card.group_min, group_max: card.group_max, goal: card.goal as ActivityFormValues["goal"], title: card.title, description: card.description ?? "", scope_region_id: card.scope_region_id, starts_at: card.starts_at, ends_at: card.ends_at, quota: card.quota, residency_rule: card.residency_rule, audience: card.audience }} />
+        <FormLoader id={id} type={type} initial={{ id: aid, type: card.type, difficulty: card.difficulty, target_scope: card.target_scope, target_kind: card.target_kind, target_count: card.target_count, join_mode: card.join_mode, group_min: card.group_min, group_max: card.group_max, goal: card.goal as ActivityFormValues["goal"], title: card.title, description: card.description ?? "", scope_region_id: card.scope_region_id, starts_at: card.starts_at, ends_at: card.ends_at, quota: card.quota, residency_rule: card.residency_rule, audience: card.audience, is_paid: card.is_paid, price_idr: card.price_idr, payment_instructions: raw?.payment_instructions ?? null, payment_window_hours: raw?.payment_window_hours ?? null }} canSetPrice={isLeader} />
       </>
     );
   }
@@ -183,6 +185,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
   const pointsEditable = ["draft", "awaiting_partners"].includes(card.status);
   const live = ["running", "ended", "settled"].includes(card.status);
   const [stats, partnerStats] = live ? await Promise.all([getActivityStats(aid), listPartnerStats(aid)]) : [null, []];
+  const payStats = isHost && card.is_paid ? await getPaymentStats(aid) : null;
 
   return (
     <>
@@ -401,13 +404,40 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
         </section>
       )}
 
-      <section className={`${cardClass} flex flex-col gap-1 p-4`}>
-        <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-[18px] font-semibold">Misi dan harga</h2>
-          <span className="text-[12px] font-semibold text-fg-muted">segera hadir</span>
-        </div>
-        <p className="text-[13px] leading-[1.5] text-fg-soft">Misi dan aktivitas berbayar dibuka di irisan berikutnya.</p>
-      </section>
+      {isHost && (
+        <section className={`${cardClass} flex flex-col gap-2 p-4`}>
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-display text-[18px] font-semibold">Harga</h2>
+            <span className="text-[12px] font-semibold text-fg-soft">{formatPrice(card.price_idr, card.is_paid)}{card.is_paid ? " / orang" : ""}</span>
+          </div>
+          {card.is_paid ? (
+            <>
+              <p className="text-[13px] leading-[1.5] text-fg-label whitespace-pre-line">{raw?.payment_instructions}</p>
+              <span className="text-[12px] text-fg-soft">Batas bayar {raw?.payment_window_hours ?? 24} jam setelah daftar. Uang tidak lewat Ramein; tandai lunas di halaman Peserta.</span>
+              {payStats && (
+                <div className="grid grid-cols-4 gap-2 text-center">
+                  {[
+                    [payStats.awaiting_confirmation, "cek bukti", "text-warn"],
+                    [payStats.unpaid, "belum bayar", "text-fg"],
+                    [payStats.paid, "lunas", "text-success"],
+                    [payStats.refund_due, "perlu refund", payStats.refund_due > 0 ? "text-danger" : "text-fg-soft"],
+                  ].map(([v, k, tone]) => (
+                    <div key={String(k)} className="flex flex-col gap-0.5 rounded-xl bg-track/60 py-2">
+                      <span className={`font-display text-[18px] font-semibold ${tone}`}>{v}</span>
+                      <span className="text-[10px] text-fg-soft">{k}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <Link href={`${self}/peserta${payStats && payStats.awaiting_confirmation > 0 ? "?tab=cek" : ""}`} className={`${smallButton.outline} self-start`}>
+                Peserta & pembayaran
+              </Link>
+            </>
+          ) : (
+            <p className="text-[13px] leading-[1.5] text-fg-soft">Aktivitas gratis. Harga bisa diatur pemilik/ketua di langkah &ldquo;Harga&rdquo; saat masih draft.</p>
+          )}
+        </section>
+      )}
 
       {liteEditable && <ActivityLiteForm organizerId={id} type={type} activityId={aid} description={card.description ?? ""} />}
 
@@ -461,69 +491,11 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
 
 // ---- Peserta -------------------------------------------------------------
 
-type ParticipantRow = { id: string; nickname: string; village_name: string | null; status: ParticipationStatus; payment_status: PaymentStatus; created_at: string; group_id: string | null };
-
-export function PesertaPage({ id, type, aid }: { id: string; type: Kind; aid: string }) {
+export function PesertaPage({ id, type, aid, query }: { id: string; type: Kind; aid: string; query?: { tab?: string; hasil?: string; error?: string } }) {
   const base = basePath(type, id);
   return (
     <OrganizerShell organizerId={id} type={type} active="Aktivitas">
-      {() => <Peserta id={id} base={base} aid={aid} />}
+      {() => <PesertaBody organizerId={id} type={type} aid={aid} query={query ?? {}} selfHref={`${base}/aktivitas/${aid}/peserta`} backHref={`${base}/aktivitas/${aid}`} />}
     </OrganizerShell>
-  );
-}
-
-async function Peserta({ id, base, aid }: { id: string; base: string; aid: string }) {
-  const supabase = await createClient();
-  const [card, { data }] = await Promise.all([
-    getActivityCard(aid),
-    supabase.from("v_activity_participants").select("id, nickname, village_name, status, payment_status, created_at, group_id").eq("activity_id", aid).order("created_at", { ascending: false }),
-  ]);
-  if (!card || card.host_organizer_id !== id) notFound();
-  const rows = (data ?? []) as ParticipantRow[];
-  const count = (s: ParticipationStatus[]) => rows.filter((r) => s.includes(r.status)).length;
-  const sum: [string, number, string][] = [
-    ["Terdaftar", count(["invited", "registered", "in_progress"]), "text-fg"],
-    ["Selesai", count(["completed"]), "text-success"],
-    ["Batal", count(["cancelled", "not_completed"]), "text-fg-soft"],
-  ];
-
-  return (
-    <>
-      <BackLink href={`${base}/aktivitas/${aid}`} label={card.title} />
-      <div className="flex flex-col gap-0.5">
-        <h1 className="font-display text-[24px] font-bold">Peserta</h1>
-        <span className="text-[13px] text-fg-soft">
-          {card.title} · {formatPrice(card.price_idr, card.is_paid)}{card.is_paid ? " / orang" : ""}
-        </span>
-      </div>
-      <div className="grid grid-cols-3 gap-2.5">
-        {sum.map(([k, v, tone]) => (
-          <div key={k} className={`${cardClass} flex flex-col gap-1 p-3`}>
-            <span className={`font-display text-[22px] font-semibold ${tone}`}>{v}</span>
-            <span className="text-[11px] text-fg-soft">{k}</span>
-          </div>
-        ))}
-      </div>
-      {rows.length === 0 ? (
-        <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>Belum ada peserta.</p>
-      ) : (
-        <div className={`${cardClass} overflow-hidden`}>
-          {rows.map((r) => (
-            <div key={r.id} className="flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0">
-              <span className="flex size-10 items-center justify-center rounded-full bg-primary-tint text-[13px] font-bold uppercase text-link">{r.nickname.slice(0, 2)}</span>
-              <span className="flex flex-1 flex-col">
-                <span className="text-[14px] font-semibold">{r.nickname}</span>
-                <span className="text-[12px] text-fg-soft">
-                  {r.village_name ?? "Luar Cimahi"} · {r.group_id ? "grup" : "pribadi"} · {timeAgo(r.created_at)}
-                </span>
-              </span>
-              <span className={`${tagClass.base} ${r.status === "completed" ? tagClass.success : r.status === "cancelled" || r.status === "not_completed" ? tagClass.neutral : tagClass.info}`}>
-                {card.is_paid && r.payment_status !== "not_required" ? PAYMENT_LABELS[r.payment_status] : PARTICIPATION_LABELS[r.status]}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-    </>
   );
 }

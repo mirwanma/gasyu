@@ -134,9 +134,14 @@ async function Detail({ id, tab }: { id: string; tab: string }) {
         </dl>
 
         {isPlatform && (
-          <Link href={`/admin/aktivitas/misi?aid=${id}`} className="flex h-10 w-fit items-center rounded-full border border-line-strong bg-surface px-4 text-[13px] font-semibold text-fg">
-            Kelola misi event ini
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link href={`/admin/aktivitas/misi?aid=${id}`} className="flex h-10 w-fit items-center rounded-full border border-line-strong bg-surface px-4 text-[13px] font-semibold text-fg">
+              Kelola misi event ini
+            </Link>
+            <Link href={`/admin/aktivitas/peserta?aid=${id}`} className="flex h-10 w-fit items-center rounded-full border border-line-strong bg-surface px-4 text-[13px] font-semibold text-fg">
+              {card.is_paid ? "Peserta & pembayaran" : "Peserta"} · {participants ?? 0}
+            </Link>
+          </div>
         )}
         {isPlatform && (
           <div className="flex flex-col gap-2">

@@ -23,6 +23,11 @@ export function readActivityForm(formData: FormData) {
     join_mode: joinMode,
     residency_rule: text("residency_rule") || "open",
     audience: text("audience") || "public",
+    // Harga (irisan 11): hanya dipakai database jika pengirim owner/chair host.
+    is_paid: text("is_paid") === "true",
+    price_idr: text("price_idr") || null,
+    payment_instructions: text("payment_instructions") || null,
+    payment_window_hours: text("payment_window_hours") || null,
   };
 }
 

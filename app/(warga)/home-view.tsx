@@ -2,7 +2,7 @@ import { UserAvatar } from "@/components/avatar";
 import { Icon } from "@/components/icons";
 import { ActivityCard } from "@/components/activity-card";
 import { cardClass } from "@/components/styles";
-import { PARTICIPATION_LABELS } from "@/lib/activities";
+import { PARTICIPATION_LABELS, PAYMENT_LABELS } from "@/lib/activities";
 import type { ActivityCard as Card, Participation } from "@/lib/data/activities";
 import { badgeMeta } from "@/lib/gamification/badges";
 import { levelFor, type LevelRow } from "@/lib/gamification/level";
@@ -152,7 +152,13 @@ export function HomeView({
               key={card.id}
               card={card}
               href={`/aktivitas/${card.id}`}
-              footer={<span className="text-[12px] font-bold text-success">{PARTICIPATION_LABELS[participation.status]}</span>}
+              footer={
+                participation.payment_status === "unpaid" || participation.payment_status === "awaiting_confirmation" ? (
+                  <span className={`text-[12px] font-bold ${participation.payment_status === "unpaid" ? "text-warn" : "text-info"}`}>{PAYMENT_LABELS[participation.payment_status]}</span>
+                ) : (
+                  <span className="text-[12px] font-bold text-success">{PARTICIPATION_LABELS[participation.status]}</span>
+                )
+              }
             />
           ))
         )}

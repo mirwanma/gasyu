@@ -78,7 +78,19 @@ function describe(n: Notification): { title: string; body?: string; href?: strin
     case "organizer_restored":
       return { title: `${p.organizer_name} aktif kembali`, body: "Kamu bisa mengajukan aktivitas lagi." };
     case "payment_refund_due":
-      return { title: `Ada peserta "${p.title}" yang perlu refund`, body: "Peserta sudah bayar lalu aktivitas dibatalkan atau ia membatalkan." };
+      return typeof p.count === "number"
+        ? { title: `${p.count} peserta "${p.title}" perlu refund`, body: "Aktivitas dibatalkan. Kembalikan dana di luar aplikasi, lalu tandai refund di halaman Peserta." }
+        : { title: `Ada peserta "${p.title}" yang perlu refund`, body: "Peserta sudah bayar lalu membatalkan. Kembalikan dana di luar aplikasi, lalu tandai refund di halaman Peserta." };
+    case "payment_proof_submitted":
+      return { title: `Bukti bayar masuk untuk "${p.title}"`, body: "Cek bukti dan tandai lunas di halaman Peserta." };
+    case "payment_confirmed":
+      return { title: `Pembayaran "${p.title}" lunas`, body: "Kamu sudah bisa check-in dan mengerjakan misi.", href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
+    case "payment_rejected":
+      return { title: `Bukti bayar "${p.title}" ditolak`, body: typeof p.note === "string" ? p.note : "Cek catatan panitia lalu kirim bukti lagi.", href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
+    case "payment_expired":
+      return { title: `Pendaftaran "${p.title}" dibatalkan`, body: "Lewat batas waktu bayar. Kamu bisa mendaftar lagi selama kuota masih ada.", href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
+    case "payment_refunded":
+      return { title: `Dana "${p.title}" dikembalikan`, body: typeof p.note === "string" && p.note ? p.note : "Penyelenggara menandai pengembalian dana selesai." };
     default:
       return { title: n.kind };
   }

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { JoinPanel } from "./join-panel";
 import { MissionSection } from "./missions";
+import { PaymentSection } from "./payment";
 import { coverStyle, cardTag } from "@/components/activity-card";
 import { OrganizerAvatar } from "@/components/avatar";
 import { Icon } from "@/components/icons";
@@ -11,6 +12,7 @@ import { DIFFICULTY_LABELS, formatPrice, formatSchedule, targetLabel, typeLabel 
 import { getActivityCard, getCheckpoints, getMyParticipation, getPartners } from "@/lib/data/activities";
 import { listGroupProgress, listMyGroups } from "@/lib/data/groups";
 import { getCitizenMissions } from "@/lib/data/missions";
+import { getPaymentInstructions } from "@/lib/data/payments";
 import { getCurrentUser } from "@/lib/data/user";
 import { formatDateTime } from "@/lib/format";
 
@@ -31,13 +33,14 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
   const { id } = await params;
   const [card, user] = await Promise.all([getActivityCard(id), getCurrentUser()]);
   if (!card || !user) notFound();
-  const [checkpoints, partners, participation, groups, groupProgress, missions] = await Promise.all([
+  const [checkpoints, partners, participation, groups, groupProgress, missions, payInfo] = await Promise.all([
     getCheckpoints(id),
     getPartners(id),
     getMyParticipation(id, user.id),
     card.join_mode === "individual" ? Promise.resolve([]) : listMyGroups(user.id),
     card.target_scope === "group" ? listGroupProgress({ activityId: id }) : Promise.resolve([]),
     getCitizenMissions(id),
+    card.is_paid ? getPaymentInstructions(id) : Promise.resolve(null),
   ]);
   const leaderGroups = groups.filter((g) => g.isLeader).map((g) => ({ id: g.id, name: g.name, members: g.members.map((m) => ({ user_id: m.user_id, nickname: m.nickname })) }));
   const myGroupRow = participation?.group_id ? groupProgress.find((p) => p.group_id === participation.group_id) : undefined;
@@ -169,6 +172,19 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
           </section>
         )}
 
+        {participation && card.is_paid && participation.status !== "invited" && (
+          <PaymentSection
+            participationId={participation.id}
+            activityId={id}
+            paymentStatus={participation.payment_status}
+            dueAt={participation.payment_due_at}
+            note={participation.payment_note ?? null}
+            priceIdr={card.price_idr}
+            instructions={payInfo?.payment_instructions ?? null}
+            cancelled={participation.status === "cancelled"}
+          />
+        )}
+
         <MissionSection list={missions} activityId={id} activityType={card.type} targetKind={card.target_kind} />
 
         {participation && ["registered", "in_progress"].includes(participation.status) && card.status === "running" && (
@@ -186,7 +202,7 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
 
       <JoinPanel
         activityId={id}
-        participation={participation ? { id: participation.id, status: participation.status } : null}
+        participation={participation ? { id: participation.id, status: participation.status, paymentStatus: participation.payment_status } : null}
         canJoin={!blockedReason}
         blockedReason={blockedReason}
         priceLabel={formatPrice(card.price_idr, card.is_paid)}

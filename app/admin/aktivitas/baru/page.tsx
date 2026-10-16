@@ -24,14 +24,15 @@ async function FormLoader({ searchParams }: Pick<PageProps<"/admin/aktivitas/bar
   const sp = await searchParams;
   const editId = typeof sp.ubah === "string" ? sp.ubah : undefined;
   const supabase = await createClient();
-  const [districts, { data: city }, { data: platformId }, card] = await Promise.all([
+  const [districts, { data: city }, { data: platformId }, card, { data: raw }] = await Promise.all([
     getVillageOptions(),
     supabase.from("regions").select("id").eq("level", "city").eq("is_active", true).limit(1).maybeSingle(),
     supabase.rpc("platform_organizer_id"),
     editId ? getActivityCard(editId) : Promise.resolve(null),
+    editId ? supabase.from("activities").select("payment_instructions, payment_window_hours").eq("id", editId).maybeSingle() : Promise.resolve({ data: null }),
   ]);
   const initial: ActivityFormValues | undefined = card
-    ? { id: card.id, type: card.type, difficulty: card.difficulty, target_scope: card.target_scope, target_kind: card.target_kind, target_count: card.target_count, join_mode: card.join_mode, group_min: card.group_min, group_max: card.group_max, goal: card.goal as ActivityFormValues["goal"], title: card.title, description: card.description ?? "", scope_region_id: card.scope_region_id, starts_at: card.starts_at, ends_at: card.ends_at, quota: card.quota, residency_rule: card.residency_rule, audience: card.audience }
+    ? { id: card.id, type: card.type, difficulty: card.difficulty, target_scope: card.target_scope, target_kind: card.target_kind, target_count: card.target_count, join_mode: card.join_mode, group_min: card.group_min, group_max: card.group_max, goal: card.goal as ActivityFormValues["goal"], title: card.title, description: card.description ?? "", scope_region_id: card.scope_region_id, starts_at: card.starts_at, ends_at: card.ends_at, quota: card.quota, residency_rule: card.residency_rule, audience: card.audience, is_paid: card.is_paid, price_idr: card.price_idr, payment_instructions: raw?.payment_instructions ?? null, payment_window_hours: raw?.payment_window_hours ?? null }
     : undefined;
   return (
     <div className="max-w-md">
