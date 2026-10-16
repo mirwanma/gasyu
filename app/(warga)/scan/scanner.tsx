@@ -4,11 +4,19 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import jsQR from "jsqr";
 import { performCheckin } from "@/lib/actions/checkin";
+import { completeMissionQr } from "@/lib/actions/missions";
 import { parseQrPayload, type CheckinResult, type QrPayload } from "@/lib/checkin";
+import type { MissionResult } from "@/lib/missions";
 import { levelFor, type LevelRow } from "@/lib/gamification/level";
 import { Icon } from "@/components/icons";
 
-type Phase = { kind: "scan" } | { kind: "confirm"; payload: QrPayload } | { kind: "sending" } | { kind: "done"; result: CheckinResult } | { kind: "error"; message: string };
+type Phase =
+  | { kind: "scan" }
+  | { kind: "confirm"; payload: QrPayload }
+  | { kind: "sending" }
+  | { kind: "done"; result: CheckinResult }
+  | { kind: "mission"; result: MissionResult }
+  | { kind: "error"; message: string };
 
 // Halaman Scan QR warga, mengikuti artboard "Warga · Scan QR" dan "Warga · Check-in berhasil".
 export function Scanner({ initial, levels }: { initial: QrPayload | null; levels: LevelRow[] }) {
@@ -42,6 +50,12 @@ export function Scanner({ initial, levels }: { initial: QrPayload | null; levels
       if (submittingRef.current) return;
       submittingRef.current = true;
       setPhase({ kind: "sending" });
+      if (payload.kind === "mission") {
+        const res = await completeMissionQr(payload.missionId, payload.token, geo?.lat ?? null, geo?.lng ?? null);
+        submittingRef.current = false;
+        setPhase(res.ok ? { kind: "mission", result: res.result } : { kind: "error", message: res.error });
+        return;
+      }
       const res = await performCheckin(payload.checkpointId, payload.token, geo?.lat ?? null, geo?.lng ?? null);
       submittingRef.current = false;
       setPhase(res.ok ? { kind: "done", result: res.result } : { kind: "error", message: res.error });
@@ -106,6 +120,7 @@ export function Scanner({ initial, levels }: { initial: QrPayload | null; levels
   }, [phase.kind, submit]);
 
   if (phase.kind === "done") return <Reward result={phase.result} levels={levels} />;
+  if (phase.kind === "mission") return <MissionReward result={phase.result} levels={levels} />;
 
   return (
     <div className="flex min-h-screen flex-col items-center gap-6 px-5 pb-8 pt-6" style={{ background: "radial-gradient(circle at 50% 40%, #2A2F4F 0%, #0B0E22 65%)" }}>
@@ -119,9 +134,11 @@ export function Scanner({ initial, levels }: { initial: QrPayload | null; levels
 
       {phase.kind === "confirm" ? (
         <div className="flex w-full flex-1 flex-col items-center justify-center gap-4 text-center">
-          <span className="text-[15px] leading-[1.5] text-fg-label">QR check-in terbaca. Pastikan kamu berada di lokasi, lalu lanjutkan.</span>
+          <span className="text-[15px] leading-[1.5] text-fg-label">
+            {phase.payload.kind === "mission" ? "QR misi terbaca. Pastikan kamu berada di lokasi, lalu selesaikan misinya." : "QR check-in terbaca. Pastikan kamu berada di lokasi, lalu lanjutkan."}
+          </span>
           <button type="button" onClick={() => void submit(phase.payload)} className="flex h-[54px] w-full items-center justify-center rounded-2xl bg-primary text-[16px] font-semibold text-on-primary">
-            Check-in sekarang
+            {phase.payload.kind === "mission" ? "Selesaikan misi" : "Check-in sekarang"}
           </button>
           <button type="button" onClick={() => setPhase({ kind: "scan" })} className="text-[14px] font-semibold text-fg-soft">
             Pindai ulang
@@ -160,11 +177,11 @@ export function Scanner({ initial, levels }: { initial: QrPayload | null; levels
       </div>
 
       <div className="mt-auto flex w-full flex-col gap-2.5">
-        <span title="Segera hadir" className="flex h-[52px] items-center justify-center gap-2 rounded-2xl border border-line-strong bg-surface/95 text-[15px] font-semibold text-fg-muted">
+        <Link href="/" className="flex h-[52px] items-center justify-center gap-2 rounded-2xl border border-line-strong bg-surface/95 text-[15px] font-semibold text-fg">
           <Icon name="keyboard" size={18} stroke={2} />
-          Ketik kode misi · segera hadir
-        </span>
-        <span className="text-center text-[12px] text-fg-muted">QR berganti tiap 60 detik. Foto QR yang disebar tidak akan berlaku.</span>
+          Ketik kode misi di halaman aktivitas
+        </Link>
+        <span className="text-center text-[12px] text-fg-muted">QR check-in dan QR misi berganti tiap 60 detik. Foto QR yang disebar tidak akan berlaku.</span>
       </div>
     </div>
   );
@@ -239,6 +256,66 @@ function Reward({ result, levels }: { result: CheckinResult; levels: LevelRow[] 
       <div className="mt-auto flex w-full flex-col gap-2.5">
         <Link href={result.points > 0 ? "/dompet" : `/aktivitas/${result.activity_id}`} className="flex h-[52px] items-center justify-center rounded-2xl bg-primary text-[15px] font-semibold text-on-primary">
           {result.points > 0 ? "Tukar poin" : "Lihat aktivitas"}
+        </Link>
+        <Link href="/" className="flex h-12 items-center justify-center rounded-2xl text-[14px] font-semibold text-fg-label">
+          Kembali ke beranda
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function MissionReward({ result, levels }: { result: MissionResult; levels: LevelRow[] }) {
+  const totalXp = result.total_xp ?? 0;
+  const level = levelFor(totalXp, levels);
+  const currentMin = levels.find((l) => l.level === level.level)?.min_xp ?? 0;
+  const pct = level.nextMinXp === null ? 100 : Math.round(((totalXp - currentMin) / (level.nextMinXp - currentMin)) * 100);
+  const gained = (result.mission_xp ?? 0) + (result.xp ?? 0);
+  return (
+    <div className="flex min-h-screen flex-col items-center gap-[18px] px-5 pb-7 pt-12" style={{ background: "radial-gradient(circle at 50% 18%, #3B2F8F 0%, #0D1024 60%)" }}>
+      <div className="flex size-24 items-center justify-center rounded-full bg-success text-bg shadow-[0_0_0_12px_rgba(52,211,153,0.15)]">
+        <Icon name="check" size={48} stroke={2.6} />
+      </div>
+      <div className="flex flex-col items-center gap-1.5 text-center">
+        <span className="text-[13px] text-fg-label">{result.activity_title}</span>
+        <h1 className="font-display text-[28px] font-bold">{result.completed ? "Aktivitas selesai!" : "Misi selesai!"}</h1>
+        <span className="text-[14px] text-fg-soft">
+          {result.mission_title}
+          {result.required_total ? ` · ${result.required_done ?? 0} dari ${result.required_total} misi wajib` : ""}
+        </span>
+      </div>
+      <div className="flex w-full gap-3">
+        <div className="flex flex-1 flex-col items-center gap-1 rounded-[20px] border border-line bg-surface p-4">
+          <span className="font-display text-[32px] font-bold text-xp">+{gained}</span>
+          <span className="text-[12px] text-fg-soft">XP{result.xp ? " · termasuk bonus selesai" : ""}</span>
+        </div>
+        <div className="flex flex-1 flex-col items-center gap-1 rounded-[20px] border border-line bg-surface p-4">
+          <span className="font-display text-[32px] font-bold text-points">+{result.points ?? 0}</span>
+          <span className="text-[12px] text-fg-soft">{(result.points ?? 0) > 0 ? "poin" : result.completed ? "poin · budget habis" : "poin · setelah selesai"}</span>
+        </div>
+      </div>
+      <div className="flex w-full flex-col gap-1.5 rounded-[20px] border border-line bg-surface p-4">
+        <div className="flex justify-between text-[12px] text-fg-soft">
+          <span>
+            Level {level.level} · {level.name}
+          </span>
+          <span>
+            {totalXp.toLocaleString("id-ID")}
+            {level.nextMinXp !== null ? ` / ${level.nextMinXp.toLocaleString("id-ID")}` : ""} XP
+          </span>
+        </div>
+        <div className="h-2 overflow-hidden rounded-lg bg-track">
+          <div className="h-full bg-xp" style={{ width: `${Math.max(pct, 2)}%` }} />
+        </div>
+      </div>
+      {result.flagged && (
+        <p className="w-full rounded-2xl bg-warn-tint px-4 py-3 text-[12px] leading-[1.5] text-warn">
+          Lokasi kamu {result.distance_m != null ? `${result.distance_m} m dari checkpoint` : "tidak terbaca"}. Misi tetap dihitung, tetapi akan ditinjau tim Ramein.
+        </p>
+      )}
+      <div className="mt-auto flex w-full flex-col gap-2.5">
+        <Link href={result.activity_id ? `/aktivitas/${result.activity_id}` : "/"} className="flex h-[52px] items-center justify-center rounded-2xl bg-primary text-[15px] font-semibold text-on-primary">
+          Lihat misi lainnya
         </Link>
         <Link href="/" className="flex h-12 items-center justify-center rounded-2xl text-[14px] font-semibold text-fg-label">
           Kembali ke beranda

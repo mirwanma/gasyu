@@ -224,6 +224,11 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
                 Peserta · {participants ?? 0}
               </Link>
             )}
+            {!["cancelled"].includes(card.status) && (
+              <Link href={`${self}/misi`} className={smallButton.outline}>
+                Misi
+              </Link>
+            )}
             <a href={`/aktivitas/${aid}`} className={smallButton.outline}>
               Pratinjau warga
             </a>

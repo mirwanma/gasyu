@@ -115,4 +115,4 @@ docs/
 
 Ikuti `docs/DESAIN-DATABASE.md` bagian 9 (irisan 1–11).
 
-Irisan saat ini: **10 (Misi)** — Irisan 1–9 selesai — perbarui baris ini setiap pindah irisan.
+Irisan saat ini: **11 (Aktivitas berbayar)** — Irisan 1–10 selesai — perbarui baris ini setiap pindah irisan.
