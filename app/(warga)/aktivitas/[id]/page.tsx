@@ -187,7 +187,7 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
 
         <MissionSection list={missions} activityId={id} activityType={card.type} targetKind={card.target_kind} />
 
-        {participation && ["registered", "in_progress"].includes(participation.status) && card.status === "running" && (
+        {participation && ["registered", "in_progress"].includes(participation.status) && card.status === "running" && ["not_required", "paid"].includes(participation.payment_status) && (
           <Link href="/scan" className="flex h-[54px] items-center justify-center gap-2 rounded-2xl bg-hot text-[16px] font-semibold text-bg">
             <Icon name="scan" size={22} stroke={2.2} />
             Check-in: scan QR staf
