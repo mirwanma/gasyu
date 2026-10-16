@@ -27,6 +27,16 @@ function describe(n: Notification): { title: string; body?: string; href?: strin
       return { title: `Permintaan ke ${community} belum diterima`, body: p.auto ? "Tidak dijawab dalam 30 hari." : undefined };
     case "membership_removed":
       return { title: `Kamu dikeluarkan dari ${community}`, body: typeof p.reason === "string" ? p.reason : undefined };
+    case "activity_approved":
+      return { title: `"${p.title}" disetujui dan sudah terbit`, body: "Warga sudah bisa melihat dan mendaftar.", href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
+    case "activity_rejected":
+      return { title: `"${p.title}" perlu perbaikan`, body: typeof p.note === "string" ? p.note : undefined };
+    case "activity_cancelled":
+      return { title: `"${p.title}" dibatalkan penyelenggara`, body: typeof p.reason === "string" ? p.reason : undefined };
+    case "community_new_activity":
+      return { title: `Aktivitas baru dari ${community}: ${p.title}`, body: "Lihat detail dan daftar sebelum kuota penuh.", href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
+    case "payment_refund_due":
+      return { title: `Ada peserta "${p.title}" yang perlu refund`, body: "Peserta sudah bayar lalu aktivitas dibatalkan atau ia membatalkan." };
     default:
       return { title: n.kind };
   }
@@ -79,12 +89,12 @@ async function NotificationList() {
       )}
       <ul className="flex flex-col gap-2.5">
         {items.map((n) => {
-          const { title, body } = describe(n);
+          const { title, body, href } = describe(n);
           return (
             <li key={n.id} className={`${cardClass} flex gap-3 p-4 ${n.read_at ? "opacity-70" : ""}`}>
               <span className={`mt-1.5 size-2 shrink-0 rounded-full ${n.read_at ? "bg-transparent" : "bg-hot"}`} />
               <div className="flex flex-1 flex-col gap-1">
-                <span className="text-[14px] font-semibold">{title}</span>
+                <span className="text-[14px] font-semibold">{href ? <a href={href} className="text-fg">{title}</a> : title}</span>
                 {body && <span className="text-[13px] leading-[1.5] text-fg-soft">{body}</span>}
                 <span className="text-[11px] text-fg-muted">{timeAgo(n.created_at)}</span>
               </div>

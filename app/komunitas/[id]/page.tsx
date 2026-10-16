@@ -22,7 +22,14 @@ async function Dashboard({ params }: Pick<PageProps<"/komunitas/[id]">, "params"
 
 async function DashboardBody({ id, org }: { id: string; org: { status: string } }) {
   const supabase = await createClient();
-  const { data: stats } = await supabase.from("v_community_member_stats").select("*").eq("community_id", id).maybeSingle();
+  const [{ data: stats }, { data: acts }] = await Promise.all([
+    supabase.from("v_community_member_stats").select("*").eq("community_id", id).maybeSingle(),
+    supabase.from("v_activity_cards").select("id, status, seats_taken").eq("host_organizer_id", id),
+  ]);
+  const activities = (acts ?? []) as { id: string; status: string; seats_taken: number }[];
+  const running = activities.filter((a) => a.status === "published" || a.status === "running");
+  const drafts = activities.filter((a) => a.status === "draft");
+  const participants = activities.reduce((sum, a) => sum + a.seats_taken, 0);
   const s = (stats ?? {}) as { active_members?: number; pending_requests?: number; new_members_month?: number; attending_members_30d?: number };
   const active = Number(s.active_members ?? 0);
   const pending = Number(s.pending_requests ?? 0);
@@ -34,8 +41,8 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string } 
       <StatusBanner org={org as never} base={base} />
 
       <div className="grid grid-cols-3 gap-2.5">
-        <Kpi cols={3} label="berjalan" value="0" />
-        <Kpi cols={3} label="peserta" value="0" />
+        <Kpi cols={3} label="berjalan" value={String(running.length)} />
+        <Kpi cols={3} label="peserta" value={String(participants)} />
         <Kpi cols={3} label="check-in hari ini" value="0" />
       </div>
 
@@ -75,16 +82,28 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string } 
         {org.status === "rejected" && (
           <TodoItem n={1} title="Perbaiki data pendaftaran" sub="Lihat catatan tim Ramein" href={`${base}/profil`} />
         )}
-        {pending === 0 && org.status !== "rejected" && (
+        {drafts.length > 0 && <TodoItem n={drafts.length} title="Draft belum diajukan" sub="Lengkapi checkpoint lalu ajukan" href={`${base}/aktivitas`} tone="info" />}
+        {pending === 0 && org.status !== "rejected" && drafts.length === 0 && (
           <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>Tidak ada yang perlu ditindak. Mantap.</p>
         )}
       </section>
 
       <section className="flex flex-col gap-2.5">
-        <h2 className="font-display text-[18px] font-semibold">Aktivitas</h2>
-        <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>
-          Belum ada aktivitas. Fitur membuat event dan challenge menyusul.
-        </p>
+        <div className="flex items-baseline justify-between">
+          <h2 className="font-display text-[18px] font-semibold">Aktivitas</h2>
+          <a href={`${base}/aktivitas`} className="text-[13px] font-semibold text-link">
+            Kelola
+          </a>
+        </div>
+        {activities.length === 0 ? (
+          <a href={`${base}/aktivitas/baru`} className={`${cardClass} block p-4 text-[13px] text-fg-soft`}>
+            Belum ada aktivitas. Buat event pertama untuk member dan warga.
+          </a>
+        ) : (
+          <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>
+            {running.length} berjalan · {drafts.length} draft · {activities.length} total
+          </p>
+        )}
       </section>
     </>
   );

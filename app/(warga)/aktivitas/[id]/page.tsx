@@ -1,0 +1,145 @@
+import { Suspense } from "react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { JoinPanel } from "./join-panel";
+import { coverStyle, cardTag } from "@/components/activity-card";
+import { OrganizerAvatar } from "@/components/avatar";
+import { Icon } from "@/components/icons";
+import { cardClass, tagClass } from "@/components/styles";
+import { formatPrice, formatSchedule, typeLabel } from "@/lib/activities";
+import { getActivityCard, getCheckpoints, getMyParticipation, getPartners } from "@/lib/data/activities";
+import { getCurrentUser } from "@/lib/data/user";
+import { formatDateTime } from "@/lib/format";
+
+// Detail aktivitas untuk warga, mengikuti artboard "Warga · Detail aktivitas".
+export default function AktivitasPage({ params }: PageProps<"/aktivitas/[id]">) {
+  return (
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col pb-36">
+      <Suspense fallback={<p className="px-5 pt-6 text-[13px] text-fg-muted">Memuat…</p>}>
+        <Detail params={params} />
+      </Suspense>
+    </main>
+  );
+}
+
+const ROLE_LABELS = { host: "host", cohost: "cohost", sponsor: "sponsor" };
+
+async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) {
+  const { id } = await params;
+  const [card, user] = await Promise.all([getActivityCard(id), getCurrentUser()]);
+  if (!card || !user) notFound();
+  const [checkpoints, partners, participation] = await Promise.all([getCheckpoints(id), getPartners(id), getMyParticipation(id, user.id)]);
+  const tag = cardTag(card);
+  const open = card.status === "published" || card.status === "running";
+  const quotaFull = card.quota !== null && card.seats_taken >= card.quota;
+  const residentsBlocked = card.residency_rule === "residents_only" && !user.homeVillageId;
+
+  let blockedReason: string | undefined;
+  if (!open) blockedReason = card.status === "cancelled" ? "Aktivitas dibatalkan" : card.status === "ended" || card.status === "settled" ? "Aktivitas sudah selesai" : "Belum dibuka";
+  else if (card.join_mode === "group") blockedReason = "Hanya lewat grup (fitur grup menyusul)";
+  else if (quotaFull) blockedReason = "Kuota penuh";
+  else if (residentsBlocked) blockedReason = "Khusus warga wilayah cakupan";
+
+  const facts: [string, string][] = [
+    ["Waktu", formatSchedule(card.starts_at, card.ends_at)],
+    ["Lokasi", checkpoints[0]?.name ?? card.scope_region_name ?? "Diumumkan penyelenggara"],
+    ["Kuota", card.quota ? `${card.seats_taken} dari ${card.quota.toLocaleString("id-ID")}` : `${card.seats_taken} peserta`],
+    ["Hadiah", `+${card.xp_base} XP${card.points_per_completion > 0 ? ` · +${card.points_per_completion} poin` : ""}`],
+  ];
+
+  return (
+    <>
+      <div className="relative h-[220px]" style={coverStyle(card)}>
+        <Link href="/jelajah" aria-label="Kembali" className="absolute left-5 top-5 flex size-11 items-center justify-center rounded-full bg-[#0D1024]/70 text-cream">
+          <Icon name="back" stroke={2} />
+        </Link>
+        <div className="absolute bottom-4 left-5 flex gap-2">
+          {tag && <span className={`${tagClass.base} ${tagClass[tag.tone]}`}>{tag.label}</span>}
+          <span className="rounded-full bg-[#0D1024]/70 px-2.5 py-1 text-[11px] font-bold text-cream">{typeLabel(card.type)}</span>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-5 px-5 pt-5">
+        <div className="flex flex-col gap-1.5">
+          <h1 className="font-display text-[26px] font-bold leading-tight">{card.title}</h1>
+          <Link href={`/${card.host_type === "merchant" ? "m" : "k"}/${card.host_slug}`} className="text-[14px] font-semibold text-link">
+            {card.host_name}
+          </Link>
+          {card.description && <p className="text-[14px] leading-[1.6] text-fg-label whitespace-pre-line">{card.description}</p>}
+        </div>
+
+        <dl className="grid grid-cols-2 gap-2.5">
+          {facts.map(([k, v]) => (
+            <div key={k} className={`${cardClass} flex flex-col gap-0.5 p-3`}>
+              <dt className="text-[11px] text-fg-soft">{k}</dt>
+              <dd className="text-[14px] font-semibold">{v}</dd>
+            </div>
+          ))}
+        </dl>
+
+        {(card.audience === "members_only" || card.residency_rule === "residents_only") && (
+          <p className="rounded-2xl bg-warn-tint px-4 py-3 text-[13px] text-warn">
+            {card.audience === "members_only" ? `Khusus member ${card.host_name}. ` : ""}
+            {card.residency_rule === "residents_only" ? `Khusus warga ${card.scope_region_name ?? "wilayah cakupan"}.` : ""}
+          </p>
+        )}
+
+        <section className="flex flex-col gap-2.5">
+          <h2 className="font-display text-[18px] font-semibold">Didukung oleh</h2>
+          <div className="flex flex-col gap-2">
+            {partners.map((p) => (
+              <div key={p.id} className={`${cardClass} flex items-center gap-3 p-3`}>
+                <OrganizerAvatar name={p.organizer.name} type={p.organizer.type} logoUrl={p.organizer.logo_url} size={40} />
+                <span className="flex flex-1 flex-col">
+                  <span className="text-[14px] font-semibold">{p.organizer.name}</span>
+                  <span className="text-[12px] text-fg-soft">{ROLE_LABELS[p.role]}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {checkpoints.length > 0 && (
+          <section className="flex flex-col gap-2.5">
+            <h2 className="font-display text-[18px] font-semibold">Checkpoint</h2>
+            <div className="flex flex-col gap-2">
+              {checkpoints.filter((c) => c.is_active).map((c) => (
+                <a key={c.id} href={`https://maps.google.com/?q=${c.lat},${c.lng}`} target="_blank" rel="noreferrer" className={`${cardClass} flex items-center gap-3 p-3 text-fg`}>
+                  <span className="flex size-10 items-center justify-center rounded-xl bg-primary-tint text-link">
+                    <Icon name="pin" size={18} stroke={2} />
+                  </span>
+                  <span className="flex flex-1 flex-col">
+                    <span className="text-[14px] font-semibold">{c.name}</span>
+                    <span className="text-[12px] text-fg-soft">{c.address ?? `${c.lat}, ${c.lng}`} · radius {c.radius_m} m</span>
+                  </span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section className={`${cardClass} flex flex-col gap-1 p-4`}>
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-display text-[18px] font-semibold">Misi</h2>
+            <span className="text-[12px] font-semibold text-fg-muted">segera hadir</span>
+          </div>
+          <p className="text-[13px] leading-[1.5] text-fg-soft">
+            Selesai saat kamu check-in di checkpoint. Misi tambahan akan muncul di sini ketika fiturnya dirilis.
+          </p>
+        </section>
+
+        {participation?.status === "completed" && participation.id && (
+          <p className="text-[12px] text-fg-soft">Kamu menyelesaikan aktivitas ini{card.published_at ? ` · terbit ${formatDateTime(card.published_at)}` : ""}.</p>
+        )}
+      </div>
+
+      <JoinPanel
+        activityId={id}
+        participation={participation ? { id: participation.id, status: participation.status } : null}
+        canJoin={!blockedReason}
+        blockedReason={blockedReason}
+        priceLabel={formatPrice(card.price_idr, card.is_paid)}
+      />
+    </>
+  );
+}
