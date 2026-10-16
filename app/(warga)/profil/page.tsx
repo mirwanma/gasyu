@@ -6,7 +6,9 @@ import { Icon } from "@/components/icons";
 import { cardClass } from "@/components/styles";
 import { getMyOrganizers, ROLE_LABELS, STATUS_LABELS, TYPE_LABELS } from "@/lib/data/organizers";
 import { getCurrentUser } from "@/lib/data/user";
+import { badgeMeta } from "@/lib/gamification/badges";
 import { levelFor } from "@/lib/gamification/level";
+import { listBadges, listUserBadges } from "@/lib/data/leaderboard";
 import { createClient } from "@/lib/supabase/server";
 
 export default function ProfilPage() {
@@ -27,7 +29,7 @@ async function ProfileContent() {
   if (!user) return null;
   const supabase = await createClient();
 
-  const [{ data: xpRows }, { data: levels }, organizers, { data: memberships }] = await Promise.all([
+  const [{ data: xpRows }, { data: levels }, organizers, { data: memberships }, badges, userBadges] = await Promise.all([
     supabase.from("xp_ledger").select("amount").eq("user_id", user.id),
     supabase.from("levels").select("level, name, min_xp"),
     getMyOrganizers(user.id),
@@ -36,9 +38,12 @@ async function ProfileContent() {
       .select("status, community:organizers(name, slug)")
       .eq("user_id", user.id)
       .in("status", ["active", "pending"]),
+    listBadges(),
+    listUserBadges(user.id),
   ]);
 
   const totalXp = (xpRows ?? []).reduce((sum, row) => sum + row.amount, 0);
+  const earned = new Set(userBadges.map((b) => b.badge_id));
   const level = levelFor(totalXp, levels ?? []);
   const communities = (memberships ?? [])
     .map((row) => ({
@@ -119,6 +124,29 @@ async function ProfileContent() {
       </section>
 
       <section className="flex flex-col gap-2.5">
+        <div className="flex items-baseline justify-between">
+          <span className="text-[13px] font-bold text-fg-label">Badge</span>
+          <span className="text-[12px] text-fg-soft">
+            {earned.size} dari {badges.length}
+          </span>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {badges.map((b) => {
+            const meta = badgeMeta(b.code);
+            const got = earned.has(b.id);
+            return (
+              <div key={b.id} title={b.description} className={`${cardClass} flex flex-col items-center gap-1.5 px-2 py-3 text-center ${got ? "" : "opacity-55"}`}>
+                <span className={`flex size-10 items-center justify-center rounded-full bg-track ${got ? meta.color : "text-fg-muted"}`}>
+                  <Icon name={meta.icon} size={18} stroke={2} />
+                </span>
+                <span className="text-[11px] font-semibold leading-[1.3]">{b.name}</span>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-2.5">
         <span className="text-[13px] font-bold text-fg-label">Member di</span>
         {communities.length === 0 ? (
           <span className="text-[13px] text-fg-soft">Belum bergabung ke komunitas mana pun.</span>
@@ -147,9 +175,10 @@ async function ProfileContent() {
           Grup saya
           <Icon name="chevron" size={16} className="text-fg-muted" />
         </a>
-        <span className="flex h-[52px] items-center justify-between border-b border-line px-4 text-[14px] font-medium text-fg-muted">
-          Peringkat <span className="text-[11px]">segera hadir</span>
-        </span>
+        <a href="/peringkat" className="flex h-[52px] items-center justify-between border-b border-line px-4 text-[14px] font-medium text-fg">
+          Peringkat
+          <Icon name="chevron" size={16} className="text-fg-muted" />
+        </a>
         <form action={signOut}>
           <button type="submit" className="flex h-[52px] w-full items-center justify-between px-4 text-[14px] font-medium text-danger">
             Keluar dari akun

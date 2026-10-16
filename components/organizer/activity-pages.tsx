@@ -9,7 +9,12 @@ import { cardClass, chipClass, smallButton, tagClass, textareaClass } from "@/co
 import { SubmitButton } from "@/components/ui";
 import { changeActivityStatus, toggleCheckpoint } from "@/lib/actions/activities";
 import { saveActivityPoints } from "@/lib/actions/rewards";
+import { cancelPartnerInvite } from "@/lib/actions/collab";
+import { InvitePartnerForm } from "@/components/organizer/collab-forms";
+import { listActivityPartners, listApprovedOrganizers, listMyPartnerships } from "@/lib/data/collab";
+import { OrganizerAvatar } from "@/components/avatar";
 import { getActivityBudget } from "@/lib/data/rewards";
+import { getActivityStats, listPartnerStats } from "@/lib/data/dashboards";
 import { DIFFICULTY_LABELS, JOIN_MODE_LABELS, PARTICIPATION_LABELS, PAYMENT_LABELS, formatPrice, formatSchedule, targetLabel, typeLabel, type ParticipationStatus, type PaymentStatus } from "@/lib/activities";
 import { getActivityCard, getCheckpoints, listOrganizerActivities } from "@/lib/data/activities";
 import { getVillageOptions } from "@/lib/data/organizers";
@@ -42,12 +47,14 @@ export function AktivitasListPage({ id, type, tab }: { id: string; type: Kind; t
 const LIST_TABS: [string, string, string[]][] = [
   ["", "Aktif", ["draft", "awaiting_partners", "in_review", "published", "running"]],
   ["selesai", "Selesai", ["ended", "settled", "cancelled"]],
+  ["partner", "Sebagai partner", []],
 ];
 
 async function AktivitasList({ id, base, tab, approved }: { id: string; base: string; tab: string; approved: boolean }) {
   const all = await listOrganizerActivities(id);
   const statuses = (LIST_TABS.find(([key]) => key === tab) ?? LIST_TABS[0])[2];
   const items = all.filter((a) => statuses.includes(a.status));
+  const partnerships = tab === "partner" ? (await listMyPartnerships(id)).filter((p) => p.status === "accepted") : [];
   return (
     <>
       <div className="flex gap-2">
@@ -57,7 +64,26 @@ async function AktivitasList({ id, base, tab, approved }: { id: string; base: st
           </a>
         ))}
       </div>
-      {items.length === 0 ? (
+      {tab === "partner" ? (
+        partnerships.length === 0 ? (
+          <div className={`${cardClass} flex flex-col gap-1 p-4`}>
+            <span className="text-[15px] font-semibold">Belum jadi partner</span>
+            <span className="text-[13px] leading-[1.5] text-fg-soft">Undangan dan open call ada di menu Lainnya → Kolaborasi.</span>
+          </div>
+        ) : (
+          <div className={`${cardClass} overflow-hidden`}>
+            {partnerships.map((p) => (
+              <a key={p.id} href={`${base}/aktivitas/${p.activity_id}`} className="flex items-center gap-3 border-b border-line px-4 py-3.5 text-fg last:border-b-0">
+                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span className="truncate text-[15px] font-semibold">{p.activity_title}</span>
+                  <span className="text-[12px] text-fg-soft">host {p.host_name} · {p.role} · {formatSchedule(p.starts_at, p.ends_at)}</span>
+                </span>
+                <StatusTag status={p.activity_status} />
+              </a>
+            ))}
+          </div>
+        )
+      ) : items.length === 0 ? (
         <div className={`${cardClass} flex flex-col gap-1 p-4`}>
           <span className="text-[15px] font-semibold">{tab ? "Belum ada yang selesai" : "Belum ada aktivitas"}</span>
           <span className="text-[13px] leading-[1.5] text-fg-soft">
@@ -127,10 +153,16 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
     supabase.from("activities").select("review_note, created_at").eq("id", aid).maybeSingle(),
     supabase.from("participations").select("id", { count: "exact", head: true }).eq("activity_id", aid).in("status", ["invited", "registered", "in_progress", "completed"]),
   ]);
-  if (!card || card.host_organizer_id !== id) notFound();
+  if (!card) notFound();
+  const isHost = card.host_organizer_id === id;
+  const partners = await listActivityPartners(aid);
+  const myPartner = partners.find((p) => p.organizer_id === id && p.status === "accepted");
+  if (!isHost && !myPartner) notFound();
   const isLeader = ctx.org.role === "owner" || ctx.org.role === "chair";
-  const editable = card.status === "draft";
-  const liteEditable = card.status === "published" || card.status === "running";
+  const editable = isHost && card.status === "draft";
+  const liteEditable = isHost && (card.status === "published" || card.status === "running");
+  const canAddCheckpoint = (isHost && ["draft", "awaiting_partners", "published"].includes(card.status)) || (!isHost && ["draft", "awaiting_partners", "published"].includes(card.status));
+  const organizers = isHost && isLeader && ["draft", "awaiting_partners", "in_review", "published"].includes(card.status) ? await listApprovedOrganizers(id) : [];
   const activeCheckpoints = checkpoints.filter((c) => c.is_active).length;
   const self = `${base}/aktivitas/${aid}`;
 
@@ -149,6 +181,8 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
     ? await Promise.all([getActivityBudget(aid, id), supabase.from("activity_partners").select("id").eq("activity_id", aid).eq("organizer_id", id).maybeSingle()])
     : [null, { data: null }];
   const pointsEditable = ["draft", "awaiting_partners"].includes(card.status);
+  const live = ["running", "ended", "settled"].includes(card.status);
+  const [stats, partnerStats] = live ? await Promise.all([getActivityStats(aid), listPartnerStats(aid)]) : [null, []];
 
   return (
     <>
@@ -176,7 +210,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
             Pendaftaran: {JOIN_MODE_LABELS[card.join_mode]}{card.join_mode !== "individual" ? ` (${card.group_min}–${card.group_max} orang)` : ""}
             {card.type === "challenge" ? ` · ${DIFFICULTY_LABELS[card.difficulty ?? "easy"]} · target ${targetLabel(card.target_kind, card.target_count, card.target_scope)}` : ""}
           </span>
-          {card.status === "draft" && raw?.review_note && (
+          {isHost && card.status === "draft" && raw?.review_note && (
             <p className="rounded-xl bg-danger-tint px-3 py-2 text-[12px] text-danger">Catatan tim Ramein: {raw.review_note}</p>
           )}
           <div className="flex flex-wrap gap-2 pt-1">
@@ -185,9 +219,11 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
                 Ubah draft
               </Link>
             )}
-            <Link href={`${self}/peserta`} className={smallButton.outline}>
-              Peserta · {participants ?? 0}
-            </Link>
+            {isHost && (
+              <Link href={`${self}/peserta`} className={smallButton.outline}>
+                Peserta · {participants ?? 0}
+              </Link>
+            )}
             <a href={`/aktivitas/${aid}`} className={smallButton.outline}>
               Pratinjau warga
             </a>
@@ -207,6 +243,43 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
           </div>
         ))}
       </div>
+
+      {stats && (
+        <section className={`${cardClass} flex flex-col gap-3 p-4`}>
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-display text-[18px] font-semibold">Statistik</h2>
+            <span className="text-[12px] text-fg-soft">{stats.checkins_today} check-in hari ini</span>
+          </div>
+          <div className="grid grid-cols-4 gap-2 text-center">
+            {[
+              [stats.attended, "hadir"],
+              [stats.completed, "selesai"],
+              [stats.new_citizens, "warga baru"],
+              [stats.returning_citizens, "kembali"],
+            ].map(([v, k]) => (
+              <div key={k} className="flex flex-col gap-0.5 rounded-xl bg-bg px-2 py-2.5">
+                <span className="font-display text-[20px] font-semibold">{v}</span>
+                <span className="text-[11px] text-fg-soft">{k}</span>
+              </div>
+            ))}
+          </div>
+          {stats.checkins_flagged > 0 && <span className="text-[12px] text-warn">{stats.checkins_flagged} check-in di luar radius menunggu tinjauan tim Ramein.</span>}
+          {partnerStats.length > 1 && (
+            <div className="flex flex-col gap-1.5 border-t border-line pt-3">
+              {partnerStats.map((p) => (
+                <div key={p.organizer_id} className="flex items-center justify-between text-[12px]">
+                  <span className="font-semibold">
+                    {p.organizer_name} <span className="font-normal text-fg-soft">· {p.role}</span>
+                  </span>
+                  <span className="text-fg-soft">
+                    {p.checkins} check-in · {p.citizens} warga{p.organizer_type === "merchant" ? ` · ${p.vouchers_used}/${p.vouchers_redeemed} voucher` : ""}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="flex flex-col gap-2.5">
         <div className="flex items-baseline justify-between">
@@ -237,10 +310,53 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
             )}
           </div>
         ))}
-        {(editable || liteEditable) && <CheckpointForm organizerId={id} type={type} activityId={aid} outlets={outlets as { id: string; name: string; address: string }[]} />}
+        {canAddCheckpoint && <CheckpointForm organizerId={id} type={type} activityId={aid} outlets={outlets as { id: string; name: string; address: string }[]} partnerOrganizerId={isHost ? undefined : id} />}
       </section>
 
-      {type === "merchant" && hostPartner ? (
+      <section className="flex flex-col gap-2.5">
+        <div className="flex items-baseline justify-between">
+          <h2 className="font-display text-[18px] font-semibold">Partner</h2>
+          <span className="text-[12px] text-fg-soft">{partners.filter((p) => p.status === "accepted").length} terlibat</span>
+        </div>
+        {partners.filter((p) => p.status !== "removed" && p.status !== "declined").map((p) => (
+          <div key={p.id} className={`${cardClass} flex items-center gap-3 p-3`}>
+            <OrganizerAvatar name={p.organizer_name} type={p.organizer_type} logoUrl={p.organizer_logo_url} size={40} />
+            <span className="flex flex-1 flex-col">
+              <span className="text-[14px] font-semibold">{p.organizer_name}{p.organizer_id === id ? " (kamu)" : ""}</span>
+              <span className="text-[12px] text-fg-soft">
+                {p.role === "host" ? "Host" : p.role === "cohost" ? "Cohost" : "Sponsor"}
+                {p.status === "invited" ? " · menunggu jawaban" : ""}
+                {p.points_budget > 0 ? ` · budget ${p.points_budget} poin` : ""}
+                {p.source === "admin" ? " · ditambahkan admin" : p.source === "open_call" ? " · dari open call" : ""}
+              </span>
+            </span>
+            {isHost && isLeader && p.status === "invited" && (
+              <form action={cancelPartnerInvite}>
+                <input type="hidden" name="partner_id" value={p.id} />
+                <input type="hidden" name="organizer_id" value={id} />
+                <input type="hidden" name="type_org" value={type} />
+                <button type="submit" className="text-[12px] font-semibold text-danger">Batalkan</button>
+              </form>
+            )}
+          </div>
+        ))}
+        {organizers.length > 0 && (
+          <details className={`${cardClass} p-4`}>
+            <summary className="cursor-pointer list-none text-[14px] font-bold">Undang partner…</summary>
+            <div className="pt-3">
+              <InvitePartnerForm activityId={aid} organizers={organizers} ctx={{ organizerId: id, typeOrg: type }} />
+            </div>
+            <p className="pt-2 text-[11px] text-fg-muted">Undangan yang belum dijawab menahan pengajuan di status &ldquo;Menunggu partner&rdquo;. Atau cari partner lewat open call di menu Kolaborasi.</p>
+          </details>
+        )}
+      </section>
+
+      {!isHost ? (
+        <section className={`${cardClass} flex flex-col gap-1 p-4`}>
+          <h2 className="font-display text-[18px] font-semibold">Peranmu: {myPartner?.role === "cohost" ? "cohost" : "sponsor"}</h2>
+          <p className="text-[13px] leading-[1.5] text-fg-soft">Kamu bisa menambah checkpoint milikmu, menampilkan QR-nya, dan melihat peserta yang check-in di sana. Budget poin diatur di menu Kolaborasi.</p>
+        </section>
+      ) : type === "merchant" && hostPartner ? (
         <section className={`${cardClass} flex flex-col gap-3 p-4`}>
           <div className="flex items-baseline justify-between">
             <h2 className="font-display text-[18px] font-semibold">Poin dari {ctx.org.name}</h2>
@@ -290,7 +406,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
 
       {liteEditable && <ActivityLiteForm organizerId={id} type={type} activityId={aid} description={card.description ?? ""} />}
 
-      <section className={`${cardClass} flex flex-col gap-3 p-4`}>
+      {isHost && <section className={`${cardClass} flex flex-col gap-3 p-4`}>
         <h2 className="text-[15px] font-bold">Status</h2>
         <p className="text-[13px] leading-[1.5] text-fg-soft">
           {card.status === "draft" && "Draft hanya terlihat oleh tim kamu. Ajukan supaya ditinjau tim Ramein lalu terbit di Jelajah."}
@@ -333,7 +449,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
           </details>
         )}
         <span className="text-[11px] text-fg-muted">Dibuat {raw?.created_at ? timeAgo(raw.created_at) : "-"}</span>
-      </section>
+      </section>}
     </>
   );
 }

@@ -1,14 +1,22 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { cardClass } from "@/components/styles";
-import { formatNumber } from "@/lib/format";
-import { createClient } from "@/lib/supabase/server";
+import { getAdminOverview, listActiveVillages, listWeeklyActive } from "@/lib/data/dashboards";
+import { formatDate, formatNumber } from "@/lib/format";
 
+// Ringkasan kota untuk admin, mengikuti artboard "Admin · Ringkasan".
+// Angka dari v_admin_overview, v_admin_weekly_active, v_village_active_month.
 export default function AdminRingkasanPage() {
   return (
     <>
-      <div className="flex flex-col gap-1">
-        <h1 className="font-display text-[30px] font-bold">Ringkasan kota</h1>
-        <span className="text-[14px] text-fg-soft">Cimahi · pilot</span>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <h1 className="font-display text-[30px] font-bold">Ringkasan kota</h1>
+          <span className="text-[14px] text-fg-soft">Cimahi · pilot · 7 hari terakhir</span>
+        </div>
+        <Link href="/admin/aktivitas/baru" className="flex h-11 items-center rounded-full bg-primary px-5 text-[14px] font-semibold text-on-primary">
+          Buat event Ramein
+        </Link>
       </div>
       <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>
         <Overview />
@@ -17,90 +25,111 @@ export default function AdminRingkasanPage() {
   );
 }
 
+// Dipisah dari render supaya aturan "komponen harus murni" terpenuhi.
+function daysSince(value: string) {
+  return Math.floor((Date.now() - new Date(value).getTime()) / 86400000);
+}
+
+function short(n: number) {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toLocaleString("id-ID", { maximumFractionDigits: 1 })}jt`;
+  if (n >= 10_000) return `${Math.round(n / 1000).toLocaleString("id-ID")}rb`;
+  return formatNumber(n);
+}
+
 async function Overview() {
-  const supabase = await createClient();
-  const weekAgo = weekAgoIso();
-  const [citizens, weeklyActive, merchants, communities, pending, villages] = await Promise.all([
-    supabase.from("profiles").select("id", { count: "exact", head: true }).not("onboarded_at", "is", null).is("deleted_at", null),
-    supabase.from("xp_ledger").select("user_id").gte("created_at", weekAgo),
-    supabase.from("organizers").select("id", { count: "exact", head: true }).eq("type", "merchant").eq("status", "approved"),
-    supabase.from("organizers").select("id", { count: "exact", head: true }).eq("type", "community").eq("status", "approved"),
-    supabase.from("organizers").select("id, type").eq("status", "pending"),
-    supabase.from("profiles").select("home_village_id, village:regions(name)").not("home_village_id", "is", null).not("onboarded_at", "is", null),
-  ]);
-
-  const activeUsers = new Set((weeklyActive.data ?? []).map((row) => row.user_id)).size;
-  const pendingMerchants = (pending.data ?? []).filter((o) => o.type === "merchant").length;
-  const pendingCommunities = (pending.data ?? []).length - pendingMerchants;
-
-  const perVillage = new Map<string, number>();
-  for (const row of villages.data ?? []) {
-    const village = (Array.isArray(row.village) ? row.village[0] : row.village) as { name: string } | null;
-    if (village) perVillage.set(village.name, (perVillage.get(village.name) ?? 0) + 1);
-  }
-  const topVillages = [...perVillage.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
-  const maxVillage = topVillages[0]?.[1] ?? 1;
+  const [o, weeks, villages] = await Promise.all([getAdminOverview(), listWeeklyActive(), listActiveVillages(5)]);
+  if (!o) return <p className="text-[13px] text-fg-soft">Data ringkasan belum tersedia.</p>;
+  const delta = o.weekly_active_prev > 0 ? Math.round(((o.weekly_active - o.weekly_active_prev) / o.weekly_active_prev) * 100) : null;
+  const maxWeek = Math.max(1, ...weeks.map((w) => w.active_citizens));
+  const maxVillage = villages[0]?.avg_xp || 1;
+  const pendingDays = o.oldest_pending_activity_at ? daysSince(o.oldest_pending_activity_at) : 0;
+  const flagged = o.flagged_checkins + o.open_pattern_flags;
 
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Kpi label="Warga terdaftar" value={formatNumber(citizens.count ?? 0)} sub="sudah onboarding" />
-        <Kpi label="Warga aktif mingguan" value={formatNumber(activeUsers)} sub="dapat XP 7 hari terakhir" />
-        <Kpi label="Penyelenggara aktif" value={`${merchants.count ?? 0} · ${communities.count ?? 0}`} sub="merchant · komunitas" />
-        <Kpi label="Aktivitas berjalan" value="0" sub="fitur aktivitas menyusul" />
+        <Kpi
+          label="Warga aktif mingguan"
+          value={formatNumber(o.weekly_active)}
+          sub={delta === null ? `${formatNumber(o.citizens)} warga terdaftar` : `${delta >= 0 ? "+" : ""}${delta}% dari minggu lalu`}
+          tone={delta !== null && delta >= 0 ? "success" : "neutral"}
+        />
+        <Kpi label="Aktivitas berjalan" value={formatNumber(o.running_activities)} sub={`${o.running_events} event · ${o.running_challenges} challenge`} />
+        <Kpi label="Penyelenggara aktif" value={`${o.active_merchants} · ${o.active_communities}`} sub="merchant · komunitas" />
+        <Kpi label="Poin beredar / ditukar" value={short(o.points_circulating)} sub={`${short(o.points_redeemed_month)} ditukar bulan ini`} />
       </div>
 
       <div className="flex flex-wrap gap-4">
-        <section className={`${cardClass} flex min-w-0 flex-[2_1_420px] flex-col gap-3 p-5`}>
-          <h2 className="font-display text-[18px] font-semibold">Antrean</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <QueueCard
-              n={(pending.data ?? []).length}
-              title="Penyelenggara menunggu"
-              sub={`${pendingMerchants} merchant · ${pendingCommunities} komunitas`}
-              href="/admin/verifikasi"
-              tone="warn"
-            />
-            <QueueCard n={0} title="Aktivitas perlu review" sub="fitur menyusul" tone="primary" />
-            <QueueCard n={0} title="Check-in & misi ditandai" sub="fitur menyusul" tone="hot" />
-            <QueueCard n={0} title="Refund belum ditandai" sub="fitur menyusul" tone="neutral" />
+        <section className={`${cardClass} flex min-w-0 flex-[2_1_420px] flex-col gap-4 p-5`}>
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-display text-[18px] font-semibold">Warga aktif per minggu</h2>
+            <span className="text-[12px] text-fg-soft">≥1 check-in · 12 minggu terakhir</span>
+          </div>
+          <div className="flex h-[200px] items-end gap-1.5">
+            {weeks.map((w, i) => {
+              const last = i === weeks.length - 1;
+              return (
+                <div key={w.week_start} className="flex flex-1 flex-col items-center justify-end gap-1 self-stretch">
+                  {last && <span className="text-[11px] font-bold text-link">{formatNumber(w.active_citizens)}</span>}
+                  <div
+                    title={`${formatDate(w.week_start)}: ${w.active_citizens} warga`}
+                    className={`w-full rounded-t-md ${last ? "bg-primary" : "bg-primary-soft/60"}`}
+                    style={{ height: `${Math.max(4, Math.round((w.active_citizens / maxWeek) * 170))}px` }}
+                  />
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex justify-between text-[11px] text-fg-soft">
+            <span>{weeks[0] ? formatDate(weeks[0].week_start, { year: undefined }) : ""}</span>
+            <span>{weeks.at(-1) ? formatDate(weeks.at(-1)!.week_start, { year: undefined }) : ""}</span>
           </div>
         </section>
 
         <section className={`${cardClass} flex min-w-0 flex-[1_1_300px] flex-col gap-3.5 p-5`}>
-          <h2 className="font-display text-[18px] font-semibold">Warga per kelurahan</h2>
-          {topVillages.length === 0 && <span className="text-[13px] text-fg-soft">Belum ada warga Cimahi yang mendaftar.</span>}
-          {topVillages.map(([name, count], i) => (
-            <div key={name} className="flex flex-col gap-1.5">
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-display text-[18px] font-semibold">Kelurahan teraktif</h2>
+            <span className="text-[12px] text-fg-soft">bulan ini</span>
+          </div>
+          {villages.length === 0 && <span className="text-[13px] text-fg-soft">Belum ada check-in bulan ini.</span>}
+          {villages.map((v, i) => (
+            <div key={v.village_id} className="flex flex-col gap-1.5">
               <div className="flex justify-between text-[13px]">
                 <span>
-                  <b>{i + 1}</b> {name}
+                  <b>{i + 1}</b> {v.name}
                 </span>
-                <span className="text-fg-soft">{count} warga</span>
+                <span className="text-fg-soft">
+                  {formatNumber(v.avg_xp)} XP · {v.active_citizens} warga
+                </span>
               </div>
               <div className="h-2 overflow-hidden rounded-md bg-track">
-                <div className="h-full bg-primary" style={{ width: `${Math.round((count / maxVillage) * 100)}%` }} />
+                <div className="h-full bg-primary" style={{ width: `${Math.round((v.avg_xp / maxVillage) * 100)}%` }} />
               </div>
             </div>
           ))}
-          <span className="text-[12px] text-fg-soft">Peringkat XP per kelurahan menyusul di fitur leaderboard.</span>
+          <span className="text-[12px] text-fg-soft">Rata-rata XP per warga aktif bulan ini. Peringkat resmi (min. 10 warga) di fitur leaderboard.</span>
         </section>
       </div>
+
+      <section className={`${cardClass} flex flex-col gap-3 p-5`}>
+        <h2 className="font-display text-[18px] font-semibold">Antrean</h2>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <QueueCard n={o.pending_organizers} title="Penyelenggara menunggu" sub={`${o.pending_merchants} merchant · ${o.pending_organizers - o.pending_merchants} komunitas`} href="/admin/verifikasi" tone="warn" />
+          <QueueCard n={o.pending_activities} title="Aktivitas perlu review" sub={o.pending_activities ? `paling lama ${pendingDays} hari` : "tidak ada pengajuan"} href="/admin/aktivitas" tone="primary" />
+          <QueueCard n={flagged} title="Check-in & misi ditandai" sub={`${o.flagged_checkins} di luar radius · ${o.open_pattern_flags} pola`} href="/admin/moderasi" tone="hot" />
+          <QueueCard n={o.refunds_pending} title="Refund belum ditandai" sub="aktivitas dibatalkan · fitur pembayaran menyusul" tone="neutral" />
+        </div>
+      </section>
     </>
   );
 }
 
-// Dipisah dari render supaya aturan "komponen harus murni" terpenuhi.
-function weekAgoIso() {
-  return new Date(Date.now() - 7 * 86400000).toISOString();
-}
-
-function Kpi({ label, value, sub }: { label: string; value: string; sub: string }) {
+function Kpi({ label, value, sub, tone = "neutral" }: { label: string; value: string; sub: string; tone?: "success" | "neutral" }) {
   return (
     <div className={`${cardClass} flex flex-col gap-1.5 p-5`}>
       <span className="text-[13px] text-fg-soft">{label}</span>
       <span className="font-display text-[32px] font-bold leading-none">{value}</span>
-      <span className="text-[12px] font-semibold text-fg-soft">{sub}</span>
+      <span className={`text-[12px] font-semibold ${tone === "success" ? "text-success" : "text-fg-soft"}`}>{sub}</span>
     </div>
   );
 }
@@ -114,7 +143,7 @@ function QueueCard({ n, title, sub, href, tone }: { n: number; title: string; su
   };
   const inner = (
     <>
-      <span className={`flex size-12 items-center justify-center rounded-[14px] font-display text-[20px] font-bold ${tones[tone]}`}>{n}</span>
+      <span className={`flex size-12 shrink-0 items-center justify-center rounded-[14px] font-display text-[20px] font-bold ${tones[tone]}`}>{n}</span>
       <span className="flex flex-col gap-0.5">
         <span className="text-[14px] font-semibold">{title}</span>
         <span className="text-[12px] text-fg-soft">{sub}</span>

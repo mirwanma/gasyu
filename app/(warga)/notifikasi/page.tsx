@@ -37,8 +37,38 @@ function describe(n: Notification): { title: string; body?: string; href?: strin
       return { title: `Aktivitas baru dari ${community}: ${p.title}`, body: "Lihat detail dan daftar sebelum kuota penuh.", href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
     case "group_registration":
       return { title: `${p.leader_nickname} mendaftarkan ${p.group_name} ke ${p.title}`, body: "Jawab undangan di halaman Grup sebelum aktivitas mulai.", href: "/grup" };
+    case "partner_invite":
+      return { title: `${p.host_name} mengundang kamu ke "${p.title}"`, body: `Sebagai ${p.role}. Jawab di menu Kolaborasi.` };
+    case "partner_accepted":
+      return { title: `${p.partner_name} menerima undangan "${p.title}"`, body: `Bergabung sebagai ${p.role}.` };
+    case "partner_declined":
+      return { title: `${p.partner_name} menolak undangan "${p.title}"` };
+    case "partner_added_by_admin":
+      return { title: `Kamu ditambahkan ke event Ramein "${p.title}"`, body: `Sebagai ${p.role}. Lihat di menu Kolaborasi; kamu boleh keluar sebelum event berjalan.` };
+    case "partner_left":
+      return { title: `${p.partner_name} keluar dari "${p.title}"`, body: "Checkpoint miliknya dinonaktifkan." };
+    case "application_received":
+      return { title: `${p.applicant_name} mengajukan diri ke open call "${p.post_title}"`, body: `Sebagai ${p.role}. Tinjau di menu Kolaborasi.` };
+    case "application_accepted":
+      return { title: `Pengajuanmu ke "${p.post_title}" diterima`, body: `${p.host_name} menjadikanmu partner.` };
+    case "application_rejected":
+      return { title: `Pengajuanmu ke "${p.post_title}" belum diterima` };
     case "voucher_refunded":
       return { title: `Voucher "${p.title}" di-refund`, body: `${p.points} poin kembali ke dompetmu.`, href: "/dompet" };
+    case "badge_awarded":
+      return { title: `Badge baru: ${p.badge_name}`, body: "Lihat koleksi badge kamu di Profil.", href: "/profil" };
+    case "checkin_rejected":
+      return { title: `Check-in di "${p.activity_title}" ditolak tim Ramein`, body: `${p.xp ?? 0} XP${Number(p.points) > 0 ? ` dan ${p.points} poin` : ""} ditarik kembali.${typeof p.note === "string" && p.note ? ` Catatan: ${p.note}` : ""}` };
+    case "fraud_warning":
+      return { title: "Peringatan dari tim Ramein", body: typeof p.note === "string" && p.note ? p.note : "Kami menemukan pola check-in yang tidak wajar di akunmu. Ulangi dan akun bisa dibekukan." };
+    case "account_suspended":
+      return { title: "Akunmu dibekukan", body: typeof p.note === "string" && p.note ? p.note : "Hubungi tim Ramein lewat halaman Bantuan untuk peninjauan." };
+    case "account_restored":
+      return { title: "Akunmu aktif kembali", body: "Kamu bisa check-in dan menukar poin lagi." };
+    case "organizer_suspended":
+      return { title: `${p.organizer_name} dibekukan tim Ramein`, body: typeof p.note === "string" && p.note ? p.note : "Aktivitas yang berjalan dibatalkan. Hubungi tim Ramein untuk peninjauan." };
+    case "organizer_restored":
+      return { title: `${p.organizer_name} aktif kembali`, body: "Kamu bisa mengajukan aktivitas lagi." };
     case "payment_refund_due":
       return { title: `Ada peserta "${p.title}" yang perlu refund`, body: "Peserta sudah bayar lalu aktivitas dibatalkan atau ia membatalkan." };
     default:

@@ -2,9 +2,13 @@ import { Suspense } from "react";
 import { ActivityRow, StatusTag, coverStyle } from "@/components/activity-card";
 import { OrganizerAvatar } from "@/components/avatar";
 import { Icon } from "@/components/icons";
-import { cardClass, chipClass, smallButton, textareaClass } from "@/components/styles";
+import { cardClass, chipClass, smallButton, tagClass, textareaClass } from "@/components/styles";
 import { SubmitButton } from "@/components/ui";
-import { adminCancelActivity, reviewActivity } from "@/lib/actions/activities";
+import { adminCancelActivity, adminPublishActivity, reviewActivity } from "@/lib/actions/activities";
+import { AdminAddPartnerForm } from "@/components/organizer/collab-forms";
+import { CheckpointForm } from "@/components/organizer/checkpoint-form";
+import { listActivityPartners, listApprovedOrganizers } from "@/lib/data/collab";
+import Link from "next/link";
 import { formatPrice, formatSchedule, typeLabel } from "@/lib/activities";
 import { getActivityCard, getCheckpoints, type ActivityCard } from "@/lib/data/activities";
 import { formatDateTime, timeAgo } from "@/lib/format";
@@ -17,8 +21,11 @@ export default function AdminAktivitasPage({ searchParams }: PageProps<"/admin/a
     <>
       <div className="flex flex-col gap-1">
         <h1 className="font-display text-[30px] font-bold">Aktivitas & event Ramein</h1>
-        <span className="text-[14px] text-fg-soft">Tinjau pengajuan penyelenggara sebelum terbit di Jelajah.</span>
+        <span className="text-[14px] text-fg-soft">Tinjau pengajuan penyelenggara sebelum terbit di Jelajah, atau buat event atas nama Ramein.</span>
       </div>
+      <Link href="/admin/aktivitas/baru" className="flex h-11 w-fit items-center rounded-full bg-primary px-5 text-[14px] font-semibold text-on-primary">
+        + Buat event Ramein
+      </Link>
       <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>
         <Board searchParams={searchParams} />
       </Suspense>
@@ -30,6 +37,7 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/aktivitas">, "sear
   const sp = await searchParams;
   const tab = sp.tab === "semua" ? "semua" : "review";
   const hasil = typeof sp.hasil === "string" ? sp.hasil : undefined;
+  const errorMsg = typeof sp.error === "string" ? sp.error : undefined;
   const supabase = await createClient();
   let query = supabase.from("v_activity_cards").select("*").order("starts_at", { ascending: tab === "review" }).limit(100);
   if (tab === "review") query = query.eq("status", "in_review");
@@ -52,6 +60,8 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/aktivitas">, "sear
           {hasil === "ok" && <p className="border-b border-line bg-success-tint px-4 py-3 text-[13px] font-semibold text-success">Keputusan tersimpan dan tim penyelenggara diberi tahu.</p>}
           {hasil === "gagal" && <p className="border-b border-line bg-danger-tint px-4 py-3 text-[13px] font-semibold text-danger">Keputusan belum tersimpan. Mungkin statusnya sudah berubah.</p>}
           {hasil === "catatan" && <p className="border-b border-line bg-warn-tint px-4 py-3 text-[13px] font-semibold text-warn">Tulis catatan untuk penyelenggara saat menolak.</p>}
+          {hasil === "terbit" && <p className="border-b border-line bg-success-tint px-4 py-3 text-[13px] font-semibold text-success">Event Ramein terbit dan tampil di Jelajah.</p>}
+          {errorMsg && <p className="border-b border-line bg-danger-tint px-4 py-3 text-[13px] font-semibold text-danger">{errorMsg}</p>}
           {items.length === 0 && <p className="p-5 text-[13px] text-fg-soft">{tab === "review" ? "Tidak ada pengajuan yang menunggu." : "Belum ada aktivitas."}</p>}
           {items.map((card) => (
             <ActivityRow key={card.id} card={card} href={`/admin/aktivitas?tab=${tab}&pilih=${card.id}`} selected={card.id === selectedId} />
@@ -77,6 +87,12 @@ async function Detail({ id, tab }: { id: string; tab: string }) {
   ]);
   if (!card) return null;
   const creator = (Array.isArray(raw?.creator) ? raw?.creator[0] : raw?.creator) as { nickname: string } | null | undefined;
+  const isPlatform = card.host_type === "platform";
+  const [partners, organizers] = isPlatform ? await Promise.all([listActivityPartners(id), listApprovedOrganizers()]) : [[], []];
+  const partnerOutlets = isPlatform
+    ? ((await supabase.from("merchant_outlets").select("id, name, address, organizer_id").in("organizer_id", partners.filter((p) => p.status === "accepted" && p.organizer_type === "merchant").map((p) => p.organizer_id)).eq("is_active", true)).data ?? [])
+    : [];
+  const platformEditable = isPlatform && ["draft", "awaiting_partners", "in_review", "published"].includes(card.status);
   const facts: [string, string][] = [
     ["Jadwal", formatSchedule(card.starts_at, card.ends_at)],
     ["Harga", formatPrice(card.price_idr, card.is_paid)],
@@ -117,6 +133,30 @@ async function Detail({ id, tab }: { id: string; tab: string }) {
           ))}
         </dl>
 
+        {isPlatform && (
+          <div className="flex flex-col gap-2">
+            <h3 className="text-[15px] font-bold">Merchant & komunitas terlibat</h3>
+            <p className="text-[12px] text-fg-soft">Ditambahkan langsung tanpa undangan. Mereka mendapat notifikasi dan boleh keluar sebelum event berjalan.</p>
+            {partners.filter((p) => p.role !== "host" && p.status !== "declined").map((p) => (
+              <div key={p.id} className={`flex items-center gap-3 rounded-2xl border border-line p-3 ${p.status === "removed" ? "opacity-60" : ""}`}>
+                <OrganizerAvatar name={p.organizer_name} type={p.organizer_type} logoUrl={p.organizer_logo_url} size={36} />
+                <span className="flex flex-1 flex-col">
+                  <span className="text-[14px] font-semibold">{p.organizer_name}</span>
+                  <span className="text-[12px] text-fg-soft">
+                    {p.role === "cohost" ? "Cohost" : "Sponsor"} · {p.status === "removed" ? `keluar ${p.responded_at ? formatDateTime(p.responded_at) : ""}` : "ditambahkan admin"}
+                    {p.contribution_note ? ` · ${p.contribution_note}` : ""}
+                  </span>
+                </span>
+                <span className={`${tagClass.base} ${p.status === "removed" ? tagClass.hot : p.points_budget > 0 ? tagClass.success : p.organizer_type === "merchant" ? tagClass.warn : tagClass.neutral}`}>
+                  {p.status === "removed" ? "Keluar" : p.points_budget > 0 ? `${p.points_budget} poin` : p.organizer_type === "merchant" ? "Belum isi budget" : "Non-poin"}
+                </span>
+              </div>
+            ))}
+            {platformEditable && organizers.length > 0 && <AdminAddPartnerForm activityId={id} organizers={organizers.filter((o) => !partners.some((p) => p.organizer_id === o.id && p.status === "accepted"))} />}
+            <p className="text-[11px] text-fg-muted">Ramein tidak punya budget poin. Poin hanya ada jika merchant mengisi budget-nya sendiri.</p>
+          </div>
+        )}
+
         <div className="flex flex-col gap-2">
           <h3 className="text-[15px] font-bold">Checkpoint</h3>
           {checkpoints.length === 0 && <p className="text-[13px] text-fg-soft">Belum ada checkpoint.</p>}
@@ -129,11 +169,27 @@ async function Detail({ id, tab }: { id: string; tab: string }) {
                 <span className="text-[14px] font-semibold">{c.name}</span>
                 <span className="text-[12px] text-fg-soft">{c.address ?? `${c.lat}, ${c.lng}`} · radius {c.radius_m} m{c.is_active ? "" : " · nonaktif"}</span>
               </span>
+              {isPlatform && c.partner_organizer_id === card.host_organizer_id && c.is_active && ["published", "running"].includes(card.status) && (
+                <Link href={`/admin/aktivitas/qr?cp=${c.id}`} className="text-[12px] font-semibold text-link">Tampilkan QR</Link>
+              )}
               <a href={`https://maps.google.com/?q=${c.lat},${c.lng}`} target="_blank" rel="noreferrer" className="text-[12px] font-semibold text-link">
                 Peta
               </a>
             </div>
           ))}
+          {platformEditable && (
+            <div className="grid gap-3 md:grid-cols-2">
+              <CheckpointForm organizerId={card.host_organizer_id} type="admin" activityId={id} outlets={[]} />
+              {partners.filter((p) => p.status === "accepted" && p.role !== "host").map((p) => (
+                <details key={p.id} className="rounded-[20px] border border-line p-4">
+                  <summary className="cursor-pointer list-none text-[14px] font-bold">Checkpoint atas nama {p.organizer_name}…</summary>
+                  <div className="pt-3">
+                    <CheckpointForm organizerId={card.host_organizer_id} type="admin" activityId={id} outlets={partnerOutlets.filter((o) => o.organizer_id === p.organizer_id) as { id: string; name: string; address: string }[]} partnerOrganizerId={p.organizer_id} />
+                  </div>
+                </details>
+              ))}
+            </div>
+          )}
         </div>
 
         {raw?.review_note && card.status !== "in_review" && <p className="rounded-xl bg-track px-3 py-2 text-[12px] text-fg-label">Catatan terakhir: {raw.review_note}</p>}
@@ -162,6 +218,15 @@ async function Detail({ id, tab }: { id: string; tab: string }) {
             <a href={`/aktivitas/${id}`} className={smallButton.outline}>
               Pratinjau warga
             </a>
+            {isPlatform && card.status === "draft" && (
+              <>
+                <Link href={`/admin/aktivitas/baru?ubah=${id}`} className={smallButton.outline}>Ubah draft</Link>
+                <form action={adminPublishActivity}>
+                  <input type="hidden" name="activity_id" value={id} />
+                  <SubmitButton size="small" variant="dark" pendingText="Menerbitkan…">Terbitkan</SubmitButton>
+                </form>
+              </>
+            )}
             {card.published_at && <span className="text-[12px] text-fg-soft">Terbit {formatDateTime(card.published_at)}</span>}
             {["draft", "in_review", "published", "running"].includes(card.status) && (
               <details className="ml-auto">

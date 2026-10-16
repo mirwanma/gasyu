@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { fromLocalInput } from "@/lib/activities";
+import { readActivityForm } from "@/lib/activity-form";
 import { createClient } from "@/lib/supabase/server";
 import { uploadOrganizerFile } from "@/lib/storage";
 
@@ -27,6 +27,7 @@ const ERRORS: Record<string, string> = {
   invalid_checkpoint: "Nama atau titik lokasi checkpoint belum lengkap.",
   not_in_review: "Aktivitas ini tidak sedang menunggu review.",
   note_required: "Tulis catatan untuk penyelenggara jika menolak.",
+  checkpoint_partner_not_accepted: "Partner itu belum menerima undangan di aktivitas ini.",
   activity_unavailable: "Aktivitas ini belum bisa diikuti.",
   members_only: "Aktivitas ini khusus member komunitas penyelenggara.",
   residents_only: "Aktivitas ini khusus warga wilayah cakupannya.",
@@ -47,31 +48,6 @@ const ERRORS: Record<string, string> = {
 
 const msg = (code: string | undefined, fallback: string) => ERRORS[code ?? ""] ?? fallback;
 const basePath = (type: string, id: string) => `/${type === "merchant" ? "merchant" : "komunitas"}/${id}`;
-
-function readActivityForm(formData: FormData) {
-  const text = (key: string) => String(formData.get(key) ?? "").trim();
-  const type = text("type") === "challenge" ? "challenge" : "event";
-  const joinMode = ["individual", "group", "both"].includes(text("join_mode")) ? text("join_mode") : "individual";
-  return {
-    type,
-    difficulty: type === "challenge" ? text("difficulty") || "easy" : null,
-    target_scope: type === "challenge" && text("target_scope") === "group" ? "group" : "individual",
-    target_kind: type === "challenge" ? text("target_kind") || "total_checkins" : null,
-    target_count: type === "challenge" ? text("target_count") || "1" : null,
-    group_min: joinMode === "individual" ? null : text("group_min") || "2",
-    group_max: joinMode === "individual" ? null : text("group_max") || "10",
-    goal: text("goal") || "awareness",
-    title: text("title"),
-    description: text("description"),
-    scope_region_id: text("scope_region_id") || null,
-    starts_at: fromLocalInput(text("starts_at")),
-    ends_at: fromLocalInput(text("ends_at")),
-    quota: text("quota") || null,
-    join_mode: joinMode,
-    residency_rule: text("residency_rule") || "open",
-    audience: text("audience") || "public",
-  };
-}
 
 // ---- Penyelenggara -----------------------------------------------------
 
@@ -120,12 +96,14 @@ export async function addCheckpoint(_prev: ActivityActionState, formData: FormDa
   const activityId = String(formData.get("activity_id"));
   const text = (key: string) => String(formData.get(key) ?? "").trim();
   const supabase = await createClient();
+  const partner = text("partner_organizer_id") || null;
   const data = text("outlet_id")
-    ? { outlet_id: text("outlet_id"), name: text("name") || null, radius_m: text("radius_m") || null }
-    : { name: text("name"), address: text("address"), lat: text("lat"), lng: text("lng"), radius_m: text("radius_m") || null };
+    ? { outlet_id: text("outlet_id"), name: text("name") || null, radius_m: text("radius_m") || null, partner_organizer_id: partner }
+    : { name: text("name"), address: text("address"), lat: text("lat"), lng: text("lng"), radius_m: text("radius_m") || null, partner_organizer_id: partner };
   const { error } = await supabase.rpc("add_checkpoint", { p_activity_id: activityId, p_data: data });
   if (error) return { error: msg(error.message, "Checkpoint belum tersimpan.") };
-  revalidatePath(`${basePath(type, organizerId)}/aktivitas/${activityId}`);
+  if (type === "admin") revalidatePath("/admin/aktivitas");
+  else revalidatePath(`${basePath(type, organizerId)}/aktivitas/${activityId}`);
   return { success: "Checkpoint ditambahkan." };
 }
 
@@ -135,7 +113,8 @@ export async function toggleCheckpoint(formData: FormData) {
   const activityId = String(formData.get("activity_id"));
   const supabase = await createClient();
   await supabase.rpc("set_checkpoint_active", { p_checkpoint_id: String(formData.get("checkpoint_id")), p_active: formData.get("active") === "true" });
-  revalidatePath(`${basePath(type, organizerId)}/aktivitas/${activityId}`);
+  if (type === "admin") revalidatePath("/admin/aktivitas");
+  else revalidatePath(`${basePath(type, organizerId)}/aktivitas/${activityId}`);
 }
 
 export async function changeActivityStatus(formData: FormData) {
@@ -177,6 +156,38 @@ export async function cancelParticipation(_prev: ActivityActionState, formData: 
 }
 
 // ---- Admin -------------------------------------------------------------
+
+// Admin membuat/mengubah event Ramein (host organizer platform).
+export async function adminSaveActivity(_prev: ActivityActionState, formData: FormData): Promise<ActivityActionState> {
+  const activityId = String(formData.get("activity_id") ?? "") || null;
+  const supabase = await createClient();
+  const data: Record<string, unknown> = readActivityForm(formData);
+  let id = activityId;
+  if (activityId) {
+    const { error } = await supabase.rpc("update_activity", { p_activity_id: activityId, p_data: data });
+    if (error) return { error: msg(error.message, "Perubahan belum tersimpan.") };
+  } else {
+    const { data: platformId } = await supabase.rpc("platform_organizer_id");
+    const { data: created, error } = await supabase.rpc("create_activity", { p_host_organizer_id: platformId, p_data: data });
+    if (error || !created) return { error: msg(error?.message, "Event belum tersimpan.") };
+    id = created as string;
+  }
+  const cover = formData.get("cover");
+  if (cover instanceof File && cover.size > 0 && id) {
+    const url = await uploadOrganizerFile(supabase, "covers", id, "cover", cover);
+    if (url) await supabase.rpc("update_activity", { p_activity_id: id, p_data: { cover_url: url } });
+  }
+  revalidatePath("/admin", "layout");
+  redirect(`/admin/aktivitas?tab=semua&pilih=${id}`);
+}
+
+export async function adminPublishActivity(formData: FormData) {
+  const activityId = String(formData.get("activity_id"));
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("submit_activity", { p_activity_id: activityId });
+  revalidatePath("/admin", "layout");
+  redirect(`/admin/aktivitas?tab=semua&pilih=${activityId}${error ? `&error=${encodeURIComponent(msg(error.message, "Belum bisa diterbitkan."))}` : "&hasil=terbit"}`);
+}
 
 export async function reviewActivity(formData: FormData) {
   const activityId = String(formData.get("activity_id"));
