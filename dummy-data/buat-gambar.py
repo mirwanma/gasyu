@@ -27,11 +27,14 @@ def cover(name, title, subtitle, c1, c2, emoji_shapes=12):
     for _ in range(emoji_shapes):  # lingkaran lembut sebagai dekorasi
         r = random.randint(60, 220); x = random.randint(-100, 1200); y = random.randint(-100, 630)
         d.ellipse((x, y, x + r, y + r), fill=(255, 255, 255, random.randint(14, 36)))
-    d.rounded_rectangle((60, 420, 60 + 170, 420 + 44), 22, fill=(13, 16, 36, 170))
-    d.text((60 + 22, 420 + 10), "ramein", font=ImageFont.truetype(BOLD, 24), fill=(250, 247, 242))
+    # Teks di tengah supaya tetap terbaca saat kartu memotong bagian atas/bawah gambar.
     f = ImageFont.truetype(BOLD, 66 if len(title) < 22 else 54)
-    d.text((60, 470), title, font=f, fill=(255, 255, 255))
-    d.text((62, 560), subtitle, font=ImageFont.truetype(REG, 28), fill=(227, 225, 255))
+    tb = d.textbbox((0, 0), title, font=f); tw = tb[2] - tb[0]
+    d.rounded_rectangle((600 - 85, 215, 600 + 85, 215 + 44), 22, fill=(13, 16, 36, 170))
+    d.text((600 - 38, 225), "ramein", font=ImageFont.truetype(BOLD, 24), fill=(250, 247, 242))
+    d.text((600 - tw / 2, 280), title, font=f, fill=(255, 255, 255))
+    f2 = ImageFont.truetype(REG, 28); sb = d.textbbox((0, 0), subtitle, font=f2)
+    d.text((600 - (sb[2] - sb[0]) / 2, 365), subtitle, font=f2, fill=(227, 225, 255))
     img.save(os.path.join(OUT, f"cover-{name}.png"), optimize=True)
 
 def logo(name, initials, c1, c2, label):
