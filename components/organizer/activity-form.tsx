@@ -26,12 +26,16 @@ export type ActivityFormValues = {
   quota: number | null;
   residency_rule: "open" | "residents_only";
   audience: "public" | "members_only";
+  is_paid?: boolean;
+  price_idr?: number | null;
+  payment_instructions?: string | null;
+  payment_window_hours?: number | null;
 };
 
-const STEPS = ["Dasar", "Waktu & cakupan", "Aturan ikut"];
+const STEPS = ["Dasar", "Waktu & cakupan", "Aturan ikut", "Harga"];
 
-// Formulir buat/ubah aktivitas (event) tiga langkah, mengikuti artboard
-// "Penyelenggara · Buat aktivitas". Langkah bayar dan misi menyusul di irisan 10–11.
+// Formulir buat/ubah aktivitas empat langkah, mengikuti artboard
+// "Penyelenggara · Buat aktivitas". Misi diatur di halaman Misi setelah draft tersimpan.
 export function ActivityForm({
   organizerId,
   type,
@@ -39,6 +43,7 @@ export function ActivityForm({
   districts,
   initial,
   action,
+  canSetPrice,
 }: {
   organizerId: string;
   type: "merchant" | "community";
@@ -46,6 +51,7 @@ export function ActivityForm({
   districts: District[];
   initial?: ActivityFormValues;
   action?: (prev: ActivityActionState, formData: FormData) => Promise<ActivityActionState>;
+  canSetPrice?: boolean;
 }) {
   const [state, formAction] = useActionState<ActivityActionState, FormData>(action ?? (initial ? updateActivity : createActivity), {});
   const [step, setStep] = useState(0);
@@ -58,6 +64,7 @@ export function ActivityForm({
   const [targetKind, setTargetKind] = useState<TargetKind>(initial?.target_kind ?? "total_checkins");
   const [targetScope, setTargetScope] = useState<TargetScope>(initial?.target_scope ?? "individual");
   const [joinMode, setJoinMode] = useState<JoinMode>(initial?.join_mode ?? "individual");
+  const [paid, setPaid] = useState(initial?.is_paid ?? false);
   const last = step === STEPS.length - 1;
   const chip = (on: boolean) => `${chipClass.base} ${on ? chipClass.selected : chipClass.idle}`;
 
@@ -74,6 +81,7 @@ export function ActivityForm({
       <input type="hidden" name="target_kind" value={targetKind} />
       <input type="hidden" name="target_scope" value={targetScope} />
       <input type="hidden" name="join_mode" value={joinMode} />
+      <input type="hidden" name="is_paid" value={paid ? "true" : "false"} />
 
       <div className="flex flex-col gap-2">
         <span className="text-[12px] font-semibold text-fg-soft">
@@ -253,9 +261,49 @@ export function ActivityForm({
           </div>
         )}
         <p className="rounded-2xl bg-info-tint px-4 py-3 text-[12px] leading-[1.5] text-info">
-          XP dasar mengikuti pengaturan Ramein (event 100 XP; challenge sesuai kesulitan). Poin, harga, dan misi bisa diatur setelah fitur reward dan misi dirilis.
+          XP dasar mengikuti pengaturan Ramein (event 100 XP; challenge sesuai kesulitan). Poin diatur di halaman aktivitas, misi di halaman Misi.
           Setelah tersimpan sebagai draft, tambahkan checkpoint lalu ajukan ke tim Ramein.
         </p>
+      </section>
+
+      {/* Langkah 4: harga. Uang tidak lewat Ramein; tim menandai lunas sendiri. */}
+      <section className={`${cardClass} flex flex-col gap-3 p-4 ${step === 3 ? "" : "hidden"}`}>
+        <div className="flex flex-col gap-2">
+          <span className={labelClass}>Biaya ikut</span>
+          <div className="grid grid-cols-2 gap-2">
+            {([[false, "Gratis", "Warga langsung terdaftar"], [true, "Berbayar", "Bayar ke kamu, kamu tandai lunas"]] as const).map(([value, label, hint]) => {
+              const on = paid === value;
+              return (
+                <button key={label} type="button" aria-pressed={on} disabled={canSetPrice === false} onClick={() => setPaid(value)} className={`flex flex-col gap-0.5 rounded-2xl border p-3 text-left disabled:opacity-60 ${on ? "border-primary bg-primary-tint" : "border-line bg-surface"}`}>
+                  <span className={`text-[14px] font-bold ${on ? "text-link" : "text-fg"}`}>{label}</span>
+                  <span className="text-[11px] leading-[1.4] text-fg-soft">{hint}</span>
+                </button>
+              );
+            })}
+          </div>
+          {canSetPrice === false && <span className="text-[12px] text-fg-soft">Hanya pemilik/ketua yang bisa mengatur harga.</span>}
+        </div>
+        {paid && (
+          <>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="price_idr" className={labelClass}>Harga per orang (Rp)</label>
+              <input id="price_idr" name="price_idr" type="number" min={1000} step={500} inputMode="numeric" required={paid} defaultValue={initial?.price_idr ?? ""} placeholder="contoh: 75000" className={inputClass} />
+              <span className="text-[11px] text-fg-muted">Minimal Rp1.000. Satu harga untuk pendaftar pribadi maupun grup.</span>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="payment_instructions" className={labelClass}>Cara bayar</label>
+              <textarea id="payment_instructions" name="payment_instructions" rows={3} maxLength={500} required={paid} defaultValue={initial?.payment_instructions ?? ""} placeholder="contoh: Transfer BCA 1234567 a.n. Kopi Lereng, atau QRIS di kasir. Tulis nama di berita transfer." className={textareaClass} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="payment_window_hours" className={labelClass}>Batas waktu bayar setelah daftar (jam)</label>
+              <input id="payment_window_hours" name="payment_window_hours" type="number" min={1} max={720} inputMode="numeric" defaultValue={initial?.payment_window_hours ?? 24} className={`${inputClass} w-28`} />
+              <span className="text-[11px] text-fg-muted">Lewat batas ini pendaftar yang belum bayar dibatalkan otomatis dan kursinya kembali. Dipotong ke waktu mulai jika lebih dekat.</span>
+            </div>
+            <p className="rounded-2xl bg-warn-tint px-4 py-3 text-[12px] leading-[1.5] text-warn">
+              Uang tidak lewat Ramein: warga membayar langsung ke kamu, lalu tim kamu menandai lunas di halaman Peserta. Harga terkunci setelah terbit.
+            </p>
+          </>
+        )}
       </section>
 
       <div className="flex gap-2.5">

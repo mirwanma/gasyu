@@ -55,6 +55,14 @@ function describe(n: Notification): { title: string; body?: string; href?: strin
       return { title: `Pengajuanmu ke "${p.post_title}" belum diterima` };
     case "voucher_refunded":
       return { title: `Voucher "${p.title}" di-refund`, body: `${p.points} poin kembali ke dompetmu.`, href: "/dompet" };
+    case "mission_proof_submitted":
+      return { title: `Bukti foto baru: ${p.mission_title}`, body: `Dari aktivitas "${p.title}". Tinjau di halaman Misi.` };
+    case "mission_approved":
+      return { title: `Misi "${p.mission_title}" disetujui · +${p.xp ?? 0} XP`, body: p.completed ? `Aktivitas "${p.title}" selesai!` : `Aktivitas "${p.title}".`, href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
+    case "mission_rejected":
+      return { title: `Bukti misi "${p.mission_title}" ditolak`, body: typeof p.note === "string" && p.note ? `${p.note} · unggah ulang selama aktivitas berjalan.` : "Unggah ulang selama aktivitas berjalan.", href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
+    case "mission_revealed":
+      return { title: `Misi baru terbuka: ${p.mission_title}`, body: `+${p.xp ?? 0} XP di "${p.title}".`, href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
     case "badge_awarded":
       return { title: `Badge baru: ${p.badge_name}`, body: "Lihat koleksi badge kamu di Profil.", href: "/profil" };
     case "checkin_rejected":
@@ -70,7 +78,19 @@ function describe(n: Notification): { title: string; body?: string; href?: strin
     case "organizer_restored":
       return { title: `${p.organizer_name} aktif kembali`, body: "Kamu bisa mengajukan aktivitas lagi." };
     case "payment_refund_due":
-      return { title: `Ada peserta "${p.title}" yang perlu refund`, body: "Peserta sudah bayar lalu aktivitas dibatalkan atau ia membatalkan." };
+      return typeof p.count === "number"
+        ? { title: `${p.count} peserta "${p.title}" perlu refund`, body: "Aktivitas dibatalkan. Kembalikan dana di luar aplikasi, lalu tandai refund di halaman Peserta." }
+        : { title: `Ada peserta "${p.title}" yang perlu refund`, body: "Peserta sudah bayar lalu membatalkan. Kembalikan dana di luar aplikasi, lalu tandai refund di halaman Peserta." };
+    case "payment_proof_submitted":
+      return { title: `Bukti bayar masuk untuk "${p.title}"`, body: "Cek bukti dan tandai lunas di halaman Peserta." };
+    case "payment_confirmed":
+      return { title: `Pembayaran "${p.title}" lunas`, body: "Kamu sudah bisa check-in dan mengerjakan misi.", href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
+    case "payment_rejected":
+      return { title: `Bukti bayar "${p.title}" ditolak`, body: typeof p.note === "string" ? p.note : "Cek catatan panitia lalu kirim bukti lagi.", href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
+    case "payment_expired":
+      return { title: `Pendaftaran "${p.title}" dibatalkan`, body: "Lewat batas waktu bayar. Kamu bisa mendaftar lagi selama kuota masih ada.", href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
+    case "payment_refunded":
+      return { title: `Dana "${p.title}" dikembalikan`, body: typeof p.note === "string" && p.note ? p.note : "Penyelenggara menandai pengembalian dana selesai." };
     default:
       return { title: n.kind };
   }

@@ -117,7 +117,7 @@ async function Overview() {
           <QueueCard n={o.pending_organizers} title="Penyelenggara menunggu" sub={`${o.pending_merchants} merchant · ${o.pending_organizers - o.pending_merchants} komunitas`} href="/admin/verifikasi" tone="warn" />
           <QueueCard n={o.pending_activities} title="Aktivitas perlu review" sub={o.pending_activities ? `paling lama ${pendingDays} hari` : "tidak ada pengajuan"} href="/admin/aktivitas" tone="primary" />
           <QueueCard n={flagged} title="Check-in & misi ditandai" sub={`${o.flagged_checkins} di luar radius · ${o.open_pattern_flags} pola`} href="/admin/moderasi" tone="hot" />
-          <QueueCard n={o.refunds_pending} title="Refund belum ditandai" sub="aktivitas dibatalkan · fitur pembayaran menyusul" tone="neutral" />
+          <QueueCard n={o.refunds_pending} title="Refund belum ditandai" sub="peserta lunas yang batal atau aktivitasnya dibatalkan" href="/admin/pembayaran" tone="neutral" />
         </div>
       </section>
     </>

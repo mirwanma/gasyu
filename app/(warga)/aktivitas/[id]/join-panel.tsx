@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import { InviteResponse } from "@/app/(warga)/grup/group-forms";
 import { cancelParticipation, joinActivity, type ActivityActionState } from "@/lib/actions/activities";
 import { registerGroup, type GroupActionState } from "@/lib/actions/groups";
-import { PARTICIPATION_LABELS, type JoinMode, type ParticipationStatus } from "@/lib/activities";
+import { PARTICIPATION_LABELS, PAYMENT_LABELS, type JoinMode, type ParticipationStatus, type PaymentStatus } from "@/lib/activities";
 import { chipClass, inputClass } from "@/components/styles";
 import { ErrorMessage, SubmitButton, SuccessMessage } from "@/components/ui";
 
@@ -24,7 +24,7 @@ export function JoinPanel({
   userId,
 }: {
   activityId: string;
-  participation: { id: string; status: ParticipationStatus } | null;
+  participation: { id: string; status: ParticipationStatus; paymentStatus?: PaymentStatus } | null;
   canJoin: boolean;
   blockedReason?: string;
   priceLabel: string;
@@ -41,6 +41,7 @@ export function JoinPanel({
   const [groupId, setGroupId] = useState(leaderGroups[0]?.id ?? "");
   const group = leaderGroups.find((g) => g.id === groupId);
   const active = participation && !["cancelled", "not_completed"].includes(participation.status);
+  const unpaid = participation?.paymentStatus === "unpaid" || participation?.paymentStatus === "awaiting_confirmation";
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-10 max-h-[70vh] overflow-y-auto border-t border-line bg-surface-deep pb-[env(safe-area-inset-bottom)]">
@@ -58,8 +59,17 @@ export function JoinPanel({
             <input type="hidden" name="activity_id" value={activityId} />
             <input type="hidden" name="participation_id" value={participation.id} />
             <span className="flex flex-1 flex-col">
-              <span className="text-[12px] text-fg-soft">Status kamu</span>
-              <span className="text-[15px] font-bold text-success">{PARTICIPATION_LABELS[participation.status]}</span>
+              <span className="text-[12px] text-fg-soft">{unpaid ? "Per orang" : "Status kamu"}</span>
+              {unpaid ? (
+                <span className="flex items-center gap-2">
+                  <span className="text-[17px] font-bold">{priceLabel}</span>
+                  <a href="#bayar" className={`text-[12px] font-bold ${participation.paymentStatus === "unpaid" ? "text-warn" : "text-info"}`}>
+                    {PAYMENT_LABELS[participation.paymentStatus!]} · Lihat status bayar
+                  </a>
+                </span>
+              ) : (
+                <span className="text-[15px] font-bold text-success">{PARTICIPATION_LABELS[participation.status]}</span>
+              )}
             </span>
             {participation.status === "registered" && (
               <SubmitButton size="small" variant="danger" pendingText="Membatalkan…">

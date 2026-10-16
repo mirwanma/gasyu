@@ -24,7 +24,7 @@ export type CheckinResult = {
   total_xp: number;
 };
 
-export type QrPayload = { checkpointId: string; token: string };
+export type QrPayload = { kind: "checkin"; checkpointId: string; token: string } | { kind: "mission"; missionId: string; token: string };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -37,11 +37,17 @@ export function parseQrPayload(text: string): QrPayload | null {
   try {
     const url = new URL(text);
     const c = url.searchParams.get("c");
+    const m = url.searchParams.get("m");
     const t = url.searchParams.get("t");
-    if (c && t && UUID.test(c) && /^[0-9a-f]{16}$/i.test(t)) return { checkpointId: c, token: t };
+    if (t && /^[0-9a-f]{16}$/i.test(t)) {
+      if (c && UUID.test(c)) return { kind: "checkin", checkpointId: c, token: t };
+      if (m && UUID.test(m)) return { kind: "mission", missionId: m, token: t };
+    }
   } catch {
     // bukan URL; coba format ringkas
   }
-  const m = text.match(/^ramein:ci:([0-9a-f-]{36}):([0-9a-f]{16})$/i);
-  return m ? { checkpointId: m[1], token: m[2] } : null;
+  const ci = text.match(/^ramein:ci:([0-9a-f-]{36}):([0-9a-f]{16})$/i);
+  if (ci) return { kind: "checkin", checkpointId: ci[1], token: ci[2] };
+  const mi = text.match(/^ramein:mi:([0-9a-f-]{36}):([0-9a-f]{16})$/i);
+  return mi ? { kind: "mission", missionId: mi[1], token: mi[2] } : null;
 }

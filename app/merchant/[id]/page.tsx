@@ -40,7 +40,7 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string; n
   const todos: { n: number; title: string; sub?: string; href: string; tone?: "warn" | "info" | "primary" }[] = [];
   if (org.status === "rejected") todos.push({ n: 1, title: "Perbaiki data pendaftaran", sub: "Lihat catatan tim Ramein", href: `${base}/profil` });
   if (outlets.length === 0) todos.push({ n: 1, title: "Tambah outlet", sub: "Minimal satu outlet aktif", href: `${base}/outlet`, tone: "info" });
-  if (d.payments_pending > 0) todos.push({ n: d.payments_pending, title: "Pembayaran menunggu konfirmasi", sub: "Cek bukti bayar di halaman Peserta", href: `${base}/aktivitas` });
+  if (d.payments_pending > 0) todos.push({ n: d.payments_pending, title: "Pembayaran menunggu konfirmasi", sub: "Cek bukti bayar di halaman Peserta aktivitas", href: `${base}/aktivitas`, tone: "warn" });
   if (d.mission_proofs_pending > 0) todos.push({ n: d.mission_proofs_pending, title: "Bukti foto misi", sub: "Tinjau di halaman Misi", href: `${base}/aktivitas`, tone: "info" });
   if (d.partner_invites_pending > 0) todos.push({ n: d.partner_invites_pending, title: "Undangan kolaborasi", sub: "Jawab di menu Kolaborasi", href: `${base}/kolaborasi`, tone: "primary" });
   if (d.partner_budget_empty > 0) todos.push({ n: d.partner_budget_empty, title: "Isi budget poin", sub: "Kamu partner di aktivitas lain tanpa budget poin", href: `${base}/kolaborasi`, tone: "primary" });

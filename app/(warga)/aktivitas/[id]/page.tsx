@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { JoinPanel } from "./join-panel";
+import { MissionSection } from "./missions";
+import { PaymentSection } from "./payment";
 import { coverStyle, cardTag } from "@/components/activity-card";
 import { OrganizerAvatar } from "@/components/avatar";
 import { Icon } from "@/components/icons";
@@ -9,6 +11,8 @@ import { cardClass, tagClass } from "@/components/styles";
 import { DIFFICULTY_LABELS, formatPrice, formatSchedule, targetLabel, typeLabel } from "@/lib/activities";
 import { getActivityCard, getCheckpoints, getMyParticipation, getPartners } from "@/lib/data/activities";
 import { listGroupProgress, listMyGroups } from "@/lib/data/groups";
+import { getCitizenMissions } from "@/lib/data/missions";
+import { getPaymentInstructions } from "@/lib/data/payments";
 import { getCurrentUser } from "@/lib/data/user";
 import { formatDateTime } from "@/lib/format";
 
@@ -29,12 +33,14 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
   const { id } = await params;
   const [card, user] = await Promise.all([getActivityCard(id), getCurrentUser()]);
   if (!card || !user) notFound();
-  const [checkpoints, partners, participation, groups, groupProgress] = await Promise.all([
+  const [checkpoints, partners, participation, groups, groupProgress, missions, payInfo] = await Promise.all([
     getCheckpoints(id),
     getPartners(id),
     getMyParticipation(id, user.id),
     card.join_mode === "individual" ? Promise.resolve([]) : listMyGroups(user.id),
     card.target_scope === "group" ? listGroupProgress({ activityId: id }) : Promise.resolve([]),
+    getCitizenMissions(id),
+    card.is_paid ? getPaymentInstructions(id) : Promise.resolve(null),
   ]);
   const leaderGroups = groups.filter((g) => g.isLeader).map((g) => ({ id: g.id, name: g.name, members: g.members.map((m) => ({ user_id: m.user_id, nickname: m.nickname })) }));
   const myGroupRow = participation?.group_id ? groupProgress.find((p) => p.group_id === participation.group_id) : undefined;
@@ -166,17 +172,22 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
           </section>
         )}
 
-        <section className={`${cardClass} flex flex-col gap-1 p-4`}>
-          <div className="flex items-baseline justify-between">
-            <h2 className="font-display text-[18px] font-semibold">Misi</h2>
-            <span className="text-[12px] font-semibold text-fg-muted">segera hadir</span>
-          </div>
-          <p className="text-[13px] leading-[1.5] text-fg-soft">
-            {card.type === "challenge" ? "Progress bertambah tiap check-in di checkpoint." : "Selesai saat kamu check-in di checkpoint."} Misi tambahan akan muncul di sini ketika fiturnya dirilis.
-          </p>
-        </section>
+        {participation && card.is_paid && participation.status !== "invited" && (
+          <PaymentSection
+            participationId={participation.id}
+            activityId={id}
+            paymentStatus={participation.payment_status}
+            dueAt={participation.payment_due_at}
+            note={participation.payment_note ?? null}
+            priceIdr={card.price_idr}
+            instructions={payInfo?.payment_instructions ?? null}
+            cancelled={participation.status === "cancelled"}
+          />
+        )}
 
-        {participation && ["registered", "in_progress"].includes(participation.status) && card.status === "running" && (
+        <MissionSection list={missions} activityId={id} activityType={card.type} targetKind={card.target_kind} />
+
+        {participation && ["registered", "in_progress"].includes(participation.status) && card.status === "running" && ["not_required", "paid"].includes(participation.payment_status) && (
           <Link href="/scan" className="flex h-[54px] items-center justify-center gap-2 rounded-2xl bg-hot text-[16px] font-semibold text-bg">
             <Icon name="scan" size={22} stroke={2.2} />
             Check-in: scan QR staf
@@ -191,7 +202,7 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
 
       <JoinPanel
         activityId={id}
-        participation={participation ? { id: participation.id, status: participation.status } : null}
+        participation={participation ? { id: participation.id, status: participation.status, paymentStatus: participation.payment_status } : null}
         canJoin={!blockedReason}
         blockedReason={blockedReason}
         priceLabel={formatPrice(card.price_idr, card.is_paid)}
