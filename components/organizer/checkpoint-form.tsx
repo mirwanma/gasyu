@@ -9,7 +9,7 @@ import { ErrorMessage, SubmitButton, SuccessMessage } from "@/components/ui";
 type Outlet = { id: string; name: string; address: string };
 
 // Tambah checkpoint: dari outlet merchant, atau titik peta manual.
-export function CheckpointForm({ organizerId, type, activityId, outlets }: { organizerId: string; type: "merchant" | "community"; activityId: string; outlets: Outlet[] }) {
+export function CheckpointForm({ organizerId, type, activityId, outlets, partnerOrganizerId }: { organizerId: string; type: "merchant" | "community" | "admin"; activityId: string; outlets: Outlet[]; partnerOrganizerId?: string }) {
   const [state, formAction] = useActionState<ActivityActionState, FormData>(addCheckpoint, {});
   const [mode, setMode] = useState<"outlet" | "manual">(outlets.length > 0 ? "outlet" : "manual");
   const [coords, setCoords] = useState({ lat: "", lng: "" });
@@ -33,7 +33,8 @@ export function CheckpointForm({ organizerId, type, activityId, outlets }: { org
       <input type="hidden" name="organizer_id" value={organizerId} />
       <input type="hidden" name="type_org" value={type} />
       <input type="hidden" name="activity_id" value={activityId} />
-      <h2 className="text-[15px] font-bold">Tambah checkpoint</h2>
+      {partnerOrganizerId && <input type="hidden" name="partner_organizer_id" value={partnerOrganizerId} />}
+      <h2 className="text-[15px] font-bold">Tambah checkpoint{partnerOrganizerId ? " milikmu" : ""}</h2>
       <ErrorMessage message={state.error} />
       <SuccessMessage message={state.success} />
       {outlets.length > 0 && (

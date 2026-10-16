@@ -38,14 +38,16 @@ export function ActivityForm({
   cityId,
   districts,
   initial,
+  action,
 }: {
   organizerId: string;
   type: "merchant" | "community";
   cityId: string | null;
   districts: District[];
   initial?: ActivityFormValues;
+  action?: (prev: ActivityActionState, formData: FormData) => Promise<ActivityActionState>;
 }) {
-  const [state, formAction] = useActionState<ActivityActionState, FormData>(initial ? updateActivity : createActivity, {});
+  const [state, formAction] = useActionState<ActivityActionState, FormData>(action ?? (initial ? updateActivity : createActivity), {});
   const [step, setStep] = useState(0);
   const [goal, setGoal] = useState<ActivityGoal>(initial?.goal ?? "awareness");
   const [scope, setScope] = useState(initial?.scope_region_id ?? "");

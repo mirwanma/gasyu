@@ -37,6 +37,22 @@ function describe(n: Notification): { title: string; body?: string; href?: strin
       return { title: `Aktivitas baru dari ${community}: ${p.title}`, body: "Lihat detail dan daftar sebelum kuota penuh.", href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
     case "group_registration":
       return { title: `${p.leader_nickname} mendaftarkan ${p.group_name} ke ${p.title}`, body: "Jawab undangan di halaman Grup sebelum aktivitas mulai.", href: "/grup" };
+    case "partner_invite":
+      return { title: `${p.host_name} mengundang kamu ke "${p.title}"`, body: `Sebagai ${p.role}. Jawab di menu Kolaborasi.` };
+    case "partner_accepted":
+      return { title: `${p.partner_name} menerima undangan "${p.title}"`, body: `Bergabung sebagai ${p.role}.` };
+    case "partner_declined":
+      return { title: `${p.partner_name} menolak undangan "${p.title}"` };
+    case "partner_added_by_admin":
+      return { title: `Kamu ditambahkan ke event Ramein "${p.title}"`, body: `Sebagai ${p.role}. Lihat di menu Kolaborasi; kamu boleh keluar sebelum event berjalan.` };
+    case "partner_left":
+      return { title: `${p.partner_name} keluar dari "${p.title}"`, body: "Checkpoint miliknya dinonaktifkan." };
+    case "application_received":
+      return { title: `${p.applicant_name} mengajukan diri ke open call "${p.post_title}"`, body: `Sebagai ${p.role}. Tinjau di menu Kolaborasi.` };
+    case "application_accepted":
+      return { title: `Pengajuanmu ke "${p.post_title}" diterima`, body: `${p.host_name} menjadikanmu partner.` };
+    case "application_rejected":
+      return { title: `Pengajuanmu ke "${p.post_title}" belum diterima` };
     case "voucher_refunded":
       return { title: `Voucher "${p.title}" di-refund`, body: `${p.points} poin kembali ke dompetmu.`, href: "/dompet" };
     case "payment_refund_due":

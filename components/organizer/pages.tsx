@@ -31,9 +31,9 @@ export function LainnyaPage({ id, type }: { id: string; type: Kind }) {
                 ? [
                     { label: "Reward & budget poin", href: `${base}/reward` },
                     { label: "Kasir", href: `${base}/kasir` },
-                    { label: "Kolaborasi", href: null },
+                    { label: "Kolaborasi", href: `${base}/kolaborasi` },
                   ]
-                : [{ label: "Kolaborasi", href: null }]),
+                : [{ label: "Kolaborasi", href: `${base}/kolaborasi` }]),
             ]}
           />
           <Link href="/" className="flex h-12 items-center justify-center rounded-2xl border border-line-strong text-[14px] font-semibold text-fg">
