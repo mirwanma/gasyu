@@ -22,10 +22,15 @@ async function Dashboard({ params }: Pick<PageProps<"/merchant/[id]">, "params">
 
 async function DashboardBody({ id, org }: { id: string; org: { status: string; name: string } }) {
   const supabase = await createClient();
-  const [{ count: outlets }, { count: team }] = await Promise.all([
+  const [{ count: outlets }, { count: team }, { data: acts }] = await Promise.all([
     supabase.from("merchant_outlets").select("id", { count: "exact", head: true }).eq("organizer_id", id).eq("is_active", true),
     supabase.from("organizer_members").select("user_id", { count: "exact", head: true }).eq("organizer_id", id),
+    supabase.from("v_activity_cards").select("id, status, seats_taken").eq("host_organizer_id", id),
   ]);
+  const activities = (acts ?? []) as { id: string; status: string; seats_taken: number }[];
+  const running = activities.filter((a) => a.status === "published" || a.status === "running");
+  const drafts = activities.filter((a) => a.status === "draft");
+  const participants = activities.reduce((sum, a) => sum + a.seats_taken, 0);
   const base = `/merchant/${id}`;
 
   return (
@@ -33,8 +38,8 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string; n
       <StatusBanner org={org as never} base={base} />
 
       <div className="grid grid-cols-2 gap-2.5">
-        <Kpi label="Aktivitas berjalan" value="0" sub="belum ada aktivitas" />
-        <Kpi label="Peserta" value="0" sub="semua aktivitas" />
+        <Kpi label="Aktivitas berjalan" value={String(running.length)} sub={activities.length === 0 ? "belum ada aktivitas" : `${activities.length} total`} />
+        <Kpi label="Peserta" value={String(participants)} sub="semua aktivitas" />
         <Kpi label="Check-in hari ini" value="0" />
         <Kpi label="Outlet aktif" value={String(outlets ?? 0)} sub={`${team ?? 0} anggota tim`} />
       </div>
@@ -45,6 +50,8 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string; n
           <TodoItem n={1} title="Perbaiki data pendaftaran" sub="Lihat catatan tim Ramein" href={`${base}/profil`} />
         ) : (outlets ?? 0) === 0 ? (
           <TodoItem n={1} title="Tambah outlet" sub="Minimal satu outlet aktif" href={`${base}/outlet`} tone="info" />
+        ) : drafts.length > 0 ? (
+          <TodoItem n={drafts.length} title="Draft belum diajukan" sub="Lengkapi checkpoint lalu ajukan ke tim Ramein" href={`${base}/aktivitas`} />
         ) : (
           <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>Tidak ada yang perlu ditindak. Mantap.</p>
         )}
@@ -62,10 +69,8 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string; n
 
       {org.status === "approved" && (
         <a
-          href="#"
-          aria-disabled="true"
-          className="fixed bottom-[104px] right-5 z-10 flex h-[52px] items-center gap-2 rounded-full bg-primary px-[18px] text-[15px] font-semibold text-on-primary opacity-60 shadow-[0_8px_20px_rgba(75,79,224,0.3)]"
-          title="Segera hadir"
+          href={`${base}/aktivitas/baru`}
+          className="fixed bottom-[104px] right-5 z-10 flex h-[52px] items-center gap-2 rounded-full bg-primary px-[18px] text-[15px] font-semibold text-on-primary shadow-[0_8px_20px_rgba(75,79,224,0.3)]"
         >
           + Buat aktivitas
         </a>

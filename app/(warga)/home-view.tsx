@@ -1,6 +1,9 @@
 import { UserAvatar } from "@/components/avatar";
 import { Icon } from "@/components/icons";
+import { ActivityCard } from "@/components/activity-card";
 import { cardClass } from "@/components/styles";
+import { PARTICIPATION_LABELS } from "@/lib/activities";
+import type { ActivityCard as Card, Participation } from "@/lib/data/activities";
 import { levelFor, type LevelRow } from "@/lib/gamification/level";
 
 // Tampilan beranda warga (tanpa pengambilan data), mengikuti artboard "Warga · Beranda".
@@ -11,6 +14,7 @@ export function HomeView({
   levels,
   greeting,
   unread,
+  myActivities,
 }: {
   nickname: string;
   villageName?: string;
@@ -18,6 +22,7 @@ export function HomeView({
   levels: LevelRow[];
   greeting: string;
   unread: number;
+  myActivities: { card: Card; participation: Participation }[];
 }) {
   const level = levelFor(totalXp, levels);
   const currentMin = levels.find((row) => row.level === level.level)?.min_xp ?? 0;
@@ -73,14 +78,30 @@ export function HomeView({
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-display text-[19px] font-semibold">Aktivitasku</h2>
-        <div className={`${cardClass} flex flex-col gap-1 p-4`}>
-          <span className="text-[15px] font-semibold">Belum ada aktivitas</span>
-          <span className="text-[13px] leading-[1.5] text-fg-soft">
-            Event dan challenge dari UMKM dan komunitas
-            {villageName ? ` di ${villageName}` : " di Cimahi"} segera hadir di sini.
-          </span>
+        <div className="flex items-baseline justify-between">
+          <h2 className="font-display text-[19px] font-semibold">Aktivitasku</h2>
+          <a href="/jelajah" className="text-[13px] font-semibold text-link">
+            Jelajah
+          </a>
         </div>
+        {myActivities.length === 0 ? (
+          <a href="/jelajah" className={`${cardClass} flex flex-col gap-1 p-4 text-fg`}>
+            <span className="text-[15px] font-semibold">Belum ikut aktivitas</span>
+            <span className="text-[13px] leading-[1.5] text-fg-soft">
+              Cari event dan challenge dari UMKM dan komunitas
+              {villageName ? ` di sekitar ${villageName}` : " di Cimahi"} lewat Jelajah.
+            </span>
+          </a>
+        ) : (
+          myActivities.map(({ card, participation }) => (
+            <ActivityCard
+              key={card.id}
+              card={card}
+              href={`/aktivitas/${card.id}`}
+              footer={<span className="text-[12px] font-bold text-success">{PARTICIPATION_LABELS[participation.status]}</span>}
+            />
+          ))
+        )}
       </section>
     </>
   );

@@ -7,7 +7,7 @@ const EXT: Record<string, string> = { "image/png": "png", "image/jpeg": "jpg", "
 // Bucket publik (logos) mengembalikan URL publik; bucket privat mengembalikan path-nya.
 export async function uploadOrganizerFile(
   supabase: SupabaseClient,
-  bucket: "logos" | "organizer-proofs",
+  bucket: "logos" | "organizer-proofs" | "covers",
   organizerId: string,
   name: string,
   file: File,
@@ -17,7 +17,7 @@ export async function uploadOrganizerFile(
   const path = `${organizerId}/${name}-${Date.now()}.${ext}`;
   const { error } = await supabase.storage.from(bucket).upload(path, file, { contentType: file.type, upsert: true });
   if (error) return null;
-  if (bucket === "logos") return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+  if (bucket === "logos" || bucket === "covers") return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
   return path;
 }
 

@@ -7,12 +7,12 @@ import { LogoMark } from "@/components/ui";
 
 type Item = { label: string; href: string | null; icon: IconName; count?: number };
 
-export function AdminSidebar({ pendingOrganizers, nickname }: { pendingOrganizers: number; nickname: string }) {
+export function AdminSidebar({ pendingOrganizers, pendingActivities, nickname }: { pendingOrganizers: number; pendingActivities: number; nickname: string }) {
   const pathname = usePathname();
   const items: Item[] = [
     { label: "Ringkasan", href: "/admin", icon: "home" },
     { label: "Verifikasi", href: "/admin/verifikasi", icon: "shield", count: pendingOrganizers },
-    { label: "Aktivitas & event Ramein", href: null, icon: "calendar" },
+    { label: "Aktivitas & event Ramein", href: "/admin/aktivitas", icon: "calendar", count: pendingActivities },
     { label: "Moderasi", href: null, icon: "flag" },
     { label: "Pembayaran", href: null, icon: "wallet" },
     { label: "Pengguna", href: null, icon: "users" },
