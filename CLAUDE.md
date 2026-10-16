@@ -115,4 +115,4 @@ docs/
 
 Ikuti `docs/DESAIN-DATABASE.md` bagian 9 (irisan 1–11).
 
-Irisan saat ini: **4 (Check-in)** — Irisan 1–3 selesai — perbarui baris ini setiap pindah irisan.
+Irisan saat ini: **5 (Challenge & grup)** — Irisan 1–4 selesai — perbarui baris ini setiap pindah irisan.

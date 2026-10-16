@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Kpi, OrganizerShell, StatusBanner, TodoItem } from "@/components/organizer/shell";
 import { cardClass } from "@/components/styles";
+import { countTodayCheckins } from "@/lib/data/checkins";
 import { createClient } from "@/lib/supabase/server";
 
 export default function MerchantDashboardPage({ params }: PageProps<"/merchant/[id]">) {
@@ -22,10 +23,11 @@ async function Dashboard({ params }: Pick<PageProps<"/merchant/[id]">, "params">
 
 async function DashboardBody({ id, org }: { id: string; org: { status: string; name: string } }) {
   const supabase = await createClient();
-  const [{ count: outlets }, { count: team }, { data: acts }] = await Promise.all([
+  const [{ count: outlets }, { count: team }, { data: acts }, checkinsToday] = await Promise.all([
     supabase.from("merchant_outlets").select("id", { count: "exact", head: true }).eq("organizer_id", id).eq("is_active", true),
     supabase.from("organizer_members").select("user_id", { count: "exact", head: true }).eq("organizer_id", id),
     supabase.from("v_activity_cards").select("id, status, seats_taken").eq("host_organizer_id", id),
+    countTodayCheckins(id),
   ]);
   const activities = (acts ?? []) as { id: string; status: string; seats_taken: number }[];
   const running = activities.filter((a) => a.status === "published" || a.status === "running");
@@ -40,7 +42,7 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string; n
       <div className="grid grid-cols-2 gap-2.5">
         <Kpi label="Aktivitas berjalan" value={String(running.length)} sub={activities.length === 0 ? "belum ada aktivitas" : `${activities.length} total`} />
         <Kpi label="Peserta" value={String(participants)} sub="semua aktivitas" />
-        <Kpi label="Check-in hari ini" value="0" />
+        <Kpi label="Check-in hari ini" value={String(checkinsToday)} />
         <Kpi label="Outlet aktif" value={String(outlets ?? 0)} sub={`${team ?? 0} anggota tim`} />
       </div>
 

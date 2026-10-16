@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Kpi, OrganizerShell, StatusBanner, TodoItem } from "@/components/organizer/shell";
 import { cardClass } from "@/components/styles";
+import { countTodayCheckins } from "@/lib/data/checkins";
 import { createClient } from "@/lib/supabase/server";
 
 export default function KomunitasDashboardPage({ params }: PageProps<"/komunitas/[id]">) {
@@ -22,9 +23,10 @@ async function Dashboard({ params }: Pick<PageProps<"/komunitas/[id]">, "params"
 
 async function DashboardBody({ id, org }: { id: string; org: { status: string } }) {
   const supabase = await createClient();
-  const [{ data: stats }, { data: acts }] = await Promise.all([
+  const [{ data: stats }, { data: acts }, checkinsToday] = await Promise.all([
     supabase.from("v_community_member_stats").select("*").eq("community_id", id).maybeSingle(),
     supabase.from("v_activity_cards").select("id, status, seats_taken").eq("host_organizer_id", id),
+    countTodayCheckins(id),
   ]);
   const activities = (acts ?? []) as { id: string; status: string; seats_taken: number }[];
   const running = activities.filter((a) => a.status === "published" || a.status === "running");
@@ -43,7 +45,7 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string } 
       <div className="grid grid-cols-3 gap-2.5">
         <Kpi cols={3} label="berjalan" value={String(running.length)} />
         <Kpi cols={3} label="peserta" value={String(participants)} />
-        <Kpi cols={3} label="check-in hari ini" value="0" />
+        <Kpi cols={3} label="check-in hari ini" value={String(checkinsToday)} />
       </div>
 
       <a href={`${base}/member`} className={`${cardClass} flex flex-col gap-3 p-4 text-fg`}>

@@ -128,8 +128,16 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
           </p>
         </section>
 
-        {participation?.status === "completed" && participation.id && (
-          <p className="text-[12px] text-fg-soft">Kamu menyelesaikan aktivitas ini{card.published_at ? ` · terbit ${formatDateTime(card.published_at)}` : ""}.</p>
+        {participation && ["registered", "in_progress"].includes(participation.status) && card.status === "running" && (
+          <Link href="/scan" className="flex h-[54px] items-center justify-center gap-2 rounded-2xl bg-hot text-[16px] font-semibold text-bg">
+            <Icon name="scan" size={22} stroke={2.2} />
+            Check-in: scan QR staf
+          </Link>
+        )}
+        {participation?.status === "completed" && (
+          <p className="rounded-2xl bg-success-tint px-4 py-3 text-[13px] text-success">
+            Kamu sudah check-in dan menyelesaikan aktivitas ini{card.published_at ? ` · terbit ${formatDateTime(card.published_at)}` : ""}.
+          </p>
         )}
       </div>
 
