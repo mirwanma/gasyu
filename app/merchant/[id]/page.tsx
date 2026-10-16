@@ -54,7 +54,7 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string; n
         <Kpi
           label="Aktivitas berjalan"
           value={String(d.running_activities)}
-          sub={d.published_activities > 0 && d.next_starts_at ? `${d.published_activities} terbit, mulai ${formatDate(d.next_starts_at, { year: undefined })}` : d.draft_activities > 0 ? `${d.draft_activities} draft` : "belum ada yang terbit"}
+          sub={d.published_activities > 0 && d.next_starts_at ? `${d.published_activities} terbit, mulai ${formatDate(d.next_starts_at, { year: undefined })}` : d.running_activities > 0 ? "sedang berlangsung" : d.draft_activities > 0 ? `${d.draft_activities} draft` : "belum ada yang terbit"}
         />
         <Kpi label="Peserta" value={d.participants.toLocaleString("id-ID")} sub={d.participants_week > 0 ? `+${d.participants_week} minggu ini` : "semua aktivitas"} />
         <Kpi label="Check-in hari ini" value={String(d.checkins_today)} sub={`${d.vouchers_active} voucher aktif beredar`} />
