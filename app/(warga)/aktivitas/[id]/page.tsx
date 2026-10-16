@@ -6,8 +6,9 @@ import { coverStyle, cardTag } from "@/components/activity-card";
 import { OrganizerAvatar } from "@/components/avatar";
 import { Icon } from "@/components/icons";
 import { cardClass, tagClass } from "@/components/styles";
-import { formatPrice, formatSchedule, typeLabel } from "@/lib/activities";
+import { DIFFICULTY_LABELS, formatPrice, formatSchedule, targetLabel, typeLabel } from "@/lib/activities";
 import { getActivityCard, getCheckpoints, getMyParticipation, getPartners } from "@/lib/data/activities";
+import { listGroupProgress, listMyGroups } from "@/lib/data/groups";
 import { getCurrentUser } from "@/lib/data/user";
 import { formatDateTime } from "@/lib/format";
 
@@ -28,7 +29,15 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
   const { id } = await params;
   const [card, user] = await Promise.all([getActivityCard(id), getCurrentUser()]);
   if (!card || !user) notFound();
-  const [checkpoints, partners, participation] = await Promise.all([getCheckpoints(id), getPartners(id), getMyParticipation(id, user.id)]);
+  const [checkpoints, partners, participation, groups, groupProgress] = await Promise.all([
+    getCheckpoints(id),
+    getPartners(id),
+    getMyParticipation(id, user.id),
+    card.join_mode === "individual" ? Promise.resolve([]) : listMyGroups(user.id),
+    card.target_scope === "group" ? listGroupProgress({ activityId: id }) : Promise.resolve([]),
+  ]);
+  const leaderGroups = groups.filter((g) => g.isLeader).map((g) => ({ id: g.id, name: g.name, members: g.members.map((m) => ({ user_id: m.user_id, nickname: m.nickname })) }));
+  const myGroupRow = participation?.group_id ? groupProgress.find((p) => p.group_id === participation.group_id) : undefined;
   const tag = cardTag(card);
   const open = card.status === "published" || card.status === "running";
   const quotaFull = card.quota !== null && card.seats_taken >= card.quota;
@@ -36,7 +45,6 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
 
   let blockedReason: string | undefined;
   if (!open) blockedReason = card.status === "cancelled" ? "Aktivitas dibatalkan" : card.status === "ended" || card.status === "settled" ? "Aktivitas sudah selesai" : "Belum dibuka";
-  else if (card.join_mode === "group") blockedReason = "Hanya lewat grup (fitur grup menyusul)";
   else if (quotaFull) blockedReason = "Kuota penuh";
   else if (residentsBlocked) blockedReason = "Khusus warga wilayah cakupan";
 
@@ -46,6 +54,7 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
     ["Kuota", card.quota ? `${card.seats_taken} dari ${card.quota.toLocaleString("id-ID")}` : `${card.seats_taken} peserta`],
     ["Hadiah", `+${card.xp_base} XP${card.points_per_completion > 0 ? ` · +${card.points_per_completion} poin` : ""}`],
   ];
+  if (card.type === "challenge") facts.splice(2, 0, ["Target", `${targetLabel(card.target_kind, card.target_count, card.target_scope)} · ${DIFFICULTY_LABELS[card.difficulty ?? "easy"]}`]);
 
   return (
     <>
@@ -118,18 +127,65 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
           </section>
         )}
 
+        {card.type === "challenge" && participation && !["cancelled", "invited"].includes(participation.status) && (
+          <section className={`${cardClass} flex flex-col gap-2 p-4`}>
+            <div className="flex items-baseline justify-between">
+              <h2 className="font-display text-[18px] font-semibold">Progress {card.target_scope === "group" ? "grup" : "kamu"}</h2>
+              <span className="text-[14px] font-bold text-xp">
+                {card.target_scope === "group" ? (myGroupRow?.progress ?? 0) : participation.progress}/{card.target_count ?? 1}
+              </span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-lg bg-track">
+              <div className="h-full bg-xp" style={{ width: `${Math.min(100, Math.round((((card.target_scope === "group" ? (myGroupRow?.progress ?? 0) : participation.progress) / (card.target_count ?? 1)) * 100)))}%` }} />
+            </div>
+            <span className="text-[12px] text-fg-soft">
+              {card.target_scope === "group"
+                ? `${myGroupRow?.group_name ?? "Grupmu"} · ${myGroupRow?.contributors ?? 0} anggota berkontribusi · peringkat #${myGroupRow?.rank ?? "-"}`
+                : "Satu check-in per hari dihitung. Check-in lagi besok."}
+            </span>
+          </section>
+        )}
+
+        {card.target_scope === "group" && groupProgress.length > 0 && (
+          <section className="flex flex-col gap-2.5">
+            <h2 className="font-display text-[18px] font-semibold">Peringkat grup</h2>
+            <div className={`${cardClass} overflow-hidden`}>
+              {groupProgress.slice(0, 10).map((g) => (
+                <div key={g.group_id} className={`flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0 ${g.group_id === participation?.group_id ? "bg-primary-tint/40" : ""}`}>
+                  <span className="w-7 font-display text-[16px] font-bold text-fg-soft">#{g.rank}</span>
+                  <span className="flex flex-1 flex-col">
+                    <span className="text-[14px] font-semibold">{g.group_name}</span>
+                    <span className="text-[12px] text-fg-soft">{g.contributors} dari {g.members} anggota berkontribusi</span>
+                  </span>
+                  <span className="text-[14px] font-bold text-xp">
+                    {g.progress}/{g.target_count}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         <section className={`${cardClass} flex flex-col gap-1 p-4`}>
           <div className="flex items-baseline justify-between">
             <h2 className="font-display text-[18px] font-semibold">Misi</h2>
             <span className="text-[12px] font-semibold text-fg-muted">segera hadir</span>
           </div>
           <p className="text-[13px] leading-[1.5] text-fg-soft">
-            Selesai saat kamu check-in di checkpoint. Misi tambahan akan muncul di sini ketika fiturnya dirilis.
+            {card.type === "challenge" ? "Progress bertambah tiap check-in di checkpoint." : "Selesai saat kamu check-in di checkpoint."} Misi tambahan akan muncul di sini ketika fiturnya dirilis.
           </p>
         </section>
 
-        {participation?.status === "completed" && participation.id && (
-          <p className="text-[12px] text-fg-soft">Kamu menyelesaikan aktivitas ini{card.published_at ? ` · terbit ${formatDateTime(card.published_at)}` : ""}.</p>
+        {participation && ["registered", "in_progress"].includes(participation.status) && card.status === "running" && (
+          <Link href="/scan" className="flex h-[54px] items-center justify-center gap-2 rounded-2xl bg-hot text-[16px] font-semibold text-bg">
+            <Icon name="scan" size={22} stroke={2.2} />
+            Check-in: scan QR staf
+          </Link>
+        )}
+        {participation?.status === "completed" && (
+          <p className="rounded-2xl bg-success-tint px-4 py-3 text-[13px] text-success">
+            Kamu sudah check-in dan menyelesaikan aktivitas ini{card.published_at ? ` · terbit ${formatDateTime(card.published_at)}` : ""}.
+          </p>
         )}
       </div>
 
@@ -139,6 +195,11 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
         canJoin={!blockedReason}
         blockedReason={blockedReason}
         priceLabel={formatPrice(card.price_idr, card.is_paid)}
+        joinMode={card.join_mode}
+        groupMin={card.group_min}
+        groupMax={card.group_max}
+        leaderGroups={leaderGroups}
+        userId={user.id}
       />
     </>
   );

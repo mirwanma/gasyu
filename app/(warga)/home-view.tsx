@@ -15,6 +15,7 @@ export function HomeView({
   greeting,
   unread,
   myActivities,
+  wallet,
 }: {
   nickname: string;
   villageName?: string;
@@ -23,6 +24,7 @@ export function HomeView({
   greeting: string;
   unread: number;
   myActivities: { card: Card; participation: Participation }[];
+  wallet: { balance: number; activeVouchers: number; expiring30d: number };
 }) {
   const level = levelFor(totalXp, levels);
   const currentMin = levels.find((row) => row.level === level.level)?.min_xp ?? 0;
@@ -76,6 +78,19 @@ export function HomeView({
           </div>
         </div>
       </section>
+
+      <a href="/dompet" className={`${cardClass} flex items-center gap-4 p-4 text-fg`}>
+        <span className="flex flex-1 flex-col gap-0.5">
+          <span className="text-[12px] text-fg-soft">Saldo poin</span>
+          <span className="font-display text-[24px] font-bold leading-none text-points">{wallet.balance.toLocaleString("id-ID")}</span>
+          {wallet.expiring30d > 0 && <span className="text-[11px] text-warn">{wallet.expiring30d} poin kedaluwarsa dalam 30 hari</span>}
+        </span>
+        <span className="flex flex-col items-end gap-0.5">
+          <span className="font-display text-[20px] font-semibold leading-none">{wallet.activeVouchers}</span>
+          <span className="text-[12px] text-fg-soft">voucher aktif</span>
+        </span>
+        <Icon name="chevron" size={16} stroke={2} className="text-fg-muted" />
+      </a>
 
       <section className="flex flex-col gap-3">
         <div className="flex items-baseline justify-between">

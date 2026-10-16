@@ -35,6 +35,14 @@ const ERRORS: Record<string, string> = {
   join_mode_group: "Aktivitas ini hanya bisa diikuti lewat grup (fitur grup menyusul).",
   cannot_cancel: "Pendaftaran tidak bisa dibatalkan lagi.",
   account_inactive: "Akun kamu sedang tidak aktif.",
+  group_target_requires_group_join: "Target grup hanya untuk pendaftaran lewat grup.",
+  invalid_target: "Target challenge tidak valid.",
+  target_required: "Challenge butuh target (jumlah check-in atau checkpoint).",
+  join_mode_individual: "Aktivitas ini hanya bisa diikuti perorangan.",
+  not_group_leader: "Hanya ketua grup yang bisa mendaftarkan grup.",
+  invalid_group_members: "Pilih anggota yang masih aktif di grup.",
+  member_already_joined: "Ada anggota yang sudah terdaftar di aktivitas ini.",
+  cannot_confirm: "Undangan ini sudah tidak berlaku.",
 };
 
 const msg = (code: string | undefined, fallback: string) => ERRORS[code ?? ""] ?? fallback;
@@ -42,8 +50,16 @@ const basePath = (type: string, id: string) => `/${type === "merchant" ? "mercha
 
 function readActivityForm(formData: FormData) {
   const text = (key: string) => String(formData.get(key) ?? "").trim();
+  const type = text("type") === "challenge" ? "challenge" : "event";
+  const joinMode = ["individual", "group", "both"].includes(text("join_mode")) ? text("join_mode") : "individual";
   return {
-    type: "event",
+    type,
+    difficulty: type === "challenge" ? text("difficulty") || "easy" : null,
+    target_scope: type === "challenge" && text("target_scope") === "group" ? "group" : "individual",
+    target_kind: type === "challenge" ? text("target_kind") || "total_checkins" : null,
+    target_count: type === "challenge" ? text("target_count") || "1" : null,
+    group_min: joinMode === "individual" ? null : text("group_min") || "2",
+    group_max: joinMode === "individual" ? null : text("group_max") || "10",
     goal: text("goal") || "awareness",
     title: text("title"),
     description: text("description"),
@@ -51,7 +67,7 @@ function readActivityForm(formData: FormData) {
     starts_at: fromLocalInput(text("starts_at")),
     ends_at: fromLocalInput(text("ends_at")),
     quota: text("quota") || null,
-    join_mode: "individual",
+    join_mode: joinMode,
     residency_rule: text("residency_rule") || "open",
     audience: text("audience") || "public",
   };

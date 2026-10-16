@@ -28,6 +28,9 @@ export const ICON_PATHS = {
   link: "M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1",
   store: "M3 9l1.5-5h15L21 9M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M5 9v11h14V9M9 20v-6h6v6",
   logout: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9",
+  close: "M6 6l12 12M18 6 6 18",
+  keyboard: "M4 9h16M4 15h16M10 3 8 21M16 3l-2 18",
+  zap: "M12 3v18M5 12h14",
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;
