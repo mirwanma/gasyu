@@ -55,6 +55,8 @@ function describe(n: Notification): { title: string; body?: string; href?: strin
       return { title: `Pengajuanmu ke "${p.post_title}" belum diterima` };
     case "voucher_refunded":
       return { title: `Voucher "${p.title}" di-refund`, body: `${p.points} poin kembali ke dompetmu.`, href: "/dompet" };
+    case "badge_awarded":
+      return { title: `Badge baru: ${p.badge_name}`, body: "Lihat koleksi badge kamu di Profil.", href: "/profil" };
     case "checkin_rejected":
       return { title: `Check-in di "${p.activity_title}" ditolak tim Ramein`, body: `${p.xp ?? 0} XP${Number(p.points) > 0 ? ` dan ${p.points} poin` : ""} ditarik kembali.${typeof p.note === "string" && p.note ? ` Catatan: ${p.note}` : ""}` };
     case "fraud_warning":

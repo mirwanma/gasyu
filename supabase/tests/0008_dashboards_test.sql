@@ -2,6 +2,8 @@
 -- Jalankan setelah 0001–0008.
 \o /dev/null
 begin;
+-- Trigger badge (irisan 9) tertunda sampai commit; di uji dipaksa langsung.
+set constraints all immediate;
 
 create function pg_temp.assert(p_ok boolean, p_msg text) returns void
 language plpgsql as $$

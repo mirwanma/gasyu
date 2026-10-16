@@ -48,7 +48,8 @@ async function CitizenHome() {
       unread={unread}
       myActivities={myActivities}
       wallet={{ balance: wallet.balance, activeVouchers: vouchers.filter((v) => v.status === "active").length, expiring30d: wallet.expiring_30d }}
-      rank={dashboard ? { village: dashboard.rank_village, city: dashboard.rank_city, xpMonth: dashboard.xp_month } : undefined}
+      rank={dashboard ? { village: dashboard.rank_village, city: dashboard.rank_city, xpMonth: dashboard.xp_month, streakWeeks: dashboard.streak_weeks, villageRank: dashboard.village_rank } : undefined}
+      badges={dashboard ? { recent: dashboard.badges.slice(0, 3), earned: dashboard.badges.length, total: dashboard.badge_total } : undefined}
     />
   );
 }

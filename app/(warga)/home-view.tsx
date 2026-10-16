@@ -4,6 +4,7 @@ import { ActivityCard } from "@/components/activity-card";
 import { cardClass } from "@/components/styles";
 import { PARTICIPATION_LABELS } from "@/lib/activities";
 import type { ActivityCard as Card, Participation } from "@/lib/data/activities";
+import { badgeMeta } from "@/lib/gamification/badges";
 import { levelFor, type LevelRow } from "@/lib/gamification/level";
 
 // Tampilan beranda warga (tanpa pengambilan data), mengikuti artboard "Warga · Beranda".
@@ -17,6 +18,7 @@ export function HomeView({
   myActivities,
   wallet,
   rank,
+  badges,
 }: {
   nickname: string;
   villageName?: string;
@@ -26,7 +28,8 @@ export function HomeView({
   unread: number;
   myActivities: { card: Card; participation: Participation }[];
   wallet: { balance: number; activeVouchers: number; expiring30d: number };
-  rank?: { village: number | null; city: number | null; xpMonth: number };
+  rank?: { village: number | null; city: number | null; xpMonth: number; streakWeeks: number; villageRank: number | null };
+  badges?: { recent: { code: string; name: string; awarded_at: string }[]; earned: number; total: number };
 }) {
   const level = levelFor(totalXp, levels);
   const currentMin = levels.find((row) => row.level === level.level)?.min_xp ?? 0;
@@ -79,16 +82,17 @@ export function HomeView({
             <span>{villageName ? `Kel. ${villageName}` : "Luar Cimahi"}</span>
           </div>
         </div>
-        {rank && rank.xpMonth > 0 && (
-          <div className="flex items-center justify-between rounded-2xl bg-[#0D1024]/35 px-3.5 py-2.5 text-[12px] text-on-hero">
+        {rank && (rank.xpMonth > 0 || rank.streakWeeks > 0) && (
+          <a href="/peringkat" className="flex items-center justify-between gap-2 rounded-2xl bg-[#0D1024]/35 px-3.5 py-2.5 text-[12px] text-on-hero">
             <span>
               Bulan ini <b className="text-[#F3F4FA]">{rank.xpMonth.toLocaleString("id-ID")} XP</b>
+              {rank.streakWeeks > 0 ? ` · streak ${rank.streakWeeks} mgg` : ""}
             </span>
-            <span>
-              {rank.village ? `#${rank.village} di ${villageName}` : rank.city ? `#${rank.city} se-Cimahi` : "Luar leaderboard kelurahan"}
+            <span className="text-right">
+              {rank.village ? `#${rank.village} di ${villageName}` : rank.city ? `#${rank.city} se-Cimahi` : "Lihat peringkat"}
               {rank.village && rank.city ? ` · #${rank.city} kota` : ""}
             </span>
-          </div>
+          </a>
         )}
       </section>
 
@@ -104,6 +108,28 @@ export function HomeView({
         </span>
         <Icon name="chevron" size={16} stroke={2} className="text-fg-muted" />
       </a>
+
+      {badges && badges.recent.length > 0 && (
+        <a href="/profil" className={`${cardClass} flex items-center gap-3 p-4 text-fg`}>
+          <div className="flex -space-x-2">
+            {badges.recent.map((b) => {
+              const meta = badgeMeta(b.code);
+              return (
+                <span key={b.code} className={`flex size-10 items-center justify-center rounded-full border-2 border-surface bg-track ${meta.color}`} title={b.name}>
+                  <Icon name={meta.icon} size={18} stroke={2} />
+                </span>
+              );
+            })}
+          </div>
+          <span className="flex flex-1 flex-col gap-0.5">
+            <span className="text-[14px] font-semibold">Badge terbaru: {badges.recent[0].name}</span>
+            <span className="text-[12px] text-fg-soft">
+              {badges.earned} dari {badges.total} badge terkumpul
+            </span>
+          </span>
+          <Icon name="chevron" size={16} stroke={2} className="text-fg-muted" />
+        </a>
+      )}
 
       <section className="flex flex-col gap-3">
         <div className="flex items-baseline justify-between">

@@ -270,10 +270,13 @@ export type CitizenDashboard = {
   points_expiring_30d: number;
   active_vouchers: number;
   unread_notifications: number;
+  streak_weeks: number;
   rank_city: number | null;
   rank_village: number | null;
   village_active_citizens: number | null;
-  badges: unknown[];
+  village_rank: number | null;
+  badges: { code: string; name: string; awarded_at: string }[];
+  badge_total: number;
   my_activities: { activity_id: string; title: string; type: string; status: string; progress: number }[];
 };
 
