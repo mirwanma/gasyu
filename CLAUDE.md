@@ -1,4 +1,4 @@
-# CLAUDE.md — Ramein (Platform Gamifikasi Kota, Pilot Cimahi)
+# CLAUDE.md — Gasyu (Platform Gamifikasi Kota, Pilot Cimahi)
 
 Panduan kerja untuk Claude di proyek ini. Baca seluruh file ini di awal setiap sesi.
 
@@ -13,10 +13,10 @@ Jika `CLAUDE.md` dan dokumen di `docs/` berbeda, ikuti `docs/` dan beri tahu pem
 
 ## Ringkasan produk
 
-Ramein adalah platform gamifikasi kota sebagai alat marketing bergamifikasi untuk merchant/UMKM dan komunitas lokal.
+Gasyu adalah platform gamifikasi kota sebagai alat marketing bergamifikasi untuk merchant/UMKM dan komunitas lokal.
 Merchant dan komunitas (disebut bersama **penyelenggara**) membuat event atau challenge, sendiri atau berkolaborasi, lengkap dengan misi.
 Warga ikut, check-in via QR, mengerjakan misi, dapat XP (status) dan poin (ditukar voucher merchant), dan kelurahannya bersaing di leaderboard.
-Admin (tim Ramein) memverifikasi, memoderasi, dan bisa membuat event atas nama Ramein.
+Admin (tim Gasyu) memverifikasi, memoderasi, dan bisa membuat event atas nama Gasyu.
 Pilot: Kota Cimahi (3 kecamatan, 15 kelurahan). Struktur wilayah harus generik untuk kota lain.
 
 ## Stack
@@ -48,18 +48,18 @@ Pilot: Kota Cimahi (3 kecamatan, 15 kelurahan). Struktur wilayah harus generik u
 | XP | poin status, tidak bisa ditukar | `xp_ledger` |
 | Poin | mata uang reward, dari budget merchant | `point_ledger`, `point_allocations` |
 | Reward / voucher | hadiah dari merchant | `rewards`, `redemptions` |
-| Event Ramein | event buatan admin, host organizer `platform` | `organizers.type = 'platform'` |
+| Event Gasyu | event buatan admin, host organizer `platform` | `organizers.type = 'platform'` |
 
 ## Aturan yang tidak boleh dilanggar
 
 1. **Akses ditegakkan di database.** Setiap tabel baru wajib punya RLS policy di migrasi yang sama. Jangan pernah mengandalkan pengecekan di UI saja.
 2. **XP dan poin hanya ditulis oleh server** (fungsi database `security definer` yang dipanggil dari server action), tidak pernah dari client.
 3. **Saldo dihitung dari ledger.** Ledger hanya insert; koreksi berupa baris negatif. Jangan menyimpan kolom saldo.
-4. **Dua mata uang terpisah.** XP tidak pernah bisa ditukar. Poin hanya diberikan jika budget poin partner merchant masih cukup. Komunitas dan Ramein tidak punya budget poin sendiri.
+4. **Dua mata uang terpisah.** XP tidak pernah bisa ditukar. Poin hanya diberikan jika budget poin partner merchant masih cukup. Komunitas dan Gasyu tidak punya budget poin sendiri.
 5. **Anti-curang:** satu check-in per aktivitas per warga per hari (WIB); maksimal 1.000 XP per warga per hari; QR check-in dan QR misi berganti tiap 60 detik; di luar radius checkpoint (150 m) dicatat dengan flag; kode misi maks. 5 percobaan per 15 menit; XP misi 10–100, total maks. 500 per aktivitas.
 6. **Privasi:** partner hanya melihat identitas peserta yang check-in di checkpoint miliknya; data warga lain hanya `nickname`, tidak pernah `full_name`; bukti bayar dan foto misi di bucket privat.
-7. **Aktivitas penyelenggara selalu melalui persetujuan admin** sebelum `published`. Pengecualian: event Ramein (host `platform`) langsung `published` saat diajukan admin.
-8. **Pembayaran di luar aplikasi.** Aktivitas boleh berbayar, tetapi Ramein hanya mencatat harga dan `payment_status` yang dikonfirmasi manual. Jangan menambahkan payment gateway.
+7. **Aktivitas penyelenggara selalu melalui persetujuan admin** sebelum `published`. Pengecualian: event Gasyu (host `platform`) langsung `published` saat diajukan admin.
+8. **Pembayaran di luar aplikasi.** Aktivitas boleh berbayar, tetapi Gasyu hanya mencatat harga dan `payment_status` yang dikonfirmasi manual. Jangan menambahkan payment gateway.
 9. **Warga luar Cimahi** boleh mendaftar (`home_village_id` NULL). Mereka dapat XP dan poin, tidak dihitung di leaderboard kelurahan, dan tidak lolos aktivitas `residents_only`.
 10. **Zona waktu tunggal:** semua batas harian dan bulanan memakai `Asia/Jakarta`.
 11. **Merchant dan komunitas dipisah** di UI, registrasi, peran tim, dan dashboard. Cek tipe penyelenggara di server dan RLS, bukan hanya menyembunyikan tombol.
@@ -97,7 +97,7 @@ app/                  # route Next.js
   (warga)/            # beranda, jelajah, aktivitas, scan, dompet, grup, peringkat, profil
   merchant/[id]/      # dashboard merchant
   komunitas/[id]/     # dashboard komunitas
-  admin/              # dashboard admin (admin.ramein.id)
+  admin/              # dashboard admin (admin.gasyu.id)
   masuk/, onboarding/
 components/
 lib/

@@ -42,11 +42,11 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string } 
 
   const todos: { n: number; title: string; sub?: string; href: string; tone?: "warn" | "info" | "primary" }[] = [];
   if (pending > 0) todos.push({ n: pending, title: "Permintaan bergabung", href: `${base}/member` });
-  if (org.status === "rejected") todos.push({ n: 1, title: "Perbaiki data pendaftaran", sub: "Lihat catatan tim Ramein", href: `${base}/profil` });
+  if (org.status === "rejected") todos.push({ n: 1, title: "Perbaiki data pendaftaran", sub: "Lihat catatan tim Gasyu", href: `${base}/profil` });
   if (d && d.payments_pending > 0) todos.push({ n: d.payments_pending, title: "Pembayaran menunggu konfirmasi", sub: "Cek bukti bayar di halaman Peserta aktivitas", href: `${base}/aktivitas`, tone: "warn" });
   if (d && d.mission_proofs_pending > 0) todos.push({ n: d.mission_proofs_pending, title: "Bukti foto misi", href: `${base}/aktivitas`, tone: "info" });
   if (d && d.partner_invites_pending > 0) todos.push({ n: d.partner_invites_pending, title: "Undangan kolaborasi", sub: "Jawab di menu Kolaborasi", href: `${base}/kolaborasi`, tone: "primary" });
-  if (d && d.awaiting_partner_activities > 0) todos.push({ n: d.awaiting_partner_activities, title: "Menunggu jawaban partner", sub: "Aktivitas belum bisa diajukan ke tim Ramein", href: `${base}/aktivitas`, tone: "info" });
+  if (d && d.awaiting_partner_activities > 0) todos.push({ n: d.awaiting_partner_activities, title: "Menunggu jawaban partner", sub: "Aktivitas belum bisa diajukan ke tim Gasyu", href: `${base}/aktivitas`, tone: "info" });
   if (d && d.draft_activities > 0) todos.push({ n: d.draft_activities, title: "Draft belum diajukan", sub: "Lengkapi checkpoint lalu ajukan", href: `${base}/aktivitas`, tone: "info" });
 
   return (

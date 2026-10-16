@@ -24,7 +24,7 @@ export const ROLE_LABELS: Record<MemberRole, string> = {
 export const TYPE_LABELS: Record<OrganizerType, string> = {
   merchant: "Merchant",
   community: "Komunitas",
-  platform: "Ramein",
+  platform: "Gasyu",
 };
 
 export const STATUS_LABELS: Record<OrganizerStatus, string> = {

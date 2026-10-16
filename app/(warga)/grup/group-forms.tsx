@@ -63,7 +63,7 @@ export function InviteResponse({ participationId, activityId, compact = false }:
 export function ShareCode({ code, groupName }: { code: string; groupName: string }) {
   const [done, setDone] = useState(false);
   const share = async () => {
-    const text = `Gabung grup "${groupName}" di Ramein dengan kode ${code}`;
+    const text = `Gabung grup "${groupName}" di Gasyu dengan kode ${code}`;
     try {
       if (navigator.share) await navigator.share({ text });
       else await navigator.clipboard.writeText(code);

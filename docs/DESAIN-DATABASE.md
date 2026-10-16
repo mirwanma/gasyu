@@ -1,4 +1,4 @@
-# Ramein — Desain Database
+# Gasyu — Desain Database
 
 Versi 0.7 · 16 Oktober 2026 · Supabase (Postgres 15+)
 Perubahan 0.7: kolom `activities.residency_rule` (enum `residency_rule`) dan helper `is_resident_of`.
@@ -397,7 +397,7 @@ erDiagram
 | Enum | Nilai |
 | --- | --- |
 | `region_level` | city, district, village |
-| `organizer_type` | merchant (UMKM atau usaha apa pun), community (komunitas apa pun), platform (satu baris "Ramein" untuk event buatan admin) |
+| `organizer_type` | merchant (UMKM atau usaha apa pun), community (komunitas apa pun), platform (satu baris "Gasyu" untuk event buatan admin) |
 | `organizer_status` | pending, approved, rejected, suspended |
 | `member_role` | owner, staff (merchant) · chair, officer (komunitas) |
 | `join_policy` | open, approval |
@@ -623,7 +623,7 @@ Budget poin tidak disimpan di sini; budget = jumlah `activity_partners.points_bu
 | activity_id | uuid | FK |
 | organizer_id | uuid | FK |
 | role | partner_role | host (tepat satu per aktivitas), cohost, sponsor |
-| source | partner_source | creator untuk host, invite, open_call, admin (ditambahkan langsung oleh admin ke event Ramein) |
+| source | partner_source | creator untuk host, invite, open_call, admin (ditambahkan langsung oleh admin ke event Gasyu) |
 | status | partner_status | host otomatis accepted |
 | points_budget | integer | default 0; > 0 hanya jika organizer bertipe merchant |
 | contribution_note | text | kontribusi non-poin: dana (di luar aplikasi), tenaga, perlengkapan |
@@ -977,7 +977,7 @@ Semua fungsi yang mengubah XP, poin, status, atau hak akses berjenis `security d
 | `cancel_activity(activity_id, reason)` | host/admin | cancelled + notifikasi peserta; peserta `paid` mendapat `payment_refund_due` |
 | `upsert_mission(activity_id, mission jsonb)` | tim host atau partner accepted | buat/ubah `activity_missions`; membuat `qr_secret`, meng-hash kode; menolak ubah kolom terkunci dan total XP > 500 |
 | `set_mission_active(mission_id, active)` | tim pembuat misi atau host | nonaktifkan/aktifkan misi |
-| `reveal_mission(mission_id)` | tim pembuat misi atau host (admin untuk event Ramein) | buka misi `manual`: isi `revealed_at`, notifikasi `mission_revealed` ke peserta terdaftar; tidak bisa dibatalkan |
+| `reveal_mission(mission_id)` | tim pembuat misi atau host (admin untuk event Gasyu) | buka misi `manual`: isi `revealed_at`, notifikasi `mission_revealed` ke peserta terdaftar; tidak bisa dibatalkan |
 | `get_activity_missions(activity_id)` | warga atau pengunjung | daftar misi sesuai sudut pandang pemanggil: misi terbuka lengkap, misi belum terbuka sebagai teaser (tanpa judul dan isi) jika `show_teaser`, sisanya disembunyikan |
 | `get_mission_qr(mission_id)` | tim pembuat misi | token QR misi menit berjalan |
 | `complete_mission(mission_id, token, code, proof_path, lat, lng)` | warga | tolak jika misi belum terbuka untuk pemanggil; verifikasi sesuai `verification`; approved atau pending_review; XP + `evaluate_completion` saat approved |
@@ -1110,7 +1110,7 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 | 4 Check-in | `0004_checkins.sql` | `checkins`, `fraud_flags`, `get_checkpoint_qr`, `perform_checkin` (event), `v_user_level` |
 | 5 Challenge & grup | `0005_challenges_groups.sql` | `challenge_targets`, `groups`, `group_members`, register/confirm grup, progress dan bonus grup di `perform_checkin`, `v_group_progress` |
 | 6 Poin & reward | `0006_points_rewards.sql` | `point_ledger`, `point_allocations`, `rewards`, `redemptions`, redeem/use/refund, cron kedaluwarsa, `v_activity_budget` |
-| 7 Kolaborasi | `0007_collaboration.sql` | nilai enum `platform` dan `admin` + seed organizer "Ramein", invite/respond partner, `admin_add_partner`, `set_partner_budget`, `leave_activity`, `collab_posts`, `collab_applications`, atribusi, policy privasi partner |
+| 7 Kolaborasi | `0007_collaboration.sql` | nilai enum `platform` dan `admin` + seed organizer "Gasyu", invite/respond partner, `admin_add_partner`, `set_partner_budget`, `leave_activity`, `collab_posts`, `collab_applications`, atribusi, policy privasi partner |
 | 8 Dashboard | `0008_dashboards.sql` | `v_activity_stats`, `v_activity_partner_stats`, `v_merchant_dashboard`, `v_community_dashboard`, `get_citizen_dashboard`, `v_admin_overview`, `reverse_checkin` |
 | 9 Leaderboard & badge | `0009_leaderboards_badges.sql` | `badges` + seed, `user_badges`, view leaderboard, `monthly_village_winners`, `award_streak`, `get_leaderboard` |
 | 10 Misi | `0010_missions.sql` | enum misi, `target_kind` baru, `activity_missions`, `mission_completions`, `mission_code_attempts`, bucket `mission-proofs`, fungsi misi, `evaluate_completion` (menggantikan logika selesai di `perform_checkin`), `v_participation_missions`, `v_mission_stats`, kolom dan fungsi tampil misi (`reveal_mission`, `get_activity_missions`), cron `prune_code_attempts` dan `reveal_scheduled_missions` |
@@ -1124,12 +1124,12 @@ Setiap migrasi membawa RLS policy untuk tabel barunya dan file uji SQL sederhana
 
 - **Kenapa satu induk `organizers` + tabel profil terpisah.** Merchant dan komunitas berbeda di data dan hak, tetapi aktivitas, partner, open call, dan checkpoint harus bisa menunjuk ke keduanya dengan satu foreign key. Pola induk + detail menghindari relasi polimorfik yang rapuh.
 - **Kenapa `community_memberships` terpisah dari `organizer_members`.** Tim pengelola (puluhan orang paling banyak) punya hak konsol, sedangkan member (bisa ratusan) hanya warga yang terhubung ke komunitas. Memisahkan keduanya membuat policy RLS konsol tetap sempit, dan mengeluarkan member tidak pernah menyentuh hak akses tim. Riwayat keanggotaan disimpan per baris (bukan ditimpa) supaya cooldown 30 hari dan statistik member baru bisa dihitung.
-- **Kenapa Ramein dicatat sebagai organizer `platform`.** Event buatan admin butuh host yang sama dengan event lain supaya checkpoint, misi, atribusi, dan statistik memakai jalur yang sama. Satu baris `platform` yang dikelola akun admin lebih sederhana daripada membuat `host_organizer_id` boleh kosong di semua fungsi. Ramein sengaja tidak punya budget poin, karena poin selalu harus ditopang voucher nyata dari merchant.
+- **Kenapa Gasyu dicatat sebagai organizer `platform`.** Event buatan admin butuh host yang sama dengan event lain supaya checkpoint, misi, atribusi, dan statistik memakai jalur yang sama. Satu baris `platform` yang dikelola akun admin lebih sederhana daripada membuat `host_organizer_id` boleh kosong di semua fungsi. Gasyu sengaja tidak punya budget poin, karena poin selalu harus ditopang voucher nyata dari merchant.
 - **Kenapa budget poin di `activity_partners`.** Satu aktivitas bisa dibiayai beberapa merchant (host dan sponsor). Menyimpan budget per partner membuat laporan "poin siapa yang terpakai" langsung tersedia, dan komunitas sebagai host otomatis tidak punya budget.
 - **Kenapa misi tabel sendiri, bukan perluasan checkpoint.** Checkpoint adalah tempat; misi adalah tugas. Satu checkpoint bisa punya beberapa misi (scan di booth lalu foto di booth yang sama), dan misi foto/manual/kode tidak butuh tempat sama sekali. Misi `qr_scan` tetap menunjuk ke checkpoint supaya radius dan atribusi partner ikut terpakai, tetapi punya `qr_secret` sendiri sehingga QR check-in dan QR misi tidak saling tertukar.
 - **Kenapa syarat selesai dipusatkan di `evaluate_completion`.** Sekarang ada tiga jalan menuju selesai (check-in, misi langsung, misi yang ditinjau belakangan). Satu fungsi yang dipanggil dari ketiganya mencegah hadiah penyelesaian diberikan dua kali atau terlewat, dan dikunci dengan `for update` pada baris partisipasi.
 - **Kenapa XP misi dikunci setelah ada yang menyelesaikan.** Mengubah XP atau cara verifikasi di tengah jalan membuat peserta yang sudah selesai dan yang belum diperlakukan berbeda; organizer yang ingin mengubah cukup menonaktifkan misi lama dan membuat misi baru.
-- **Kenapa pembayaran hanya status, tanpa transaksi.** Pilot belum memakai payment gateway, jadi Ramein tidak memegang uang dan tidak menanggung kewajiban refund. `payment_status` dirancang supaya nanti gateway cukup menulis status yang sama (`paid` dari webhook), tanpa mengubah alur check-in, misi, atau kuota.
+- **Kenapa pembayaran hanya status, tanpa transaksi.** Pilot belum memakai payment gateway, jadi Gasyu tidak memegang uang dan tidak menanggung kewajiban refund. `payment_status` dirancang supaya nanti gateway cukup menulis status yang sama (`paid` dari webhook), tanpa mengubah alur check-in, misi, atau kuota.
 - **Pemakaian budget gabungan.** Saat poin diberikan, `evaluate_completion` memotong dari partner yang checkpoint atau misinya menuntaskan syarat selesai; jika budget partner itu habis, dipotong dari partner merchant lain secara berurutan (host lebih dulu). `point_ledger.source_organizer_id` mencatat sumbernya.
 - **Kenapa `village_id` disalin ke `xp_ledger`.** Supaya leaderboard kelurahan tidak berubah ketika warga pindah kelurahan, dan supaya kueri leaderboard tidak perlu join ke `profiles`.
 - **Kenapa `point_allocations`.** Kedaluwarsa per 6 bulan butuh tahu sisa setiap kredit. Mencatat alokasi debit ke kredit (FIFO) membuat sisa tiap kredit bisa dihitung tepat, tanpa kolom saldo yang bisa tidak sinkron.

@@ -16,10 +16,10 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Ramein",
+  title: "Gasyu",
   description: "Bikin kota makin rame, bareng-bareng.",
-  applicationName: "Ramein",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Ramein" },
+  applicationName: "Gasyu",
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Gasyu" },
 };
 
 export const viewport: Viewport = {

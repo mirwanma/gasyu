@@ -244,13 +244,13 @@ otp_expiry = 600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# Ramein memakai kode OTP 6 angka (bukan tautan) untuk login email.
+# Gasyu memakai kode OTP 6 angka (bukan tautan) untuk login email.
 [auth.email.template.magic_link]
-subject = "Kode masuk Ramein"
+subject = "Kode masuk Gasyu"
 content_path = "./supabase/templates/kode-masuk.html"
 
 [auth.email.template.confirmation]
-subject = "Kode masuk Ramein"
+subject = "Kode masuk Gasyu"
 content_path = "./supabase/templates/kode-masuk.html"
 
 # Uncomment to customize notification email template

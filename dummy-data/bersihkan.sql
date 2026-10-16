@@ -1,5 +1,5 @@
 -- =============================================================================
--- Hapus SEMUA data dummy Ramein (lihat seed.sql untuk penandanya).
+-- Hapus SEMUA data dummy Gasyu (lihat seed.sql untuk penandanya).
 -- Jalankan di SQL editor Supabase sebagai postgres. Data warga/penyelenggara
 -- asli tidak disentuh: hanya baris yang terhubung ke akun dd000000-… .
 -- =============================================================================

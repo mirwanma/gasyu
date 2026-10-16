@@ -12,7 +12,7 @@ export function AdminSidebar({ pendingOrganizers, pendingActivities, openFlags, 
   const items: Item[] = [
     { label: "Ringkasan", href: "/admin", icon: "home" },
     { label: "Verifikasi", href: "/admin/verifikasi", icon: "shield", count: pendingOrganizers },
-    { label: "Aktivitas & event Ramein", href: "/admin/aktivitas", icon: "calendar", count: pendingActivities },
+    { label: "Aktivitas & event Gasyu", href: "/admin/aktivitas", icon: "calendar", count: pendingActivities },
     { label: "Moderasi", href: "/admin/moderasi", icon: "flag", count: openFlags },
     { label: "Pembayaran", href: "/admin/pembayaran", icon: "wallet", count: refundsPending },
     { label: "Pengguna", href: "/admin/pengguna", icon: "users" },
@@ -26,7 +26,7 @@ export function AdminSidebar({ pendingOrganizers, pendingActivities, openFlags, 
         <LogoMark size={40} />
         <span className="flex flex-col">
           <span className="text-[22px] font-extrabold leading-[1.1] tracking-[-0.03em]">
-            ramein <span className="text-[13px] font-semibold tracking-normal text-fg-soft">admin</span>
+            gasyu <span className="text-[13px] font-semibold tracking-normal text-fg-soft">admin</span>
           </span>
           <span className="text-[12px] text-fg-soft">Pilot Kota Cimahi</span>
         </span>

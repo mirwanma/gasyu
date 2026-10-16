@@ -6,14 +6,14 @@ import { listRefundQueue } from "@/lib/data/payments";
 import { formatDateTime, timeAgo } from "@/lib/format";
 
 // Admin · Pembayaran: aktivitas dibatalkan (atau peserta batal) yang masih punya
-// peserta lunas belum di-refund. Uang tidak lewat Ramein, jadi admin hanya
+// peserta lunas belum di-refund. Uang tidak lewat Gasyu, jadi admin hanya
 // memantau dan menghubungi penyelenggara; tim host yang menandai refund.
 export default function PembayaranPage() {
   return (
     <>
       <div className="flex flex-col gap-1">
         <h1 className="font-display text-[30px] font-bold">Pembayaran</h1>
-        <span className="text-[14px] text-fg-soft">Refund yang belum ditandai penyelenggara. Ramein tidak memegang uang; hubungi penyelenggara jika peserta mengeluh.</span>
+        <span className="text-[14px] text-fg-soft">Refund yang belum ditandai penyelenggara. Gasyu tidak memegang uang; hubungi penyelenggara jika peserta mengeluh.</span>
       </div>
       <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>
         <Queue />

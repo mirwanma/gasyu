@@ -1,8 +1,8 @@
-// Service worker Ramein: cache aset statis dan halaman offline sederhana.
+// Service worker Gasyu: cache aset statis dan halaman offline sederhana.
 // Data (Supabase) tidak pernah di-cache; halaman selalu diambil dari jaringan.
-const VERSION = "ramein-v1";
+const VERSION = "gasyu-v1";
 const OFFLINE_URL = "/offline";
-const PRECACHE = [OFFLINE_URL, "/icons/ramein-ikon-192.png", "/icons/ramein-ikon-512.png"];
+const PRECACHE = [OFFLINE_URL, "/icons/gasyu-ikon-192.png", "/icons/gasyu-ikon-512.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

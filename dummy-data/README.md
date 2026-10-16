@@ -1,6 +1,6 @@
-# Data dummy Ramein
+# Data dummy Gasyu
 
-Folder ini berisi data contoh supaya alur Ramein terlihat lengkap saat demo:
+Folder ini berisi data contoh supaya alur Gasyu terlihat lengkap saat demo:
 10 warga, 6 merchant, 5 komunitas, 1 admin, 4 aktivitas (2 event, 1 challenge, 1 menunggu review)
 beserta misi, check-in, pembayaran, poin, voucher, badge, notifikasi, dan satu kasus moderasi.
 
@@ -57,3 +57,8 @@ Skrip ini aman dijalankan berulang.
 - **Warga Nadia** (`nadia@`): challenge selesai, badge, poin, voucher aktif di Dompet, peringkat.
 - **Warga Dimas** (`dimas@`): status "Cek bukti" di Night Run, Festival sudah selesai.
 - **Warga Siti** (`siti@`): foto misi "sedang ditinjau", belum bayar Night Run.
+
+## Catatan setelah ganti nama ke Gasyu
+
+- Email akun dummy tetap memakai domain `@dummy.ramein.id` dan kata sandi `RameinDummy2026!`. Keduanya hanya penanda data dummy, jadi sengaja tidak diubah supaya login dan skrip bersih-bersih tetap jalan.
+- Kalau gambar cover dibuat ulang (`python3 dummy-data/buat-gambar.py`), unggah ulang cover saja dengan `node dummy-data/unggah-cover.cjs`.

@@ -19,11 +19,11 @@ export default function AdminAktivitasPage({ searchParams }: PageProps<"/admin/a
   return (
     <>
       <div className="flex flex-col gap-1">
-        <h1 className="font-display text-[30px] font-bold">Aktivitas & event Ramein</h1>
-        <span className="text-[14px] text-fg-soft">Tinjau pengajuan penyelenggara sebelum terbit di Jelajah, atau buat event atas nama Ramein.</span>
+        <h1 className="font-display text-[30px] font-bold">Aktivitas & event Gasyu</h1>
+        <span className="text-[14px] text-fg-soft">Tinjau pengajuan penyelenggara sebelum terbit di Jelajah, atau buat event atas nama Gasyu.</span>
       </div>
       <Link href="/admin/aktivitas/baru" className="flex h-11 w-fit items-center rounded-full bg-primary px-5 text-[14px] font-semibold text-on-primary">
-        + Buat event Ramein
+        + Buat event Gasyu
       </Link>
       <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>
         <Board searchParams={searchParams} />
@@ -59,7 +59,7 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/aktivitas">, "sear
           {hasil === "ok" && <p className="border-b border-line bg-success-tint px-4 py-3 text-[13px] font-semibold text-success">Keputusan tersimpan dan tim penyelenggara diberi tahu.</p>}
           {hasil === "gagal" && <p className="border-b border-line bg-danger-tint px-4 py-3 text-[13px] font-semibold text-danger">Keputusan belum tersimpan. Mungkin statusnya sudah berubah.</p>}
           {hasil === "catatan" && <p className="border-b border-line bg-warn-tint px-4 py-3 text-[13px] font-semibold text-warn">Tulis catatan untuk penyelenggara saat menolak.</p>}
-          {hasil === "terbit" && <p className="border-b border-line bg-success-tint px-4 py-3 text-[13px] font-semibold text-success">Event Ramein terbit dan tampil di Jelajah.</p>}
+          {hasil === "terbit" && <p className="border-b border-line bg-success-tint px-4 py-3 text-[13px] font-semibold text-success">Event Gasyu terbit dan tampil di Jelajah.</p>}
           {errorMsg && <p className="border-b border-line bg-danger-tint px-4 py-3 text-[13px] font-semibold text-danger">{errorMsg}</p>}
           {items.length === 0 && <p className="p-5 text-[13px] text-fg-soft">{tab === "review" ? "Tidak ada pengajuan yang menunggu." : "Belum ada aktivitas."}</p>}
           {items.map((card) => (
@@ -162,7 +162,7 @@ async function Detail({ id, tab }: { id: string; tab: string }) {
               </div>
             ))}
             {platformEditable && organizers.length > 0 && <AdminAddPartnerForm activityId={id} organizers={organizers.filter((o) => !partners.some((p) => p.organizer_id === o.id && p.status === "accepted"))} />}
-            <p className="text-[11px] text-fg-muted">Ramein tidak punya budget poin. Poin hanya ada jika merchant mengisi budget-nya sendiri.</p>
+            <p className="text-[11px] text-fg-muted">Gasyu tidak punya budget poin. Poin hanya ada jika merchant mengisi budget-nya sendiri.</p>
           </div>
         )}
 

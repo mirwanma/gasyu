@@ -72,18 +72,18 @@ export function StatusBanner({ org, base }: { org: MyOrganizer; base: string }) 
   if (org.status === "approved") return null;
   const copy = {
     pending: {
-      title: "Menunggu verifikasi tim Ramein",
+      title: "Menunggu verifikasi tim Gasyu",
       body: "Biasanya 1–2 hari kerja. Sementara itu kamu bisa melengkapi profil dan menyiapkan draft aktivitas.",
       tint: "bg-warn-tint text-warn",
     },
     rejected: {
       title: "Perlu perbaikan data",
-      body: "Lihat catatan dari tim Ramein di halaman profil, perbaiki, lalu ajukan ulang.",
+      body: "Lihat catatan dari tim Gasyu di halaman profil, perbaiki, lalu ajukan ulang.",
       tint: "bg-danger-tint text-danger",
     },
     suspended: {
       title: "Akun penyelenggara dibekukan",
-      body: "Hubungi tim Ramein untuk informasi lebih lanjut.",
+      body: "Hubungi tim Gasyu untuk informasi lebih lanjut.",
       tint: "bg-danger-tint text-danger",
     },
   }[org.status];

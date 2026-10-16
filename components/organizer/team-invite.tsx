@@ -19,7 +19,7 @@ export function TeamInvite({ organizerId, type, roleName }: { organizerId: strin
     }
   };
 
-  const shareText = state.inviteUrl ? `Bantu kelola kami di Ramein. Buka tautan ini: ${state.inviteUrl}` : "";
+  const shareText = state.inviteUrl ? `Bantu kelola kami di Gasyu. Buka tautan ini: ${state.inviteUrl}` : "";
 
   return (
     <section className={`${cardClass} flex flex-col gap-3 p-4`}>

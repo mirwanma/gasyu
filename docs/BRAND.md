@@ -1,14 +1,16 @@
-# Ramein — Brand Identity v1.1
+# Gasyu — Brand Identity v1.2
 
 Panduan brand untuk desain dan pengembangan aplikasi. `CLAUDE.md` merujuk ke file ini:
 
 > Brand dan UI: ikuti `docs/BRAND.md` (warna, tipografi, logo, gaya bahasa). Jangan membuat warna atau font di luar token di sana.
 
+Perubahan 1.2 (16 Oktober 2026): nama aplikasi berganti dari **Ramein** menjadi **Gasyu**. Simbol tiga lingkaran dan semua warna tetap; wordmark menjadi **gasyu**. Berkas logo yang memuat tulisan lama perlu dibuat ulang.
+
 Perubahan 1.1: UI aplikasi memakai **tema gelap** mengikuti artifact **Ramein UI Mockup** (versi 15 Oktober 2026), dengan font judul **Outfit**. Palet krem v1.0 tetap dipakai untuk materi cetak dan presentasi (bagian 2b).
 
 ## 1. Logo
 
-**Konsep: Irisan Bersama.** Tiga lingkaran mewakili tiga pihak. Bagian yang beririsan adalah keuntungan yang dibagi dua pihak, dan titik di tengah adalah Ramein, tempat ketiganya bertemu dan saling menguntungkan.
+**Konsep: Irisan Bersama.** Tiga lingkaran mewakili tiga pihak. Bagian yang beririsan adalah keuntungan yang dibagi dua pihak, dan titik di tengah adalah Gasyu, tempat ketiganya bertemu dan saling menguntungkan.
 
 | Lingkaran | Pihak | Posisi |
 | --- | --- | --- |
@@ -22,15 +24,15 @@ Posisi dan warna lingkaran tidak boleh ditukar.
 
 | File | Pakai untuk |
 | --- | --- |
-| `svg/ramein-logo-horizontal.svg` | Logo utama: header web, dokumen, presentasi |
-| `svg/ramein-logo-horizontal-gelap.svg` | Di atas latar gelap (tinta) |
-| `svg/ramein-logo-bertumpuk.svg` | Poster, standee, layar pembuka |
-| `svg/ramein-simbol.svg` · `svg/ramein-simbol-gelap.svg` | Avatar, stiker, ruang sempit |
-| `svg/ramein-logo-satu-warna.svg` | Stempel, sablon, cetak satu warna |
-| `svg/ramein-ikon-app.svg` · `png/ramein-ikon-512.png` · `png/ramein-ikon-192.png` | Ikon PWA (`purpose: any`) |
-| `svg/ramein-ikon-maskable.svg` · `png/ramein-ikon-maskable-512.png` | Ikon PWA (`purpose: maskable`) |
+| `svg/gasyu-logo-horizontal.svg` | Logo utama: header web, dokumen, presentasi |
+| `svg/gasyu-logo-horizontal-gelap.svg` | Di atas latar gelap (tinta) |
+| `svg/gasyu-logo-bertumpuk.svg` | Poster, standee, layar pembuka |
+| `svg/gasyu-simbol.svg` · `svg/gasyu-simbol-gelap.svg` | Avatar, stiker, ruang sempit |
+| `svg/gasyu-logo-satu-warna.svg` | Stempel, sablon, cetak satu warna |
+| `svg/gasyu-ikon-app.svg` · `png/gasyu-ikon-512.png` · `png/gasyu-ikon-192.png` | Ikon PWA (`purpose: any`) |
+| `svg/gasyu-ikon-maskable.svg` · `png/gasyu-ikon-maskable-512.png` | Ikon PWA (`purpose: maskable`) |
 | `png/apple-touch-icon-180.png` | Ikon iOS |
-| `favicon.ico` · `svg/ramein-favicon.svg` | Favicon (versi tanpa titik tengah, tetap jelas di 16–32 px) |
+| `favicon.ico` · `svg/gasyu-favicon.svg` | Favicon (versi tanpa titik tengah, tetap jelas di 16–32 px) |
 
 Wordmark di semua file sudah berupa outline, jadi tampil sama walau font belum terpasang. Di aplikasi, logo dipakai lewat komponen `Logo` (`components/ui.tsx`): simbol 48 px + wordmark krem `#FAF7F2`.
 
@@ -39,7 +41,7 @@ Wordmark di semua file sudah berupa outline, jadi tampil sama walau font belum t
 - Ruang kosong minimal setengah lebar simbol di semua sisi.
 - Ukuran minimum: logo horizontal 96 px layar / 25 mm cetak; simbol 24 px / 8 mm. Di bawah 32 px pakai favicon.
 - Jangan memutar, menggepengkan, mengganti warna, menukar posisi lingkaran, mengganti huruf wordmark, atau menambah bayangan dan gradien.
-- Wordmark selalu huruf kecil: **ramein**. Dalam kalimat, tulis nama sebagai "Ramein".
+- Wordmark selalu huruf kecil: **gasyu**. Dalam kalimat, tulis nama sebagai "Gasyu".
 
 ## 2. Warna UI aplikasi (tema gelap)
 

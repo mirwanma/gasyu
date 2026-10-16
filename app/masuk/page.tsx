@@ -10,7 +10,7 @@ export default function MasukPage({ searchParams }: PageProps<"/masuk">) {
       <div className="flex flex-col gap-[18px]">
         <Logo />
         <h1 className="font-display text-[32px] font-bold leading-[1.15]">
-          Ramein kotamu,
+          Ramaikan kotamu,
           <br />
           kumpulkan XP-nya.
         </h1>

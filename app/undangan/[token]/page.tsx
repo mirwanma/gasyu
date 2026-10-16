@@ -23,7 +23,7 @@ async function InviteContent({ params, searchParams }: PageProps<"/undangan/[tok
     <div className={`${cardClass} flex flex-col gap-4 p-5`}>
       <h1 className="font-display text-[24px] font-bold">Undangan tim</h1>
       <p className="text-[14px] leading-[1.55] text-fg-soft">
-        Kamu diundang untuk membantu mengelola merchant atau komunitas di Ramein. Setelah bergabung, dashboard-nya
+        Kamu diundang untuk membantu mengelola merchant atau komunitas di Gasyu. Setelah bergabung, dashboard-nya
         muncul di menu Profil.
       </p>
       {error === "invalid" && (

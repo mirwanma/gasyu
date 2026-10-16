@@ -6,7 +6,7 @@ import { listTodayCheckins } from "@/lib/data/checkins";
 import { createClient } from "@/lib/supabase/server";
 import { timeAgo } from "@/lib/format";
 
-// QR checkpoint atas nama Ramein, ditampilkan panitia Ramein (admin).
+// QR checkpoint atas nama Gasyu, ditampilkan panitia Gasyu (admin).
 export default function AdminQrPage({ searchParams }: PageProps<"/admin/aktivitas/qr">) {
   return (
     <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>
@@ -28,7 +28,7 @@ async function Body({ searchParams }: Pick<PageProps<"/admin/aktivitas/qr">, "se
       <Link href={`/admin/aktivitas?tab=semua&pilih=${checkpoint.activity_id}`} className="text-[13px] font-semibold text-link">← Kembali ke aktivitas</Link>
       <div className="flex flex-col gap-0.5">
         <h1 className="font-display text-[26px] font-bold">{checkpoint.name}</h1>
-        <span className="text-[13px] text-fg-soft">{activity?.title} · QR atas nama Ramein</span>
+        <span className="text-[13px] text-fg-soft">{activity?.title} · QR atas nama Gasyu</span>
       </div>
       <QrDisplay checkpointId={checkpointId} />
       <section className={`${cardClass} flex flex-col gap-2 p-3.5`}>

@@ -75,7 +75,7 @@ function recommend(
       let reason = "Terbuka untuk semua";
       if (card.host_type === "platform") {
         score += 1;
-        reason = "Event Ramein";
+        reason = "Event Gasyu";
       }
       if (card.scope_region_id && card.scope_region_id === ctx.villageId) {
         score += 2;

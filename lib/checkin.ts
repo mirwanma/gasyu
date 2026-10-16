@@ -46,8 +46,8 @@ export function parseQrPayload(text: string): QrPayload | null {
   } catch {
     // bukan URL; coba format ringkas
   }
-  const ci = text.match(/^ramein:ci:([0-9a-f-]{36}):([0-9a-f]{16})$/i);
+  const ci = text.match(/^(?:gasyu|ramein):ci:([0-9a-f-]{36}):([0-9a-f]{16})$/i);
   if (ci) return { kind: "checkin", checkpointId: ci[1], token: ci[2] };
-  const mi = text.match(/^ramein:mi:([0-9a-f-]{36}):([0-9a-f]{16})$/i);
+  const mi = text.match(/^(?:gasyu|ramein):mi:([0-9a-f-]{36}):([0-9a-f]{16})$/i);
   return mi ? { kind: "mission", missionId: mi[1], token: mi[2] } : null;
 }

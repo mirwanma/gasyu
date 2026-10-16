@@ -261,12 +261,12 @@ export function ActivityForm({
           </div>
         )}
         <p className="rounded-2xl bg-info-tint px-4 py-3 text-[12px] leading-[1.5] text-info">
-          XP dasar mengikuti pengaturan Ramein (event 100 XP; challenge sesuai kesulitan). Poin diatur di halaman aktivitas, misi di halaman Misi.
-          Setelah tersimpan sebagai draft, tambahkan checkpoint lalu ajukan ke tim Ramein.
+          XP dasar mengikuti pengaturan Gasyu (event 100 XP; challenge sesuai kesulitan). Poin diatur di halaman aktivitas, misi di halaman Misi.
+          Setelah tersimpan sebagai draft, tambahkan checkpoint lalu ajukan ke tim Gasyu.
         </p>
       </section>
 
-      {/* Langkah 4: harga. Uang tidak lewat Ramein; tim menandai lunas sendiri. */}
+      {/* Langkah 4: harga. Uang tidak lewat Gasyu; tim menandai lunas sendiri. */}
       <section className={`${cardClass} flex flex-col gap-3 p-4 ${step === 3 ? "" : "hidden"}`}>
         <div className="flex flex-col gap-2">
           <span className={labelClass}>Biaya ikut</span>
@@ -300,7 +300,7 @@ export function ActivityForm({
               <span className="text-[11px] text-fg-muted">Lewat batas ini pendaftar yang belum bayar dibatalkan otomatis dan kursinya kembali. Dipotong ke waktu mulai jika lebih dekat.</span>
             </div>
             <p className="rounded-2xl bg-warn-tint px-4 py-3 text-[12px] leading-[1.5] text-warn">
-              Uang tidak lewat Ramein: warga membayar langsung ke kamu, lalu tim kamu menandai lunas di halaman Peserta. Harga terkunci setelah terbit.
+              Uang tidak lewat Gasyu: warga membayar langsung ke kamu, lalu tim kamu menandai lunas di halaman Peserta. Harga terkunci setelah terbit.
             </p>
           </>
         )}

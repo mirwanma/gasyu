@@ -53,7 +53,7 @@ async function Body({ id, type, base, filter, buka, approved, isLeader }: { id: 
 
       {active.filter((p) => p.source === "admin").map((p) => (
         <section key={p.id} className="flex flex-col gap-2.5 rounded-[20px] border border-primary/30 bg-primary-tint p-4">
-          <span className="text-[11px] font-bold tracking-[0.05em] text-link">DITAMBAHKAN OLEH RAMEIN</span>
+          <span className="text-[11px] font-bold tracking-[0.05em] text-link">DITAMBAHKAN OLEH GASYU</span>
           <span className="text-[16px] font-bold">{p.activity_title}</span>
           <span className="text-[13px] leading-[1.5] text-fg-label">
             Peran: {ROLE[p.role].toLowerCase()} · {formatSchedule(p.starts_at, p.ends_at)}
