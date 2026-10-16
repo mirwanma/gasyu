@@ -25,15 +25,15 @@ const msg = (code: string | undefined, fallback: string) => {
   return key ? ERRORS[key] : fallback;
 };
 
-const CATEGORIES = ["activity", "product", "service", "place", "other"];
-const STATUSES = ["in_progress", "done", "archived"];
+const CATEGORIES = ["activity", "product", "service", "place", "other"] as const;
+const STATUSES = ["in_progress", "done", "archived"] as const;
 
 // Warga mengirim saran dari profil publik /m/<slug> atau /k/<slug>.
 export async function sendSuggestion(_prev: SuggestionState, formData: FormData): Promise<SuggestionState> {
   const organizerId = String(formData.get("organizer_id") ?? "");
   const path = String(formData.get("path") ?? "/saran");
   const categoryRaw = String(formData.get("category") ?? "other");
-  const category = CATEGORIES.includes(categoryRaw) ? categoryRaw : "other";
+  const category = CATEGORIES.find((c) => c === categoryRaw) ?? "other";
   const body = String(formData.get("body") ?? "").trim();
   const anonymous = formData.get("anonymous") === "on";
   if (body.length < 10) return { error: ERRORS.invalid_suggestion };
@@ -55,7 +55,7 @@ export async function sendSuggestion(_prev: SuggestionState, formData: FormData)
 export async function respondSuggestion(formData: FormData) {
   const id = String(formData.get("suggestion_id") ?? "");
   const statusRaw = String(formData.get("status") ?? "");
-  const status = STATUSES.includes(statusRaw) ? statusRaw : "in_progress";
+  const status = STATUSES.find((s) => s === statusRaw) ?? "in_progress";
   const replyRaw = formData.get("reply");
   const reply = replyRaw === null ? null : String(replyRaw);
   const backTo = String(formData.get("back") ?? "/");

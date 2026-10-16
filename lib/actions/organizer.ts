@@ -48,7 +48,8 @@ export async function setTeamRole(formData: FormData) {
   const organizerId = String(formData.get("organizer_id"));
   const type = String(formData.get("type"));
   const userId = String(formData.get("user_id"));
-  const role = String(formData.get("role"));
+  const rawRole = String(formData.get("role"));
+  const role = (["owner", "staff", "chair", "officer"] as const).find((r) => r === rawRole) ?? "staff";
   const supabase = await createClient();
   const { error } = await supabase.rpc("set_team_role", { p_organizer_id: organizerId, p_user_id: userId, p_role: role });
   const path = `${basePath(type, organizerId)}/tim`;

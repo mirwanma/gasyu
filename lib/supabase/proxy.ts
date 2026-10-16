@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { safeNext } from "@/lib/safe-next";
+import type { AppDatabase as Database } from "./types";
 
 // Halaman yang boleh dibuka tanpa login.
 const PUBLIC_PATHS = ["/masuk", "/auth"];
@@ -17,7 +18,7 @@ function matches(path: string, base: string) {
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
-  const supabase = createServerClient(
+  const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {

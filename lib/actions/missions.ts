@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { fromLocalInput } from "@/lib/activities";
 import type { MissionResult } from "@/lib/missions";
 import { createClient } from "@/lib/supabase/server";
+import type { Json } from "@/lib/supabase/types";
 
 export type MissionActionState = { error?: string; success?: string };
 
@@ -82,7 +83,7 @@ export async function saveMission(_prev: MissionActionState, formData: FormData)
   };
   if (!mission.id) delete mission.partner_organizer_id;
   const supabase = await createClient();
-  const { error } = await supabase.rpc("upsert_mission", { p_activity_id: activityId, p_mission: mission });
+  const { error } = await supabase.rpc("upsert_mission", { p_activity_id: activityId, p_mission: mission as Json });
   if (error) return { error: msg(error.message, "Misi belum tersimpan.") };
   revalidatePath(misiPath(type, organizerId, activityId));
   return { success: mission.id ? "Misi diperbarui." : "Misi ditambahkan." };
