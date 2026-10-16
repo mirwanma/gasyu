@@ -20,3 +20,10 @@ npm run dev
 ```
 
 Lalu buka Claude Code di folder ini (`claude`) dan minta: "Mulai Irisan 1 sesuai CLAUDE.md".
+
+## Pengecekan otomatis
+
+Setiap push ke `main` dan setiap pull request menjalankan GitHub Actions (`.github/workflows/ci.yml`):
+
+- **web**: `npm run lint` dan `npm run build`
+- **database**: semua migrasi dipasang di Postgres kosong, lalu semua uji di `supabase/tests/` dijalankan (`supabase/tests/run.sh`)
