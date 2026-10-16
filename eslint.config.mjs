@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Skrip Node dan service worker di luar bundel Next.
+    "dummy-data/**",
+    "public/sw.js",
   ]),
 ]);
 

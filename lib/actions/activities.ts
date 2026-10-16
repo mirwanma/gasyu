@@ -36,7 +36,7 @@ const ERRORS: Record<string, string> = {
   residents_only: "Aktivitas ini khusus warga wilayah cakupannya.",
   quota_full: "Kuota sudah penuh.",
   already_joined: "Kamu sudah terdaftar di aktivitas ini.",
-  join_mode_group: "Aktivitas ini hanya bisa diikuti lewat grup (fitur grup menyusul).",
+  join_mode_group: "Aktivitas ini hanya bisa diikuti lewat grup. Buat atau gabung grup dulu di menu Grup.",
   cannot_cancel: "Pendaftaran tidak bisa dibatalkan lagi.",
   account_inactive: "Akun kamu sedang tidak aktif.",
   group_target_requires_group_join: "Target grup hanya untuk pendaftaran lewat grup.",

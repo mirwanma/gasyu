@@ -50,6 +50,11 @@ export async function updateSession(request: NextRequest) {
     return redirect;
   };
 
+  // Dashboard admin dilayani lewat subdomain admin.* (mis. admin.ramein.id):
+  // halaman depan di host itu langsung ke /admin.
+  const host = request.headers.get("host") ?? "";
+  if (host.startsWith("admin.") && pathname === "/") return redirectTo("/admin");
+
   const isPublic = PUBLIC_PATHS.some((base) => matches(pathname, base));
   const isOnboarding = matches(pathname, ONBOARDING_PATH);
 

@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { RewardForm } from "./reward-form";
 import { Icon } from "@/components/icons";
 import { OrganizerShell } from "@/components/organizer/shell";
@@ -29,6 +30,8 @@ async function Loader({ params, searchParams }: PageProps<"/merchant/[id]/reward
 }
 
 async function Body({ id, edit, approved, isLeader }: { id: string; edit?: string; approved: boolean; isLeader: boolean }) {
+  // Reward & budget poin hanya untuk pemilik (ALUR-SISTEM bagian 2).
+  if (!isLeader) redirect(`/merchant/${id}/lainnya?akses=peran`);
   const [rewards, summary, redemptions] = await Promise.all([listMerchantRewards(id), getMerchantPointsSummary(id), listMerchantRedemptions(id)]);
   const editing = rewards.find((r) => r.id === edit);
   const base = `/merchant/${id}`;

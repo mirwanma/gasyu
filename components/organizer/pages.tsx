@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { OrganizerAvatar } from "@/components/avatar";
 import { MenuList, OrganizerShell, type OrganizerContext } from "@/components/organizer/shell";
 import { ProfileForm } from "@/components/organizer/profile-form";
@@ -15,32 +16,37 @@ const basePath = (type: Kind, id: string) => `/${type === "merchant" ? "merchant
 
 // ---- Lainnya ---------------------------------------------------------
 
-export function LainnyaPage({ id, type }: { id: string; type: Kind }) {
+export function LainnyaPage({ id, type, akses }: { id: string; type: Kind; akses?: string }) {
   const base = basePath(type, id);
   return (
     <OrganizerShell organizerId={id} type={type} active="Lainnya" title="Lainnya">
-      {({ org }) => (
+      {({ org }) => {
+        // Staf/pengurus tidak melihat Tim dan Reward (lihat ALUR-SISTEM bagian 2).
+        const isLeader = org.role === "owner" || org.role === "chair";
+        return (
         <>
+          {akses === "peran" && (
+            <p role="alert" className="rounded-[14px] bg-warn-tint px-4 py-3 text-[13px] text-warn">
+              Menu itu hanya untuk {type === "merchant" ? "pemilik" : "ketua"}.
+            </p>
+          )}
           <MenuList
             items={[
               ...(type === "merchant" ? [{ label: "Outlet", href: `${base}/outlet` }] : []),
-              { label: "Tim", href: `${base}/tim` },
+              ...(isLeader ? [{ label: "Tim", href: `${base}/tim` }] : []),
               { label: "Profil & verifikasi", href: `${base}/profil` },
               { label: "Lihat profil publik", href: `/${type === "merchant" ? "m" : "k"}/${org.slug}` },
-              ...(type === "merchant"
-                ? [
-                    { label: "Reward & budget poin", href: `${base}/reward` },
-                    { label: "Kasir", href: `${base}/kasir` },
-                    { label: "Kolaborasi", href: `${base}/kolaborasi` },
-                  ]
-                : [{ label: "Kolaborasi", href: `${base}/kolaborasi` }]),
+              ...(type === "merchant" && isLeader ? [{ label: "Reward & budget poin", href: `${base}/reward` }] : []),
+              ...(type === "merchant" ? [{ label: "Kasir", href: `${base}/kasir` }] : []),
+              { label: "Kolaborasi", href: `${base}/kolaborasi` },
             ]}
           />
           <Link href="/" className="flex h-12 items-center justify-center rounded-2xl border border-line-strong text-[14px] font-semibold text-fg">
             Kembali ke mode warga
           </Link>
         </>
-      )}
+        );
+      }}
     </OrganizerShell>
   );
 }
@@ -56,6 +62,7 @@ export function TimPage({ id, type, error }: { id: string; type: Kind; error?: s
 }
 
 async function TeamBody({ ctx, id, type, error }: { ctx: OrganizerContext; id: string; type: Kind; error?: string }) {
+  if (ctx.org.role !== "owner" && ctx.org.role !== "chair") redirect(`${basePath(type, id)}/lainnya?akses=peran`);
   const supabase = await createClient();
   const { data: team } = await supabase.from("v_organizer_team").select("*").eq("organizer_id", id).order("created_at");
   const members = (team ?? []) as { user_id: string; role: MemberRole; nickname: string; created_at: string }[];

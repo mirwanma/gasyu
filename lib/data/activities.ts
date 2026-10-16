@@ -86,6 +86,19 @@ export async function listPublicActivities(opts: { filter?: string; q?: string }
   return (data ?? []) as ActivityCard[];
 }
 
+// Aktivitas terbit/berjalan milik satu penyelenggara, untuk profil publik /m dan /k.
+export async function listOrganizerPublicActivities(organizerId: string): Promise<ActivityCard[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("v_activity_cards")
+    .select("*")
+    .eq("host_organizer_id", organizerId)
+    .in("status", ["published", "running"])
+    .order("starts_at", { ascending: true })
+    .limit(20);
+  return (data ?? []) as ActivityCard[];
+}
+
 // Aktivitas milik satu penyelenggara (semua status), terbaru dulu.
 export async function listOrganizerActivities(organizerId: string): Promise<ActivityCard[]> {
   const supabase = await createClient();

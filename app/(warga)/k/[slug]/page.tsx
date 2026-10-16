@@ -1,10 +1,12 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { JoinForm } from "./join-form";
+import { ActivityCard } from "@/components/activity-card";
 import { OrganizerAvatar } from "@/components/avatar";
 import { BottomNav, CITIZEN_NAV } from "@/components/bottom-nav";
 import { Icon } from "@/components/icons";
 import { cardClass, tagClass } from "@/components/styles";
+import { listOrganizerPublicActivities } from "@/lib/data/activities";
 import { categoryLabel } from "@/lib/data/organizers";
 import { getCurrentUser } from "@/lib/data/user";
 import { createClient } from "@/lib/supabase/server";
@@ -45,8 +47,9 @@ async function CommunityProfile({ params, searchParams }: PageProps<"/k/[slug]">
   } | null;
   const village = (Array.isArray(org.village) ? org.village[0] : org.village) as { name: string } | null;
 
-  const [{ data: stats }, { data: membership }] = await Promise.all([
+  const [{ data: stats }, activities, { data: membership }] = await Promise.all([
     supabase.rpc("community_public_stats", { p_community_id: org.id }).maybeSingle(),
+    listOrganizerPublicActivities(org.id),
     user
       ? supabase
           .from("community_memberships")
@@ -57,6 +60,7 @@ async function CommunityProfile({ params, searchParams }: PageProps<"/k/[slug]">
           .maybeSingle()
       : Promise.resolve({ data: null }),
   ]);
+  const memberOnly = activities.filter((a) => a.audience === "members_only").length;
   const activeMembers = Number((stats as { active_members?: number } | null)?.active_members ?? 0);
   const myStatus = (membership as { status?: string } | null)?.status;
 
@@ -94,14 +98,16 @@ async function CommunityProfile({ params, searchParams }: PageProps<"/k/[slug]">
 
         <div className="grid grid-cols-3 gap-2.5">
           <Stat value={activeMembers.toLocaleString("id-ID")} label="member aktif" />
-          <Stat value="0" label="aktivitas" />
+          <Stat value={activities.length.toLocaleString("id-ID")} label="aktivitas aktif" />
           <Stat value="–" label="skor hadir" />
         </div>
 
         {myStatus === "active" ? (
           <section className={`${cardClass} flex flex-col gap-2 p-4`}>
             <span className="text-[15px] font-semibold">Kamu member komunitas ini</span>
-            <span className="text-[13px] text-fg-soft">Aktivitas khusus member akan muncul di sini.</span>
+            <span className="text-[13px] text-fg-soft">
+              {memberOnly > 0 ? `${memberOnly} aktivitas khusus member sedang terbuka untukmu.` : "Aktivitas khusus member akan muncul di daftar di bawah."}
+            </span>
           </section>
         ) : myStatus === "pending" ? (
           <section className={`${cardClass} flex flex-col gap-2 p-4`}>
@@ -117,7 +123,11 @@ async function CommunityProfile({ params, searchParams }: PageProps<"/k/[slug]">
 
         <section className="flex flex-col gap-2.5">
           <h2 className="font-display text-[19px] font-semibold">Aktivitas</h2>
-          <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>Belum ada aktivitas yang terbit.</p>
+          {activities.length === 0 ? (
+            <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>Belum ada aktivitas yang terbit.</p>
+          ) : (
+            activities.map((card) => <ActivityCard key={card.id} card={card} href={`/aktivitas/${card.id}`} />)
+          )}
         </section>
       </div>
     </>

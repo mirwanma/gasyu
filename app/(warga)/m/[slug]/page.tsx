@@ -1,10 +1,12 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ActivityCard } from "@/components/activity-card";
 import { OrganizerAvatar } from "@/components/avatar";
 import { BottomNav, CITIZEN_NAV } from "@/components/bottom-nav";
 import { Icon } from "@/components/icons";
 import { cardClass } from "@/components/styles";
+import { listOrganizerPublicActivities } from "@/lib/data/activities";
 import { categoryLabel } from "@/lib/data/organizers";
 import { createClient } from "@/lib/supabase/server";
 
@@ -33,6 +35,7 @@ async function MerchantProfile({ params }: Pick<PageProps<"/m/[slug]">, "params"
     .eq("type", "merchant")
     .maybeSingle();
   if (!org) notFound();
+  const activities = await listOrganizerPublicActivities(org.id);
 
   const profile = (Array.isArray(org.profile) ? org.profile[0] : org.profile) as { merchant_category: string } | null;
   const outlets = ((org.outlets ?? []) as {
@@ -106,7 +109,11 @@ async function MerchantProfile({ params }: Pick<PageProps<"/m/[slug]">, "params"
 
         <section className="flex flex-col gap-2.5">
           <h2 className="font-display text-[19px] font-semibold">Aktivitas</h2>
-          <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>Belum ada aktivitas yang terbit.</p>
+          {activities.length === 0 ? (
+            <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>Belum ada aktivitas yang terbit.</p>
+          ) : (
+            activities.map((card) => <ActivityCard key={card.id} card={card} href={`/aktivitas/${card.id}`} />)
+          )}
         </section>
       </div>
     </>

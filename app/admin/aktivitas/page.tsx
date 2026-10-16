@@ -15,7 +15,6 @@ import { formatDateTime, timeAgo } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 
 // Admin: review aktivitas penyelenggara dan daftar semua aktivitas.
-// Event Ramein (host platform) menyusul di irisan 7.
 export default function AdminAktivitasPage({ searchParams }: PageProps<"/admin/aktivitas">) {
   return (
     <>

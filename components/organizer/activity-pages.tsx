@@ -400,7 +400,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
       ) : (
         <section className={`${cardClass} flex flex-col gap-1 p-4`}>
           <h2 className="font-display text-[18px] font-semibold">Poin</h2>
-          <p className="text-[13px] leading-[1.5] text-fg-soft">Komunitas tidak punya budget poin. Poin untuk peserta hanya ada jika ada merchant sponsor (fitur kolaborasi menyusul).</p>
+          <p className="text-[13px] leading-[1.5] text-fg-soft">Komunitas tidak punya budget poin. Poin untuk peserta hanya ada jika ada merchant sponsor; undang lewat menu Kolaborasi.</p>
         </section>
       )}
 
@@ -447,7 +447,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
           {card.status === "draft" && "Draft hanya terlihat oleh tim kamu. Ajukan supaya ditinjau tim Ramein lalu terbit di Jelajah."}
           {card.status === "in_review" && "Sedang ditinjau tim Ramein. Kamu masih bisa menarik pengajuan untuk mengubah draft."}
           {card.status === "published" && `Terbit ${card.published_at ? formatDateTime(card.published_at) : ""}. Warga sudah bisa mendaftar.`}
-          {card.status === "running" && "Sedang berjalan. Tampilkan QR checkpoint untuk check-in peserta (fitur QR menyusul)."}
+          {card.status === "running" && "Sedang berjalan. Tampilkan QR checkpoint lewat menu QR untuk check-in peserta."}
           {["ended", "settled"].includes(card.status) && "Aktivitas selesai."}
           {card.status === "cancelled" && `Dibatalkan.${raw?.review_note ? ` Alasan: ${raw.review_note}` : ""}`}
         </p>

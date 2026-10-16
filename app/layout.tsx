@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { ServiceWorkerRegister } from "@/components/sw-register";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -17,16 +18,22 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "Ramein",
   description: "Bikin kota makin rame, bareng-bareng.",
+  applicationName: "Ramein",
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Ramein" },
 };
 
 export const viewport: Viewport = {
   themeColor: "#0D1024",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="id" className={`${jakarta.variable} ${outfit.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <ServiceWorkerRegister />
+      </body>
     </html>
   );
 }
