@@ -1,15 +1,15 @@
 import { Suspense } from "react";
 import { LainnyaPage } from "@/components/organizer/pages";
 
-export default function Page({ params }: PageProps<"/komunitas/[id]/lainnya">) {
+export default function Page(props: PageProps<"/komunitas/[id]/lainnya">) {
   return (
     <Suspense fallback={<p className="px-5 pt-6 text-[13px] text-fg-muted">Memuat…</p>}>
-      <Loader params={params} />
+      <Loader {...props} />
     </Suspense>
   );
 }
 
-async function Loader({ params }: Pick<PageProps<"/komunitas/[id]/lainnya">, "params">) {
-  const { id } = await params;
-  return <LainnyaPage id={id} type="community" />;
+async function Loader({ params, searchParams }: PageProps<"/komunitas/[id]/lainnya">) {
+  const [{ id }, { akses }] = await Promise.all([params, searchParams]);
+  return <LainnyaPage id={id} type="community" akses={typeof akses === "string" ? akses : undefined} />;
 }

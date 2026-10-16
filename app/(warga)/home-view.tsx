@@ -16,6 +16,7 @@ export function HomeView({
   greeting,
   unread,
   myActivities,
+  recommended = [],
   wallet,
   rank,
   badges,
@@ -27,6 +28,7 @@ export function HomeView({
   greeting: string;
   unread: number;
   myActivities: { card: Card; participation: Participation }[];
+  recommended?: { card: Card; reason: string }[];
   wallet: { balance: number; activeVouchers: number; expiring30d: number };
   rank?: { village: number | null; city: number | null; xpMonth: number; streakWeeks: number; villageRank: number | null };
   badges?: { recent: { code: string; name: string; awarded_at: string }[]; earned: number; total: number };
@@ -163,6 +165,20 @@ export function HomeView({
           ))
         )}
       </section>
+
+      {recommended.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-display text-[19px] font-semibold">Rekomendasi</h2>
+            <a href="/jelajah" className="text-[13px] font-semibold text-link">
+              Lihat semua
+            </a>
+          </div>
+          {recommended.map(({ card, reason }) => (
+            <ActivityCard key={card.id} card={card} href={`/aktivitas/${card.id}`} footer={<span className="text-[12px] font-bold text-link">{reason}</span>} />
+          ))}
+        </section>
+      )}
     </>
   );
 }

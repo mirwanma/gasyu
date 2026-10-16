@@ -10,7 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 
 type Notification = { id: string; kind: string; payload: Record<string, unknown>; read_at: string | null; created_at: string };
 
-// Teks notifikasi per jenis. Jenis lain menyusul di irisan berikutnya.
+// Teks notifikasi per jenis (kind). Jenis yang tidak dikenal tampil apa adanya.
 function describe(n: Notification): { title: string; body?: string; href?: string } {
   const p = n.payload;
   const community = typeof p.community_name === "string" ? p.community_name : "komunitas";

@@ -147,7 +147,12 @@ async function ProfileContent() {
       </section>
 
       <section className="flex flex-col gap-2.5">
-        <span className="text-[13px] font-bold text-fg-label">Member di</span>
+        <div className="flex items-baseline justify-between">
+          <span className="text-[13px] font-bold text-fg-label">Member di</span>
+          <a href="/komunitas-saya" className="text-[12px] font-semibold text-link">
+            Komunitas saya
+          </a>
+        </div>
         {communities.length === 0 ? (
           <span className="text-[13px] text-fg-soft">Belum bergabung ke komunitas mana pun.</span>
         ) : (
@@ -173,6 +178,10 @@ async function ProfileContent() {
         </a>
         <a href="/grup" className="flex h-[52px] items-center justify-between border-b border-line px-4 text-[14px] font-medium text-fg">
           Grup saya
+          <Icon name="chevron" size={16} className="text-fg-muted" />
+        </a>
+        <a href="/komunitas-saya" className="flex h-[52px] items-center justify-between border-b border-line px-4 text-[14px] font-medium text-fg">
+          Komunitas saya
           <Icon name="chevron" size={16} className="text-fg-muted" />
         </a>
         <a href="/peringkat" className="flex h-[52px] items-center justify-between border-b border-line px-4 text-[14px] font-medium text-fg">
