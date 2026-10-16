@@ -203,8 +203,8 @@ function Reward({ result, levels }: { result: CheckinResult; levels: LevelRow[] 
           <span className="text-[12px] text-fg-soft">XP</span>
         </div>
         <div className="flex flex-1 flex-col items-center gap-1 rounded-[20px] border border-line bg-surface p-4">
-          <span className="font-display text-[32px] font-bold text-points">+0</span>
-          <span className="text-[12px] text-fg-soft">poin · segera hadir</span>
+          <span className="font-display text-[32px] font-bold text-points">+{result.points}</span>
+          <span className="text-[12px] text-fg-soft">{result.points > 0 ? `poin dari ${result.partner_name}` : result.completed ? "poin · budget habis" : "poin · setelah selesai"}</span>
         </div>
       </div>
       <div className="flex w-full flex-col gap-2.5 rounded-[20px] border border-line bg-surface p-4">
@@ -237,8 +237,8 @@ function Reward({ result, levels }: { result: CheckinResult; levels: LevelRow[] 
         </p>
       )}
       <div className="mt-auto flex w-full flex-col gap-2.5">
-        <Link href={`/aktivitas/${result.activity_id}`} className="flex h-[52px] items-center justify-center rounded-2xl bg-primary text-[15px] font-semibold text-on-primary">
-          Lihat aktivitas
+        <Link href={result.points > 0 ? "/dompet" : `/aktivitas/${result.activity_id}`} className="flex h-[52px] items-center justify-center rounded-2xl bg-primary text-[15px] font-semibold text-on-primary">
+          {result.points > 0 ? "Tukar poin" : "Lihat aktivitas"}
         </Link>
         <Link href="/" className="flex h-12 items-center justify-center rounded-2xl text-[14px] font-semibold text-fg-label">
           Kembali ke beranda

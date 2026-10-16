@@ -7,7 +7,7 @@ export const CITIZEN_NAV: NavItem[] = [
   { label: "Beranda", href: "/", icon: "home" },
   { label: "Jelajah", href: "/jelajah", icon: "compass" },
   { label: "Scan", href: "/scan", icon: "scan", emphasis: true },
-  { label: "Dompet", href: null, icon: "wallet" },
+  { label: "Dompet", href: "/dompet", icon: "wallet" },
   { label: "Profil", href: "/profil", icon: "user" },
 ];
 
@@ -16,7 +16,7 @@ export function merchantNav(id: string): NavItem[] {
     { label: "Dashboard", href: `/merchant/${id}`, icon: "chart" },
     { label: "Aktivitas", href: `/merchant/${id}/aktivitas`, icon: "calendar" },
     { label: "QR", href: `/merchant/${id}/qr`, icon: "qr" },
-    { label: "Kasir", href: null, icon: "ticket" },
+    { label: "Kasir", href: `/merchant/${id}/kasir`, icon: "ticket" },
     { label: "Lainnya", href: `/merchant/${id}/lainnya`, icon: "more" },
   ];
 }

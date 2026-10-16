@@ -19,6 +19,8 @@ export type CheckinResult = {
   xp_collab: number;
   xp_group: number;
   xp_total: number;
+  points: number;
+  points_balance: number;
   total_xp: number;
 };
 

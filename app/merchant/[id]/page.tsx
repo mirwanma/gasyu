@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Kpi, OrganizerShell, StatusBanner, TodoItem } from "@/components/organizer/shell";
 import { cardClass } from "@/components/styles";
 import { countTodayCheckins } from "@/lib/data/checkins";
+import { getMerchantPointsSummary } from "@/lib/data/rewards";
 import { createClient } from "@/lib/supabase/server";
 
 export default function MerchantDashboardPage({ params }: PageProps<"/merchant/[id]">) {
@@ -23,11 +24,12 @@ async function Dashboard({ params }: Pick<PageProps<"/merchant/[id]">, "params">
 
 async function DashboardBody({ id, org }: { id: string; org: { status: string; name: string } }) {
   const supabase = await createClient();
-  const [{ count: outlets }, { count: team }, { data: acts }, checkinsToday] = await Promise.all([
+  const [{ count: outlets }, { count: team }, { data: acts }, checkinsToday, points] = await Promise.all([
     supabase.from("merchant_outlets").select("id", { count: "exact", head: true }).eq("organizer_id", id).eq("is_active", true),
     supabase.from("organizer_members").select("user_id", { count: "exact", head: true }).eq("organizer_id", id),
     supabase.from("v_activity_cards").select("id, status, seats_taken").eq("host_organizer_id", id),
     countTodayCheckins(id),
+    getMerchantPointsSummary(id),
   ]);
   const activities = (acts ?? []) as { id: string; status: string; seats_taken: number }[];
   const running = activities.filter((a) => a.status === "published" || a.status === "running");
@@ -59,15 +61,26 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string; n
         )}
       </section>
 
-      <section className={`${cardClass} flex flex-col gap-3 p-4`}>
+      <a href={`${base}/reward`} className={`${cardClass} flex flex-col gap-3 p-4 text-fg`}>
         <div className="flex items-baseline justify-between">
           <h2 className="font-display text-[18px] font-semibold">Poin dan voucher</h2>
-          <span className="text-[12px] font-semibold text-fg-muted">segera hadir</span>
+          <span className="text-[13px] font-semibold text-link">Kelola</span>
         </div>
-        <p className="text-[13px] leading-[1.5] text-fg-soft">
-          Budget poin, voucher, dan mode kasir terbuka setelah fitur aktivitas dan reward dirilis.
-        </p>
-      </section>
+        <div className="flex items-end gap-[18px]">
+          <div className="flex flex-col gap-0.5">
+            <span className="font-display text-[28px] font-bold leading-none">{points.used.toLocaleString("id-ID")}</span>
+            <span className="text-[12px] text-fg-soft">poin diberikan</span>
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <span className="font-display text-[20px] font-semibold leading-none text-success">{points.remaining.toLocaleString("id-ID")}</span>
+            <span className="text-[12px] text-fg-soft">sisa budget</span>
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <span className="font-display text-[20px] font-semibold leading-none text-warn">{points.vouchersUsed}/{points.redeemed}</span>
+            <span className="text-[12px] text-fg-soft">voucher dipakai</span>
+          </div>
+        </div>
+      </a>
 
       {org.status === "approved" && (
         <a

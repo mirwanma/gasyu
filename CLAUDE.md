@@ -115,4 +115,4 @@ docs/
 
 Ikuti `docs/DESAIN-DATABASE.md` bagian 9 (irisan 1–11).
 
-Irisan saat ini: **6 (Poin & reward)** — Irisan 1–5 selesai — perbarui baris ini setiap pindah irisan.
+Irisan saat ini: **7 (Kolaborasi)** — Irisan 1–6 selesai — perbarui baris ini setiap pindah irisan.

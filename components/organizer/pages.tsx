@@ -29,7 +29,8 @@ export function LainnyaPage({ id, type }: { id: string; type: Kind }) {
               { label: "Lihat profil publik", href: `/${type === "merchant" ? "m" : "k"}/${org.slug}` },
               ...(type === "merchant"
                 ? [
-                    { label: "Reward & budget poin", href: null },
+                    { label: "Reward & budget poin", href: `${base}/reward` },
+                    { label: "Kasir", href: `${base}/kasir` },
                     { label: "Kolaborasi", href: null },
                   ]
                 : [{ label: "Kolaborasi", href: null }]),

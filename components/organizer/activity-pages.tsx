@@ -8,6 +8,8 @@ import { OrganizerShell, type OrganizerContext } from "@/components/organizer/sh
 import { cardClass, chipClass, smallButton, tagClass, textareaClass } from "@/components/styles";
 import { SubmitButton } from "@/components/ui";
 import { changeActivityStatus, toggleCheckpoint } from "@/lib/actions/activities";
+import { saveActivityPoints } from "@/lib/actions/rewards";
+import { getActivityBudget } from "@/lib/data/rewards";
 import { DIFFICULTY_LABELS, JOIN_MODE_LABELS, PARTICIPATION_LABELS, PAYMENT_LABELS, formatPrice, formatSchedule, targetLabel, typeLabel, type ParticipationStatus, type PaymentStatus } from "@/lib/activities";
 import { getActivityCard, getCheckpoints, listOrganizerActivities } from "@/lib/data/activities";
 import { getVillageOptions } from "@/lib/data/organizers";
@@ -114,6 +116,7 @@ const RESULT_TEXT: Record<string, string> = {
   submit: "Diajukan. Tim Ramein akan meninjau, biasanya 1–2 hari kerja.",
   withdraw: "Pengajuan ditarik. Aktivitas kembali jadi draft.",
   cancel: "Aktivitas dibatalkan dan peserta sudah diberi tahu.",
+  poin: "Poin per penyelesaian dan budget tersimpan.",
 };
 
 async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }: { ctx: OrganizerContext; id: string; type: Kind; base: string; aid: string; hasil?: string; error?: string; edit?: boolean }) {
@@ -142,6 +145,10 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
   }
 
   const outlets = type === "merchant" ? ((await supabase.from("merchant_outlets").select("id, name, address").eq("organizer_id", id).eq("is_active", true).order("name")).data ?? []) : [];
+  const [budget, { data: hostPartner }] = type === "merchant"
+    ? await Promise.all([getActivityBudget(aid, id), supabase.from("activity_partners").select("id").eq("activity_id", aid).eq("organizer_id", id).maybeSingle()])
+    : [null, { data: null }];
+  const pointsEditable = ["draft", "awaiting_partners"].includes(card.status);
 
   return (
     <>
@@ -233,12 +240,52 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
         {(editable || liteEditable) && <CheckpointForm organizerId={id} type={type} activityId={aid} outlets={outlets as { id: string; name: string; address: string }[]} />}
       </section>
 
+      {type === "merchant" && hostPartner ? (
+        <section className={`${cardClass} flex flex-col gap-3 p-4`}>
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-display text-[18px] font-semibold">Poin dari {ctx.org.name}</h2>
+            {budget && <span className="text-[12px] font-semibold text-fg-soft">terpakai {budget.used} · sisa {budget.remaining}</span>}
+          </div>
+          <form action={saveActivityPoints} className="flex flex-col gap-3">
+            <input type="hidden" name="organizer_id" value={id} />
+            <input type="hidden" name="activity_id" value={aid} />
+            <input type="hidden" name="partner_id" value={hostPartner.id as string} />
+            <div className="grid grid-cols-2 gap-2">
+              <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-fg-label">
+                Per penyelesaian
+                <input name="points_per_completion" type="number" min={0} max={10000} inputMode="numeric" defaultValue={card.points_per_completion} disabled={!pointsEditable || !isLeader} className="h-[52px] w-full rounded-[14px] border border-line-strong bg-surface px-4 text-[15px] text-fg disabled:opacity-60" />
+              </label>
+              <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-fg-label">
+                Budget poin
+                <input name="points_budget" type="number" min={0} max={1000000} inputMode="numeric" defaultValue={budget?.budget ?? 0} disabled={!["draft", "awaiting_partners", "in_review", "published"].includes(card.status) || !isLeader} className="h-[52px] w-full rounded-[14px] border border-line-strong bg-surface px-4 text-[15px] text-fg disabled:opacity-60" />
+              </label>
+            </div>
+            <span className="text-[12px] text-fg-soft">
+              {card.points_per_completion > 0 && (budget?.budget ?? 0) > 0
+                ? `Cukup untuk ${Math.floor((budget?.remaining ?? 0) / card.points_per_completion)} peserta lagi yang menyelesaikan.`
+                : "Poin diberikan ke warga yang menyelesaikan aktivitas, dipotong dari budget. Tanpa budget, warga tetap dapat XP."}
+              {!pointsEditable ? " Poin per penyelesaian terkunci setelah diajukan." : ""}
+            </span>
+            {isLeader && ["draft", "awaiting_partners", "in_review", "published"].includes(card.status) && (
+              <SubmitButton size="small" variant="dark" pendingText="Menyimpan…" className="self-end">
+                Simpan poin
+              </SubmitButton>
+            )}
+          </form>
+        </section>
+      ) : (
+        <section className={`${cardClass} flex flex-col gap-1 p-4`}>
+          <h2 className="font-display text-[18px] font-semibold">Poin</h2>
+          <p className="text-[13px] leading-[1.5] text-fg-soft">Komunitas tidak punya budget poin. Poin untuk peserta hanya ada jika ada merchant sponsor (fitur kolaborasi menyusul).</p>
+        </section>
+      )}
+
       <section className={`${cardClass} flex flex-col gap-1 p-4`}>
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-[18px] font-semibold">Misi, poin, dan harga</h2>
+          <h2 className="font-display text-[18px] font-semibold">Misi dan harga</h2>
           <span className="text-[12px] font-semibold text-fg-muted">segera hadir</span>
         </div>
-        <p className="text-[13px] leading-[1.5] text-fg-soft">Peserta selesai saat check-in di checkpoint. Misi, budget poin, dan event berbayar dibuka di irisan berikutnya.</p>
+        <p className="text-[13px] leading-[1.5] text-fg-soft">Misi dan aktivitas berbayar dibuka di irisan berikutnya.</p>
       </section>
 
       {liteEditable && <ActivityLiteForm organizerId={id} type={type} activityId={aid} description={card.description ?? ""} />}
