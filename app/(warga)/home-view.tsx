@@ -1,4 +1,5 @@
-import { signOut } from "./actions";
+import { UserAvatar } from "@/components/avatar";
+import { Icon } from "@/components/icons";
 import { cardClass } from "@/components/styles";
 import { levelFor, type LevelRow } from "@/lib/gamification/level";
 
@@ -9,12 +10,14 @@ export function HomeView({
   totalXp,
   levels,
   greeting,
+  unread,
 }: {
   nickname: string;
   villageName?: string;
   totalXp: number;
   levels: LevelRow[];
   greeting: string;
+  unread: number;
 }) {
   const level = levelFor(totalXp, levels);
   const currentMin = levels.find((row) => row.level === level.level)?.min_xp ?? 0;
@@ -25,21 +28,26 @@ export function HomeView({
   return (
     <>
       <header className="flex items-center gap-3">
-        <div className="flex size-12 items-center justify-center rounded-full border-2 border-avatar-ring bg-avatar font-display text-[17px] font-semibold uppercase">
-          {nickname.slice(0, 2)}
-        </div>
+        <UserAvatar nickname={nickname} />
         <div className="flex flex-1 flex-col gap-0.5">
           <span className="text-[13px] text-fg-soft">{greeting}</span>
           <span className="font-display text-[19px] font-semibold">{nickname}</span>
         </div>
-        <span className="text-[12px] font-semibold text-fg-soft">
-          {villageName ? `Kel. ${villageName}` : "Luar Cimahi"}
-        </span>
+        <a
+          href="/notifikasi"
+          aria-label={unread > 0 ? `Notifikasi, ${unread} belum dibaca` : "Notifikasi"}
+          className="relative flex size-11 items-center justify-center rounded-full border border-line bg-surface text-fg"
+        >
+          <Icon name="bell" />
+          {unread > 0 && (
+            <span className="absolute right-2.5 top-2.5 size-[9px] rounded-full border-2 border-surface bg-hot" />
+          )}
+        </a>
       </header>
 
       <section
         aria-label="Level dan XP"
-        className="flex flex-col gap-4 rounded-3xl bg-linear-135 from-hero-from to-hero-to p-5"
+        className="flex flex-col gap-4 rounded-3xl bg-linear-135 from-hero-from to-hero-to p-5 text-[#F3F4FA]"
       >
         <div className="flex flex-col gap-1">
           <span className="text-[13px] text-on-hero">
@@ -50,14 +58,17 @@ export function HomeView({
           </span>
         </div>
         <div className="flex flex-col gap-2">
-          <div className="h-2 overflow-hidden rounded-lg bg-bg/45">
+          <div className="h-2 overflow-hidden rounded-lg bg-[#0D1024]/45">
             <div className="h-full rounded-lg bg-xp" style={{ width: `${Math.max(progress, 2)}%` }} />
           </div>
-          <span className="text-[12px] text-on-hero">
-            {level.nextMinXp === null
-              ? "Kamu sudah di level tertinggi."
-              : `${(level.nextMinXp - totalXp).toLocaleString("id-ID")} XP lagi ke ${nextName}`}
-          </span>
+          <div className="flex justify-between text-[12px] text-on-hero">
+            <span>
+              {level.nextMinXp === null
+                ? "Kamu sudah di level tertinggi."
+                : `${(level.nextMinXp - totalXp).toLocaleString("id-ID")} XP lagi ke ${nextName}`}
+            </span>
+            <span>{villageName ? `Kel. ${villageName}` : "Luar Cimahi"}</span>
+          </div>
         </div>
       </section>
 
@@ -71,12 +82,6 @@ export function HomeView({
           </span>
         </div>
       </section>
-
-      <form action={signOut} className="mt-4 flex justify-center">
-        <button type="submit" className="min-h-11 px-4 text-[13px] font-semibold text-fg-muted">
-          Keluar dari akun
-        </button>
-      </form>
     </>
   );
 }

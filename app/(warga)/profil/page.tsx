@@ -1,0 +1,161 @@
+import { Suspense } from "react";
+import { signOut } from "../actions";
+import { OrganizerAvatar, UserAvatar } from "@/components/avatar";
+import { BottomNav, CITIZEN_NAV } from "@/components/bottom-nav";
+import { Icon } from "@/components/icons";
+import { cardClass } from "@/components/styles";
+import { getMyOrganizers, ROLE_LABELS, STATUS_LABELS, TYPE_LABELS } from "@/lib/data/organizers";
+import { getCurrentUser } from "@/lib/data/user";
+import { levelFor } from "@/lib/gamification/level";
+import { createClient } from "@/lib/supabase/server";
+
+export default function ProfilPage() {
+  return (
+    <>
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-[18px] px-5 pb-32 pt-6">
+        <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>
+          <ProfileContent />
+        </Suspense>
+      </main>
+      <BottomNav items={CITIZEN_NAV} active="Profil" />
+    </>
+  );
+}
+
+async function ProfileContent() {
+  const user = await getCurrentUser();
+  if (!user) return null;
+  const supabase = await createClient();
+
+  const [{ data: xpRows }, { data: levels }, organizers, { data: memberships }] = await Promise.all([
+    supabase.from("xp_ledger").select("amount").eq("user_id", user.id),
+    supabase.from("levels").select("level, name, min_xp"),
+    getMyOrganizers(user.id),
+    supabase
+      .from("community_memberships")
+      .select("status, community:organizers(name, slug)")
+      .eq("user_id", user.id)
+      .in("status", ["active", "pending"]),
+  ]);
+
+  const totalXp = (xpRows ?? []).reduce((sum, row) => sum + row.amount, 0);
+  const level = levelFor(totalXp, levels ?? []);
+  const communities = (memberships ?? [])
+    .map((row) => ({
+      status: row.status as string,
+      community: row.community as unknown as { name: string; slug: string } | null,
+    }))
+    .filter((row) => row.community);
+
+  return (
+    <>
+      <div className="flex items-center gap-3.5">
+        <UserAvatar nickname={user.nickname} size={68} />
+        <div className="flex flex-col gap-[3px]">
+          <span className="font-display text-[22px] font-bold">{user.nickname}</span>
+          <span className="text-[13px] text-fg-soft">{user.villageName ?? "Luar Cimahi"}</span>
+          <span className="text-[12px] font-semibold text-xp">
+            Level {level.level} · {level.name} · {totalXp.toLocaleString("id-ID")} XP
+          </span>
+        </div>
+      </div>
+
+      <section className={`${cardClass} flex flex-col gap-2.5 p-4`}>
+        <span className="text-[12px] font-bold tracking-[0.05em] text-fg-muted">GUNAKAN SEBAGAI</span>
+
+        <div className="flex min-h-14 items-center gap-3 rounded-[14px] border border-avatar-ring bg-primary-tint px-3 py-2">
+          <UserAvatar nickname={user.nickname} size={40} />
+          <span className="flex flex-1 flex-col gap-0.5">
+            <span className="text-[14px] font-semibold">Warga</span>
+            <span className="text-[12px] text-fg-soft">Akun pribadi</span>
+          </span>
+          <span className="text-[12px] font-semibold text-success">Aktif</span>
+        </div>
+
+        {organizers.map((org) => {
+          const href = `/${org.type === "merchant" ? "merchant" : "komunitas"}/${org.id}`;
+          return (
+            <a
+              key={org.id}
+              href={href}
+              className="flex min-h-14 items-center gap-3 rounded-[14px] border border-line bg-bg px-3 py-2 text-fg"
+            >
+              <OrganizerAvatar name={org.name} type={org.type} logoUrl={org.logoUrl} />
+              <span className="flex flex-1 flex-col gap-0.5">
+                <span className="text-[14px] font-semibold">{org.name}</span>
+                <span className="text-[12px] text-fg-soft">
+                  {TYPE_LABELS[org.type]} · {ROLE_LABELS[org.role]}
+                  {org.status !== "approved" && ` · ${STATUS_LABELS[org.status].toLowerCase()}`}
+                </span>
+              </span>
+              <span className="text-[12px] font-semibold text-link">Buka</span>
+            </a>
+          );
+        })}
+
+        {user.isAdmin && (
+          <a
+            href="/admin"
+            className="flex min-h-14 items-center gap-3 rounded-[14px] border border-line bg-bg px-3 py-2 text-fg"
+          >
+            <span className="flex size-10 items-center justify-center rounded-xl bg-accent-warga text-[#0D1024]">
+              <Icon name="shield" />
+            </span>
+            <span className="flex flex-1 flex-col gap-0.5">
+              <span className="text-[14px] font-semibold">Ramein Admin</span>
+              <span className="text-[12px] text-fg-soft">Dashboard admin (web)</span>
+            </span>
+            <span className="text-[12px] font-semibold text-link">Buka</span>
+          </a>
+        )}
+
+        <a
+          href="/daftar"
+          className="flex h-12 items-center justify-center gap-2 rounded-[14px] border border-dashed border-line-strong text-[14px] font-semibold text-fg"
+        >
+          <Icon name="plus" size={18} stroke={2} />
+          Daftarkan merchant atau komunitas
+        </a>
+      </section>
+
+      <section className="flex flex-col gap-2.5">
+        <span className="text-[13px] font-bold text-fg-label">Member di</span>
+        {communities.length === 0 ? (
+          <span className="text-[13px] text-fg-soft">Belum bergabung ke komunitas mana pun.</span>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {communities.map(({ community, status }) => (
+              <a
+                key={community!.slug}
+                href={`/k/${community!.slug}`}
+                className="flex h-9 items-center gap-1.5 rounded-full border border-line bg-surface px-3 text-[13px] font-semibold text-fg"
+              >
+                {community!.name}
+                {status === "pending" && <span className="text-[11px] font-bold text-warn">menunggu</span>}
+              </a>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <nav aria-label="Menu profil" className={`${cardClass} flex flex-col overflow-hidden`}>
+        <a href="/notifikasi" className="flex h-[52px] items-center justify-between border-b border-line px-4 text-[14px] font-medium text-fg">
+          Notifikasi
+          <Icon name="chevron" size={16} className="text-fg-muted" />
+        </a>
+        <span className="flex h-[52px] items-center justify-between border-b border-line px-4 text-[14px] font-medium text-fg-muted">
+          Grup saya <span className="text-[11px]">segera hadir</span>
+        </span>
+        <span className="flex h-[52px] items-center justify-between border-b border-line px-4 text-[14px] font-medium text-fg-muted">
+          Peringkat <span className="text-[11px]">segera hadir</span>
+        </span>
+        <form action={signOut}>
+          <button type="submit" className="flex h-[52px] w-full items-center justify-between px-4 text-[14px] font-medium text-danger">
+            Keluar dari akun
+            <Icon name="logout" size={16} />
+          </button>
+        </form>
+      </nav>
+    </>
+  );
+}

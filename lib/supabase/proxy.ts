@@ -63,10 +63,15 @@ export async function updateSession(request: NextRequest) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("onboarded_at")
+    .select("onboarded_at, is_admin")
     .eq("id", userId)
     .maybeSingle();
   const onboarded = Boolean(profile?.onboarded_at);
+
+  // Dashboard admin hanya untuk akun is_admin (dicek lagi di layout dan RLS).
+  if (matches(pathname, "/admin") && !profile?.is_admin) {
+    return redirectTo("/profil?akses=admin");
+  }
   const next = safeNext(request.nextUrl.searchParams.get("next"));
 
   if (!onboarded) {
