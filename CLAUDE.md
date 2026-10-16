@@ -115,4 +115,4 @@ docs/
 
 Ikuti `docs/DESAIN-DATABASE.md` bagian 9 (irisan 1–11).
 
-Irisan saat ini: **1 (Fondasi)** — perbarui baris ini setiap pindah irisan.
+Irisan saat ini: **3 (Event)** — Irisan 1 dan 2 selesai — perbarui baris ini setiap pindah irisan.

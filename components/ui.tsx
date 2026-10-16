@@ -1,22 +1,28 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
-import { buttonStyles } from "./styles";
+import { buttonStyles, smallButton } from "./styles";
 
 // Komponen kecil yang dipakai ulang. Gaya mengikuti Ramein UI Mockup (lihat docs/BRAND.md).
+
+export function LogoMark({ size = 48 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="50" cy="34" r="26" fill="#F06A2A" />
+      <circle cx="36" cy="58" r="26" fill="#0F8B6D" />
+      <circle cx="64" cy="58" r="26" fill="#2D4FCF" />
+      <path d="M24.01 34.92A26 26 0 0 1 61.99 57.08A26 26 0 0 1 24.01 34.92Z" fill="#7E7A2C" />
+      <path d="M38.01 57.08A26 26 0 0 1 75.99 34.92A26 26 0 0 1 38.01 57.08Z" fill="#9A4E80" />
+      <path d="M50 36.09A26 26 0 0 1 50 79.91A26 26 0 0 1 50 36.09Z" fill="#1A6AA6" />
+      <circle cx="50" cy="50" r="7" fill="#FFFFFF" />
+    </svg>
+  );
+}
 
 export function Logo() {
   return (
     <div className="flex items-center gap-2.5" role="img" aria-label="ramein">
-      <svg width="48" height="48" viewBox="0 0 100 100" aria-hidden="true">
-        <circle cx="50" cy="34" r="26" fill="#F06A2A" />
-        <circle cx="36" cy="58" r="26" fill="#0F8B6D" />
-        <circle cx="64" cy="58" r="26" fill="#2D4FCF" />
-        <path d="M24.01 34.92A26 26 0 0 1 61.99 57.08A26 26 0 0 1 24.01 34.92Z" fill="#7E7A2C" />
-        <path d="M38.01 57.08A26 26 0 0 1 75.99 34.92A26 26 0 0 1 38.01 57.08Z" fill="#9A4E80" />
-        <path d="M50 36.09A26 26 0 0 1 50 79.91A26 26 0 0 1 50 36.09Z" fill="#1A6AA6" />
-        <circle cx="50" cy="50" r="7" fill="#FFFFFF" />
-      </svg>
+      <LogoMark />
       <span className="text-[30px] font-extrabold tracking-[-0.03em] text-cream">ramein</span>
     </div>
   );
@@ -26,18 +32,26 @@ export function SubmitButton({
   children,
   pendingText,
   variant = "primary",
+  size = "full",
   name,
   value,
   formNoValidate,
+  className = "",
 }: {
   children: React.ReactNode;
   pendingText: string;
-  variant?: keyof typeof buttonStyles;
+  variant?: keyof typeof buttonStyles | keyof typeof smallButton;
+  size?: "full" | "small";
   name?: string;
   value?: string;
   formNoValidate?: boolean;
+  className?: string;
 }) {
   const { pending } = useFormStatus();
+  const styles =
+    size === "small"
+      ? smallButton[variant as keyof typeof smallButton]
+      : buttonStyles[variant as keyof typeof buttonStyles];
   return (
     <button
       type="submit"
@@ -45,7 +59,7 @@ export function SubmitButton({
       value={value}
       disabled={pending}
       formNoValidate={formNoValidate}
-      className={buttonStyles[variant]}
+      className={`${styles} ${className}`}
     >
       {pending ? pendingText : children}
     </button>
@@ -58,6 +72,18 @@ export function ErrorMessage({ message }: { message?: string }) {
     <p
       role="alert"
       className="rounded-[14px] border border-danger/30 bg-danger-tint px-4 py-3 text-[13px] leading-[18px] text-danger"
+    >
+      {message}
+    </p>
+  );
+}
+
+export function SuccessMessage({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <p
+      role="status"
+      className="rounded-[14px] border border-success/30 bg-success-tint px-4 py-3 text-[13px] leading-[18px] text-success"
     >
       {message}
     </p>

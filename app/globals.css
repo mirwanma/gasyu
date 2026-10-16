@@ -1,49 +1,130 @@
 @import "tailwindcss";
 
-/* Token UI Ramein (tema gelap) — lihat docs/BRAND.md. Jangan menambah warna di luar daftar ini. */
-@theme {
+/*
+  Token UI Ramein — lihat docs/BRAND.md. Jangan menambah warna di luar daftar ini.
+  Dua tema mengikuti Ramein UI Mockup:
+  - gelap (bawaan): mode warga
+  - terang (.theme-light): mode merchant, komunitas, dan admin
+  Nilai token dibaca lewat variabel --ui-* supaya bisa diganti per subtree.
+*/
+@theme inline {
   --font-sans: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-outfit), "Outfit", var(--font-jakarta), sans-serif;
 
-  /* Permukaan */
-  --color-bg: #0D1024;
-  --color-surface: #171B33;
-  --color-surface-deep: #12152C;
-  --color-line: #2A3058;
-  --color-line-strong: #3A4072;
+  --color-bg: var(--ui-bg);
+  --color-surface: var(--ui-surface);
+  --color-surface-deep: var(--ui-surface-deep);
+  --color-track: var(--ui-track);
+  --color-line: var(--ui-line);
+  --color-line-strong: var(--ui-line-strong);
 
-  /* Teks */
-  --color-fg: #F3F4FA;
-  --color-fg-label: #C9CCE4;
-  --color-fg-soft: #A3A8C7;
-  --color-fg-muted: #8A8FB4;
+  --color-fg: var(--ui-fg);
+  --color-fg-label: var(--ui-fg-label);
+  --color-fg-soft: var(--ui-fg-soft);
+  --color-fg-muted: var(--ui-fg-muted);
   --color-cream: #FAF7F2;
 
-  /* Aksi dan aksen */
-  --color-primary: #5B5BF0;
-  --color-primary-soft: #8F93FF;
-  --color-link: #A9ACFF;
+  --color-primary: var(--ui-primary);
+  --color-primary-soft: var(--ui-primary-soft);
+  --color-primary-tint: var(--ui-primary-tint);
+  --color-link: var(--ui-link);
+  --color-on-primary: #FFFFFF;
+
   --color-hero-from: #4B45E0;
   --color-hero-to: #6D2FD8;
   --color-on-hero: #E3E1FF;
   --color-avatar: #2A2F63;
   --color-avatar-ring: #6D5BF0;
+
   --color-xp: #5CCBF5;
-  --color-points: #F7A1C2;
-  --color-hot: #F0508A;
-  --color-success: #34D399;
-  --color-warn: #F5B544;
-  --color-danger: #FF8A8A;
-  --color-danger-tint: #3A1620;
+  --color-points: var(--ui-points);
+  --color-hot: var(--ui-hot);
+  --color-hot-tint: var(--ui-hot-tint);
+  --color-success: var(--ui-success);
+  --color-success-tint: var(--ui-success-tint);
+  --color-warn: var(--ui-warn);
+  --color-warn-tint: var(--ui-warn-tint);
+  --color-info: var(--ui-info);
+  --color-info-tint: var(--ui-info-tint);
+  --color-danger: var(--ui-danger);
+  --color-danger-tint: var(--ui-danger-tint);
 
   /* Warna tiga pihak (logo, label merchant/komunitas/warga) */
   --color-merchant: #F06A2A;
   --color-komunitas: #0F8B6D;
   --color-warga: #2D4FCF;
+  --color-accent-merchant: #F5B544;
+  --color-accent-komunitas: #F0508A;
+  --color-accent-warga: #8F93FF;
+}
+
+:root,
+.theme-dark {
+  --ui-bg: #0D1024;
+  --ui-surface: #171B33;
+  --ui-surface-deep: #12152C;
+  --ui-track: rgb(13 16 36 / 0.45);
+  --ui-line: #2A3058;
+  --ui-line-strong: #3A4072;
+  --ui-fg: #F3F4FA;
+  --ui-fg-label: #C9CCE4;
+  --ui-fg-soft: #A3A8C7;
+  --ui-fg-muted: #8A8FB4;
+  --ui-primary: #5B5BF0;
+  --ui-primary-soft: #8F93FF;
+  --ui-primary-tint: #20254A;
+  --ui-link: #A9ACFF;
+  --ui-points: #F7A1C2;
+  --ui-hot: #F0508A;
+  --ui-hot-tint: #3A1F33;
+  --ui-success: #6EE7B7;
+  --ui-success-tint: #123A33;
+  --ui-warn: #F5C46B;
+  --ui-warn-tint: #3A2E10;
+  --ui-info: #8FDDFB;
+  --ui-info-tint: #1E3550;
+  --ui-danger: #FF8A8A;
+  --ui-danger-tint: #3A1620;
+  color-scheme: dark;
+}
+
+.theme-light {
+  --ui-bg: #F5F6FB;
+  --ui-surface: #FFFFFF;
+  --ui-surface-deep: #FFFFFF;
+  --ui-track: #EEF0F7;
+  --ui-line: #E4E6F0;
+  --ui-line-strong: #D5D8E8;
+  --ui-fg: #14162B;
+  --ui-fg-label: #3A3F63;
+  --ui-fg-soft: #5D6283;
+  --ui-fg-muted: #6B7090;
+  --ui-primary: #4B4FE0;
+  --ui-primary-soft: #4B4FE0;
+  --ui-primary-tint: #EEEEFD;
+  --ui-link: #3F43C9;
+  --ui-points: #C42E68;
+  --ui-hot: #C42E68;
+  --ui-hot-tint: #FDE8F0;
+  --ui-success: #0F7552;
+  --ui-success-tint: #E3F6EE;
+  --ui-warn: #94570A;
+  --ui-warn-tint: #FFF3DC;
+  --ui-info: #0E6E93;
+  --ui-info-tint: #E2F4FB;
+  --ui-danger: #C42E68;
+  --ui-danger-tint: #FDE8F0;
+  color-scheme: light;
 }
 
 body {
-  background: var(--color-bg);
-  color: var(--color-fg);
+  background: var(--ui-bg);
+  color: var(--ui-fg);
   font-family: var(--font-sans);
+}
+
+.theme-light,
+.theme-dark {
+  background: var(--ui-bg);
+  color: var(--ui-fg);
 }

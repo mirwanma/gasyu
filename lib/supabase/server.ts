@@ -1,8 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 
 // Client Supabase untuk Server Component, Server Action, dan Route Handler.
 export async function createClient() {
+  // Sesi selalu per-permintaan; ini memberi tahu Cache Components supaya
+  // pemeriksaan kedaluwarsa token (Date.now) tidak dianggap bagian prerender.
+  await connection();
   const cookieStore = await cookies();
 
   return createServerClient(

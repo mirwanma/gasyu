@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import { HomeView } from "./home-view";
-import { BottomNav } from "@/components/bottom-nav";
+import { BottomNav, CITIZEN_NAV } from "@/components/bottom-nav";
+import { getCurrentUser, getUnreadCount } from "@/lib/data/user";
+import { greetingFor } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 
 // Beranda warga. Bagian poin, voucher, peringkat, dan rekomendasi menyusul
@@ -13,45 +15,30 @@ export default function BerandaPage() {
           <CitizenHome />
         </Suspense>
       </main>
-      <BottomNav active="Beranda" />
+      <BottomNav items={CITIZEN_NAV} active="Beranda" />
     </>
   );
 }
 
-function greeting(now: Date) {
-  const hour = Number(
-    new Intl.DateTimeFormat("id-ID", { hour: "numeric", hourCycle: "h23", timeZone: "Asia/Jakarta" }).format(now),
-  );
-  if (hour < 11) return "Selamat pagi,";
-  if (hour < 15) return "Selamat siang,";
-  if (hour < 18) return "Selamat sore,";
-  return "Selamat malam,";
-}
-
 async function CitizenHome() {
+  const user = await getCurrentUser();
+  if (!user) return null;
   const supabase = await createClient();
-  const { data: claims } = await supabase.auth.getClaims();
-  const userId = claims?.claims?.sub ?? "";
 
-  const [{ data: profile }, { data: xpRows }, { data: levels }] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("nickname, home_village:regions(name)")
-      .eq("id", userId)
-      .maybeSingle(),
-    supabase.from("xp_ledger").select("amount").eq("user_id", userId),
+  const [{ data: xpRows }, { data: levels }, unread] = await Promise.all([
+    supabase.from("xp_ledger").select("amount").eq("user_id", user.id),
     supabase.from("levels").select("level, name, min_xp"),
+    getUnreadCount(user.id),
   ]);
-
-  const village = profile?.home_village as { name: string } | { name: string }[] | null;
 
   return (
     <HomeView
-      nickname={profile?.nickname ?? ""}
-      villageName={Array.isArray(village) ? village[0]?.name : village?.name}
+      nickname={user.nickname}
+      villageName={user.villageName ?? undefined}
       totalXp={(xpRows ?? []).reduce((sum, row) => sum + row.amount, 0)}
       levels={levels ?? []}
-      greeting={greeting(new Date())}
+      greeting={greetingFor()}
+      unread={unread}
     />
   );
 }
