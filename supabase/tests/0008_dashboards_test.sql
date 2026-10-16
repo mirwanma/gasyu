@@ -224,7 +224,7 @@ select pg_temp.assert((select count(*) from public.notifications where user_id =
 set local role authenticated;
 
 select pg_temp.login('00000000-0000-0000-0000-00000000000e');
-select pg_temp.assert_fails($$select public.suspend_organizer((select id from public.organizers where type = 'platform'), true, null)$$, 'invalid_organizer', 'organizer Ramein tidak bisa dibekukan');
+select pg_temp.assert_fails($$select public.suspend_organizer((select id from public.organizers where type = 'platform'), true, null)$$, 'invalid_organizer', 'organizer Gasyu tidak bisa dibekukan');
 select public.suspend_organizer((select v from ids where k = 'k'), true, 'Peninjau terlalu cepat');
 reset role;
 select pg_temp.assert((select status from public.organizers where id = (select v from ids where k = 'k')) = 'suspended', 'komunitas dibekukan');

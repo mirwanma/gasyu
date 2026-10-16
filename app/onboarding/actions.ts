@@ -14,7 +14,7 @@ const ERRORS: Record<string, { message: string; step: 1 | 2 | 3 }> = {
   nickname_taken: { message: "Nama panggilan ini sudah dipakai. Coba yang lain.", step: 1 },
   invalid_full_name: { message: "Nama lengkap belum diisi.", step: 1 },
   invalid_village: { message: "Kelurahan tidak ditemukan. Pilih lagi, ya.", step: 2 },
-  account_inactive: { message: "Akun ini sedang tidak aktif. Hubungi tim Ramein.", step: 3 },
+  account_inactive: { message: "Akun ini sedang tidak aktif. Hubungi tim Gasyu.", step: 3 },
   not_authenticated: { message: "Sesi kamu habis. Masuk lagi, ya.", step: 3 },
 };
 

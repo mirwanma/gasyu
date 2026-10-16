@@ -92,7 +92,7 @@ export function InvitePartnerForm({ activityId, organizers, ctx }: { activityId:
   );
 }
 
-// Admin menambahkan partner langsung ke event Ramein.
+// Admin menambahkan partner langsung ke event Gasyu.
 export function AdminAddPartnerForm({ activityId, organizers }: { activityId: string; organizers: OrgOption[] }) {
   const [state, action] = useActionState<CollabActionState, FormData>(adminAddPartner, {});
   return (

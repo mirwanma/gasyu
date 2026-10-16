@@ -1,5 +1,5 @@
 -- =============================================================================
--- DATA DUMMY RAMEIN (pilot Cimahi) — untuk demo dan uji alur, bukan data nyata.
+-- DATA DUMMY GASYU (pilot Cimahi) — untuk demo dan uji alur, bukan data nyata.
 --
 -- Penanda supaya mudah dibersihkan (lihat bersihkan.sql):
 --   * semua akun dummy memakai id dengan awalan  dd000000-0000-4000-8000-
@@ -72,7 +72,7 @@ begin
   -- ---------------------------------------------------------------------------
   for acc in
     select * from (values
-      (u_admin, 'admin@dummy.ramein.id',  'tim_ramein', 'Tim Ramein',         'Cimahi',        true,  40),
+      (u_admin, 'admin@dummy.ramein.id',  'tim_gasyu', 'Tim Gasyu',         'Cimahi',        true,  40),
       (w1,  'rani@dummy.ramein.id',        'rani',       'Rani Puspita',       'Baros',         false, 30),
       (w2,  'dimas@dummy.ramein.id',       'dimas',      'Dimas Aditya',       'Cibabat',       false, 25),
       (w3,  'siti@dummy.ramein.id',        'siti_nur',   'Siti Nurhaliza',     'Melong',        false, 20),

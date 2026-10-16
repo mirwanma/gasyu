@@ -5,13 +5,13 @@ import { getActivityCard } from "@/lib/data/activities";
 import { getVillageOptions } from "@/lib/data/organizers";
 import { createClient } from "@/lib/supabase/server";
 
-// Admin membuat atau mengubah event/challenge atas nama Ramein.
+// Admin membuat atau mengubah event/challenge atas nama Gasyu.
 export default function AdminAktivitasBaruPage({ searchParams }: PageProps<"/admin/aktivitas/baru">) {
   return (
     <>
       <div className="flex flex-col gap-1">
-        <h1 className="font-display text-[30px] font-bold">Event Ramein</h1>
-        <span className="text-[14px] text-fg-soft">Dibuat atas nama Ramein, langsung terbit saat diterbitkan tanpa antrean review. Tambahkan partner dan checkpoint setelah draft tersimpan.</span>
+        <h1 className="font-display text-[30px] font-bold">Event Gasyu</h1>
+        <span className="text-[14px] text-fg-soft">Dibuat atas nama Gasyu, langsung terbit saat diterbitkan tanpa antrean review. Tambahkan partner dan checkpoint setelah draft tersimpan.</span>
       </div>
       <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>
         <FormLoader searchParams={searchParams} />

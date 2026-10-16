@@ -93,7 +93,7 @@ export function Scanner({ initial, levels }: { initial: QrPayload | null; levels
               void submit(payload);
               return;
             }
-            setCameraMessage("QR ini bukan QR Ramein.");
+            setCameraMessage("QR ini bukan QR Gasyu.");
           }
         }
       }
@@ -250,7 +250,7 @@ function Reward({ result, levels }: { result: CheckinResult; levels: LevelRow[] 
       </div>
       {result.flagged && (
         <p className="w-full rounded-2xl bg-warn-tint px-4 py-3 text-[12px] leading-[1.5] text-warn">
-          Lokasi kamu {result.distance_m !== null ? `${result.distance_m} m dari checkpoint` : "tidak terbaca"}. Check-in tetap dihitung, tetapi akan ditinjau tim Ramein.
+          Lokasi kamu {result.distance_m !== null ? `${result.distance_m} m dari checkpoint` : "tidak terbaca"}. Check-in tetap dihitung, tetapi akan ditinjau tim Gasyu.
         </p>
       )}
       <div className="mt-auto flex w-full flex-col gap-2.5">
@@ -310,7 +310,7 @@ function MissionReward({ result, levels }: { result: MissionResult; levels: Leve
       </div>
       {result.flagged && (
         <p className="w-full rounded-2xl bg-warn-tint px-4 py-3 text-[12px] leading-[1.5] text-warn">
-          Lokasi kamu {result.distance_m != null ? `${result.distance_m} m dari checkpoint` : "tidak terbaca"}. Misi tetap dihitung, tetapi akan ditinjau tim Ramein.
+          Lokasi kamu {result.distance_m != null ? `${result.distance_m} m dari checkpoint` : "tidak terbaca"}. Misi tetap dihitung, tetapi akan ditinjau tim Gasyu.
         </p>
       )}
       <div className="mt-auto flex w-full flex-col gap-2.5">

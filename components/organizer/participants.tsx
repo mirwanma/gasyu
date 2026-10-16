@@ -13,7 +13,7 @@ import { signedUrl } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
 
 // Halaman "Peserta dan pembayaran" untuk tim host (merchant, komunitas, admin
-// untuk event Ramein), mengikuti artboard "Penyelenggara · Peserta":
+// untuk event Gasyu), mengikuti artboard "Penyelenggara · Peserta":
 // ringkasan status bayar, tab, daftar peserta dengan aksi Lihat bukti / Tolak /
 // Lunas / Tandai lunas (bayar di lokasi) / Tandai refund.
 
@@ -132,7 +132,7 @@ export async function PesertaBody({
       </div>
       {card.is_paid && payStats && (
         <p className="text-[12px] text-fg-soft">
-          Perkiraan diterima Rp{payStats.expected_idr.toLocaleString("id-ID")} dari {payStats.paid} peserta lunas (informasi saja, dana tidak lewat Ramein).
+          Perkiraan diterima Rp{payStats.expected_idr.toLocaleString("id-ID")} dari {payStats.paid} peserta lunas (informasi saja, dana tidak lewat Gasyu).
         </p>
       )}
 

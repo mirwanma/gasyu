@@ -1,9 +1,9 @@
-# Ramein — Alur Sistem
+# Gasyu — Alur Sistem
 
 Versi 0.7 · 16 Oktober 2026 · Pilot Kota Cimahi
 Perubahan 0.7: aturan domisili peserta, yaitu hanya warga wilayah event atau semua warga (bagian 6).
 Perubahan 0.6: pembuat event mengatur kapan tiap misi tampil ke warga (bagian 9e).
-Perubahan 0.5: admin bisa membuat event atas nama Ramein dan langsung menambahkan merchant/komunitas yang terlibat (bagian 10c).
+Perubahan 0.5: admin bisa membuat event atas nama Gasyu dan langsung menambahkan merchant/komunitas yang terlibat (bagian 10c).
 Perubahan 0.4: empat entitas dengan dashboard masing-masing (bagian 1 dan 20); "bisnis/brand" diganti Merchant/UMKM; istilah "organizer" tidak dipakai lagi di aplikasi.
 Perubahan 0.3: aktivitas berbayar dengan pembayaran di luar aplikasi (bagian 8) dan misi di dalam event/challenge (bagian 9).
 Perubahan 0.2: keanggotaan komunitas (bagian 12), kebijakan bergabung, dan aktivitas khusus member.
@@ -38,11 +38,11 @@ Semua diagram ditulis dalam Mermaid, jadi bisa dibaca langsung di GitHub, VS Cod
 
 ## 1. Entitas dan peta sistem
 
-Ramein punya empat entitas. Masing-masing punya dashboard sendiri.
+Gasyu punya empat entitas. Masing-masing punya dashboard sendiri.
 
 | # | Entitas | Siapa | Aplikasi | Dashboard |
 | --- | --- | --- | --- | --- |
-| 1 | **Admin** | Pemilik aplikasi (tim Ramein) | Web, desktop-first, di `admin.ramein.id` | Verifikasi merchant dan komunitas, review aktivitas, moderasi, metrik kota, pengaturan aturan main |
+| 1 | **Admin** | Pemilik aplikasi (tim Gasyu) | Web, desktop-first, di `admin.gasyu.id` | Verifikasi merchant dan komunitas, review aktivitas, moderasi, metrik kota, pengaturan aturan main |
 | 2 | **Merchant/UMKM** | UMKM atau usaha apa pun yang mendaftar (kedai, kafe, toko, jasa, bengkel, dll.); dikelola pemilik, staf, kasir | Mobile PWA | Aktivitas, peserta dan pembayaran, misi, QR, kasir voucher, reward dan budget poin, outlet, kolaborasi, tim |
 | 3 | **Komunitas** | Komunitas apa pun yang mendaftar: olahraga (lari, sepeda, futsal, dll.), musik, seni, hobi, sosial, lingkungan, dan lainnya; dikelola ketua dan pengurus | Mobile PWA | Aktivitas, peserta dan pembayaran, misi, QR, member, kolaborasi, tim |
 | 4 | **Warga** | Semua pengguna terdaftar | Mobile PWA | Level dan XP, aktivitas yang diikuti dan misinya, poin dan voucher, peringkat, grup, komunitas saya |
@@ -61,16 +61,16 @@ flowchart LR
         W[Warga]
         B[Merchant/UMKM<br/>pemilik, staf, kasir]
         K[Komunitas<br/>ketua, pengurus]
-        A[Admin Ramein]
+        A[Admin Gasyu]
     end
 
-    subgraph PWA["Ramein PWA - mobile"]
+    subgraph PWA["Gasyu PWA - mobile"]
         UW[Dashboard warga<br/>jelajah, join, check-in, misi,<br/>dompet, grup, peringkat]
         UM[Dashboard merchant<br/>aktivitas, misi, peserta,<br/>QR, kasir, reward, outlet]
         UK[Dashboard komunitas<br/>aktivitas, misi, peserta,<br/>QR, member]
     end
 
-    subgraph WEB["Ramein Admin - web"]
+    subgraph WEB["Gasyu Admin - web"]
         UA[Dashboard admin<br/>verifikasi, review,<br/>moderasi, metrik, pengaturan]
     end
 
@@ -153,11 +153,11 @@ Ada dua jenis keterikatan warga dengan komunitas, dan keduanya terpisah:
 | Buka dashboard merchant/komunitas miliknya | - | Ya | Ya | Ya | Ya | - |
 | Buka dashboard admin (web) | - | - | - | - | - | Ya |
 | Verifikasi penyelenggara, review aktivitas, tinjau flag | - | - | - | - | - | Ya |
-| Buat event/challenge atas nama Ramein | - | - | - | - | - | Ya |
-| Tambahkan merchant/komunitas langsung ke event Ramein | - | - | - | - | - | Ya |
-| Keluar dari event Ramein sebelum berjalan | - | - | Ya | - | Ya | - |
+| Buat event/challenge atas nama Gasyu | - | - | - | - | - | Ya |
+| Tambahkan merchant/komunitas langsung ke event Gasyu | - | - | - | - | - | Ya |
+| Keluar dari event Gasyu sebelum berjalan | - | - | Ya | - | Ya | - |
 
-Untuk event Ramein, admin memegang semua kemampuan tim penyelenggara host: membuat draft, mengatur harga, mengelola misi, menampilkan QR checkpoint Ramein, mengonfirmasi pembayaran, dan meninjau bukti misi.
+Untuk event Gasyu, admin memegang semua kemampuan tim penyelenggara host: membuat draft, mengatur harga, mengelola misi, menampilkan QR checkpoint Gasyu, mengonfirmasi pembayaran, dan meninjau bukti misi.
 
 ---
 
@@ -167,7 +167,7 @@ Login tanpa password. Tautan undangan (grup, tim, aktivitas) disimpan sebagai `n
 
 ```mermaid
 flowchart TD
-    S([Buka Ramein atau tautan undangan]) --> L{Sudah login?}
+    S([Buka Gasyu atau tautan undangan]) --> L{Sudah login?}
     L -- Ya --> O
     L -- Tidak --> M{Pilih metode}
     M -->|Google| G[OAuth Google]
@@ -237,7 +237,7 @@ Selama `pending`, penyelenggara sudah bisa mengisi profil dan membuat draft akti
 sequenceDiagram
     autonumber
     actor P as Pemilik / Ketua
-    participant App as Ramein
+    participant App as Gasyu
     participant DB as Database
     actor S as Calon staf / pengurus
     P->>App: Undang anggota (peran staff atau officer)
@@ -312,7 +312,7 @@ flowchart TD
 
 **Validasi `submit_activity`**
 
-- Penyelenggara host berstatus `approved`, dan pemanggil adalah `owner` atau `chair`. Untuk event Ramein (host `platform`), pemanggil harus admin, dan aktivitas langsung `published` tanpa antrean review (bagian 10c).
+- Penyelenggara host berstatus `approved`, dan pemanggil adalah `owner` atau `chair`. Untuk event Gasyu (host `platform`), pemanggil harus admin, dan aktivitas langsung `published` tanpa antrean review (bagian 10c).
 - Waktu mulai di masa depan; waktu selesai setelah mulai.
 - Minimal satu checkpoint aktif.
 - Jika `points_per_completion > 0`, total budget poin dari partner merchant minimal sama dengan `points_per_completion`.
@@ -329,7 +329,7 @@ flowchart TD
 
 | Pilihan | Yang boleh ikut | Contoh |
 | --- | --- | --- |
-| `open` (default) | Semua warga Ramein, termasuk yang kelurahan asalnya "Luar Cimahi" atau kota lain | Konser, festival kuliner, fun run terbuka |
+| `open` (default) | Semua warga Gasyu, termasuk yang kelurahan asalnya "Luar Cimahi" atau kota lain | Konser, festival kuliner, fun run terbuka |
 | `residents_only` | Hanya warga yang kelurahan asalnya berada di dalam wilayah cakupan event. Jika cakupannya kota, berlaku untuk seluruh warga kota itu; jika kecamatan atau kelurahan, hanya warga di sana | Lomba antarkelurahan, program kota untuk warga Cimahi, kerja bakti RW |
 
 - Domisili dicek dari kelurahan asal di profil saat mendaftar. Data ini diisi sendiri oleh warga (bukan verifikasi KTP), tetapi hanya bisa diganti sekali per 90 hari, sehingga sulit dipakai untuk berpindah-pindah demi ikut event.
@@ -349,7 +349,7 @@ stateDiagram-v2
     [*] --> draft
     draft --> awaiting_partners: ajukan, partner belum semua menjawab
     draft --> in_review: ajukan, tanpa partner tertunda
-    draft --> published: admin menerbitkan event Ramein
+    draft --> published: admin menerbitkan event Gasyu
     awaiting_partners --> in_review: semua partner menjawab
     awaiting_partners --> draft: host menarik kembali
     in_review --> published: admin menyetujui
@@ -383,7 +383,7 @@ Masa 48 jam antara `ended` dan `settled` dipakai admin dan host untuk meninjau c
 
 ## 8. Event berbayar
 
-Merchant dan komunitas sama-sama bisa membuat aktivitas berbayar (event maupun challenge). Selama pilot, **uang tidak lewat Ramein**: warga membayar langsung ke penyelenggara (transfer bank, QRIS, atau tunai), dan tim penyelenggara menandai pembayaran itu lunas di dashboard. Ramein hanya mencatat harga dan status bayar.
+Merchant dan komunitas sama-sama bisa membuat aktivitas berbayar (event maupun challenge). Selama pilot, **uang tidak lewat Gasyu**: warga membayar langsung ke penyelenggara (transfer bank, QRIS, atau tunai), dan tim penyelenggara menandai pembayaran itu lunas di dashboard. Gasyu hanya mencatat harga dan status bayar.
 
 ```mermaid
 flowchart TD
@@ -417,7 +417,7 @@ flowchart TD
 | XP dan poin | Sama dengan aktivitas gratis; membayar tidak memberi XP |
 | Bukti bayar | Disimpan di Storage privat, hanya bisa dilihat warga pemilik dan tim penyelenggara host |
 
-**Di luar cakupan pilot:** payment gateway, pencairan dana, komisi Ramein, dan faktur. Struktur `payment_status` sudah disiapkan supaya gateway bisa ditambahkan nanti tanpa mengubah alur peserta.
+**Di luar cakupan pilot:** payment gateway, pencairan dana, komisi Gasyu, dan faktur. Struktur `payment_status` sudah disiapkan supaya gateway bisa ditambahkan nanti tanpa mengubah alur peserta.
 
 ---
 
@@ -472,7 +472,7 @@ flowchart TD
 sequenceDiagram
     autonumber
     actor W as Warga
-    participant App as Ramein PWA
+    participant App as Gasyu PWA
     participant DB as complete_mission
     actor T as Tim penyelenggara
     W->>App: Buka daftar misi di halaman aktivitas
@@ -554,7 +554,7 @@ stateDiagram-v2
 | Prasyarat | `after_mission` menunjuk satu misi lain di aktivitas yang sama; tidak boleh berputar. Misi wajib hanya boleh berprasyarat misi wajib, supaya warga tidak bisa melewatkan misi wajib dengan sengaja tidak membuka rantainya |
 | Pengunjung yang belum daftar | Melihat misi yang sudah terbuka dan teaser, supaya tertarik ikut; tidak bisa mengerjakannya |
 | QR dan kode | Memindai QR atau mengetik kode misi yang belum terbuka ditolak dengan pesan "Misi belum dibuka" |
-| Event Ramein | Admin yang menekan "Buka misi" untuk misi manual milik Ramein; partner membuka misi miliknya sendiri |
+| Event Gasyu | Admin yang menekan "Buka misi" untuk misi manual milik Gasyu; partner membuka misi miliknya sendiri |
 
 Halaman aktivitas di PWA warga mengambil daftar misi lewat `get_activity_missions`, sehingga tiap warga hanya menerima misi yang memang sudah terbuka untuknya; misi tersembunyi tidak pernah terkirim ke HP.
 
@@ -627,7 +627,7 @@ sequenceDiagram
 
 ### 10c. Event buatan admin
 
-Admin bisa membuat event atau challenge atas nama **Ramein**, misalnya festival kota, lomba antarkelurahan, atau program bersama pemerintah kota. Di dalamnya admin memilih merchant dan komunitas yang terlibat dan **langsung menambahkan mereka** tanpa menunggu persetujuan, karena kesepakatannya biasanya sudah dibuat di luar aplikasi.
+Admin bisa membuat event atau challenge atas nama **Gasyu**, misalnya festival kota, lomba antarkelurahan, atau program bersama pemerintah kota. Di dalamnya admin memilih merchant dan komunitas yang terlibat dan **langsung menambahkan mereka** tanpa menunggu persetujuan, karena kesepakatannya biasanya sudah dibuat di luar aplikasi.
 
 ```mermaid
 sequenceDiagram
@@ -635,13 +635,13 @@ sequenceDiagram
     actor A as Admin
     participant DB as Database
     actor P as Merchant / komunitas
-    A->>DB: buat aktivitas, host = organizer Ramein (type platform)
+    A->>DB: buat aktivitas, host = organizer Gasyu (type platform)
     loop Untuk tiap merchant/komunitas yang terlibat
         A->>DB: admin_add_partner(activity, organizer, peran, catatan kontribusi)
         DB->>DB: activity_partners status accepted, source admin
-        DB-->>P: notifikasi "Kamu ditambahkan ke event Ramein"
+        DB-->>P: notifikasi "Kamu ditambahkan ke event Gasyu"
     end
-    A->>DB: tambah checkpoint dan misi (atas nama Ramein atau atas nama partner)
+    A->>DB: tambah checkpoint dan misi (atas nama Gasyu atau atas nama partner)
     opt Merchant mau memberi poin
         P->>DB: set_partner_budget(points_budget)
     end
@@ -654,20 +654,20 @@ sequenceDiagram
     end
 ```
 
-**Aturan event Ramein**
+**Aturan event Gasyu**
 
 | Aturan | Keterangan |
 | --- | --- |
-| Host | Satu baris `organizers` khusus bertipe `platform` bernama "Ramein"; dikelola semua akun admin, tidak lewat `organizer_members` |
+| Host | Satu baris `organizers` khusus bertipe `platform` bernama "Gasyu"; dikelola semua akun admin, tidak lewat `organizer_members` |
 | Menambah partner | Admin menambahkan merchant atau komunitas yang `approved` langsung sebagai `accepted` (peran cohost atau sponsor); mereka mendapat notifikasi |
 | Hak partner | Partner yang ditambahkan admin punya hak yang sama dengan partner biasa: melihat aktivitas di dashboard-nya, menampilkan QR checkpoint miliknya, membuat dan meninjau misi di checkpoint miliknya |
 | Keluar | Partner boleh keluar selama aktivitas belum `running`; checkpoint dan misinya ikut nonaktif |
-| Poin | Ramein tidak punya budget poin sendiri. Poin hanya ada jika merchant partner mengisi budget poinnya sendiri; admin tidak bisa mengisikan budget atas nama merchant |
-| Checkpoint | Admin bisa membuat checkpoint atas nama Ramein (QR ditampilkan admin/panitia Ramein) atau atas nama partner di outlet atau basecamp-nya (QR ditampilkan tim partner) |
+| Poin | Gasyu tidak punya budget poin sendiri. Poin hanya ada jika merchant partner mengisi budget poinnya sendiri; admin tidak bisa mengisikan budget atas nama merchant |
+| Checkpoint | Admin bisa membuat checkpoint atas nama Gasyu (QR ditampilkan admin/panitia Gasyu) atau atas nama partner di outlet atau basecamp-nya (QR ditampilkan tim partner) |
 | Review | Tidak lewat antrean review karena pembuatnya admin; tetap dicatat di `admin_actions` |
-| Berbayar | Boleh; panitia Ramein (admin) yang mengonfirmasi pembayaran |
+| Berbayar | Boleh; panitia Gasyu (admin) yang mengonfirmasi pembayaran |
 | Audiens | Selalu publik (`members_only` hanya untuk host komunitas); aturan domisili `open` atau `residents_only` tetap bisa dipilih |
-| Tampilan warga | Event tampil dengan label "Event Ramein" dan daftar "Didukung oleh" berisi partner yang terlibat |
+| Tampilan warga | Event tampil dengan label "Event Gasyu" dan daftar "Didukung oleh" berisi partner yang terlibat |
 
 ---
 
@@ -835,7 +835,7 @@ Token berlaku untuk menit berjalan dan satu menit sebelumnya (toleransi jam HP d
 sequenceDiagram
     autonumber
     actor W as Warga
-    participant App as Ramein PWA
+    participant App as Gasyu PWA
     participant DB as perform_checkin
     W->>App: Pindai QR di HP staf
     App->>W: Minta izin lokasi (hanya pertama kali)
@@ -1077,7 +1077,7 @@ Bukti foto misi ditinjau oleh tim penyelenggara, bukan admin. Admin hanya turun 
 
 ## 20. Dashboard dan peta halaman
 
-Satu codebase Next.js melayani dua aplikasi: **Ramein PWA** (warga, merchant, komunitas) di `ramein.id` dan **Ramein Admin** (web) di `admin.ramein.id`. Middleware memilih tata letak berdasarkan host; dashboard admin menolak akun yang bukan `is_admin`.
+Satu codebase Next.js melayani dua aplikasi: **Gasyu PWA** (warga, merchant, komunitas) di `gasyu.id` dan **Gasyu Admin** (web) di `admin.gasyu.id`. Middleware memilih tata letak berdasarkan host; dashboard admin menolak akun yang bukan `is_admin`.
 
 ### 20a. Isi dashboard per entitas
 
@@ -1112,12 +1112,12 @@ Satu codebase Next.js melayani dua aplikasi: **Ramein PWA** (warga, merchant, ko
 | Misi | Tingkat penyelesaian tiap misi | `v_mission_stats` |
 | Reputasi | Skor hadir, penyelesaian, kolaborasi 90 hari | `v_organizer_reputation` |
 
-**Dashboard admin** (`admin.ramein.id`)
+**Dashboard admin** (`admin.gasyu.id`)
 
 | Bagian | Isi | Sumber data |
 | --- | --- | --- |
 | Metrik kota | Warga aktif mingguan, aktivitas berjalan, merchant dan komunitas aktif, poin beredar vs ditukar, kelurahan teraktif | `v_admin_overview`, `v_village_active_month` |
-| Event Ramein | Buat dan kelola event/challenge Ramein, tambahkan merchant/komunitas, konfirmasi pembayaran, tinjau bukti misi | `activities`, `activity_partners`, `v_activity_stats` |
+| Event Gasyu | Buat dan kelola event/challenge Gasyu, tambahkan merchant/komunitas, konfirmasi pembayaran, tinjau bukti misi | `activities`, `activity_partners`, `v_activity_stats` |
 | Antrean | Merchant/komunitas menunggu verifikasi, aktivitas menunggu review, check-in dan misi flagged, laporan pola mencurigakan | `organizers`, `activities`, `checkins`, `mission_completions`, `fraud_flags` |
 | Pembayaran | Aktivitas dibatalkan yang masih punya peserta `paid` belum `refunded` | `v_activity_payment_stats` |
 | Pengguna | Cari warga, merchant, komunitas; bekukan atau aktifkan | `profiles`, `organizers` |
@@ -1128,11 +1128,11 @@ Satu codebase Next.js melayani dua aplikasi: **Ramein PWA** (warga, merchant, ko
 
 ```mermaid
 flowchart LR
-    ROOT([Ramein PWA]) --> AUTH[/masuk<br/>/onboarding/]
+    ROOT([Gasyu PWA]) --> AUTH[/masuk<br/>/onboarding/]
     ROOT --> WG[Warga]
     ROOT --> MC[Merchant]
     ROOT --> KM[Komunitas]
-    ADM([Ramein Admin - web]) --> AD[Admin]
+    ADM([Gasyu Admin - web]) --> AD[Admin]
 
     WG --> W1[/beranda: dashboard warga/]
     WG --> W2[/jelajah: aktivitas sekitar/]
@@ -1170,7 +1170,7 @@ flowchart LR
 
     AD --> A0[/ ringkasan metrik/]
     AD --> A1[/verifikasi: merchant dan komunitas/]
-    AD --> A2[/aktivitas: review dan<br/>event Ramein/]
+    AD --> A2[/aktivitas: review dan<br/>event Gasyu/]
     AD --> A3[/moderasi: flag dan laporan/]
     AD --> A4[/pembayaran/]
     AD --> A5[/pengguna/]

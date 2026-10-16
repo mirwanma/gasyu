@@ -19,7 +19,7 @@ async function ScanLoader({ searchParams }: Pick<PageProps<"/scan">, "searchPara
   const c = typeof sp.c === "string" ? sp.c : "";
   const m = typeof sp.m === "string" ? sp.m : "";
   const t = typeof sp.t === "string" ? sp.t : "";
-  const initial = t && c ? parseQrPayload(`ramein:ci:${c}:${t}`) : t && m ? parseQrPayload(`ramein:mi:${m}:${t}`) : null;
+  const initial = t && c ? parseQrPayload(`gasyu:ci:${c}:${t}`) : t && m ? parseQrPayload(`gasyu:mi:${m}:${t}`) : null;
   const supabase = await createClient();
   const { data: levels } = await supabase.from("levels").select("level, name, min_xp");
   return <Scanner initial={initial} levels={levels ?? []} />;

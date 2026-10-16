@@ -31,7 +31,8 @@ def cover(name, title, subtitle, c1, c2, emoji_shapes=12):
     f = ImageFont.truetype(BOLD, 66 if len(title) < 22 else 54)
     tb = d.textbbox((0, 0), title, font=f); tw = tb[2] - tb[0]
     d.rounded_rectangle((600 - 85, 215, 600 + 85, 215 + 44), 22, fill=(13, 16, 36, 170))
-    d.text((600 - 38, 225), "ramein", font=ImageFont.truetype(BOLD, 24), fill=(250, 247, 242))
+    fb = ImageFont.truetype(BOLD, 24); bb = d.textbbox((0, 0), "gasyu", font=fb)
+    d.text((600 - (bb[2] - bb[0]) / 2, 225), "gasyu", font=fb, fill=(250, 247, 242))
     d.text((600 - tw / 2, 280), title, font=f, fill=(255, 255, 255))
     f2 = ImageFont.truetype(REG, 28); sb = d.textbbox((0, 0), subtitle, font=f2)
     d.text((600 - (sb[2] - sb[0]) / 2, 365), subtitle, font=f2, fill=(227, 225, 255))

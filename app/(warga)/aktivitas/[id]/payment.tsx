@@ -63,7 +63,7 @@ export function PaymentSection({
           <PaymentProofForm participationId={participationId} activityId={activityId} retry={!!note} />
         </>
       )}
-      {paymentStatus === "awaiting_confirmation" && <span className="text-[12px] text-fg-soft">Kamu akan dapat notifikasi saat panitia mengonfirmasi. Uang tidak lewat Ramein.</span>}
+      {paymentStatus === "awaiting_confirmation" && <span className="text-[12px] text-fg-soft">Kamu akan dapat notifikasi saat panitia mengonfirmasi. Uang tidak lewat Gasyu.</span>}
     </section>
   );
 }

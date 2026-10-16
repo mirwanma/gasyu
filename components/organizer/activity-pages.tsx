@@ -89,7 +89,7 @@ async function AktivitasList({ id, base, tab, approved }: { id: string; base: st
         <div className={`${cardClass} flex flex-col gap-1 p-4`}>
           <span className="text-[15px] font-semibold">{tab ? "Belum ada yang selesai" : "Belum ada aktivitas"}</span>
           <span className="text-[13px] leading-[1.5] text-fg-soft">
-            {approved ? "Buat event pertamamu: isi dasar, waktu, checkpoint, lalu ajukan ke tim Ramein." : "Kamu bisa menyiapkan draft sekarang dan mengajukannya setelah terverifikasi."}
+            {approved ? "Buat event pertamamu: isi dasar, waktu, checkpoint, lalu ajukan ke tim Gasyu." : "Kamu bisa menyiapkan draft sekarang dan mengajukannya setelah terverifikasi."}
           </span>
         </div>
       ) : (
@@ -141,7 +141,7 @@ export function AktivitasDetailPage({ id, type, aid, hasil, error, edit }: { id:
 }
 
 const RESULT_TEXT: Record<string, string> = {
-  submit: "Diajukan. Tim Ramein akan meninjau, biasanya 1–2 hari kerja.",
+  submit: "Diajukan. Tim Gasyu akan meninjau, biasanya 1–2 hari kerja.",
   withdraw: "Pengajuan ditarik. Aktivitas kembali jadi draft.",
   cancel: "Aktivitas dibatalkan dan peserta sudah diberi tahu.",
   poin: "Poin per penyelesaian dan budget tersimpan.",
@@ -214,7 +214,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
             {card.type === "challenge" ? ` · ${DIFFICULTY_LABELS[card.difficulty ?? "easy"]} · target ${targetLabel(card.target_kind, card.target_count, card.target_scope)}` : ""}
           </span>
           {isHost && card.status === "draft" && raw?.review_note && (
-            <p className="rounded-xl bg-danger-tint px-3 py-2 text-[12px] text-danger">Catatan tim Ramein: {raw.review_note}</p>
+            <p className="rounded-xl bg-danger-tint px-3 py-2 text-[12px] text-danger">Catatan tim Gasyu: {raw.review_note}</p>
           )}
           <div className="flex flex-wrap gap-2 pt-1">
             {editable && (
@@ -271,7 +271,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
               </div>
             ))}
           </div>
-          {stats.checkins_flagged > 0 && <span className="text-[12px] text-warn">{stats.checkins_flagged} check-in di luar radius menunggu tinjauan tim Ramein.</span>}
+          {stats.checkins_flagged > 0 && <span className="text-[12px] text-warn">{stats.checkins_flagged} check-in di luar radius menunggu tinjauan tim Gasyu.</span>}
           {partnerStats.length > 1 && (
             <div className="flex flex-col gap-1.5 border-t border-line pt-3">
               {partnerStats.map((p) => (
@@ -413,7 +413,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
           {card.is_paid ? (
             <>
               <p className="text-[13px] leading-[1.5] text-fg-label whitespace-pre-line">{raw?.payment_instructions}</p>
-              <span className="text-[12px] text-fg-soft">Batas bayar {raw?.payment_window_hours ?? 24} jam setelah daftar. Uang tidak lewat Ramein; tandai lunas di halaman Peserta.</span>
+              <span className="text-[12px] text-fg-soft">Batas bayar {raw?.payment_window_hours ?? 24} jam setelah daftar. Uang tidak lewat Gasyu; tandai lunas di halaman Peserta.</span>
               {payStats && (
                 <div className="grid grid-cols-4 gap-2 text-center">
                   {[
@@ -444,8 +444,8 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
       {isHost && <section className={`${cardClass} flex flex-col gap-3 p-4`}>
         <h2 className="text-[15px] font-bold">Status</h2>
         <p className="text-[13px] leading-[1.5] text-fg-soft">
-          {card.status === "draft" && "Draft hanya terlihat oleh tim kamu. Ajukan supaya ditinjau tim Ramein lalu terbit di Jelajah."}
-          {card.status === "in_review" && "Sedang ditinjau tim Ramein. Kamu masih bisa menarik pengajuan untuk mengubah draft."}
+          {card.status === "draft" && "Draft hanya terlihat oleh tim kamu. Ajukan supaya ditinjau tim Gasyu lalu terbit di Jelajah."}
+          {card.status === "in_review" && "Sedang ditinjau tim Gasyu. Kamu masih bisa menarik pengajuan untuk mengubah draft."}
           {card.status === "published" && `Terbit ${card.published_at ? formatDateTime(card.published_at) : ""}. Warga sudah bisa mendaftar.`}
           {card.status === "running" && "Sedang berjalan. Tampilkan QR checkpoint lewat menu QR untuk check-in peserta."}
           {["ended", "settled"].includes(card.status) && "Aktivitas selesai."}
@@ -457,7 +457,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
             <input type="hidden" name="type_org" value={type} />
             <input type="hidden" name="activity_id" value={aid} />
             <input type="hidden" name="action" value="submit" />
-            <SubmitButton pendingText="Mengajukan…">Ajukan ke tim Ramein</SubmitButton>
+            <SubmitButton pendingText="Mengajukan…">Ajukan ke tim Gasyu</SubmitButton>
             {ctx.org.status !== "approved" && <span className="text-[12px] text-warn">Penyelenggara harus terverifikasi dulu sebelum mengajukan.</span>}
           </form>
         )}

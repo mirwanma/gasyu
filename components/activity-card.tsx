@@ -17,7 +17,7 @@ export function coverStyle(card: { id: string; cover_url: string | null }) {
 }
 
 export function cardTag(card: Card): { label: string; tone: keyof typeof tagClass } | null {
-  if (card.host_type === "platform") return { label: "Event Ramein", tone: "primary" };
+  if (card.host_type === "platform") return { label: "Event Gasyu", tone: "primary" };
   if (card.partner_count > 0) return { label: "Kolaborasi", tone: "info" };
   if (card.is_paid) return { label: "Berbayar", tone: "warn" };
   if (card.audience === "members_only") return { label: "Khusus member", tone: "warn" };

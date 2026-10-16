@@ -14,7 +14,7 @@ const ERRORS: Record<string, string> = {
   partner_exists: "Penyelenggara itu sudah diundang atau sudah jadi partner.",
   invite_unavailable: "Undangan ini sudah tidak berlaku.",
   points_budget_requires_merchant: "Budget poin hanya untuk merchant.",
-  platform_host_required: "Hanya untuk event Ramein.",
+  platform_host_required: "Hanya untuk event Gasyu.",
   host_cannot_leave: "Host tidak bisa keluar dari aktivitasnya sendiri.",
   invalid_post: "Cek isian open call: judul, kebutuhan, dan manfaat minimal 3 karakter.",
   post_closed: "Open call ini sudah ditutup.",

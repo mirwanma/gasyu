@@ -148,38 +148,38 @@ select public.submit_activity((select v from ids where k = 'ev2'));
 select pg_temp.assert((select status from public.collab_posts where id = (select v from ids where k = 'post')) = 'closed', 'open call ditutup saat diajukan');
 
 -- ---------------------------------------------------------------------------
--- 3. Event Ramein (host platform) oleh admin
+-- 3. Event Gasyu (host platform) oleh admin
 -- ---------------------------------------------------------------------------
-select pg_temp.assert(public.platform_organizer_id() is not null, 'organizer Ramein ada');
+select pg_temp.assert(public.platform_organizer_id() is not null, 'organizer Gasyu ada');
 select pg_temp.assert_fails(
   $$select public.create_activity(public.platform_organizer_id(), '{"title":"Festival","starts_at":"2030-03-01T10:00+07","ends_at":"2030-03-02T18:00+07"}')$$,
-  'not_allowed', 'bukan admin tidak bisa membuat event Ramein');
+  'not_allowed', 'bukan admin tidak bisa membuat event Gasyu');
 select pg_temp.login('00000000-0000-0000-0000-00000000000e');
 insert into ids select 'fest', public.create_activity(public.platform_organizer_id(), json_build_object(
   'title', 'Festival Cimahi Kreatif', 'audience', 'members_only', 'starts_at', '2030-03-01T10:00+07', 'ends_at', '2030-03-02T18:00+07', 'quota', 2000)::jsonb);
-select pg_temp.assert((select audience from public.activities where id = (select v from ids where k = 'fest')) = 'public', 'event Ramein selalu publik');
-select pg_temp.assert_fails($$select public.admin_add_partner((select v from ids where k = 'ev'), (select v from ids where k = 'm2'), 'cohost', null)$$, 'platform_host_required', 'admin_add_partner hanya untuk host Ramein');
+select pg_temp.assert((select audience from public.activities where id = (select v from ids where k = 'fest')) = 'public', 'event Gasyu selalu publik');
+select pg_temp.assert_fails($$select public.admin_add_partner((select v from ids where k = 'ev'), (select v from ids where k = 'm2'), 'cohost', null)$$, 'platform_host_required', 'admin_add_partner hanya untuk host Gasyu');
 insert into ids select 'fp_m', public.admin_add_partner((select v from ids where k = 'fest'), (select v from ids where k = 'm'), 'sponsor', 'Booth kopi di panggung utama');
 insert into ids select 'fp_k', public.admin_add_partner((select v from ids where k = 'fest'), (select v from ids where k = 'k'), 'cohost', null);
 select pg_temp.assert((select status from public.activity_partners where id = (select v from ids where k = 'fp_m')) = 'accepted', 'partner langsung accepted');
 select pg_temp.assert((select source from public.activity_partners where id = (select v from ids where k = 'fp_m')) = 'admin', 'sumber admin');
 select pg_temp.assert((select count(*) from public.admin_actions where action = 'add_partner') = 2, 'tindakan admin tercatat');
--- checkpoint atas nama Ramein dan atas nama partner
+-- checkpoint atas nama Gasyu dan atas nama partner
 insert into ids select 'fcp_r', public.add_checkpoint((select v from ids where k = 'fest'), '{"name":"Panggung utama","lat":-6.87,"lng":107.54}');
 insert into ids select 'fcp_m', public.add_checkpoint((select v from ids where k = 'fest'), json_build_object('partner_organizer_id', (select v from ids where k = 'm'), 'outlet_id', (select v from ids where k = 'outlet'))::jsonb);
-select pg_temp.assert((select partner_organizer_id from public.activity_checkpoints where id = (select v from ids where k = 'fcp_r')) = public.platform_organizer_id(), 'checkpoint atas nama Ramein');
+select pg_temp.assert((select partner_organizer_id from public.activity_checkpoints where id = (select v from ids where k = 'fcp_r')) = public.platform_organizer_id(), 'checkpoint atas nama Gasyu');
 select pg_temp.assert_fails(
   $$select public.set_partner_budget((select v from ids where k = 'fp_m'), 500)$$,
   'not_allowed', 'admin tidak bisa mengisi budget atas nama merchant');
-select pg_temp.assert(public.submit_activity((select v from ids where k = 'fest')) = 'published', 'event Ramein langsung terbit');
-select pg_temp.assert(length((public.get_checkpoint_qr((select v from ids where k = 'fcp_r')) ->> 'token')) = 16, 'admin menampilkan QR checkpoint Ramein');
+select pg_temp.assert(public.submit_activity((select v from ids where k = 'fest')) = 'published', 'event Gasyu langsung terbit');
+select pg_temp.assert(length((public.get_checkpoint_qr((select v from ids where k = 'fcp_r')) ->> 'token')) = 16, 'admin menampilkan QR checkpoint Gasyu');
 select pg_temp.assert_fails($$select public.get_checkpoint_qr((select v from ids where k = 'fcp_m'))$$, 'not_allowed', 'admin tidak menampilkan QR checkpoint partner');
 
 -- Partner mendapat notifikasi dan bisa mengisi budget sendiri, lalu keluar
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
 select pg_temp.assert((select count(*) from public.notifications where kind = 'partner_added_by_admin') = 1, 'partner diberi tahu ditambahkan admin');
 select public.set_partner_budget((select v from ids where k = 'fp_m'), 500);
-select pg_temp.assert((select count(*) from public.v_activity_cards where id = (select v from ids where k = 'fest') and host_type = 'platform') = 1, 'kartu event Ramein terlihat dengan host platform');
+select pg_temp.assert((select count(*) from public.v_activity_cards where id = (select v from ids where k = 'fest') and host_type = 'platform') = 1, 'kartu event Gasyu terlihat dengan host platform');
 select public.leave_activity((select v from ids where k = 'fp_m'));
 select pg_temp.assert((select status from public.activity_partners where id = (select v from ids where k = 'fp_m')) = 'removed', 'partner keluar');
 reset role;
@@ -193,7 +193,7 @@ select pg_temp.assert_fails($$select public.leave_activity((select v from ids wh
 -- ---------------------------------------------------------------------------
 -- 4. Reputasi dan cron
 -- ---------------------------------------------------------------------------
-select pg_temp.assert((select count(*) from public.v_organizer_reputation) = 3, 'reputasi untuk 3 penyelenggara (tanpa Ramein)');
+select pg_temp.assert((select count(*) from public.v_organizer_reputation) = 3, 'reputasi untuk 3 penyelenggara (tanpa Gasyu)');
 reset role;
 update public.collab_posts set status = 'open', deadline = now() - interval '1 hour' where id = (select v from ids where k = 'post');
 select pg_temp.assert(public.close_expired_collab_posts() = 1, 'cron menutup open call lewat tenggat');

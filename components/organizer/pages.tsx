@@ -167,7 +167,7 @@ async function ProfilBody({ ctx, id, type, uploadFailed }: { ctx: OrganizerConte
         </div>
         {status === "rejected" && (
           <div className="flex flex-col gap-2 rounded-[14px] bg-danger-tint p-3 text-[13px] text-danger">
-            <span className="font-semibold">Catatan tim Ramein</span>
+            <span className="font-semibold">Catatan tim Gasyu</span>
             <span className="leading-[1.5]">{org.review_note}</span>
             {isLeader && (
               <form action={resubmitOrganizer}>
@@ -182,7 +182,7 @@ async function ProfilBody({ ctx, id, type, uploadFailed }: { ctx: OrganizerConte
         )}
         {status === "pending" && (
           <p className="text-[12px] leading-[1.5] text-fg-soft">
-            Tim Ramein memeriksa data dan foto bukti, biasanya 1–2 hari kerja.
+            Tim Gasyu memeriksa data dan foto bukti, biasanya 1–2 hari kerja.
           </p>
         )}
       </section>

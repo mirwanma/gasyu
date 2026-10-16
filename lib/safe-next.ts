@@ -1,4 +1,4 @@
-// Membersihkan parameter `next` supaya hanya mengarah ke halaman di Ramein sendiri,
+// Membersihkan parameter `next` supaya hanya mengarah ke halaman di Gasyu sendiri,
 // bukan ke situs lain (mencegah open redirect).
 export function safeNext(value: unknown, fallback = "/"): string {
   if (typeof value !== "string") return fallback;

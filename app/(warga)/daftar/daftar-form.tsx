@@ -205,8 +205,8 @@ export function DaftarForm({ districts, initialType }: { districts: District[]; 
         <span className="text-[14px] font-semibold">{kind === "merchant" ? "Foto tempat usaha" : "Bukti kegiatan"}</span>
         <span className="text-[12px] text-fg-soft">
           {kind === "merchant"
-            ? "Foto tampak depan dengan papan nama, untuk verifikasi tim Ramein."
-            : "Foto kegiatan komunitas, untuk verifikasi tim Ramein."}
+            ? "Foto tampak depan dengan papan nama, untuk verifikasi tim Gasyu."
+            : "Foto kegiatan komunitas, untuk verifikasi tim Gasyu."}
         </span>
         <input name="proof" type="file" accept="image/png,image/jpeg,image/webp" required className="text-[12px] text-fg-label" />
       </section>

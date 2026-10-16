@@ -160,7 +160,7 @@ export async function cancelParticipation(_prev: ActivityActionState, formData: 
 
 // ---- Admin -------------------------------------------------------------
 
-// Admin membuat/mengubah event Ramein (host organizer platform).
+// Admin membuat/mengubah event Gasyu (host organizer platform).
 export async function adminSaveActivity(_prev: ActivityActionState, formData: FormData): Promise<ActivityActionState> {
   const activityId = String(formData.get("activity_id") ?? "") || null;
   const supabase = await createClient();

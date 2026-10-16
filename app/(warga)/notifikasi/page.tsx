@@ -44,7 +44,7 @@ function describe(n: Notification): { title: string; body?: string; href?: strin
     case "partner_declined":
       return { title: `${p.partner_name} menolak undangan "${p.title}"` };
     case "partner_added_by_admin":
-      return { title: `Kamu ditambahkan ke event Ramein "${p.title}"`, body: `Sebagai ${p.role}. Lihat di menu Kolaborasi; kamu boleh keluar sebelum event berjalan.` };
+      return { title: `Kamu ditambahkan ke event Gasyu "${p.title}"`, body: `Sebagai ${p.role}. Lihat di menu Kolaborasi; kamu boleh keluar sebelum event berjalan.` };
     case "partner_left":
       return { title: `${p.partner_name} keluar dari "${p.title}"`, body: "Checkpoint miliknya dinonaktifkan." };
     case "application_received":
@@ -66,15 +66,15 @@ function describe(n: Notification): { title: string; body?: string; href?: strin
     case "badge_awarded":
       return { title: `Badge baru: ${p.badge_name}`, body: "Lihat koleksi badge kamu di Profil.", href: "/profil" };
     case "checkin_rejected":
-      return { title: `Check-in di "${p.activity_title}" ditolak tim Ramein`, body: `${p.xp ?? 0} XP${Number(p.points) > 0 ? ` dan ${p.points} poin` : ""} ditarik kembali.${typeof p.note === "string" && p.note ? ` Catatan: ${p.note}` : ""}` };
+      return { title: `Check-in di "${p.activity_title}" ditolak tim Gasyu`, body: `${p.xp ?? 0} XP${Number(p.points) > 0 ? ` dan ${p.points} poin` : ""} ditarik kembali.${typeof p.note === "string" && p.note ? ` Catatan: ${p.note}` : ""}` };
     case "fraud_warning":
-      return { title: "Peringatan dari tim Ramein", body: typeof p.note === "string" && p.note ? p.note : "Kami menemukan pola check-in yang tidak wajar di akunmu. Ulangi dan akun bisa dibekukan." };
+      return { title: "Peringatan dari tim Gasyu", body: typeof p.note === "string" && p.note ? p.note : "Kami menemukan pola check-in yang tidak wajar di akunmu. Ulangi dan akun bisa dibekukan." };
     case "account_suspended":
-      return { title: "Akunmu dibekukan", body: typeof p.note === "string" && p.note ? p.note : "Hubungi tim Ramein lewat halaman Bantuan untuk peninjauan." };
+      return { title: "Akunmu dibekukan", body: typeof p.note === "string" && p.note ? p.note : "Hubungi tim Gasyu lewat halaman Bantuan untuk peninjauan." };
     case "account_restored":
       return { title: "Akunmu aktif kembali", body: "Kamu bisa check-in dan menukar poin lagi." };
     case "organizer_suspended":
-      return { title: `${p.organizer_name} dibekukan tim Ramein`, body: typeof p.note === "string" && p.note ? p.note : "Aktivitas yang berjalan dibatalkan. Hubungi tim Ramein untuk peninjauan." };
+      return { title: `${p.organizer_name} dibekukan tim Gasyu`, body: typeof p.note === "string" && p.note ? p.note : "Aktivitas yang berjalan dibatalkan. Hubungi tim Gasyu untuk peninjauan." };
     case "organizer_restored":
       return { title: `${p.organizer_name} aktif kembali`, body: "Kamu bisa mengajukan aktivitas lagi." };
     case "payment_refund_due":

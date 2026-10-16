@@ -74,7 +74,7 @@ select pg_temp.assert_fails(
   $$select public.register_organizer('merchant', '{"name":"Kopi Lereng","whatsapp":"abc","merchant_category":"kopi","outlets":[{"address":"Jl. Baros 1","lat":-6.9,"lng":107.5}]}')$$,
   'invalid_whatsapp', 'nomor WhatsApp divalidasi');
 select pg_temp.assert_fails(
-  $$select public.register_organizer('platform', '{"name":"Ramein"}')$$,
+  $$select public.register_organizer('platform', '{"name":"Gasyu"}')$$,
   'invalid_type', 'warga tidak bisa membuat organizer platform');
 
 create temp table ids (k text primary key, v uuid);

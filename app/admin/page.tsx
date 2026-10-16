@@ -15,7 +15,7 @@ export default function AdminRingkasanPage() {
           <span className="text-[14px] text-fg-soft">Cimahi · pilot · 7 hari terakhir</span>
         </div>
         <Link href="/admin/aktivitas/baru" className="flex h-11 items-center rounded-full bg-primary px-5 text-[14px] font-semibold text-on-primary">
-          Buat event Ramein
+          Buat event Gasyu
         </Link>
       </div>
       <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>

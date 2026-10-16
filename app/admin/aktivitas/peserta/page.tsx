@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { PesertaBody, type PesertaQuery } from "@/components/organizer/participants";
 import { createClient } from "@/lib/supabase/server";
 
-// Admin melihat peserta dan mengonfirmasi pembayaran event Ramein (host platform).
+// Admin melihat peserta dan mengonfirmasi pembayaran event Gasyu (host platform).
 export default function AdminPesertaPage({ searchParams }: PageProps<"/admin/aktivitas/peserta">) {
   return (
     <div className="flex max-w-xl flex-col gap-[18px]">

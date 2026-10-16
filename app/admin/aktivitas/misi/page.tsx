@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { MisiBody, type MisiQuery } from "@/components/organizer/mission-pages";
 import { createClient } from "@/lib/supabase/server";
 
-// Admin mengelola misi event Ramein (host platform), memakai tampilan yang sama dengan penyelenggara.
+// Admin mengelola misi event Gasyu (host platform), memakai tampilan yang sama dengan penyelenggara.
 export default function AdminMisiPage({ searchParams }: PageProps<"/admin/aktivitas/misi">) {
   return (
     <div className="flex max-w-md flex-col gap-[18px]">

@@ -21,9 +21,9 @@ export function LogoMark({ size = 48 }: { size?: number }) {
 
 export function Logo() {
   return (
-    <div className="flex items-center gap-2.5" role="img" aria-label="ramein">
+    <div className="flex items-center gap-2.5" role="img" aria-label="gasyu">
       <LogoMark />
-      <span className="text-[30px] font-extrabold tracking-[-0.03em] text-cream">ramein</span>
+      <span className="text-[30px] font-extrabold tracking-[-0.03em] text-cream">gasyu</span>
     </div>
   );
 }

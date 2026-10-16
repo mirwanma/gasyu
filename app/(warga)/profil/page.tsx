@@ -107,7 +107,7 @@ async function ProfileContent() {
               <Icon name="shield" />
             </span>
             <span className="flex flex-1 flex-col gap-0.5">
-              <span className="text-[14px] font-semibold">Ramein Admin</span>
+              <span className="text-[14px] font-semibold">Gasyu Admin</span>
               <span className="text-[12px] text-fg-soft">Dashboard admin (web)</span>
             </span>
             <span className="text-[12px] font-semibold text-link">Buka</span>

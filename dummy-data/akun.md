@@ -1,4 +1,4 @@
-# Akun dummy Ramein
+# Akun dummy Gasyu
 
 Kata sandi **semua** akun di bawah: `RameinDummy2026!`
 Masuk lewat halaman `/masuk` dengan email + kata sandi (bukan Google).
@@ -8,7 +8,7 @@ Semua email memakai domain `@dummy.ramein.id` dan id akun berawalan `dd000000-00
 
 | Email | Nama | Peran |
 | --- | --- | --- |
-| admin@dummy.ramein.id | Tim Ramein | Admin (`/admin`): verifikasi, review aktivitas, moderasi, pembayaran |
+| admin@dummy.ramein.id | Tim Gasyu | Admin (`/admin`): verifikasi, review aktivitas, moderasi, pembayaran |
 
 ## Warga (10)
 

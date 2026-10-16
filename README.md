@@ -1,4 +1,4 @@
-# Ramein
+# Gasyu
 
 Platform gamifikasi kota — pilot Kota Cimahi. *Bikin kota makin rame, bareng-bareng.*
 

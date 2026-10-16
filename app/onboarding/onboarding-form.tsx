@@ -195,7 +195,7 @@ export function OnboardingForm({
         </dl>
         <label className="flex items-start gap-3 text-[14px] leading-[1.55] text-fg-label">
           <input name="terms" type="checkbox" className="mt-0.5 size-5 shrink-0 accent-primary" />
-          <span>Saya setuju dengan syarat &amp; ketentuan dan kebijakan privasi Ramein.</span>
+          <span>Saya setuju dengan syarat &amp; ketentuan dan kebijakan privasi Gasyu.</span>
         </label>
       </div>
 
