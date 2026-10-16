@@ -29,9 +29,15 @@ async function LoginOptions({ searchParams }: Pick<PageProps<"/masuk">, "searchP
   const params = await searchParams;
   const next = safeNext(params.next);
   const googleFailed = params.error === "google";
+  const deleted = params.akun === "dihapus";
 
   return (
     <>
+      {deleted && (
+        <p role="status" className="rounded-[14px] border border-line bg-surface px-4 py-3 text-[13px] leading-[1.5] text-fg-label">
+          Akun ini sudah dihapus. Terima kasih sudah ikut meramaikan kota bersama Gasyu.
+        </p>
+      )}
       <form action={loginWithGoogle} className="flex flex-col gap-3">
         <input type="hidden" name="next" value={next} />
         <SubmitButton variant="light" pendingText="Membuka Google…">

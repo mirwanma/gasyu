@@ -1,7 +1,7 @@
 # Gasyu — Alur Sistem
 
 Versi 0.8 · 16 Oktober 2026 · Pilot Kota Cimahi
-Perubahan 0.8: saran warga untuk merchant dan komunitas (bagian 21).
+Perubahan 0.8: saran warga untuk merchant dan komunitas (bagian 21); ubah profil, ganti kelurahan, hapus akun, riwayat, bantuan (bagian 3); serah terima peran pemilik/ketua (bagian 5).
 Perubahan 0.7: aturan domisili peserta, yaitu hanya warga wilayah event atau semua warga (bagian 6).
 Perubahan 0.6: pembuat event mengatur kapan tiap misi tampil ke warga (bagian 9e).
 Perubahan 0.5: admin bisa membuat event atas nama Gasyu dan langsung menambahkan merchant/komunitas yang terlibat (bagian 10c).
@@ -200,9 +200,11 @@ flowchart TD
 
 - Middleware Next.js mengalihkan semua halaman ke onboarding selama `onboarded_at` kosong.
 - Nama panggilan harus unik (case-insensitive), 3–20 karakter.
-- Kelurahan asal bisa diganti maksimal sekali per 90 hari (`home_village_changed_at`).
+- Warga mengubah nama panggilan dan nama lengkap di `/profil/ubah` (`update_my_profile`).
+- Kelurahan asal bisa diganti maksimal sekali per `profile.village_change_days` hari, awal 90 (`change_home_village`, `home_village_changed_at`). Penggantian pertama setelah onboarding langsung dihitung.
 - Tidak ada batas usia dan tidak ada persetujuan orang tua selama pilot.
-- Hapus akun: data pribadi di `profiles` dikosongkan dan `deleted_at` diisi; baris ledger tetap ada demi audit, tetapi tidak lagi terhubung ke identitas yang bisa dikenali.
+- Hapus akun (`/profil/hapus`, `delete_my_account`, warga mengetik HAPUS): data pribadi di `profiles` dikosongkan dan `deleted_at` diisi; baris ledger tetap ada demi audit, tetapi tidak lagi terhubung ke identitas yang bisa dikenali. Pendaftaran yang belum berjalan dibatalkan, warga keluar dari grup, komunitas, dan tim, notifikasinya dihapus. Ditolak jika ia satu-satunya pemilik/ketua, masih punya pembayaran lunas/menunggu di aktivitas yang belum selesai, atau akun admin. Sesi akun terhapus selalu dikeluarkan dan email yang sama tidak bisa dipakai masuk lagi.
+- Riwayat XP dan poin ada di `/riwayat` (dibaca dari `xp_ledger` dan `point_ledger`). Halaman `/bantuan` berisi pertanyaan umum dan kontak tim dari `app_settings` (`support.whatsapp`, `support.email`).
 
 ---
 
@@ -262,7 +264,7 @@ sequenceDiagram
     App-->>S: Masuk ke dashboard merchant/komunitas
 ```
 
-Peran yang boleh diundang mengikuti tipe: merchant hanya `staff`, komunitas hanya `officer`. Pemilik/ketua bisa mencabut anggota kapan saja; minimal harus tersisa satu pemilik/ketua. Pengurus komunitas yang dicabut dari tim tetap menjadi member biasa, kecuali ketua juga mengeluarkannya dari keanggotaan.
+Peran yang boleh diundang mengikuti tipe: merchant hanya `staff`, komunitas hanya `officer`. Pemilik/ketua bisa mencabut anggota kapan saja; minimal harus tersisa satu pemilik/ketua. Di halaman Tim, pemilik/ketua bisa menjadikan anggota lain pemilik/ketua, lalu turun menjadi staf/pengurus (`set_team_role`); begitulah peran pemilik/ketua diserahkan. Anggota yang perannya diubah mendapat notifikasi. Pengurus komunitas yang dicabut dari tim tetap menjadi member biasa, kecuali ketua juga mengeluarkannya dari keanggotaan.
 
 Undangan tim berbeda dengan keanggotaan komunitas (bagian 12): undangan tim memberi akses dashboard, sedangkan keanggotaan hanya menghubungkan warga dengan komunitasnya.
 
@@ -1150,6 +1152,9 @@ flowchart LR
     WG --> W10[/m/slug dan /k/slug<br/>profil publik merchant dan komunitas/]
     WG --> W11[/daftar/merchant dan<br/>/daftar/komunitas/]
     WG --> W12[/saran: saran saya<br/>status dan balasan/]
+    WG --> W13[/profil/ubah dan /profil/hapus/]
+    WG --> W14[/riwayat: XP dan poin/]
+    WG --> W15[/bantuan/]
 
     MC --> M1[/merchant/id: dashboard/]
     MC --> M2[/merchant/id/aktivitas/]

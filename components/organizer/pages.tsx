@@ -6,7 +6,7 @@ import { ProfileForm } from "@/components/organizer/profile-form";
 import { TeamInvite } from "@/components/organizer/team-invite";
 import { cardClass, tagClass } from "@/components/styles";
 import { SubmitButton } from "@/components/ui";
-import { removeTeamMember, resubmitOrganizer } from "@/lib/actions/organizer";
+import { removeTeamMember, resubmitOrganizer, setTeamRole } from "@/lib/actions/organizer";
 import { ROLE_LABELS, STATUS_LABELS, getVillageOptions, type MemberRole } from "@/lib/data/organizers";
 import { formatDate } from "@/lib/format";
 import { countNewSuggestions } from "@/lib/data/suggestions";
@@ -56,24 +56,38 @@ export function LainnyaPage({ id, type, akses }: { id: string; type: Kind; akses
 
 // ---- Tim -------------------------------------------------------------
 
-export function TimPage({ id, type, error }: { id: string; type: Kind; error?: string }) {
+export function TimPage({ id, type, error, hasil }: { id: string; type: Kind; error?: string; hasil?: string }) {
   return (
     <OrganizerShell organizerId={id} type={type} active="Lainnya" title="Tim">
-      {(ctx) => <TeamBody ctx={ctx} id={id} type={type} error={error} />}
+      {(ctx) => <TeamBody ctx={ctx} id={id} type={type} error={error} hasil={hasil} />}
     </OrganizerShell>
   );
 }
 
-async function TeamBody({ ctx, id, type, error }: { ctx: OrganizerContext; id: string; type: Kind; error?: string }) {
+async function TeamBody({ ctx, id, type, error, hasil }: { ctx: OrganizerContext; id: string; type: Kind; error?: string; hasil?: string }) {
   if (ctx.org.role !== "owner" && ctx.org.role !== "chair") redirect(`${basePath(type, id)}/lainnya?akses=peran`);
   const supabase = await createClient();
   const { data: team } = await supabase.from("v_organizer_team").select("*").eq("organizer_id", id).order("created_at");
   const members = (team ?? []) as { user_id: string; role: MemberRole; nickname: string; created_at: string }[];
   const isLeader = ctx.org.role === "owner" || ctx.org.role === "chair";
   const roleName = type === "merchant" ? "staf" : "pengurus";
+  const leaderRole: MemberRole = type === "merchant" ? "owner" : "chair";
+  const memberRole: MemberRole = type === "merchant" ? "staff" : "officer";
+  const leaderName = type === "merchant" ? "pemilik" : "ketua";
+  const leaderCount = members.filter((m) => m.role === leaderRole).length;
 
   return (
     <>
+      {hasil === "peran" && (
+        <p role="status" className="rounded-[14px] bg-success-tint px-4 py-3 text-[13px] font-semibold text-success">
+          Peran anggota tim sudah diubah.
+        </p>
+      )}
+      {error === "gagal" && (
+        <p role="alert" className="rounded-[14px] bg-danger-tint px-4 py-3 text-[13px] text-danger">
+          Tindakan gagal. Coba lagi.
+        </p>
+      )}
       {error === "terakhir" && (
         <p role="alert" className="rounded-[14px] bg-danger-tint px-4 py-3 text-[13px] text-danger">
           Harus tersisa minimal satu {type === "merchant" ? "pemilik" : "ketua"}.
@@ -90,6 +104,17 @@ async function TeamBody({ ctx, id, type, error }: { ctx: OrganizerContext; id: s
               </span>
               <span className="text-[12px] text-fg-soft">bergabung {formatDate(m.created_at)}</span>
             </span>
+            {isLeader && (m.user_id !== ctx.user.id || leaderCount > 1) && (
+              <form action={setTeamRole}>
+                <input type="hidden" name="organizer_id" value={id} />
+                <input type="hidden" name="type" value={type} />
+                <input type="hidden" name="user_id" value={m.user_id} />
+                <input type="hidden" name="role" value={m.role === leaderRole ? memberRole : leaderRole} />
+                <SubmitButton size="small" variant="outline" pendingText="…">
+                  {m.role === leaderRole ? (m.user_id === ctx.user.id ? `Turun jadi ${roleName}` : `Jadikan ${roleName}`) : `Jadikan ${leaderName}`}
+                </SubmitButton>
+              </form>
+            )}
             {(isLeader || m.user_id === ctx.user.id) && (
               <form action={removeTeamMember}>
                 <input type="hidden" name="organizer_id" value={id} />

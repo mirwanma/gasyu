@@ -68,9 +68,15 @@ export async function updateSession(request: NextRequest) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("onboarded_at, is_admin")
+    .select("onboarded_at, is_admin, deleted_at")
     .eq("id", userId)
     .maybeSingle();
+  // Akun yang sudah dihapus: keluarkan sesinya dan tampilkan pesan di halaman masuk.
+  if (profile?.deleted_at) {
+    await supabase.auth.signOut();
+    return pathname === "/masuk" ? response : redirectTo("/masuk?akun=dihapus");
+  }
+
   const onboarded = Boolean(profile?.onboarded_at);
 
   // Dashboard admin hanya untuk akun is_admin (dicek lagi di layout dan RLS).

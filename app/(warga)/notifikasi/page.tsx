@@ -91,6 +91,11 @@ function describe(n: Notification): { title: string; body?: string; href?: strin
       return { title: `Pendaftaran "${p.title}" dibatalkan`, body: "Lewat batas waktu bayar. Kamu bisa mendaftar lagi selama kuota masih ada.", href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
     case "payment_refunded":
       return { title: `Dana "${p.title}" dikembalikan`, body: typeof p.note === "string" && p.note ? p.note : "Penyelenggara menandai pengembalian dana selesai." };
+    case "team_role_changed":
+      return {
+        title: `Peranmu di ${p.organizer_name} sekarang ${({ owner: "pemilik", staff: "staf", chair: "ketua", officer: "pengurus" } as Record<string, string>)[String(p.role)] ?? p.role}`,
+        href: typeof p.organizer_id === "string" ? `/${p.organizer_type === "community" ? "komunitas" : "merchant"}/${p.organizer_id}` : undefined,
+      };
     case "suggestion_received":
       return {
         title: `Saran baru untuk ${p.organizer_name ?? "penyelenggaramu"}`,

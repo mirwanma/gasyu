@@ -77,3 +77,7 @@ Semua email memakai domain `@dummy.ramein.id` dan id akun berawalan `dd000000-00
 
 Coba: masuk sebagai wisnu@dummy.ramein.id, buka Lainnya lalu Saran warga. Untuk sisi warga, masuk sebagai rani@dummy.ramein.id lalu buka Profil, Saran saya.
 
+## Akun uji hapus akun
+
+`uji-hapus@dummy.ramein.id` dibuat untuk menguji fitur hapus akun dan sudah dihapus (nickname `hapus-dd0000000000`). Akun ini tidak bisa dipakai masuk lagi dan ikut terhapus oleh `bersihkan.sql`.
+

@@ -84,6 +84,7 @@ Aturan rinci (kolaborasi, grup, misi, keanggotaan, domisili, berbayar, leaderboa
 npm run dev                      # jalankan di http://localhost:3000
 npm run lint                     # cek kode
 npm run build                    # cek build produksi
+PGHOST=localhost PGUSER=postgres supabase/tests/run.sh   # semua uji SQL di Postgres lokal (database dibuat ulang)
 npx supabase login               # sekali saja
 npx supabase link --project-ref <ref>   # hubungkan ke project Supabase
 npx supabase migration new <nama>       # buat file migrasi
@@ -116,4 +117,4 @@ docs/
 
 Ikuti `docs/DESAIN-DATABASE.md` bagian 9 (irisan 1–11).
 
-Irisan saat ini: **selesai (1–11)** + fitur saran warga (migrasi 0014) — pemolesan, E2E, dan rilis pilot — perbarui baris ini setiap pindah irisan.
+Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016) — pemolesan, E2E, dan rilis pilot — perbarui baris ini setiap pindah irisan.

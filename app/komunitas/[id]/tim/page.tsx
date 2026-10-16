@@ -11,6 +11,6 @@ export default function Page(props: PageProps<"/komunitas/[id]/tim">) {
 
 async function Loader({ params, searchParams }: PageProps<"/komunitas/[id]/tim">) {
   const { id } = await params;
-  const { error } = await searchParams;
-  return <TimPage id={id} type="community" error={typeof error === "string" ? error : undefined} />;
+  const { error, hasil } = await searchParams;
+  return <TimPage id={id} type="community" error={typeof error === "string" ? error : undefined} hasil={typeof hasil === "string" ? hasil : undefined} />;
 }

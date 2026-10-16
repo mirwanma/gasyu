@@ -14,7 +14,12 @@ export default function DompetPage({ searchParams }: PageProps<"/dompet">) {
   return (
     <>
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-[18px] px-5 pb-32 pt-6">
-        <h1 className="font-display text-[26px] font-bold">Dompet</h1>
+        <div className="flex items-baseline justify-between">
+          <h1 className="font-display text-[26px] font-bold">Dompet</h1>
+          <a href="/riwayat?tab=poin" className="text-[13px] font-semibold text-link">
+            Riwayat poin
+          </a>
+        </div>
         <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>
           <Wallet searchParams={searchParams} />
         </Suspense>

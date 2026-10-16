@@ -1,7 +1,7 @@
 # Gasyu — Desain Database
 
 Versi 0.8 · 16 Oktober 2026 · Supabase (Postgres 15+)
-Perubahan 0.8: saran warga (`suggestions`, enum `suggestion_category` dan `suggestion_status`, view `v_organizer_suggestions`, fungsi `submit_suggestion` dan `respond_suggestion`).
+Perubahan 0.8: fungsi akun warga (`update_my_profile`, `change_home_village`, `delete_my_account`), `set_team_role`; saran warga (`suggestions`, enum `suggestion_category` dan `suggestion_status`, view `v_organizer_suggestions`, fungsi `submit_suggestion` dan `respond_suggestion`).
 Perubahan 0.7: kolom `activities.residency_rule` (enum `residency_rule`) dan helper `is_resident_of`.
 Perubahan 0.6: pengaturan tampil misi (`reveal_mode`, `reveal_at`, `prerequisite_mission_id`, `show_teaser`, `revealed_at`), fungsi `reveal_mission` dan `get_activity_missions`.
 Perubahan 0.5: event buatan admin (tipe organizer `platform`, sumber partner `admin`, fungsi `admin_add_partner`, `leave_activity`, `set_partner_budget`).
@@ -898,7 +898,7 @@ Unik: `(activity_id, user_id, local_date)`.
 
 **fraud_flags**: `id`, `user_id`, `checkin_id` opsional, `mission_completion_id` opsional, `kind flag_kind`, `detail jsonb`, `status flag_status` default open, `reviewed_by`, `reviewed_at`.
 
-**notifications**: `id`, `user_id`, `kind text` (partner_invite, application_received, group_registration, activity_approved, organizer_verified, badge_awarded, voucher_expiring, partner_added_by_admin, partner_left, membership_requested, membership_approved, membership_rejected, membership_removed, community_new_activity, payment_proof_submitted, payment_confirmed, payment_rejected, payment_expired, payment_refund_due, mission_proof_submitted, mission_approved, mission_rejected, mission_revealed, suggestion_received, suggestion_answered), `payload jsonb`, `read_at`.
+**notifications**: `id`, `user_id`, `kind text` (partner_invite, application_received, group_registration, activity_approved, organizer_verified, badge_awarded, voucher_expiring, partner_added_by_admin, partner_left, membership_requested, membership_approved, membership_rejected, membership_removed, community_new_activity, payment_proof_submitted, payment_confirmed, payment_rejected, payment_expired, payment_refund_due, mission_proof_submitted, mission_approved, mission_rejected, mission_revealed, suggestion_received, suggestion_answered, team_role_changed), `payload jsonb`, `read_at`.
 
 **suggestions** — saran warga untuk merchant/komunitas: `id`, `organizer_id` (merchant/komunitas approved), `user_id` pengirim, `category suggestion_category`, `body text` (10–1.000 karakter), `is_anonymous boolean`, `status suggestion_status` default new, `reply text` opsional, `replied_at`, `replied_by`, `status_changed_at`, `created_at`, `updated_at`. Ditulis hanya lewat fungsi. Tim membaca lewat `v_organizer_suggestions`.
 
@@ -931,6 +931,8 @@ Unik: `(activity_id, user_id, local_date)`.
 | payment.min_price_idr | 1000 |
 | payment.default_window_hours | 24 |
 | suggestion.daily_limit_per_organizer | 3 |
+| profile.village_change_days | 90 |
+| support.whatsapp / support.email | `""` (diisi admin di Pengaturan) |
 
 ---
 
@@ -969,7 +971,10 @@ Semua fungsi yang mengubah XP, poin, status, atau hak akses berjenis `security d
 | Fungsi | Pemanggil | Efek utama |
 | --- | --- | --- |
 | `complete_onboarding(nickname, full_name, village_id)` | warga | isi profil, `onboarded_at`, +50 XP |
-| `change_home_village(village_id)` | warga | cek 90 hari, perbarui kelurahan |
+| `update_my_profile(nickname, full_name)` | warga | ubah nama panggilan (unik) dan nama lengkap |
+| `change_home_village(village_id)` | warga | cek `profile.village_change_days`, perbarui kelurahan (null = Luar Cimahi) |
+| `delete_my_account(confirm)` | warga | soft delete: batalkan pendaftaran belum berjalan, keluar grup/komunitas/tim, hapus notifikasi, kosongkan data pribadi, isi `deleted_at`; tolak jika satu-satunya pemilik/ketua, ada pembayaran aktif, atau admin |
+| `set_team_role(organizer_id, user_id, role)` | owner/chair | ubah peran anggota tim (serah terima pemilik/ketua); minimal satu pemilik/ketua tersisa; notifikasi `team_role_changed` |
 | `register_organizer(type, data jsonb)` | warga | buat organizer + profil tipe + outlet + member owner/chair; komunitas: + `community_memberships` ketua active |
 | `create_organizer_invite(organizer_id, role)` | owner/chair | token undangan |
 | `accept_organizer_invite(token)` | warga | jadi anggota tim; komunitas: + keanggotaan active |
@@ -1129,7 +1134,9 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 | Pengerasan | `0012_hardening.sql` | cabut hak `anon`/`public` dari fungsi security definer, kunci `search_path` |
 | Ganti nama | `0013_rename_gasyu.sql` | organizer platform dan teks badge menjadi Gasyu |
 | Saran warga | `0014_suggestions.sql` | enum saran, `suggestions`, `v_organizer_suggestions`, `submit_suggestion`, `respond_suggestion`, `app_settings` batas harian |
-Setiap migrasi membawa RLS policy untuk tabel barunya dan file uji SQL sederhana (`supabase/tests/`) untuk aturan yang tidak boleh dilanggar.
+| Akun warga | `0015_citizen_account.sql` | `update_my_profile`, `change_home_village`, `delete_my_account`, pengaturan `profile.village_change_days` dan kontak bantuan |
+| Peran tim | `0016_team_roles.sql` | `set_team_role` untuk serah terima pemilik/ketua |
+Setiap migrasi membawa RLS policy untuk tabel barunya dan file uji SQL sederhana (`supabase/tests/`) untuk aturan yang tidak boleh dilanggar. Semua uji dijalankan dari database kosong dengan `supabase/tests/run.sh` (juga otomatis di GitHub Actions).
 
 ---
 
