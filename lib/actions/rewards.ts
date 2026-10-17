@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { uploadOrganizerFile } from "@/lib/storage";
+import type { Json } from "@/lib/supabase/types";
 
 export type RewardActionState = { error?: string; success?: string; code?: string; title?: string; expiresAt?: string };
 
@@ -48,7 +49,7 @@ export async function saveReward(_prev: RewardActionState, formData: FormData): 
     if (!url) return { error: "Gambar belum terunggah. Pakai PNG, JPG, atau WebP." };
     data.image_url = url;
   }
-  const { error } = await supabase.rpc("upsert_reward", { p_organizer_id: organizerId, p_reward_id: rewardId, p_data: data });
+  const { error } = await supabase.rpc("upsert_reward", { p_organizer_id: organizerId, p_reward_id: rewardId, p_data: data as Json });
   if (error) return { error: msg(error.message, "Reward belum tersimpan.") };
   revalidatePath(`/merchant/${organizerId}/reward`);
   revalidatePath("/dompet");

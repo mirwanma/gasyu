@@ -42,6 +42,7 @@ export function MissionForm({
   partnerOrganizerId,
   initial,
   onCancelHref,
+  templateId,
 }: {
   organizerId: string;
   type: "merchant" | "community" | "admin";
@@ -52,6 +53,7 @@ export function MissionForm({
   partnerOrganizerId?: string;
   initial?: MissionFormValues;
   onCancelHref: string;
+  templateId?: string;
 }) {
   const [state, formAction] = useActionState<MissionActionState, FormData>(saveMission, {});
   const [verification, setVerification] = useState<MissionVerification>(initial?.verification ?? (partnerOnly ? "qr_scan" : "manual"));
@@ -68,6 +70,7 @@ export function MissionForm({
       <input type="hidden" name="type_org" value={type} />
       <input type="hidden" name="activity_id" value={activityId} />
       {initial?.id && <input type="hidden" name="mission_id" value={initial.id} />}
+      {templateId && !initial?.id && <input type="hidden" name="template_id" value={templateId} />}
       {partnerOrganizerId && <input type="hidden" name="partner_organizer_id" value={partnerOrganizerId} />}
       <div className="flex items-baseline justify-between">
         <h2 className="text-[15px] font-bold">{initial?.id ? "Ubah misi" : "Tambah misi"}</h2>

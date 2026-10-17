@@ -3,11 +3,12 @@ import { notFound } from "next/navigation";
 import { JoinForm } from "./join-form";
 import { ActivityCard } from "@/components/activity-card";
 import { OrganizerAvatar } from "@/components/avatar";
+import { SuggestionForm } from "@/components/suggestion-form";
 import { BottomNav, CITIZEN_NAV } from "@/components/bottom-nav";
 import { Icon } from "@/components/icons";
 import { cardClass, tagClass } from "@/components/styles";
 import { listOrganizerPublicActivities } from "@/lib/data/activities";
-import { categoryLabel } from "@/lib/data/organizers";
+import { categoryLabel, getMyOrganizers } from "@/lib/data/organizers";
 import { getCurrentUser } from "@/lib/data/user";
 import { createClient } from "@/lib/supabase/server";
 
@@ -47,9 +48,10 @@ async function CommunityProfile({ params, searchParams }: PageProps<"/k/[slug]">
   } | null;
   const village = (Array.isArray(org.village) ? org.village[0] : org.village) as { name: string } | null;
 
-  const [{ data: stats }, activities, { data: membership }] = await Promise.all([
+  const [{ data: stats }, activities, myOrgs, { data: membership }] = await Promise.all([
     supabase.rpc("community_public_stats", { p_community_id: org.id }).maybeSingle(),
     listOrganizerPublicActivities(org.id),
+    user ? getMyOrganizers(user.id) : Promise.resolve([]),
     user
       ? supabase
           .from("community_memberships")
@@ -61,6 +63,8 @@ async function CommunityProfile({ params, searchParams }: PageProps<"/k/[slug]">
       : Promise.resolve({ data: null }),
   ]);
   const memberOnly = activities.filter((a) => a.audience === "members_only").length;
+  // Saran hanya untuk komunitas terverifikasi, dan bukan dari timnya sendiri.
+  const canSuggest = Boolean(user) && org.status === "approved" && !myOrgs.some((o) => o.id === org.id);
   const activeMembers = Number((stats as { active_members?: number } | null)?.active_members ?? 0);
   const myStatus = (membership as { status?: string } | null)?.status;
 
@@ -129,6 +133,8 @@ async function CommunityProfile({ params, searchParams }: PageProps<"/k/[slug]">
             activities.map((card) => <ActivityCard key={card.id} card={card} href={`/aktivitas/${card.id}`} />)
           )}
         </section>
+
+        {canSuggest && <SuggestionForm organizerId={org.id} organizerName={org.name} path={`/k/${slug}`} />}
       </div>
     </>
   );

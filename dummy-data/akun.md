@@ -62,3 +62,22 @@ Semua email memakai domain `@dummy.ramein.id` dan id akun berawalan `dd000000-00
 | Festival Kuliner Pasar Atas | Cicip seblak level 3 | `PEDAS3` |
 | Jelajah 3 Kedai Kopi Lereng | Kode di struk | `ARENKU` |
 | Cimahi Night Run 5K | Kode rahasia dari MC | `LARI2026` (misi masih tersembunyi; buka dulu dari halaman Misi) |
+
+## Saran warga (contoh)
+
+| Dari | Untuk | Isi singkat | Status |
+| --- | --- | --- | --- |
+| rani | Kopi Lereng | Kopi susu tanpa gula | Ditindaklanjuti, sudah dibalas Wisnu |
+| rani | Cimahi Runners | Lari pagi khusus pemula | Selesai, sudah dibalas Andi |
+| dimas (tanpa nama) | Kopi Lereng | Tambah colokan di cabang Cibabat | Baru |
+| siti_nur | Seblak Teh Ai | Pisahkan antrean bayar dan ambil | Baru |
+| nadia | Kopi Lereng | Kelas latte art untuk pemula | Baru |
+| pak_tono | Sahabat Lingkungan Cimahi | Bersih-bersih Sungai Cimahi | Baru |
+| rizky | Kopi Lereng | Roti bakar cokelat keju (dikirim saat uji) | Ditindaklanjuti, sudah dibalas Wisnu |
+
+Coba: masuk sebagai wisnu@dummy.ramein.id, buka Lainnya lalu Saran warga. Untuk sisi warga, masuk sebagai rani@dummy.ramein.id lalu buka Profil, Saran saya.
+
+## Akun uji hapus akun
+
+`uji-hapus@dummy.ramein.id` dibuat untuk menguji fitur hapus akun dan sudah dihapus (nickname `hapus-dd0000000000`). Akun ini tidak bisa dipakai masuk lagi dan ikut terhapus oleh `bersihkan.sql`.
+

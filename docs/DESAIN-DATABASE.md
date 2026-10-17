@@ -1,6 +1,7 @@
 # Gasyu — Desain Database
 
-Versi 0.7 · 16 Oktober 2026 · Supabase (Postgres 15+)
+Versi 0.8 · 16 Oktober 2026 · Supabase (Postgres 15+)
+Perubahan 0.8: master misi (`mission_templates`, `activity_missions.template_id`, `v_mission_template_stats`); fungsi akun warga (`update_my_profile`, `change_home_village`, `delete_my_account`), `set_team_role`; saran warga (`suggestions`, enum `suggestion_category` dan `suggestion_status`, view `v_organizer_suggestions`, fungsi `submit_suggestion` dan `respond_suggestion`).
 Perubahan 0.7: kolom `activities.residency_rule` (enum `residency_rule`) dan helper `is_resident_of`.
 Perubahan 0.6: pengaturan tampil misi (`reveal_mode`, `reveal_at`, `prerequisite_mission_id`, `show_teaser`, `revealed_at`), fungsi `reveal_mission` dan `get_activity_missions`.
 Perubahan 0.5: event buatan admin (tipe organizer `platform`, sumber partner `admin`, fungsi `admin_add_partner`, `leave_activity`, `set_partner_budget`).
@@ -431,6 +432,9 @@ erDiagram
 | `redemption_status` | active, used, expired, refunded |
 | `flag_kind` | out_of_radius, impossible_travel, shared_device, burst_accounts, manual |
 | `flag_status` | open, dismissed, actioned |
+| `suggestion_category` | activity, product, service, place, other |
+| `suggestion_status` | new, in_progress, done, archived |
+| `mission_category` | visit, purchase, social, sport, environment, learning, community, other |
 
 ---
 
@@ -647,7 +651,9 @@ Unik: `(activity_id, organizer_id)`. Unik parsial: satu baris `role = host` per 
 | qr_secret | bytea | 32 byte acak; kolom tidak bisa dibaca client |
 | is_active | boolean | default true |
 
-**activity_missions** — misi di dalam aktivitas (event atau challenge). Edit.
+**mission_templates** — master misi yang dikelola admin: `id`, `title`, `description`, `organizer_tips`, `category mission_category`, `verification`, `xp_reward` (saran, dalam batas `mission.xp_min`–`xp_max`), `is_required`, `activity_type` (null = semua), `organizer_type` (merchant/community, null = semua), `is_active`, `sort_order`, `created_by`. Ditulis hanya lewat fungsi admin.
+
+**activity_missions** — misi di dalam aktivitas (event atau challenge). Edit. Sejak 0018 ada `template_id` (asal master misi, null jika dibuat dari nol).
 
 | Kolom | Tipe | Aturan |
 | --- | --- | --- |
@@ -895,7 +901,9 @@ Unik: `(activity_id, user_id, local_date)`.
 
 **fraud_flags**: `id`, `user_id`, `checkin_id` opsional, `mission_completion_id` opsional, `kind flag_kind`, `detail jsonb`, `status flag_status` default open, `reviewed_by`, `reviewed_at`.
 
-**notifications**: `id`, `user_id`, `kind text` (partner_invite, application_received, group_registration, activity_approved, organizer_verified, badge_awarded, voucher_expiring, partner_added_by_admin, partner_left, membership_requested, membership_approved, membership_rejected, membership_removed, community_new_activity, payment_proof_submitted, payment_confirmed, payment_rejected, payment_expired, payment_refund_due, mission_proof_submitted, mission_approved, mission_rejected, mission_revealed), `payload jsonb`, `read_at`.
+**notifications**: `id`, `user_id`, `kind text` (partner_invite, application_received, group_registration, activity_approved, organizer_verified, badge_awarded, voucher_expiring, partner_added_by_admin, partner_left, membership_requested, membership_approved, membership_rejected, membership_removed, community_new_activity, payment_proof_submitted, payment_confirmed, payment_rejected, payment_expired, payment_refund_due, mission_proof_submitted, mission_approved, mission_rejected, mission_revealed, suggestion_received, suggestion_answered, team_role_changed), `payload jsonb`, `read_at`.
+
+**suggestions** — saran warga untuk merchant/komunitas: `id`, `organizer_id` (merchant/komunitas approved), `user_id` pengirim, `category suggestion_category`, `body text` (10–1.000 karakter), `is_anonymous boolean`, `status suggestion_status` default new, `reply text` opsional, `replied_at`, `replied_by`, `status_changed_at`, `created_at`, `updated_at`. Ditulis hanya lewat fungsi. Tim membaca lewat `v_organizer_suggestions`.
 
 **admin_actions** — jejak audit tindakan admin: `id`, `admin_id`, `action text`, `target_table text`, `target_id uuid`, `note text`.
 
@@ -925,6 +933,9 @@ Unik: `(activity_id, user_id, local_date)`.
 | mission.code_max_attempts / mission.code_window_minutes | 5 / 15 |
 | payment.min_price_idr | 1000 |
 | payment.default_window_hours | 24 |
+| suggestion.daily_limit_per_organizer | 3 |
+| profile.village_change_days | 90 |
+| support.whatsapp / support.email | `""` (diisi admin di Pengaturan) |
 
 ---
 
@@ -946,6 +957,8 @@ Unik: `(activity_id, user_id, local_date)`.
 | `v_mission_stats` | per misi: diselesaikan, menunggu tinjauan, ditolak, tingkat penyelesaian | dashboard organizer, halaman kelola misi |
 | `v_activity_payment_stats` | per aktivitas berbayar: jumlah `unpaid`, `awaiting_confirmation`, `paid`, `refunded`, dan perkiraan nilai (jumlah × `price_idr`, hanya informasi) | dashboard organizer, admin (pembatalan belum refund) |
 | `v_community_member_stats` | `community_id`, `active_members`, `pending_requests`, `new_members_month`, `attending_members_30d` (member aktif yang check-in di aktivitas komunitas itu 30 hari terakhir) | dashboard komunitas, halaman profil komunitas (hanya `active_members` yang publik) |
+| `v_mission_template_stats` | per template: jumlah misi, aktivitas, penyelesaian disetujui, slot peserta, terakhir dipakai; admin saja | halaman Master misi |
+| `v_organizer_suggestions` | saran untuk satu organizer; `user_id`, `nickname`, `village_name` kosong jika anonim; nickname penanggap; disaring `is_team_member()` atau admin | halaman Saran warga, to-do dashboard |
 | `v_organizer_reputation` | (tanpa organizer `platform`) `organizer_id`, skor dari hadir, tingkat penyelesaian, jumlah kolaborasi (90 hari terakhir) | papan kolaborasi, peringkat organizer |
 | `v_merchant_dashboard` | per merchant: aktivitas berjalan, peserta, check-in hari ini, warga baru vs kembali, pembayaran menunggu, bukti misi menunggu, budget poin terpakai/sisa, voucher dipakai per outlet | dashboard merchant |
 | `v_community_dashboard` | per komunitas: aktivitas berjalan, peserta, check-in hari ini, pembayaran menunggu, bukti misi menunggu, permintaan member menunggu | dashboard komunitas |
@@ -962,7 +975,11 @@ Semua fungsi yang mengubah XP, poin, status, atau hak akses berjenis `security d
 | Fungsi | Pemanggil | Efek utama |
 | --- | --- | --- |
 | `complete_onboarding(nickname, full_name, village_id)` | warga | isi profil, `onboarded_at`, +50 XP |
-| `change_home_village(village_id)` | warga | cek 90 hari, perbarui kelurahan |
+| `update_my_profile(nickname, full_name)` | warga | ubah nama panggilan (unik) dan nama lengkap |
+| `change_home_village(village_id)` | warga | cek `profile.village_change_days`, perbarui kelurahan (null = Luar Cimahi) |
+| `delete_my_account(confirm)` | warga | soft delete: batalkan pendaftaran belum berjalan, keluar grup/komunitas/tim, hapus notifikasi, kosongkan data pribadi, isi `deleted_at`; tolak jika satu-satunya pemilik/ketua, ada pembayaran aktif, atau admin |
+| `set_my_avatar(url)` | warga | simpan URL foto di folder avatars miliknya; null = hapus foto |
+| `set_team_role(organizer_id, user_id, role)` | owner/chair | ubah peran anggota tim (serah terima pemilik/ketua); minimal satu pemilik/ketua tersisa; notifikasi `team_role_changed` |
 | `register_organizer(type, data jsonb)` | warga | buat organizer + profil tipe + outlet + member owner/chair; komunitas: + `community_memberships` ketua active |
 | `create_organizer_invite(organizer_id, role)` | owner/chair | token undangan |
 | `accept_organizer_invite(token)` | warga | jadi anggota tim; komunitas: + keanggotaan active |
@@ -972,10 +989,14 @@ Semua fungsi yang mengubah XP, poin, status, atau hak akses berjenis `security d
 | `leave_community(community_id)` | warga | left; ditolak jika pemanggil masih chair |
 | `set_join_policy(community_id, policy)` | chair | ubah `community_profiles.join_policy` |
 | `review_organizer(organizer_id, approve, note)` | admin | approved/rejected + `admin_actions` |
+| `submit_suggestion(organizer_id, category, body, is_anonymous)` | warga | cek tujuan approved dan bukan tim sendiri, batas harian; simpan + notifikasi ke tim |
+| `respond_suggestion(suggestion_id, status, reply)` | tim organizer | ubah status (tidak ke `new`) dan/atau balasan; notifikasi ke pengirim jika ada balasan baru atau status jadi in_progress/done |
 | `submit_activity(activity_id)` | owner/chair host | validasi (termasuk harga dan misi), `awaiting_partners` atau `in_review`, tutup open call |
 | `review_activity(activity_id, approve, note)` | admin (tidak dipakai untuk host `platform`, yang langsung published lewat `submit_activity`) | published atau kembali ke draft; saat published, kirim `community_new_activity` ke member aktif komunitas host |
 | `cancel_activity(activity_id, reason)` | host/admin | cancelled + notifikasi peserta; peserta `paid` mendapat `payment_refund_due` |
-| `upsert_mission(activity_id, mission jsonb)` | tim host atau partner accepted | buat/ubah `activity_missions`; membuat `qr_secret`, meng-hash kode; menolak ubah kolom terkunci dan total XP > 500 |
+| `upsert_mission(activity_id, mission jsonb)` | tim host atau partner accepted | buat/ubah `activity_missions`; membuat `qr_secret`, meng-hash kode; menolak ubah kolom terkunci dan total XP > 500; menerima `template_id` (harus template aktif) saat membuat misi baru |
+| `upsert_mission_template(template_id, data jsonb)` | admin | buat/ubah master misi + `admin_actions` |
+| `set_mission_template_active(template_id, active)` | admin | aktif/nonaktifkan master misi + `admin_actions` |
 | `set_mission_active(mission_id, active)` | tim pembuat misi atau host | nonaktifkan/aktifkan misi |
 | `reveal_mission(mission_id)` | tim pembuat misi atau host (admin untuk event Gasyu) | buka misi `manual`: isi `revealed_at`, notifikasi `mission_revealed` ke peserta terdaftar; tidak bisa dibatalkan |
 | `get_activity_missions(activity_id)` | warga atau pengunjung | daftar misi sesuai sudut pandang pemanggil: misi terbuka lengkap, misi belum terbuka sebagai teaser (tanpa judul dan isi) jika `show_teaser`, sisanya disembunyikan |
@@ -1034,6 +1055,7 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 | challenge_targets | R jika aktivitas terlihat | R | I, U saat draft | R |
 | activity_partners | R accepted dari aktivitas terlihat | R | R aktivitas terkait; I/U fn | R |
 | activity_checkpoints | R tanpa `qr_secret` | R | R, I, U miliknya (tanpa `qr_secret`) | R |
+| mission_templates | R yang aktif | R yang aktif | R yang aktif | R semua; I/U fn |
 | activity_missions | - (lewat `get_activity_missions`, karena status terbuka berbeda per warga) | - (sama) | R aktivitas terkait, termasuk yang belum terbuka; I/U fn | R |
 | mission_completions | R miliknya; I fn | - | R di aktivitas host-nya dan misi buatannya; U fn | R |
 | mission_code_attempts | - | - | - | R |
@@ -1052,11 +1074,14 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 | monthly_village_winners | R | R | R | R |
 | fraud_flags, admin_actions | - | - | - | R, U |
 | notifications | R, U (read_at) miliknya | - | - | R |
+| suggestions | R miliknya; I fn | - | R lewat `v_organizer_suggestions` (tanpa identitas jika anonim); U fn | R |
 | app_settings | R | R | R | R, U |
 
 **Catatan privasi antar-partner.** Policy `participations` dan `checkins` untuk tim organizer hanya mengizinkan baris yang `checkins.partner_organizer_id` = organizer mereka. Host melihat semua peserta yang mendaftar, tetapi partner lain hanya melihat peserta yang pernah check-in di checkpoint mereka. Angka total untuk semua partner disajikan lewat `v_activity_stats` yang hanya berisi agregat.
 
-**Kolom yang tidak boleh diubah warga di `profiles`:** `is_admin`, `suspended_at`, `onboarded_at`, `home_village_changed_at`. Diterapkan dengan `revoke update` per kolom, lalu `grant update (nickname, full_name, avatar_url)`.
+**Kolom yang tidak boleh diubah warga di `profiles`:** `is_admin`, `suspended_at`, `onboarded_at`, `home_village_changed_at`. Diterapkan dengan `revoke update` per kolom, lalu `grant update (nickname, full_name)`. Sejak 0017, `avatar_url` hanya bisa diubah lewat `set_my_avatar`, yang memastikan URL menunjuk ke folder `avatars/<user_id>/` miliknya.
+
+**Foto profil.** Bucket publik `avatars` (maks. 2 MB, gambar). Warga hanya bisa menulis, mengganti, dan menghapus file di folder `avatars/<user_id>/`.
 
 **`qr_secret`** (di `activity_checkpoints` dan `activity_missions`) dan **`code_hash`** di-`revoke select` dari role `authenticated` dan `anon`; hanya fungsi `security definer` yang membacanya.
 
@@ -1116,7 +1141,14 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 | 10 Misi | `0010_missions.sql` | enum misi, `target_kind` baru, `activity_missions`, `mission_completions`, `mission_code_attempts`, bucket `mission-proofs`, fungsi misi, `evaluate_completion` (menggantikan logika selesai di `perform_checkin`), `v_participation_missions`, `v_mission_stats`, kolom dan fungsi tampil misi (`reveal_mission`, `get_activity_missions`), cron `prune_code_attempts` dan `reveal_scheduled_missions` |
 | 11 Aktivitas berbayar | `0011_paid_activities.sql` | kolom bayar di `activities` dan `participations`, enum `payment_status`, bucket `payment-proofs`, fungsi bayar, cek bayar di `perform_checkin` dan `complete_mission`, `v_activity_payment_stats`, cron `expire_unpaid_participations` |
 
-Setiap migrasi membawa RLS policy untuk tabel barunya dan file uji SQL sederhana (`supabase/tests/`) untuk aturan yang tidak boleh dilanggar.
+| Pengerasan | `0012_hardening.sql` | cabut hak `anon`/`public` dari fungsi security definer, kunci `search_path` |
+| Ganti nama | `0013_rename_gasyu.sql` | organizer platform dan teks badge menjadi Gasyu |
+| Saran warga | `0014_suggestions.sql` | enum saran, `suggestions`, `v_organizer_suggestions`, `submit_suggestion`, `respond_suggestion`, `app_settings` batas harian |
+| Akun warga | `0015_citizen_account.sql` | `update_my_profile`, `change_home_village`, `delete_my_account`, pengaturan `profile.village_change_days` dan kontak bantuan |
+| Peran tim | `0016_team_roles.sql` | `set_team_role` untuk serah terima pemilik/ketua |
+| Foto profil | `0017_avatars.sql` | bucket `avatars` + policy, `set_my_avatar`, cabut update langsung `avatar_url`; perbaikan nickname pengganti di `delete_my_account` |
+| Master misi | `0018_mission_templates.sql` | enum `mission_category`, `mission_templates` + 12 template awal, `activity_missions.template_id`, fungsi admin, `v_mission_template_stats`, `upsert_mission` menerima template |
+Setiap migrasi membawa RLS policy untuk tabel barunya dan file uji SQL sederhana (`supabase/tests/`) untuk aturan yang tidak boleh dilanggar. Semua uji dijalankan dari database kosong dengan `supabase/tests/run.sh` (juga otomatis di GitHub Actions).
 
 ---
 

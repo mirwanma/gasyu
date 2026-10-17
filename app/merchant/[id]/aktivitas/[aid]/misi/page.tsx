@@ -12,6 +12,6 @@ export default function Page({ params, searchParams }: PageProps<"/merchant/[id]
 async function Loader({ params, searchParams }: PageProps<"/merchant/[id]/aktivitas/[aid]/misi">) {
   const [{ id, aid }, sp] = await Promise.all([params, searchParams]);
   const str = (v: unknown) => (typeof v === "string" ? v : undefined);
-  const query: MisiQuery = { tab: str(sp.tab), tambah: str(sp.tambah), ubah: str(sp.ubah), qr: str(sp.qr), tandai: str(sp.tandai), hasil: str(sp.hasil), error: str(sp.error), n: str(sp.n) };
+  const query: MisiQuery = { tab: str(sp.tab), tambah: str(sp.tambah), ubah: str(sp.ubah), qr: str(sp.qr), tandai: str(sp.tandai), hasil: str(sp.hasil), error: str(sp.error), n: str(sp.n), template: str(sp.template) };
   return <MisiPage id={id} type="merchant" aid={aid} query={query} />;
 }

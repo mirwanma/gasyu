@@ -64,7 +64,7 @@ async function OutletBody({ id }: { id: string }) {
                 {outlet.address}
                 {village ? ` · Kel. ${village.name}` : ""}
               </span>
-              <span className="text-[13px] text-fg-soft">{describeHours(outlet.opening_hours)}</span>
+              <span className="text-[13px] text-fg-soft">{describeHours(outlet.opening_hours as Record<string, [string, string]> | null)}</span>
               <div className="flex items-center justify-between">
                 <a
                   href={`https://www.openstreetmap.org/?mlat=${outlet.lat}&mlon=${outlet.lng}#map=17/${outlet.lat}/${outlet.lng}`}

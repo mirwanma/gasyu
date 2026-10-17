@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { uploadOrganizerFile } from "@/lib/storage";
+import type { Json } from "@/lib/supabase/types";
 
 export type RegisterState = { error?: string };
 
@@ -70,7 +71,7 @@ export async function registerOrganizer(_prev: RegisterState, formData: FormData
   }
 
   const supabase = await createClient();
-  const { data: organizerId, error } = await supabase.rpc("register_organizer", { p_type: type, p_data: data });
+  const { data: organizerId, error } = await supabase.rpc("register_organizer", { p_type: type, p_data: data as Json });
   if (error || !organizerId) {
     return { error: ERRORS[error?.message ?? ""] ?? "Pendaftaran belum tersimpan. Coba lagi, ya." };
   }

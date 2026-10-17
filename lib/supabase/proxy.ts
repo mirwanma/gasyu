@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { safeNext } from "@/lib/safe-next";
+import type { AppDatabase as Database } from "./types";
 
 // Halaman yang boleh dibuka tanpa login.
 const PUBLIC_PATHS = ["/masuk", "/auth"];
@@ -17,7 +18,7 @@ function matches(path: string, base: string) {
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
-  const supabase = createServerClient(
+  const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
@@ -68,9 +69,15 @@ export async function updateSession(request: NextRequest) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("onboarded_at, is_admin")
+    .select("onboarded_at, is_admin, deleted_at")
     .eq("id", userId)
     .maybeSingle();
+  // Akun yang sudah dihapus: keluarkan sesinya dan tampilkan pesan di halaman masuk.
+  if (profile?.deleted_at) {
+    await supabase.auth.signOut();
+    return pathname === "/masuk" ? response : redirectTo("/masuk?akun=dihapus");
+  }
+
   const onboarded = Boolean(profile?.onboarded_at);
 
   // Dashboard admin hanya untuk akun is_admin (dicek lagi di layout dan RLS).

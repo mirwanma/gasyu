@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { readActivityForm } from "@/lib/activity-form";
 import { createClient } from "@/lib/supabase/server";
 import { uploadOrganizerFile } from "@/lib/storage";
+import type { Json } from "@/lib/supabase/types";
 
 export type ActivityActionState = { error?: string; success?: string };
 
@@ -87,7 +88,7 @@ export async function updateActivity(_prev: ActivityActionState, formData: FormD
     if (!url) return { error: "Cover belum terunggah. Pakai PNG, JPG, atau WebP." };
     data.cover_url = url;
   }
-  const { error } = await supabase.rpc("update_activity", { p_activity_id: activityId, p_data: data });
+  const { error } = await supabase.rpc("update_activity", { p_activity_id: activityId, p_data: data as Json });
   if (error) return { error: msg(error.message, "Perubahan belum tersimpan.") };
   revalidatePath(`${basePath(type, organizerId)}/aktivitas/${activityId}`);
   return { success: "Tersimpan." };
@@ -103,7 +104,7 @@ export async function addCheckpoint(_prev: ActivityActionState, formData: FormDa
   const data = text("outlet_id")
     ? { outlet_id: text("outlet_id"), name: text("name") || null, radius_m: text("radius_m") || null, partner_organizer_id: partner }
     : { name: text("name"), address: text("address"), lat: text("lat"), lng: text("lng"), radius_m: text("radius_m") || null, partner_organizer_id: partner };
-  const { error } = await supabase.rpc("add_checkpoint", { p_activity_id: activityId, p_data: data });
+  const { error } = await supabase.rpc("add_checkpoint", { p_activity_id: activityId, p_data: data as Json });
   if (error) return { error: msg(error.message, "Checkpoint belum tersimpan.") };
   if (type === "admin") revalidatePath("/admin/aktivitas");
   else revalidatePath(`${basePath(type, organizerId)}/aktivitas/${activityId}`);
@@ -167,11 +168,11 @@ export async function adminSaveActivity(_prev: ActivityActionState, formData: Fo
   const data: Record<string, unknown> = readActivityForm(formData);
   let id = activityId;
   if (activityId) {
-    const { error } = await supabase.rpc("update_activity", { p_activity_id: activityId, p_data: data });
+    const { error } = await supabase.rpc("update_activity", { p_activity_id: activityId, p_data: data as Json });
     if (error) return { error: msg(error.message, "Perubahan belum tersimpan.") };
   } else {
     const { data: platformId } = await supabase.rpc("platform_organizer_id");
-    const { data: created, error } = await supabase.rpc("create_activity", { p_host_organizer_id: platformId, p_data: data });
+    const { data: created, error } = await supabase.rpc("create_activity", { p_host_organizer_id: platformId, p_data: data as Json });
     if (error || !created) return { error: msg(error?.message, "Event belum tersimpan.") };
     id = created as string;
   }

@@ -10,6 +10,7 @@ import { levelFor, type LevelRow } from "@/lib/gamification/level";
 // Tampilan beranda warga (tanpa pengambilan data), mengikuti artboard "Warga · Beranda".
 export function HomeView({
   nickname,
+  avatarUrl,
   villageName,
   totalXp,
   levels,
@@ -22,6 +23,7 @@ export function HomeView({
   badges,
 }: {
   nickname: string;
+  avatarUrl?: string | null;
   villageName?: string;
   totalXp: number;
   levels: LevelRow[];
@@ -42,7 +44,7 @@ export function HomeView({
   return (
     <>
       <header className="flex items-center gap-3">
-        <UserAvatar nickname={nickname} />
+        <UserAvatar nickname={nickname} avatarUrl={avatarUrl} />
         <div className="flex flex-1 flex-col gap-0.5">
           <span className="text-[13px] text-fg-soft">{greeting}</span>
           <span className="font-display text-[19px] font-semibold">{nickname}</span>

@@ -390,6 +390,28 @@ begin
   perform public.submit_activity(ev_mural);
 
   -- ---------------------------------------------------------------------------
+  -- 10. Saran warga (fitur saran, migrasi 0014)
+  -- ---------------------------------------------------------------------------
+  perform pg_temp.login(w1);
+  perform public.submit_suggestion(org_kopi, 'product', 'Tolong tambah pilihan kopi susu tanpa gula ya, sekarang semua menu susunya manis.');
+  perform public.submit_suggestion(org_run, 'activity', 'Bagaimana kalau ada sesi lari pagi khusus pemula tiap Sabtu, pace santai 8 menit per km?');
+  perform pg_temp.login(w2);
+  perform public.submit_suggestion(org_kopi, 'place', 'Colokan di cabang Cibabat cuma dua. Kalau bisa tambah di meja panjang dekat jendela.', true);
+  perform pg_temp.login(w3);
+  perform public.submit_suggestion(org_seblak, 'service', 'Antrean di stand festival lama karena bayar dan ambil pesanan di satu tempat. Mungkin bisa dipisah?');
+  perform pg_temp.login(w7);
+  perform public.submit_suggestion(org_kopi, 'activity', 'Bikin kelas latte art buat pemula di akhir pekan dong, pasti banyak yang ikut.');
+  perform pg_temp.login(w9);
+  perform public.submit_suggestion(org_hijau, 'activity', 'Ajak warga Karangmekar bersih-bersih Sungai Cimahi, saya bisa bantu kumpulkan bapak-bapak RW.');
+  -- Tanggapan tim: Wisnu menindaklanjuti, Andi menyelesaikan
+  perform pg_temp.login(m1);
+  perform public.respond_suggestion((select id from public.suggestions where organizer_id = org_kopi and user_id = w1 order by created_at desc limit 1),
+    'in_progress', 'Siap, Kak Rani. Kami lagi uji resep kopi susu aren tanpa gula, rencananya masuk menu bulan depan.');
+  perform pg_temp.login(k1);
+  perform public.respond_suggestion((select id from public.suggestions where organizer_id = org_run and user_id = w1 order by created_at desc limit 1),
+    'done', 'Sudah jalan mulai Sabtu ini jam 06.00 dari Lapangan Rajawali. Sampai ketemu!');
+
+  -- ---------------------------------------------------------------------------
   -- 9. Deteksi pola (untuk antrean moderasi) dan catatan
   -- ---------------------------------------------------------------------------
   perform public.detect_fraud_patterns();

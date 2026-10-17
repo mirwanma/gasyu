@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import type { Json } from "@/lib/supabase/types";
 
 export async function updateSetting(formData: FormData) {
   const key = String(formData.get("key"));
@@ -14,7 +15,7 @@ export async function updateSetting(formData: FormData) {
     redirect("/admin/pengaturan?hasil=gagal");
   }
   const supabase = await createClient();
-  const { error } = await supabase.from("app_settings").update({ value }).eq("key", key);
+  const { error } = await supabase.from("app_settings").update({ value: value as Json }).eq("key", key);
   revalidatePath("/admin/pengaturan");
   redirect(`/admin/pengaturan?hasil=${error ? "gagal" : "ok"}`);
 }

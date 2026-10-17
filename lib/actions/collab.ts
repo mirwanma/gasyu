@@ -3,6 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
+const PARTNER_ROLES = ["host", "cohost", "sponsor"] as const;
+// Peran partner dari formulir; nilai tak dikenal jatuh ke cohost (dicek lagi di database).
+function partnerRole(formData: FormData): (typeof PARTNER_ROLES)[number] {
+  const raw = String(formData.get("role") ?? "");
+  return (PARTNER_ROLES as readonly string[]).includes(raw) ? (raw as (typeof PARTNER_ROLES)[number]) : "cohost";
+}
+
 export type CollabActionState = { error?: string; success?: string };
 
 const ERRORS: Record<string, string> = {
@@ -39,7 +46,7 @@ export async function invitePartner(_prev: CollabActionState, formData: FormData
   const { error } = await supabase.rpc("invite_partner", {
     p_activity_id: text(formData, "activity_id"),
     p_organizer_id: text(formData, "partner_organizer_id"),
-    p_role: text(formData, "role") || "cohost",
+    p_role: partnerRole(formData),
     p_budget: Number(text(formData, "budget") || 0),
     p_note: text(formData, "note") || null,
   });
@@ -83,7 +90,7 @@ export async function adminAddPartner(_prev: CollabActionState, formData: FormDa
   const { error } = await supabase.rpc("admin_add_partner", {
     p_activity_id: text(formData, "activity_id"),
     p_organizer_id: text(formData, "partner_organizer_id"),
-    p_role: text(formData, "role") || "cohost",
+    p_role: partnerRole(formData),
     p_note: text(formData, "note") || null,
   });
   if (error) return { error: msg(error.message, "Partner belum ditambahkan.") };
@@ -122,7 +129,7 @@ export async function applyOpenCall(_prev: CollabActionState, formData: FormData
   const { error } = await supabase.rpc("apply_open_call", {
     p_post_id: text(formData, "post_id"),
     p_organizer_id: text(formData, "organizer_id"),
-    p_role: text(formData, "role") || "cohost",
+    p_role: partnerRole(formData),
     p_budget: Number(text(formData, "budget") || 0),
     p_contribution: text(formData, "contribution") || null,
     p_message: text(formData, "message") || null,

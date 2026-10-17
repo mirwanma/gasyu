@@ -3,11 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActivityCard } from "@/components/activity-card";
 import { OrganizerAvatar } from "@/components/avatar";
+import { SuggestionForm } from "@/components/suggestion-form";
 import { BottomNav, CITIZEN_NAV } from "@/components/bottom-nav";
 import { Icon } from "@/components/icons";
 import { cardClass } from "@/components/styles";
 import { listOrganizerPublicActivities } from "@/lib/data/activities";
-import { categoryLabel } from "@/lib/data/organizers";
+import { categoryLabel, getMyOrganizers } from "@/lib/data/organizers";
+import { getCurrentUser } from "@/lib/data/user";
 import { createClient } from "@/lib/supabase/server";
 
 // Profil publik merchant: /m/<slug>.
@@ -35,7 +37,10 @@ async function MerchantProfile({ params }: Pick<PageProps<"/m/[slug]">, "params"
     .eq("type", "merchant")
     .maybeSingle();
   if (!org) notFound();
-  const activities = await listOrganizerPublicActivities(org.id);
+  const user = await getCurrentUser();
+  const [activities, myOrgs] = await Promise.all([listOrganizerPublicActivities(org.id), user ? getMyOrganizers(user.id) : Promise.resolve([])]);
+  // Saran hanya untuk merchant terverifikasi, dan bukan dari timnya sendiri.
+  const canSuggest = Boolean(user) && org.status === "approved" && !myOrgs.some((o) => o.id === org.id);
 
   const profile = (Array.isArray(org.profile) ? org.profile[0] : org.profile) as { merchant_category: string } | null;
   const outlets = ((org.outlets ?? []) as {
@@ -115,6 +120,8 @@ async function MerchantProfile({ params }: Pick<PageProps<"/m/[slug]">, "params"
             activities.map((card) => <ActivityCard key={card.id} card={card} href={`/aktivitas/${card.id}`} />)
           )}
         </section>
+
+        {canSuggest && <SuggestionForm organizerId={org.id} organizerName={org.name} path={`/m/${slug}`} />}
       </div>
     </>
   );

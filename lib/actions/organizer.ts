@@ -43,6 +43,24 @@ export async function removeTeamMember(formData: FormData) {
   if (claims?.claims?.sub === userId) redirect("/profil");
 }
 
+// Pemilik/ketua mengubah peran anggota tim (menyerahkan atau turun peran).
+export async function setTeamRole(formData: FormData) {
+  const organizerId = String(formData.get("organizer_id"));
+  const type = String(formData.get("type"));
+  const userId = String(formData.get("user_id"));
+  const rawRole = String(formData.get("role"));
+  const role = (["owner", "staff", "chair", "officer"] as const).find((r) => r === rawRole) ?? "staff";
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_team_role", { p_organizer_id: organizerId, p_user_id: userId, p_role: role });
+  const path = `${basePath(type, organizerId)}/tim`;
+  revalidatePath(path);
+  if (error) redirect(`${path}?error=${error.message.includes("last_leader") ? "terakhir" : "gagal"}`);
+  // Turun sendiri jadi staf/pengurus: halaman Tim tidak lagi bisa dibuka.
+  const { data: claims } = await supabase.auth.getClaims();
+  if (claims?.claims?.sub === userId && (role === "staff" || role === "officer")) redirect(`${basePath(type, organizerId)}/lainnya`);
+  redirect(`${path}?hasil=peran`);
+}
+
 // ---- Profil penyelenggara ---------------------------------------------
 
 export async function updateOrganizerProfile(_prev: ActionState, formData: FormData): Promise<ActionState> {

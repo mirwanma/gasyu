@@ -11,6 +11,6 @@ export default function Page(props: PageProps<"/merchant/[id]/tim">) {
 
 async function Loader({ params, searchParams }: PageProps<"/merchant/[id]/tim">) {
   const { id } = await params;
-  const { error } = await searchParams;
-  return <TimPage id={id} type="merchant" error={typeof error === "string" ? error : undefined} />;
+  const { error, hasil } = await searchParams;
+  return <TimPage id={id} type="merchant" error={typeof error === "string" ? error : undefined} hasil={typeof hasil === "string" ? hasil : undefined} />;
 }

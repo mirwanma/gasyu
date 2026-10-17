@@ -1,6 +1,7 @@
 # Gasyu — Alur Sistem
 
-Versi 0.7 · 16 Oktober 2026 · Pilot Kota Cimahi
+Versi 0.8 · 16 Oktober 2026 · Pilot Kota Cimahi
+Perubahan 0.8: master misi (bagian 9f); saran warga untuk merchant dan komunitas (bagian 21); ubah profil, ganti kelurahan, hapus akun, riwayat, bantuan (bagian 3); serah terima peran pemilik/ketua (bagian 5).
 Perubahan 0.7: aturan domisili peserta, yaitu hanya warga wilayah event atau semua warga (bagian 6).
 Perubahan 0.6: pembuat event mengatur kapan tiap misi tampil ke warga (bagian 9e).
 Perubahan 0.5: admin bisa membuat event atas nama Gasyu dan langsung menambahkan merchant/komunitas yang terlibat (bagian 10c).
@@ -33,6 +34,7 @@ Semua diagram ditulis dalam Mermaid, jadi bisa dibaca langsung di GitHub, VS Cod
 18. Proses terjadwal (cron)
 19. Moderasi admin dan anti-curang
 20. Dashboard dan peta halaman
+21. Saran warga
 
 ---
 
@@ -143,6 +145,8 @@ Ada dua jenis keterikatan warga dengan komunitas, dan keduanya terpisah:
 | Ajukan aktivitas ke admin | - | - | Ya | - | Ya | - |
 | Tampilkan QR check-in dan QR misi | - | Ya | Ya | Ya | Ya | - |
 | Kelola misi (tambah, ubah, nonaktifkan) | - | Ya | Ya | Ya | Ya | - |
+| Pakai template master misi saat menambah misi | - | Ya | Ya | Ya | Ya | Ya |
+| Kelola master misi (template) | - | - | - | - | - | Ya |
 | Tinjau bukti foto misi, tandai misi manual | - | Ya | Ya | Ya | Ya | - |
 | Atur harga aktivitas berbayar | - | - | Ya | - | Ya | - |
 | Konfirmasi pembayaran peserta | - | Ya | Ya | Ya | Ya | - |
@@ -150,6 +154,8 @@ Ada dua jenis keterikatan warga dengan komunitas, dan keduanya terpisah:
 | Mode kasir (pakai voucher) | - | Ya | Ya | - | - | - |
 | Undang/terima partner, buka open call | - | - | Ya | - | Ya | - |
 | Undang anggota tim | - | - | Ya | - | Ya | - |
+| Kirim saran ke merchant/komunitas lain | Ya | Ya | Ya | Ya | Ya | Ya |
+| Baca, balas, dan ubah status saran yang masuk | - | Ya | Ya | Ya | Ya | Baca saja |
 | Buka dashboard merchant/komunitas miliknya | - | Ya | Ya | Ya | Ya | - |
 | Buka dashboard admin (web) | - | - | - | - | - | Ya |
 | Verifikasi penyelenggara, review aktivitas, tinjau flag | - | - | - | - | - | Ya |
@@ -196,9 +202,12 @@ flowchart TD
 
 - Middleware Next.js mengalihkan semua halaman ke onboarding selama `onboarded_at` kosong.
 - Nama panggilan harus unik (case-insensitive), 3–20 karakter.
-- Kelurahan asal bisa diganti maksimal sekali per 90 hari (`home_village_changed_at`).
+- Warga mengubah nama panggilan dan nama lengkap di `/profil/ubah` (`update_my_profile`).
+- Foto profil juga di `/profil/ubah`: foto dipotong persegi dan diperkecil ke 512 px di HP sebelum diunggah ke bucket publik `avatars` (folder milik warga sendiri), lalu disimpan lewat `set_my_avatar`. Foto lama dihapus otomatis. Foto tampil di profil dan beranda warga sendiri, dan di daftar tim penyelenggara tempat ia bergabung. Saat akun dihapus, foto ikut dihapus.
+- Kelurahan asal bisa diganti maksimal sekali per `profile.village_change_days` hari, awal 90 (`change_home_village`, `home_village_changed_at`). Penggantian pertama setelah onboarding langsung dihitung.
 - Tidak ada batas usia dan tidak ada persetujuan orang tua selama pilot.
-- Hapus akun: data pribadi di `profiles` dikosongkan dan `deleted_at` diisi; baris ledger tetap ada demi audit, tetapi tidak lagi terhubung ke identitas yang bisa dikenali.
+- Hapus akun (`/profil/hapus`, `delete_my_account`, warga mengetik HAPUS): data pribadi di `profiles` dikosongkan dan `deleted_at` diisi; baris ledger tetap ada demi audit, tetapi tidak lagi terhubung ke identitas yang bisa dikenali. Pendaftaran yang belum berjalan dibatalkan, warga keluar dari grup, komunitas, dan tim, notifikasinya dihapus. Ditolak jika ia satu-satunya pemilik/ketua, masih punya pembayaran lunas/menunggu di aktivitas yang belum selesai, atau akun admin. Sesi akun terhapus selalu dikeluarkan dan email yang sama tidak bisa dipakai masuk lagi.
+- Riwayat XP dan poin ada di `/riwayat` (dibaca dari `xp_ledger` dan `point_ledger`). Halaman `/bantuan` berisi pertanyaan umum dan kontak tim dari `app_settings` (`support.whatsapp`, `support.email`).
 
 ---
 
@@ -258,7 +267,7 @@ sequenceDiagram
     App-->>S: Masuk ke dashboard merchant/komunitas
 ```
 
-Peran yang boleh diundang mengikuti tipe: merchant hanya `staff`, komunitas hanya `officer`. Pemilik/ketua bisa mencabut anggota kapan saja; minimal harus tersisa satu pemilik/ketua. Pengurus komunitas yang dicabut dari tim tetap menjadi member biasa, kecuali ketua juga mengeluarkannya dari keanggotaan.
+Peran yang boleh diundang mengikuti tipe: merchant hanya `staff`, komunitas hanya `officer`. Pemilik/ketua bisa mencabut anggota kapan saja; minimal harus tersisa satu pemilik/ketua. Di halaman Tim, pemilik/ketua bisa menjadikan anggota lain pemilik/ketua, lalu turun menjadi staf/pengurus (`set_team_role`); begitulah peran pemilik/ketua diserahkan. Anggota yang perannya diubah mendapat notifikasi. Pengurus komunitas yang dicabut dari tim tetap menjadi member biasa, kecuali ketua juga mengeluarkannya dari keanggotaan.
 
 Undangan tim berbeda dengan keanggotaan komunitas (bagian 12): undangan tim memberi akses dashboard, sedangkan keanggotaan hanya menghubungkan warga dengan komunitasnya.
 
@@ -559,6 +568,33 @@ stateDiagram-v2
 Halaman aktivitas di PWA warga mengambil daftar misi lewat `get_activity_missions`, sehingga tiap warga hanya menerima misi yang memang sudah terbuka untuknya; misi tersembunyi tidak pernah terkirim ke HP.
 
 ---
+
+### 9f. Master misi
+
+Admin menyiapkan katalog template misi di `/admin/misi` supaya penyelenggara, terutama UMKM yang baru pertama membuat event, tidak mulai dari nol.
+
+```mermaid
+sequenceDiagram
+    actor A as Admin
+    participant App as Gasyu
+    actor P as Tim penyelenggara
+    A->>App: Buat/ubah template (judul, instruksi, tips, kategori, verifikasi, saran XP, untuk siapa)
+    P->>App: Tambah misi di aktivitas
+    App-->>P: Daftar template aktif yang cocok (jenis aktivitas, tipe penyelenggara)
+    P->>App: Pakai template, sesuaikan isi, isi kode/checkpoint, simpan
+    App->>App: upsert_mission menyalin isi + mencatat template_id
+    A->>App: Lihat statistik pemakaian dan tingkat selesai per template
+```
+
+| Aturan | Isi |
+| --- | --- |
+| Siapa mengelola | Hanya admin: buat, ubah, aktifkan, nonaktifkan (tercatat di audit). Template tidak dihapus supaya statistik tetap utuh |
+| Isi template | Judul, instruksi untuk warga, tips untuk penyelenggara, kategori (kunjungan, belanja, media sosial, olahraga, lingkungan, edukasi, komunitas, lainnya), cara verifikasi, saran XP (dalam batas `mission.xp_min`–`mission.xp_max`), wajib/bonus |
+| Untuk siapa | Bisa dibatasi ke event atau challenge, dan ke merchant atau komunitas; kosong = semua. Event Gasyu melihat semua template |
+| Partner (bukan host) | Hanya melihat template Scan QR, sesuai aturan misi partner |
+| Disalin, bukan ditautkan | Isi template disalin ke misi dan tetap bisa diubah penyelenggara. Mengubah atau menonaktifkan template tidak mengubah misi yang sudah dibuat |
+| Kode dan checkpoint | Kode rahasia dan checkpoint selalu diisi penyelenggara sendiri; template tidak menyimpannya |
+| Statistik | Per template: jumlah aktivitas dan misi yang memakainya, persentase peserta yang menyelesaikan, kapan terakhir dipakai |
 
 ## 10. Kolaborasi: undangan, open call, dan event buatan admin
 
@@ -1097,7 +1133,7 @@ Satu codebase Next.js melayani dua aplikasi: **Gasyu PWA** (warga, merchant, kom
 | Bagian | Isi | Sumber data |
 | --- | --- | --- |
 | Ringkasan | Aktivitas berjalan, peserta, check-in hari ini, warga baru vs kembali | `v_merchant_dashboard`, `v_activity_stats` |
-| Perlu tindakan | Pembayaran menunggu konfirmasi, bukti foto misi menunggu tinjauan, undangan kolaborasi | `v_activity_payment_stats`, `v_mission_stats`, `activity_partners` |
+| Perlu tindakan | Pembayaran menunggu konfirmasi, bukti foto misi menunggu tinjauan, undangan kolaborasi, saran baru dari warga | `v_activity_payment_stats`, `v_mission_stats`, `activity_partners`, `v_organizer_suggestions` |
 | Poin dan voucher | Budget poin terpakai dan sisa, voucher ditukar dan dipakai per outlet | `v_activity_budget`, `v_activity_partner_stats` |
 | Misi | Tingkat penyelesaian tiap misi | `v_mission_stats` |
 | Reputasi | Skor hadir, penyelesaian, kolaborasi 90 hari | `v_organizer_reputation` |
@@ -1108,7 +1144,7 @@ Satu codebase Next.js melayani dua aplikasi: **Gasyu PWA** (warga, merchant, kom
 | --- | --- | --- |
 | Ringkasan | Aktivitas berjalan, peserta, check-in hari ini | `v_community_dashboard`, `v_activity_stats` |
 | Member | Member aktif, member baru bulan ini, permintaan menunggu, persentase member yang hadir 30 hari terakhir | `v_community_member_stats` |
-| Perlu tindakan | Permintaan bergabung, pembayaran menunggu konfirmasi, bukti foto misi, undangan kolaborasi | `community_memberships`, `v_activity_payment_stats`, `v_mission_stats` |
+| Perlu tindakan | Permintaan bergabung, pembayaran menunggu konfirmasi, bukti foto misi, undangan kolaborasi, saran baru dari warga | `community_memberships`, `v_activity_payment_stats`, `v_mission_stats`, `v_organizer_suggestions` |
 | Misi | Tingkat penyelesaian tiap misi | `v_mission_stats` |
 | Reputasi | Skor hadir, penyelesaian, kolaborasi 90 hari | `v_organizer_reputation` |
 
@@ -1121,6 +1157,7 @@ Satu codebase Next.js melayani dua aplikasi: **Gasyu PWA** (warga, merchant, kom
 | Antrean | Merchant/komunitas menunggu verifikasi, aktivitas menunggu review, check-in dan misi flagged, laporan pola mencurigakan | `organizers`, `activities`, `checkins`, `mission_completions`, `fraud_flags` |
 | Pembayaran | Aktivitas dibatalkan yang masih punya peserta `paid` belum `refunded` | `v_activity_payment_stats` |
 | Pengguna | Cari warga, merchant, komunitas; bekukan atau aktifkan | `profiles`, `organizers` |
+| Master misi | Template misi siap pakai untuk penyelenggara, statistik pemakaian | `mission_templates`, `v_mission_template_stats` |
 | Pengaturan | Angka aturan main (XP, batas, radius, kedaluwarsa) | `app_settings` |
 | Audit | Riwayat tindakan admin | `admin_actions` |
 
@@ -1145,6 +1182,10 @@ flowchart LR
     WG --> W9[/profil: level, badge, riwayat,<br/>pemilih mode/]
     WG --> W10[/m/slug dan /k/slug<br/>profil publik merchant dan komunitas/]
     WG --> W11[/daftar/merchant dan<br/>/daftar/komunitas/]
+    WG --> W12[/saran: saran saya<br/>status dan balasan/]
+    WG --> W13[/profil/ubah dan /profil/hapus/]
+    WG --> W14[/riwayat: XP dan poin/]
+    WG --> W15[/bantuan/]
 
     MC --> M1[/merchant/id: dashboard/]
     MC --> M2[/merchant/id/aktivitas/]
@@ -1157,6 +1198,7 @@ flowchart LR
     MC --> M7[/merchant/id/kolaborasi/]
     MC --> M8[/merchant/id/tim/]
     MC --> M9[/merchant/id/profil/]
+    MC --> M10[/merchant/id/saran/]
 
     KM --> K1[/komunitas/id: dashboard/]
     KM --> K2[/komunitas/id/aktivitas/]
@@ -1167,10 +1209,12 @@ flowchart LR
     KM --> K5[/komunitas/id/kolaborasi/]
     KM --> K6[/komunitas/id/tim/]
     KM --> K7[/komunitas/id/profil/]
+    KM --> K8[/komunitas/id/saran/]
 
     AD --> A0[/ ringkasan metrik/]
     AD --> A1[/verifikasi: merchant dan komunitas/]
     AD --> A2[/aktivitas: review dan<br/>event Gasyu/]
+    AD --> A8[/misi: master misi/]
     AD --> A3[/moderasi: flag dan laporan/]
     AD --> A4[/pembayaran/]
     AD --> A5[/pengguna/]
@@ -1181,3 +1225,38 @@ flowchart LR
 - Navigasi bawah PWA mengikuti mode aktif: mode warga (Beranda, Jelajah, Scan, Dompet, Profil), mode merchant (Dashboard, Aktivitas, QR, Kasir, Lainnya), mode komunitas (Dashboard, Aktivitas, QR, Member, Lainnya).
 - Pemilih mode hanya menampilkan merchant dan komunitas tempat akun itu tercatat di `organizer_members`. Akun yang mengelola beberapa merchant atau komunitas memilih salah satunya.
 - Staf merchant hanya melihat menu yang sesuai perannya (lihat bagian 2); misalnya kasir tetap bisa membuka QR dan Kasir, tetapi tidak Reward atau Tim.
+
+---
+
+## 21. Saran warga
+
+Warga bisa memberi saran ke merchant atau komunitas: ide aktivitas, produk atau menu, pelayanan, tempat dan fasilitas, atau lainnya. Tim penyelenggara membaca, membalas, dan menandai statusnya. Saran tidak memberi XP atau poin supaya tidak memancing spam.
+
+```mermaid
+sequenceDiagram
+    actor W as Warga
+    participant App as Gasyu
+    actor T as Tim merchant/komunitas
+    W->>App: Buka /m/slug atau /k/slug, isi Kasih saran
+    App->>App: submit_suggestion: cek tujuan approved, bukan tim sendiri, batas harian
+    App-->>T: Notifikasi "Saran baru" + to-do di dashboard
+    T->>App: Buka menu Saran warga, tulis balasan
+    T->>App: Tindak lanjuti / Selesai / Arsipkan (respond_suggestion)
+    App-->>W: Notifikasi jika ada balasan atau status jadi ditindaklanjuti/selesai
+    W->>App: Lihat status dan balasan di /saran
+```
+
+| Aturan | Isi |
+| --- | --- |
+| Siapa bisa mengirim | Warga aktif (sudah onboarding, tidak dibekukan), termasuk warga luar Cimahi |
+| Tujuan | Merchant atau komunitas berstatus `approved`; bukan event Gasyu (organizer `platform`) |
+| Tim sendiri | Anggota tim tidak bisa mengirim saran ke penyelenggaranya sendiri; formulir tidak tampil untuk mereka |
+| Isi | Satu jenis saran dan teks 10 sampai 1.000 karakter |
+| Batas | Maksimal `suggestion.daily_limit_per_organizer` saran (awal: 3) per warga per penyelenggara per hari WIB |
+| Tanpa nama | Warga boleh memilih tanpa nama. Tim tidak melihat nickname maupun kelurahan pengirim; admin tetap bisa menelusuri jika ada penyalahgunaan |
+| Privasi | Tim hanya melihat nickname dan kelurahan (tidak pernah `full_name`) lewat `v_organizer_suggestions` |
+| Status | `new` (Baru) → `in_progress` (Ditindaklanjuti) → `done` (Selesai), atau `archived` (Diarsipkan). Tidak bisa kembali ke Baru |
+| Siapa menanggapi | Semua anggota tim (pemilik, staf, ketua, pengurus). Balasan hanya terlihat oleh pengirimnya |
+| Notifikasi | Tim: setiap saran baru. Warga: saat ada balasan baru, atau status berubah ke Ditindaklanjuti/Selesai. Mengarsipkan tanpa balasan tidak mengirim notifikasi |
+| Admin | Bisa membaca semua saran untuk moderasi, tetapi tidak menanggapi atas nama penyelenggara |
+

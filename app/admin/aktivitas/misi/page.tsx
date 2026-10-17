@@ -21,6 +21,6 @@ async function Loader({ searchParams }: Pick<PageProps<"/admin/aktivitas/misi">,
   if (!aid) notFound();
   const supabase = await createClient();
   const { data: platformId } = await supabase.rpc("platform_organizer_id");
-  const query: MisiQuery = { tab: str(sp.tab), tambah: str(sp.tambah), ubah: str(sp.ubah), qr: str(sp.qr), tandai: str(sp.tandai), hasil: str(sp.hasil), error: str(sp.error), n: str(sp.n) };
+  const query: MisiQuery = { tab: str(sp.tab), tambah: str(sp.tambah), ubah: str(sp.ubah), qr: str(sp.qr), tandai: str(sp.tandai), hasil: str(sp.hasil), error: str(sp.error), n: str(sp.n), template: str(sp.template) };
   return <MisiBody organizerId={String(platformId ?? "")} type="admin" aid={aid} query={query} selfHref={`/admin/aktivitas/misi?aid=${aid}`} backHref={`/admin/aktivitas?tab=semua&pilih=${aid}`} />;
 }

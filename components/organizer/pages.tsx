@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { OrganizerAvatar } from "@/components/avatar";
+import { OrganizerAvatar, UserAvatar } from "@/components/avatar";
 import { MenuList, OrganizerShell, type OrganizerContext } from "@/components/organizer/shell";
 import { ProfileForm } from "@/components/organizer/profile-form";
 import { TeamInvite } from "@/components/organizer/team-invite";
 import { cardClass, tagClass } from "@/components/styles";
 import { SubmitButton } from "@/components/ui";
-import { removeTeamMember, resubmitOrganizer } from "@/lib/actions/organizer";
+import { removeTeamMember, resubmitOrganizer, setTeamRole } from "@/lib/actions/organizer";
 import { ROLE_LABELS, STATUS_LABELS, getVillageOptions, type MemberRole } from "@/lib/data/organizers";
 import { formatDate } from "@/lib/format";
+import { countNewSuggestions } from "@/lib/data/suggestions";
 import { createClient } from "@/lib/supabase/server";
 
 type Kind = "merchant" | "community";
@@ -20,7 +21,8 @@ export function LainnyaPage({ id, type, akses }: { id: string; type: Kind; akses
   const base = basePath(type, id);
   return (
     <OrganizerShell organizerId={id} type={type} active="Lainnya" title="Lainnya">
-      {({ org }) => {
+      {async ({ org }) => {
+        const newSuggestions = await countNewSuggestions(id);
         // Staf/pengurus tidak melihat Tim dan Reward (lihat ALUR-SISTEM bagian 2).
         const isLeader = org.role === "owner" || org.role === "chair";
         return (
@@ -39,6 +41,7 @@ export function LainnyaPage({ id, type, akses }: { id: string; type: Kind; akses
               ...(type === "merchant" && isLeader ? [{ label: "Reward & budget poin", href: `${base}/reward` }] : []),
               ...(type === "merchant" ? [{ label: "Kasir", href: `${base}/kasir` }] : []),
               { label: "Kolaborasi", href: `${base}/kolaborasi` },
+              { label: newSuggestions > 0 ? `Saran warga · ${newSuggestions} baru` : "Saran warga", href: `${base}/saran` },
             ]}
           />
           <Link href="/" className="flex h-12 items-center justify-center rounded-2xl border border-line-strong text-[14px] font-semibold text-fg">
@@ -53,24 +56,38 @@ export function LainnyaPage({ id, type, akses }: { id: string; type: Kind; akses
 
 // ---- Tim -------------------------------------------------------------
 
-export function TimPage({ id, type, error }: { id: string; type: Kind; error?: string }) {
+export function TimPage({ id, type, error, hasil }: { id: string; type: Kind; error?: string; hasil?: string }) {
   return (
     <OrganizerShell organizerId={id} type={type} active="Lainnya" title="Tim">
-      {(ctx) => <TeamBody ctx={ctx} id={id} type={type} error={error} />}
+      {(ctx) => <TeamBody ctx={ctx} id={id} type={type} error={error} hasil={hasil} />}
     </OrganizerShell>
   );
 }
 
-async function TeamBody({ ctx, id, type, error }: { ctx: OrganizerContext; id: string; type: Kind; error?: string }) {
+async function TeamBody({ ctx, id, type, error, hasil }: { ctx: OrganizerContext; id: string; type: Kind; error?: string; hasil?: string }) {
   if (ctx.org.role !== "owner" && ctx.org.role !== "chair") redirect(`${basePath(type, id)}/lainnya?akses=peran`);
   const supabase = await createClient();
   const { data: team } = await supabase.from("v_organizer_team").select("*").eq("organizer_id", id).order("created_at");
-  const members = (team ?? []) as { user_id: string; role: MemberRole; nickname: string; created_at: string }[];
+  const members = (team ?? []) as { user_id: string; role: MemberRole; nickname: string; avatar_url: string | null; created_at: string }[];
   const isLeader = ctx.org.role === "owner" || ctx.org.role === "chair";
   const roleName = type === "merchant" ? "staf" : "pengurus";
+  const leaderRole: MemberRole = type === "merchant" ? "owner" : "chair";
+  const memberRole: MemberRole = type === "merchant" ? "staff" : "officer";
+  const leaderName = type === "merchant" ? "pemilik" : "ketua";
+  const leaderCount = members.filter((m) => m.role === leaderRole).length;
 
   return (
     <>
+      {hasil === "peran" && (
+        <p role="status" className="rounded-[14px] bg-success-tint px-4 py-3 text-[13px] font-semibold text-success">
+          Peran anggota tim sudah diubah.
+        </p>
+      )}
+      {error === "gagal" && (
+        <p role="alert" className="rounded-[14px] bg-danger-tint px-4 py-3 text-[13px] text-danger">
+          Tindakan gagal. Coba lagi.
+        </p>
+      )}
       {error === "terakhir" && (
         <p role="alert" className="rounded-[14px] bg-danger-tint px-4 py-3 text-[13px] text-danger">
           Harus tersisa minimal satu {type === "merchant" ? "pemilik" : "ketua"}.
@@ -79,6 +96,7 @@ async function TeamBody({ ctx, id, type, error }: { ctx: OrganizerContext; id: s
       <section className={`${cardClass} flex flex-col overflow-hidden`}>
         {members.map((m, i) => (
           <div key={m.user_id} className={`flex min-h-14 items-center gap-3 px-3.5 py-2 ${i > 0 ? "border-t border-line" : ""}`}>
+            <UserAvatar nickname={m.nickname} avatarUrl={m.avatar_url} size={36} />
             <span className="flex flex-1 flex-col gap-0.5">
               <span className="text-[14px] font-semibold">
                 {m.nickname}{" "}
@@ -87,6 +105,17 @@ async function TeamBody({ ctx, id, type, error }: { ctx: OrganizerContext; id: s
               </span>
               <span className="text-[12px] text-fg-soft">bergabung {formatDate(m.created_at)}</span>
             </span>
+            {isLeader && (m.user_id !== ctx.user.id || leaderCount > 1) && (
+              <form action={setTeamRole}>
+                <input type="hidden" name="organizer_id" value={id} />
+                <input type="hidden" name="type" value={type} />
+                <input type="hidden" name="user_id" value={m.user_id} />
+                <input type="hidden" name="role" value={m.role === leaderRole ? memberRole : leaderRole} />
+                <SubmitButton size="small" variant="outline" pendingText="…">
+                  {m.role === leaderRole ? (m.user_id === ctx.user.id ? `Turun jadi ${roleName}` : `Jadikan ${roleName}`) : `Jadikan ${leaderName}`}
+                </SubmitButton>
+              </form>
+            )}
             {(isLeader || m.user_id === ctx.user.id) && (
               <form action={removeTeamMember}>
                 <input type="hidden" name="organizer_id" value={id} />

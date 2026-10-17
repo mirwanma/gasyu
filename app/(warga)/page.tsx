@@ -48,6 +48,7 @@ async function CitizenHome() {
   return (
     <HomeView
       nickname={user.nickname}
+      avatarUrl={user.avatarUrl}
       villageName={user.villageName ?? undefined}
       totalXp={(xpRows ?? []).reduce((sum, row) => sum + row.amount, 0)}
       levels={levels ?? []}

@@ -4,8 +4,8 @@ Panduan kerja untuk Claude di proyek ini. Baca seluruh file ini di awal setiap s
 
 **Sumber kebenaran** (baca bagian yang relevan sebelum menulis kode):
 
-- `docs/ALUR-SISTEM.md` — alur, peran, aturan bisnis (v0.7)
-- `docs/DESAIN-DATABASE.md` — tabel, enum, fungsi, RLS, urutan migrasi (v0.7)
+- `docs/ALUR-SISTEM.md` — alur, peran, aturan bisnis (v0.8)
+- `docs/DESAIN-DATABASE.md` — tabel, enum, fungsi, RLS, urutan migrasi (v0.8)
 - `docs/BRAND.md` — warna, tipografi, logo, gaya bahasa
 - PRD (PDF milik pemilik proyek, tidak disimpan di repo)
 
@@ -40,6 +40,7 @@ Pilot: Kota Cimahi (3 kecamatan, 15 kelurahan). Struktur wilayah harus generik u
 | Tim | pengelola dashboard (owner/staff atau chair/officer) | `organizer_members` |
 | Aktivitas | event atau challenge | `activities` (`type`: event, challenge) |
 | Misi | tugas di dalam aktivitas | `activity_missions`, `mission_completions` |
+| Master misi | template misi dari admin, disalin saat dipakai | `mission_templates` |
 | Partner | penyelenggara dalam aktivitas | `activity_partners` (`role`: host, cohost, sponsor) |
 | Open call | tawaran kolaborasi atau sponsor | `collab_posts`, `collab_applications` |
 | Checkpoint | lokasi check-in milik partner | `activity_checkpoints` |
@@ -49,6 +50,7 @@ Pilot: Kota Cimahi (3 kecamatan, 15 kelurahan). Struktur wilayah harus generik u
 | Poin | mata uang reward, dari budget merchant | `point_ledger`, `point_allocations` |
 | Reward / voucher | hadiah dari merchant | `rewards`, `redemptions` |
 | Event Gasyu | event buatan admin, host organizer `platform` | `organizers.type = 'platform'` |
+| Saran | saran warga untuk merchant/komunitas, dibalas tim | `suggestions` |
 
 ## Aturan yang tidak boleh dilanggar
 
@@ -83,11 +85,12 @@ Aturan rinci (kolaborasi, grup, misi, keanggotaan, domisili, berbayar, leaderboa
 npm run dev                      # jalankan di http://localhost:3000
 npm run lint                     # cek kode
 npm run build                    # cek build produksi
+PGHOST=localhost PGUSER=postgres supabase/tests/run.sh   # semua uji SQL di Postgres lokal (database dibuat ulang)
 npx supabase login               # sekali saja
 npx supabase link --project-ref <ref>   # hubungkan ke project Supabase
 npx supabase migration new <nama>       # buat file migrasi
 npx supabase db push             # terapkan migrasi ke project Supabase
-npx supabase gen types typescript --linked > lib/supabase/database.types.ts
+npx supabase gen types typescript --linked > lib/supabase/database.types.ts   # ulangi setiap ada migrasi baru
 ```
 
 ## Struktur folder (target)
@@ -101,7 +104,7 @@ app/                  # route Next.js
   masuk/, onboarding/
 components/
 lib/
-  supabase/           # client.ts (browser), server.ts, proxy.ts (sesi)
+  supabase/           # client.ts (browser), server.ts, proxy.ts (sesi), database.types.ts (otomatis), types.ts
   gamification/       # helper tampilan XP, level, badge (aturan tetap di database)
 proxy.ts              # pengganti middleware: refresh sesi, wajib onboarding
 supabase/
@@ -115,4 +118,4 @@ docs/
 
 Ikuti `docs/DESAIN-DATABASE.md` bagian 9 (irisan 1–11).
 
-Irisan saat ini: **selesai (1–11)** — pemolesan, E2E, dan rilis pilot — perbarui baris ini setiap pindah irisan.
+Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016), foto profil (0017), master misi (0018) — pemolesan, E2E, dan rilis pilot — perbarui baris ini setiap pindah irisan.

@@ -123,7 +123,7 @@ select pg_temp.assert_fails(
 
 -- Warga lain belum melihat komunitas pending
 select pg_temp.login('00000000-0000-0000-0000-00000000000d');
-select pg_temp.assert((select count(*) from public.organizers) = 0, 'warga tidak melihat penyelenggara pending');
+select pg_temp.assert((select count(*) from public.organizers where type <> 'platform') = 0, 'warga tidak melihat penyelenggara pending');
 select pg_temp.assert_fails(
   $$select public.request_membership((select v from ids where k = 'community'), null)$$,
   'community_unavailable', 'belum bisa gabung ke komunitas pending');
@@ -145,7 +145,7 @@ select pg_temp.login('00000000-0000-0000-0000-00000000000d');
 select pg_temp.assert_fails(
   $$select public.review_organizer((select v from ids where k = 'merchant'), true, null)$$,
   'not_allowed', 'warga tidak bisa memverifikasi');
-select pg_temp.assert((select count(*) from public.organizers) = 2, 'warga melihat yang approved saja');
+select pg_temp.assert((select count(*) from public.organizers where type <> 'platform') = 2, 'warga melihat yang approved saja');
 
 -- Pemilik yang ditolak mendapat notifikasi dan bisa mengajukan ulang
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
