@@ -47,3 +47,9 @@ supabase/.temp
 
 # dokumen privat
 *.pdf
+
+# playwright (e2e)
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
