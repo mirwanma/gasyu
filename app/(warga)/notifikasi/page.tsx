@@ -5,7 +5,7 @@ import { BottomNav, CITIZEN_NAV } from "@/components/bottom-nav";
 import { Icon } from "@/components/icons";
 import { cardClass } from "@/components/styles";
 import { getCurrentUser } from "@/lib/data/user";
-import { timeAgo } from "@/lib/format";
+import { formatDate, timeAgo } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 
 type Notification = { id: string; kind: string; payload: Record<string, unknown>; read_at: string | null; created_at: string };
@@ -95,6 +95,18 @@ function describe(n: Notification): { title: string; body?: string; href?: strin
       return {
         title: `Peranmu di ${p.organizer_name} sekarang ${({ owner: "pemilik", staff: "staf", chair: "ketua", officer: "pengurus" } as Record<string, string>)[String(p.role)] ?? p.role}`,
         href: typeof p.organizer_id === "string" ? `/${p.organizer_type === "community" ? "komunitas" : "merchant"}/${p.organizer_id}` : undefined,
+      };
+    case "voucher_expiring":
+      return {
+        title: `Voucher "${p.reward_title}" dari ${p.merchant_name} kedaluwarsa ${typeof p.expires_at === "string" ? formatDate(p.expires_at) : "sebentar lagi"}`,
+        body: "Pakai sebelum hangus: tunjukkan kode voucher di kasir.",
+        href: "/dompet",
+      };
+    case "points_expiring":
+      return {
+        title: `${Number(p.points ?? 0).toLocaleString("id-ID")} poin akan kedaluwarsa ${typeof p.expires_at === "string" ? formatDate(p.expires_at) : "sebentar lagi"}`,
+        body: "Tukar dengan voucher di Dompet sebelum hangus.",
+        href: "/dompet",
       };
     case "suggestion_received":
       return {

@@ -6508,6 +6508,7 @@ export type Database = {
         Args: { p_kind: string; p_payload?: Json; p_user_id: string }
         Returns: undefined
       }
+      notify_expiring: { Args: never; Returns: number }
       notify_team: {
         Args: { p_kind: string; p_organizer_id: string; p_payload?: Json }
         Returns: undefined
