@@ -1,7 +1,7 @@
 # Gasyu — Alur Sistem
 
 Versi 0.8 · 16 Oktober 2026 · Pilot Kota Cimahi
-Perubahan 0.8: saran warga untuk merchant dan komunitas (bagian 21); ubah profil, ganti kelurahan, hapus akun, riwayat, bantuan (bagian 3); serah terima peran pemilik/ketua (bagian 5).
+Perubahan 0.8: master misi (bagian 9f); saran warga untuk merchant dan komunitas (bagian 21); ubah profil, ganti kelurahan, hapus akun, riwayat, bantuan (bagian 3); serah terima peran pemilik/ketua (bagian 5).
 Perubahan 0.7: aturan domisili peserta, yaitu hanya warga wilayah event atau semua warga (bagian 6).
 Perubahan 0.6: pembuat event mengatur kapan tiap misi tampil ke warga (bagian 9e).
 Perubahan 0.5: admin bisa membuat event atas nama Gasyu dan langsung menambahkan merchant/komunitas yang terlibat (bagian 10c).
@@ -145,6 +145,8 @@ Ada dua jenis keterikatan warga dengan komunitas, dan keduanya terpisah:
 | Ajukan aktivitas ke admin | - | - | Ya | - | Ya | - |
 | Tampilkan QR check-in dan QR misi | - | Ya | Ya | Ya | Ya | - |
 | Kelola misi (tambah, ubah, nonaktifkan) | - | Ya | Ya | Ya | Ya | - |
+| Pakai template master misi saat menambah misi | - | Ya | Ya | Ya | Ya | Ya |
+| Kelola master misi (template) | - | - | - | - | - | Ya |
 | Tinjau bukti foto misi, tandai misi manual | - | Ya | Ya | Ya | Ya | - |
 | Atur harga aktivitas berbayar | - | - | Ya | - | Ya | - |
 | Konfirmasi pembayaran peserta | - | Ya | Ya | Ya | Ya | - |
@@ -566,6 +568,33 @@ stateDiagram-v2
 Halaman aktivitas di PWA warga mengambil daftar misi lewat `get_activity_missions`, sehingga tiap warga hanya menerima misi yang memang sudah terbuka untuknya; misi tersembunyi tidak pernah terkirim ke HP.
 
 ---
+
+### 9f. Master misi
+
+Admin menyiapkan katalog template misi di `/admin/misi` supaya penyelenggara, terutama UMKM yang baru pertama membuat event, tidak mulai dari nol.
+
+```mermaid
+sequenceDiagram
+    actor A as Admin
+    participant App as Gasyu
+    actor P as Tim penyelenggara
+    A->>App: Buat/ubah template (judul, instruksi, tips, kategori, verifikasi, saran XP, untuk siapa)
+    P->>App: Tambah misi di aktivitas
+    App-->>P: Daftar template aktif yang cocok (jenis aktivitas, tipe penyelenggara)
+    P->>App: Pakai template, sesuaikan isi, isi kode/checkpoint, simpan
+    App->>App: upsert_mission menyalin isi + mencatat template_id
+    A->>App: Lihat statistik pemakaian dan tingkat selesai per template
+```
+
+| Aturan | Isi |
+| --- | --- |
+| Siapa mengelola | Hanya admin: buat, ubah, aktifkan, nonaktifkan (tercatat di audit). Template tidak dihapus supaya statistik tetap utuh |
+| Isi template | Judul, instruksi untuk warga, tips untuk penyelenggara, kategori (kunjungan, belanja, media sosial, olahraga, lingkungan, edukasi, komunitas, lainnya), cara verifikasi, saran XP (dalam batas `mission.xp_min`–`mission.xp_max`), wajib/bonus |
+| Untuk siapa | Bisa dibatasi ke event atau challenge, dan ke merchant atau komunitas; kosong = semua. Event Gasyu melihat semua template |
+| Partner (bukan host) | Hanya melihat template Scan QR, sesuai aturan misi partner |
+| Disalin, bukan ditautkan | Isi template disalin ke misi dan tetap bisa diubah penyelenggara. Mengubah atau menonaktifkan template tidak mengubah misi yang sudah dibuat |
+| Kode dan checkpoint | Kode rahasia dan checkpoint selalu diisi penyelenggara sendiri; template tidak menyimpannya |
+| Statistik | Per template: jumlah aktivitas dan misi yang memakainya, persentase peserta yang menyelesaikan, kapan terakhir dipakai |
 
 ## 10. Kolaborasi: undangan, open call, dan event buatan admin
 
@@ -1128,6 +1157,7 @@ Satu codebase Next.js melayani dua aplikasi: **Gasyu PWA** (warga, merchant, kom
 | Antrean | Merchant/komunitas menunggu verifikasi, aktivitas menunggu review, check-in dan misi flagged, laporan pola mencurigakan | `organizers`, `activities`, `checkins`, `mission_completions`, `fraud_flags` |
 | Pembayaran | Aktivitas dibatalkan yang masih punya peserta `paid` belum `refunded` | `v_activity_payment_stats` |
 | Pengguna | Cari warga, merchant, komunitas; bekukan atau aktifkan | `profiles`, `organizers` |
+| Master misi | Template misi siap pakai untuk penyelenggara, statistik pemakaian | `mission_templates`, `v_mission_template_stats` |
 | Pengaturan | Angka aturan main (XP, batas, radius, kedaluwarsa) | `app_settings` |
 | Audit | Riwayat tindakan admin | `admin_actions` |
 
@@ -1184,6 +1214,7 @@ flowchart LR
     AD --> A0[/ ringkasan metrik/]
     AD --> A1[/verifikasi: merchant dan komunitas/]
     AD --> A2[/aktivitas: review dan<br/>event Gasyu/]
+    AD --> A8[/misi: master misi/]
     AD --> A3[/moderasi: flag dan laporan/]
     AD --> A4[/pembayaran/]
     AD --> A5[/pengguna/]

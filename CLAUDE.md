@@ -40,6 +40,7 @@ Pilot: Kota Cimahi (3 kecamatan, 15 kelurahan). Struktur wilayah harus generik u
 | Tim | pengelola dashboard (owner/staff atau chair/officer) | `organizer_members` |
 | Aktivitas | event atau challenge | `activities` (`type`: event, challenge) |
 | Misi | tugas di dalam aktivitas | `activity_missions`, `mission_completions` |
+| Master misi | template misi dari admin, disalin saat dipakai | `mission_templates` |
 | Partner | penyelenggara dalam aktivitas | `activity_partners` (`role`: host, cohost, sponsor) |
 | Open call | tawaran kolaborasi atau sponsor | `collab_posts`, `collab_applications` |
 | Checkpoint | lokasi check-in milik partner | `activity_checkpoints` |
@@ -117,4 +118,4 @@ docs/
 
 Ikuti `docs/DESAIN-DATABASE.md` bagian 9 (irisan 1–11).
 
-Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016), foto profil (0017) — pemolesan, E2E, dan rilis pilot — perbarui baris ini setiap pindah irisan.
+Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016), foto profil (0017), master misi (0018) — pemolesan, E2E, dan rilis pilot — perbarui baris ini setiap pindah irisan.

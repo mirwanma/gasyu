@@ -13,13 +13,15 @@ import { listActivityPartners } from "@/lib/data/collab";
 import { getActivityCard, getCheckpoints } from "@/lib/data/activities";
 import { listManualCandidates, listReviewQueue, listTeamMissions, type TeamMission } from "@/lib/data/missions";
 import { VERIFICATION_LABELS } from "@/lib/missions";
+import { listTemplatesFor } from "@/lib/data/mission-templates";
+import { CATEGORY_LABELS, type MissionTemplate } from "@/lib/mission-templates";
 import { formatDateTime } from "@/lib/format";
 import { signedUrl } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
 
 type Kind = "merchant" | "community";
 
-export type MisiQuery = { tab?: string; tambah?: string; ubah?: string; qr?: string; tandai?: string; hasil?: string; error?: string; n?: string };
+export type MisiQuery = { tab?: string; tambah?: string; ubah?: string; qr?: string; tandai?: string; hasil?: string; error?: string; n?: string; template?: string };
 
 // Halaman kelola misi untuk tim merchant/komunitas (dalam shell), mengikuti artboard "Kelola misi".
 export function MisiPage({ id, type, aid, query }: { id: string; type: Kind; aid: string; query: MisiQuery }) {
@@ -70,6 +72,16 @@ export async function MisiBody({
   const showForm = query.tambah === "1" || !!editing;
   const canEdit = !["ended", "settled", "cancelled"].includes(card.status) && (type === "admin" || !!ctx);
   const pendingCount = missions.reduce((s, m) => s + m.stats.pending, 0);
+  // Master misi: template aktif yang cocok untuk aktivitas dan penyelenggara ini.
+  const templates =
+    showForm && !editing && canEdit
+      ? await listTemplatesFor({
+          activityType: card.type,
+          organizerType: type === "admin" ? "platform" : type,
+          qrOnly: partnerOnly,
+        })
+      : [];
+  const chosen = query.template ? templates.find((t) => t.id === query.template) : undefined;
   const mine = (m: TeamMission) => isHost || m.partner_organizer_id === organizerId;
   const notices: Record<string, string> = {
     buka: `Misi dibuka. ${query.n ?? 0} peserta diberi tahu.`,
@@ -108,8 +120,13 @@ export async function MisiBody({
         <ReviewTab aid={aid} organizerId={organizerId} type={type} />
       ) : (
         <>
+          {showForm && canEdit && !editing && templates.length > 0 && (
+            <TemplatePicker templates={templates} chosen={chosen} pickHref={(id) => link(`tambah=1&template=${id}`)} clearHref={link("tambah=1")} />
+          )}
           {showForm && canEdit && (
             <MissionForm
+              key={chosen?.id ?? editing?.id ?? "baru"}
+              templateId={chosen?.id}
               organizerId={organizerId}
               type={type}
               activityId={aid}
@@ -117,7 +134,7 @@ export async function MisiBody({
               otherMissions={missions.filter((m) => m.is_active).map((m) => ({ id: m.id, title: m.title, is_required: m.is_required }))}
               partnerOnly={partnerOnly && !editing}
               partnerOrganizerId={partnerOnly ? organizerId : undefined}
-              initial={editing ? toFormValues(editing) : undefined}
+              initial={editing ? toFormValues(editing) : chosen ? fromTemplate(chosen) : undefined}
               onCancelHref={selfHref}
             />
           )}
@@ -217,6 +234,76 @@ function statNote(m: TeamMission) {
   if (!m.revealed_at && m.reveal_mode === "scheduled") return `${m.show_teaser ? "Teaser tampil ke warga" : "Tersembunyi"} · terbuka otomatis`;
   if (!m.revealed_at && m.reveal_mode === "manual") return "Warga belum melihat misi ini. Buka saat MC mengumumkan.";
   return base;
+}
+
+// Nilai awal form misi dari template master misi (disalin, tetap bisa diubah).
+function fromTemplate(t: MissionTemplate): MissionFormValues {
+  return {
+    title: t.title,
+    description: t.description ?? "",
+    verification: t.verification,
+    checkpoint_id: null,
+    xp_reward: t.xp_reward,
+    is_required: t.is_required,
+    reveal_mode: "on_publish",
+    reveal_at: "",
+    prerequisite_mission_id: null,
+    show_teaser: true,
+    available_from: "",
+    available_until: "",
+    locked: false,
+    revealed: false,
+  };
+}
+
+// Daftar template master misi di atas form tambah misi.
+function TemplatePicker({
+  templates,
+  chosen,
+  pickHref,
+  clearHref,
+}: {
+  templates: MissionTemplate[];
+  chosen?: MissionTemplate;
+  pickHref: (id: string) => string;
+  clearHref: string;
+}) {
+  if (chosen) {
+    return (
+      <section className="flex flex-col gap-1.5 rounded-[18px] border border-primary/30 bg-primary-tint p-3.5">
+        <span className="flex items-center justify-between gap-2">
+          <span className="text-[13px] font-bold text-link">Dari master misi: {chosen.title}</span>
+          <a href={clearHref} className="text-[12px] font-semibold text-link">Ganti</a>
+        </span>
+        <span className="text-[12px] leading-[1.5] text-fg-label">Isi form sudah terisi dari template. Sesuaikan judul, instruksi, dan XP dengan aktivitasmu.</span>
+        {chosen.organizer_tips && <span className="text-[12px] leading-[1.5] text-fg-label">Tips: {chosen.organizer_tips}</span>}
+      </section>
+    );
+  }
+  return (
+    <details className={`${cardClass} group overflow-hidden`} open>
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3">
+        <span className="flex flex-col">
+          <span className="text-[14px] font-bold">Mulai dari master misi</span>
+          <span className="text-[12px] text-fg-soft">{templates.length} template siap pakai dari tim Gasyu, atau isi form di bawah dari nol.</span>
+        </span>
+        <Icon name="chevronDown" size={16} stroke={2} className="shrink-0 text-fg-muted group-open:hidden" />
+      </summary>
+      <ul className="flex max-h-[360px] flex-col overflow-y-auto border-t border-line">
+        {templates.map((t) => (
+          <li key={t.id} className="flex items-center gap-3 border-b border-line px-4 py-2.5 last:border-b-0">
+            <span className="flex flex-1 flex-col gap-0.5">
+              <span className="text-[13px] font-semibold">{t.title}</span>
+              <span className="text-[11px] text-fg-soft">
+                {CATEGORY_LABELS[t.category]} · {VERIFICATION_LABELS[t.verification]} · {t.xp_reward} XP · {t.is_required ? "wajib" : "bonus"}
+              </span>
+            </span>
+            <a href={pickHref(t.id)} className={smallButton.outline}>Pakai</a>
+          </li>
+        ))}
+      </ul>
+    </details>
+  );
 }
 
 function toFormValues(m: TeamMission): MissionFormValues {

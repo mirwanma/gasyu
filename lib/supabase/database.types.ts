@@ -381,6 +381,7 @@ export type Database = {
           revealed_at: string | null
           show_teaser: boolean
           sort_order: number
+          template_id: string | null
           title: string
           updated_at: string
           verification: Database["public"]["Enums"]["mission_verification"]
@@ -408,6 +409,7 @@ export type Database = {
           revealed_at?: string | null
           show_teaser?: boolean
           sort_order?: number
+          template_id?: string | null
           title: string
           updated_at?: string
           verification: Database["public"]["Enums"]["mission_verification"]
@@ -435,6 +437,7 @@ export type Database = {
           revealed_at?: string | null
           show_teaser?: boolean
           sort_order?: number
+          template_id?: string | null
           title?: string
           updated_at?: string
           verification?: Database["public"]["Enums"]["mission_verification"]
@@ -580,6 +583,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_participation_missions"
             referencedColumns: ["mission_id"]
+          },
+          {
+            foreignKeyName: "activity_missions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "mission_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_missions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "v_mission_template_stats"
+            referencedColumns: ["template_id"]
           },
         ]
       }
@@ -2369,6 +2386,82 @@ export type Database = {
           {
             foreignKeyName: "mission_completions_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      mission_templates: {
+        Row: {
+          activity_type: Database["public"]["Enums"]["activity_type"] | null
+          category: Database["public"]["Enums"]["mission_category"]
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          is_required: boolean
+          organizer_tips: string | null
+          organizer_type: Database["public"]["Enums"]["organizer_type"] | null
+          sort_order: number
+          title: string
+          updated_at: string
+          verification: Database["public"]["Enums"]["mission_verification"]
+          xp_reward: number
+        }
+        Insert: {
+          activity_type?: Database["public"]["Enums"]["activity_type"] | null
+          category?: Database["public"]["Enums"]["mission_category"]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_required?: boolean
+          organizer_tips?: string | null
+          organizer_type?: Database["public"]["Enums"]["organizer_type"] | null
+          sort_order?: number
+          title: string
+          updated_at?: string
+          verification: Database["public"]["Enums"]["mission_verification"]
+          xp_reward: number
+        }
+        Update: {
+          activity_type?: Database["public"]["Enums"]["activity_type"] | null
+          category?: Database["public"]["Enums"]["mission_category"]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_required?: boolean
+          organizer_tips?: string | null
+          organizer_type?: Database["public"]["Enums"]["organizer_type"] | null
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          verification?: Database["public"]["Enums"]["mission_verification"]
+          xp_reward?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mission_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "v_admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mission_templates_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "v_user_points_balance"
             referencedColumns: ["user_id"]
@@ -5459,6 +5552,33 @@ export type Database = {
           },
         ]
       }
+      v_mission_template_stats: {
+        Row: {
+          activities: number | null
+          completions: number | null
+          last_used_at: string | null
+          missions: number | null
+          participant_slots: number | null
+          template_id: string | null
+        }
+        Insert: {
+          activities?: never
+          completions?: never
+          last_used_at?: never
+          missions?: never
+          participant_slots?: never
+          template_id?: string | null
+        }
+        Update: {
+          activities?: never
+          completions?: never
+          last_used_at?: never
+          missions?: never
+          participant_slots?: never
+          template_id?: string | null
+        }
+        Relationships: []
+      }
       v_moderation_checkins: {
         Row: {
           account_created_at: string | null
@@ -6513,6 +6633,10 @@ export type Database = {
         Args: { p_active: boolean; p_mission_id: string }
         Returns: undefined
       }
+      set_mission_template_active: {
+        Args: { p_active: boolean; p_template_id: string }
+        Returns: undefined
+      }
       set_my_avatar: { Args: { p_url: string }; Returns: undefined }
       set_partner_budget: {
         Args: { p_budget: number; p_partner_id: string }
@@ -6582,6 +6706,10 @@ export type Database = {
         Args: { p_activity_id: string; p_mission: Json }
         Returns: string
       }
+      upsert_mission_template: {
+        Args: { p_data: Json; p_template_id: string }
+        Returns: string
+      }
       upsert_reward: {
         Args: { p_data: Json; p_organizer_id: string; p_reward_id: string }
         Returns: string
@@ -6627,6 +6755,15 @@ export type Database = {
       join_policy: "open" | "approval"
       member_role: "owner" | "staff" | "chair" | "officer"
       membership_status: "pending" | "active" | "rejected" | "left" | "removed"
+      mission_category:
+        | "visit"
+        | "purchase"
+        | "social"
+        | "sport"
+        | "environment"
+        | "learning"
+        | "community"
+        | "other"
       mission_reveal: "on_publish" | "scheduled" | "manual" | "after_mission"
       mission_verification: "qr_scan" | "secret_code" | "photo" | "manual"
       organizer_status: "pending" | "approved" | "rejected" | "suspended"
@@ -6842,6 +6979,16 @@ export const Constants = {
       join_policy: ["open", "approval"],
       member_role: ["owner", "staff", "chair", "officer"],
       membership_status: ["pending", "active", "rejected", "left", "removed"],
+      mission_category: [
+        "visit",
+        "purchase",
+        "social",
+        "sport",
+        "environment",
+        "learning",
+        "community",
+        "other",
+      ],
       mission_reveal: ["on_publish", "scheduled", "manual", "after_mission"],
       mission_verification: ["qr_scan", "secret_code", "photo", "manual"],
       organizer_status: ["pending", "approved", "rejected", "suspended"],

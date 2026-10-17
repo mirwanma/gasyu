@@ -10,6 +10,7 @@ import type { Json } from "@/lib/supabase/types";
 export type MissionActionState = { error?: string; success?: string };
 
 const ERRORS: Record<string, string> = {
+  invalid_template: "Template master misi ini sudah tidak tersedia. Pilih template lain atau isi dari nol.",
   not_allowed: "Kamu tidak punya akses untuk ini.",
   invalid_activity: "Aktivitas tidak ditemukan.",
   invalid_mission: "Misi tidak ditemukan atau sudah nonaktif.",
@@ -66,6 +67,7 @@ export async function saveMission(_prev: MissionActionState, formData: FormData)
   const text = (key: string) => String(formData.get(key) ?? "").trim();
   const mission: Record<string, unknown> = {
     id: text("mission_id") || null,
+    template_id: text("template_id") || null,
     partner_organizer_id: text("partner_organizer_id") || null,
     title: text("title"),
     description: text("description"),
