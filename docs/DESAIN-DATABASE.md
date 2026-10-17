@@ -1,7 +1,7 @@
 # Gasyu — Desain Database
 
 Versi 0.8 · 16 Oktober 2026 · Supabase (Postgres 15+)
-Perubahan 0.8: master misi (`mission_templates`, `activity_missions.template_id`, `v_mission_template_stats`); fungsi akun warga (`update_my_profile`, `change_home_village`, `delete_my_account`), `set_team_role`; saran warga (`suggestions`, enum `suggestion_category` dan `suggestion_status`, view `v_organizer_suggestions`, fungsi `submit_suggestion` dan `respond_suggestion`).
+Perubahan 0.8: pengingat voucher dan poin hampir kedaluwarsa (`notify_expiring`, notifikasi `points_expiring`, `reminder.expiry_days`); master misi (`mission_templates`, `activity_missions.template_id`, `v_mission_template_stats`); fungsi akun warga (`update_my_profile`, `change_home_village`, `delete_my_account`), `set_team_role`; saran warga (`suggestions`, enum `suggestion_category` dan `suggestion_status`, view `v_organizer_suggestions`, fungsi `submit_suggestion` dan `respond_suggestion`).
 Perubahan 0.7: kolom `activities.residency_rule` (enum `residency_rule`) dan helper `is_resident_of`.
 Perubahan 0.6: pengaturan tampil misi (`reveal_mode`, `reveal_at`, `prerequisite_mission_id`, `show_teaser`, `revealed_at`), fungsi `reveal_mission` dan `get_activity_missions`.
 Perubahan 0.5: event buatan admin (tipe organizer `platform`, sumber partner `admin`, fungsi `admin_add_partner`, `leave_activity`, `set_partner_budget`).
@@ -901,7 +901,7 @@ Unik: `(activity_id, user_id, local_date)`.
 
 **fraud_flags**: `id`, `user_id`, `checkin_id` opsional, `mission_completion_id` opsional, `kind flag_kind`, `detail jsonb`, `status flag_status` default open, `reviewed_by`, `reviewed_at`.
 
-**notifications**: `id`, `user_id`, `kind text` (partner_invite, application_received, group_registration, activity_approved, organizer_verified, badge_awarded, voucher_expiring, partner_added_by_admin, partner_left, membership_requested, membership_approved, membership_rejected, membership_removed, community_new_activity, payment_proof_submitted, payment_confirmed, payment_rejected, payment_expired, payment_refund_due, mission_proof_submitted, mission_approved, mission_rejected, mission_revealed, suggestion_received, suggestion_answered, team_role_changed), `payload jsonb`, `read_at`.
+**notifications**: `id`, `user_id`, `kind text` (partner_invite, application_received, group_registration, activity_approved, organizer_verified, badge_awarded, voucher_expiring, points_expiring, partner_added_by_admin, partner_left, membership_requested, membership_approved, membership_rejected, membership_removed, community_new_activity, payment_proof_submitted, payment_confirmed, payment_rejected, payment_expired, payment_refund_due, mission_proof_submitted, mission_approved, mission_rejected, mission_revealed, suggestion_received, suggestion_answered, team_role_changed), `payload jsonb`, `read_at`.
 
 **suggestions** — saran warga untuk merchant/komunitas: `id`, `organizer_id` (merchant/komunitas approved), `user_id` pengirim, `category suggestion_category`, `body text` (10–1.000 karakter), `is_anonymous boolean`, `status suggestion_status` default new, `reply text` opsional, `replied_at`, `replied_by`, `status_changed_at`, `created_at`, `updated_at`. Ditulis hanya lewat fungsi. Tim membaca lewat `v_organizer_suggestions`.
 
@@ -935,6 +935,7 @@ Unik: `(activity_id, user_id, local_date)`.
 | payment.default_window_hours | 24 |
 | suggestion.daily_limit_per_organizer | 3 |
 | profile.village_change_days | 90 |
+| reminder.expiry_days | 7 (pengingat voucher dan poin hampir kedaluwarsa) |
 | support.whatsapp / support.email | `""` (diisi admin di Pengaturan) |
 
 ---
@@ -1031,7 +1032,7 @@ Semua fungsi yang mengubah XP, poin, status, atau hak akses berjenis `security d
 | `get_leaderboard(scope, region_id, month)` | publik (login) | baris peringkat dengan nickname saja |
 | `award_badges(user_id)` | internal, dipanggil `perform_checkin` dan cron | cek aturan `badges.rule`, insert `user_badges` + notifikasi |
 
-**Fungsi cron** (dipanggil `pg_cron`, tidak bisa dipanggil client): `advance_activity_status`, `expire_group_invitations`, `close_expired_collab_posts`, `settle_ended_activities`, `expire_points`, `expire_redemptions`, `award_streak`, `snapshot_monthly_winners`, `expire_membership_requests`, `expire_unpaid_participations`, `prune_code_attempts`, `reveal_scheduled_missions` (tiap menit). `settle_ended_activities` juga menolak `mission_completions` yang masih `pending_review`.
+**Fungsi cron** (dipanggil `pg_cron`, tidak bisa dipanggil client): `advance_activity_status`, `expire_group_invitations`, `close_expired_collab_posts`, `settle_ended_activities`, `expire_points`, `expire_redemptions`, `award_streak`, `snapshot_monthly_winners`, `expire_membership_requests`, `expire_unpaid_participations`, `prune_code_attempts`, `reveal_scheduled_missions` (tiap menit), `notify_expiring` (08.05 WIB: notifikasi `voucher_expiring` sekali per voucher aktif dan `points_expiring` sekali per jangka untuk poin yang hangus dalam `reminder.expiry_days` hari). `settle_ended_activities` juga menolak `mission_completions` yang masih `pending_review`.
 
 **Penguncian.** `perform_checkin`, `evaluate_completion`, dan `redeem_reward` memakai `select ... for update` pada baris anggaran (partner) dan reward, supaya dua permintaan bersamaan tidak membuat budget atau stok minus.
 
@@ -1148,6 +1149,7 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 | Peran tim | `0016_team_roles.sql` | `set_team_role` untuk serah terima pemilik/ketua |
 | Foto profil | `0017_avatars.sql` | bucket `avatars` + policy, `set_my_avatar`, cabut update langsung `avatar_url`; perbaikan nickname pengganti di `delete_my_account` |
 | Master misi | `0018_mission_templates.sql` | enum `mission_category`, `mission_templates` + 12 template awal, `activity_missions.template_id`, fungsi admin, `v_mission_template_stats`, `upsert_mission` menerima template |
+| Pengingat kedaluwarsa | `0019_expiry_reminders.sql` | `notify_expiring` + cron 08.05 WIB, `reminder.expiry_days`, indeks voucher aktif per `expires_at` |
 Setiap migrasi membawa RLS policy untuk tabel barunya dan file uji SQL sederhana (`supabase/tests/`) untuk aturan yang tidak boleh dilanggar. Semua uji dijalankan dari database kosong dengan `supabase/tests/run.sh` (juga otomatis di GitHub Actions).
 
 ---

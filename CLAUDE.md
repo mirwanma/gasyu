@@ -85,6 +85,7 @@ Aturan rinci (kolaborasi, grup, misi, keanggotaan, domisili, berbayar, leaderboa
 npm run dev                      # jalankan di http://localhost:3000
 npm run lint                     # cek kode
 npm run build                    # cek build produksi
+npm run e2e                      # uji browser Playwright (setelah build; lihat e2e/README.md)
 PGHOST=localhost PGUSER=postgres supabase/tests/run.sh   # semua uji SQL di Postgres lokal (database dibuat ulang)
 npx supabase login               # sekali saja
 npx supabase link --project-ref <ref>   # hubungkan ke project Supabase
@@ -108,9 +109,10 @@ lib/
   gamification/       # helper tampilan XP, level, badge (aturan tetap di database)
 proxy.ts              # pengganti middleware: refresh sesi, wajib onboarding
 supabase/
-  migrations/
-  tests/
-  seed.sql            # data wilayah Cimahi, levels, badges, app_settings
+  migrations/         # termasuk data awal: wilayah Cimahi, levels, badges, app_settings, master misi
+  tests/              # uji SQL (run.sh) + shim Supabase untuk Postgres biasa
+e2e/                  # uji browser Playwright (tampilan HP, data dummy)
+dummy-data/           # contoh data untuk uji coba (bukan data produksi)
 docs/
 ```
 
@@ -118,4 +120,4 @@ docs/
 
 Ikuti `docs/DESAIN-DATABASE.md` bagian 9 (irisan 1–11).
 
-Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016), foto profil (0017), master misi (0018) — pemolesan, E2E, dan rilis pilot — perbarui baris ini setiap pindah irisan.
+Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016), foto profil (0017), master misi (0018), pengingat kedaluwarsa (0019), uji E2E — pemolesan dan rilis pilot — perbarui baris ini setiap pindah irisan.

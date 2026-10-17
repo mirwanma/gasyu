@@ -1,7 +1,7 @@
 # Gasyu — Alur Sistem
 
 Versi 0.8 · 16 Oktober 2026 · Pilot Kota Cimahi
-Perubahan 0.8: master misi (bagian 9f); saran warga untuk merchant dan komunitas (bagian 21); ubah profil, ganti kelurahan, hapus akun, riwayat, bantuan (bagian 3); serah terima peran pemilik/ketua (bagian 5).
+Perubahan 0.8: pengingat voucher dan poin hampir kedaluwarsa (bagian 18); master misi (bagian 9f); saran warga untuk merchant dan komunitas (bagian 21); ubah profil, ganti kelurahan, hapus akun, riwayat, bantuan (bagian 3); serah terima peran pemilik/ketua (bagian 5).
 Perubahan 0.7: aturan domisili peserta, yaitu hanya warga wilayah event atau semua warga (bagian 6).
 Perubahan 0.6: pembuat event mengatur kapan tiap misi tampil ke warga (bagian 9e).
 Perubahan 0.5: admin bisa membuat event atas nama Gasyu dan langsung menambahkan merchant/komunitas yang terlibat (bagian 10c).
@@ -1039,6 +1039,9 @@ flowchart TB
         J9[expire_membership_requests<br/>permintaan member tertunda<br/>lebih dari 30 hari]
         J11[prune_code_attempts<br/>hapus log percobaan kode<br/>lebih dari 1 hari]
     end
+    subgraph TD8["Setiap hari 08.05 WIB"]
+        J13[notify_expiring<br/>ingatkan voucher dan poin<br/>yang hangus dalam 7 hari]
+    end
     subgraph TM["Tanggal 1 pukul 00.10 WIB"]
         J8[snapshot_monthly_winners<br/>simpan juara kelurahan bulan lalu]
     end
@@ -1057,6 +1060,7 @@ flowchart TB
 | award_streak | Senin | +50 XP untuk warga dengan minimal satu check-in di setiap minggu berturut-turut |
 | expire_membership_requests | Harian | `community_memberships` berstatus `pending` lebih dari 30 hari menjadi `rejected` + notifikasi ke warga |
 | prune_code_attempts | Harian | Menghapus baris `mission_code_attempts` yang lebih dari 1 hari |
+| notify_expiring | Harian 08.05 WIB | Notifikasi ke warga untuk voucher aktif dan poin yang akan kedaluwarsa dalam `reminder.expiry_days` hari (awal 7). Voucher diingatkan sekali; poin paling sering sekali per jangka itu. Jam pagi dipilih supaya notifikasi tidak masuk tengah malam |
 | snapshot_monthly_winners | Bulanan | Insert `monthly_village_winners` untuk bulan lalu |
 
 Leaderboard bulanan tidak perlu di-reset: view menyaring XP berdasarkan bulan berjalan, sehingga otomatis mulai dari nol tiap tanggal 1.
