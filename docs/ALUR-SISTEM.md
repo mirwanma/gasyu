@@ -1,6 +1,7 @@
 # Gasyu — Alur Sistem
 
-Versi 0.8 · 16 Oktober 2026 · Pilot Kota Cimahi
+Versi 0.9 · 18 Oktober 2026 · Pilot Kota Cimahi
+Perubahan 0.9: Event Global, yaitu event buatan admin yang terbuka untuk pengguna dari kota mana pun, dengan misi, skor, papan peringkat, dan hadiah khusus event yang terpisah dari XP, level, dan poin (bagian 22); hak akses (bagian 2), validasi (bagian 6), penetapan pemenang saat settled (bagian 7), syarat selesai event online (bagian 9d), cron `process_prizes` (bagian 18), anti-curang (bagian 19), dashboard dan peta halaman (bagian 20).
 Perubahan 0.8: pengingat voucher dan poin hampir kedaluwarsa (bagian 18); master misi (bagian 9f); saran warga untuk merchant dan komunitas (bagian 21); ubah profil, ganti kelurahan, hapus akun, riwayat, bantuan (bagian 3); serah terima peran pemilik/ketua (bagian 5).
 Perubahan 0.7: aturan domisili peserta, yaitu hanya warga wilayah event atau semua warga (bagian 6).
 Perubahan 0.6: pembuat event mengatur kapan tiap misi tampil ke warga (bagian 9e).
@@ -35,6 +36,7 @@ Semua diagram ditulis dalam Mermaid, jadi bisa dibaca langsung di GitHub, VS Cod
 19. Moderasi admin dan anti-curang
 20. Dashboard dan peta halaman
 21. Saran warga
+22. Event Global
 
 ---
 
@@ -47,7 +49,7 @@ Gasyu punya empat entitas. Masing-masing punya dashboard sendiri.
 | 1 | **Admin** | Pemilik aplikasi (tim Gasyu) | Web, desktop-first, di `admin.gasyu.id` | Verifikasi merchant dan komunitas, review aktivitas, moderasi, metrik kota, pengaturan aturan main |
 | 2 | **Merchant/UMKM** | UMKM atau usaha apa pun yang mendaftar (kedai, kafe, toko, jasa, bengkel, dll.); dikelola pemilik, staf, kasir | Mobile PWA | Aktivitas, peserta dan pembayaran, misi, QR, kasir voucher, reward dan budget poin, outlet, kolaborasi, tim |
 | 3 | **Komunitas** | Komunitas apa pun yang mendaftar: olahraga (lari, sepeda, futsal, dll.), musik, seni, hobi, sosial, lingkungan, dan lainnya; dikelola ketua dan pengurus | Mobile PWA | Aktivitas, peserta dan pembayaran, misi, QR, member, kolaborasi, tim |
-| 4 | **Warga** | Semua pengguna terdaftar | Mobile PWA | Level dan XP, aktivitas yang diikuti dan misinya, poin dan voucher, peringkat, grup, komunitas saya |
+| 4 | **Warga** | Semua pengguna terdaftar, termasuk yang tinggal di luar Cimahi | Mobile PWA | Level dan XP, aktivitas yang diikuti dan misinya, poin dan voucher, peringkat, grup, komunitas saya, Event Global dan hadiahnya |
 
 **Tidak ada batasan jenis.** Merchant mencakup semua jenis usaha, dari UMKM rumahan sampai bisnis dengan beberapa cabang. Komunitas mencakup semua jenis komunitas warga. Kategori (lihat bagian 4) hanya dipakai untuk penyaringan dan pencarian, bukan syarat pendaftaran; jika kategorinya tidak ada, pilih "Lainnya".
 
@@ -109,8 +111,8 @@ flowchart LR
 | Prinsip | Penerapan |
 | --- | --- |
 | Akses dijaga database | Setiap tabel memakai Row Level Security; UI hanya menyembunyikan, database yang menolak |
-| Uang permainan hanya ditulis server | XP dan poin hanya masuk lewat fungsi `security definer`, client tidak punya izin `insert` ke ledger |
-| Saldo dari ledger | Saldo XP dan poin dihitung dari `xp_ledger` dan `point_ledger`, tidak ada kolom saldo |
+| Uang permainan hanya ditulis server | XP, poin, dan skor Event Global hanya masuk lewat fungsi `security definer`, client tidak punya izin `insert` ke ledger |
+| Saldo dari ledger | Saldo XP, poin, dan skor event dihitung dari `xp_ledger`, `point_ledger`, dan `activity_score_ledger`, tidak ada kolom saldo |
 | Satu akun banyak peran | Akun warga bisa menjadi pemilik merchant dan pengurus komunitas sekaligus |
 | Zona waktu tunggal | Semua batas harian dan bulanan memakai `Asia/Jakarta` |
 
@@ -136,6 +138,7 @@ Ada dua jenis keterikatan warga dengan komunitas, dan keduanya terpisah:
 | Kemampuan | Warga | Staf merchant | Pemilik merchant | Pengurus komunitas | Ketua komunitas | Admin |
 | --- | --- | --- | --- | --- | --- | --- |
 | Join aktivitas, check-in, tukar poin | Ya | Ya | Ya | Ya | Ya | Ya |
+| Ikut Event Global dari kota mana pun dan klaim hadiahnya | Ya | Ya | Ya | Ya | Ya | - |
 | Buat dan kelola grup | Ya | Ya | Ya | Ya | Ya | Ya |
 | Gabung/keluar sebagai member komunitas | Ya | Ya | Ya | Ya | Ya | Ya |
 | Ikut aktivitas khusus member | Member aktif | Member aktif | Member aktif | Ya | Ya | - |
@@ -160,10 +163,12 @@ Ada dua jenis keterikatan warga dengan komunitas, dan keduanya terpisah:
 | Buka dashboard admin (web) | - | - | - | - | - | Ya |
 | Verifikasi penyelenggara, review aktivitas, tinjau flag | - | - | - | - | - | Ya |
 | Buat event/challenge atas nama Gasyu | - | - | - | - | - | Ya |
+| Buat Event Global, atur hadiahnya, tandai hadiah terkirim atau hangus | - | - | - | - | - | Ya |
 | Tambahkan merchant/komunitas langsung ke event Gasyu | - | - | - | - | - | Ya |
 | Keluar dari event Gasyu sebelum berjalan | - | - | Ya | - | Ya | - |
+| Lihat status hadiah Event Global yang ia sponsori (tanpa alamat pemenang) | - | - | Ya | - | Ya | - |
 
-Untuk event Gasyu, admin memegang semua kemampuan tim penyelenggara host: membuat draft, mengatur harga, mengelola misi, menampilkan QR checkpoint Gasyu, mengonfirmasi pembayaran, dan meninjau bukti misi.
+Untuk event Gasyu, admin memegang semua kemampuan tim penyelenggara host: membuat draft, mengatur harga, mengelola misi, menampilkan QR checkpoint Gasyu, mengonfirmasi pembayaran, dan meninjau bukti misi. Selama pilot, **hanya admin yang bisa membuat Event Global**; hak akses dicek lewat peran admin di fungsi database, sehingga nanti bisa dibuka untuk merchant atau komunitas terverifikasi tanpa mengubah alur (bagian 22).
 
 ---
 
@@ -332,6 +337,7 @@ flowchart TD
 - Jika `is_paid = true`: `price_idr` minimal Rp1.000 dan `payment_instructions` terisi.
 - Misi: setiap misi aktif punya cara verifikasi yang lengkap (misi QR punya checkpoint, misi kode punya kode rahasia); XP tiap misi 10–100 dan total XP misi per aktivitas maksimal 500.
 - Challenge dengan target berbasis misi wajib punya minimal satu misi aktif (dan minimal satu misi wajib untuk `required_missions`).
+- Event Global (`reach = global`): aturan tambahan di bagian 22b, termasuk boleh tanpa checkpoint untuk mode `online`/`hybrid`, minimal satu misi aktif, dan minimal satu hadiah.
 - Open call yang terhubung ke aktivitas otomatis ditutup.
 
 **Aturan domisili peserta (`residency_rule`).** Penyelenggara memilih siapa yang boleh mendaftar:
@@ -386,7 +392,7 @@ stateDiagram-v2
 
 Harga dan status berbayar/gratis tidak bisa diubah setelah `published`, supaya peserta yang sudah mendaftar tidak dirugikan.
 
-Masa 48 jam antara `ended` dan `settled` dipakai admin dan host untuk meninjau check-in yang ditandai dan bukti foto misi yang masih menunggu. Setelah `settled`, laporan akhir dikunci.
+Masa 48 jam antara `ended` dan `settled` dipakai admin dan host untuk meninjau check-in yang ditandai dan bukti foto misi yang masih menunggu. Setelah `settled`, laporan akhir dikunci. Untuk Event Global, masa ini juga masa verifikasi peringkat: papan peringkat berlabel "Sementara", dan pemenang baru ditetapkan saat `settled` (bagian 22d). Event Global yang dibatalkan tidak menetapkan pemenang. Jangkauan (`reach`), mode lokasi, dan hadiah yang sudah diumumkan tidak bisa diubah setelah `published` (hadiah hanya bisa ditambah).
 
 ---
 
@@ -520,6 +526,7 @@ Fungsi `evaluate_completion` dipanggil setiap ada check-in atau misi yang disetu
 | --- | --- |
 | Event tanpa misi wajib | Warga check-in (seperti sebelumnya) |
 | Event dengan misi wajib | Warga check-in **dan** semua misi wajib disetujui |
+| Event Global `online`, atau `hybrid` tanpa check-in | Semua misi wajib disetujui; jika tidak ada misi wajib, saat misi pertama disetujui |
 | Challenge target `total_checkins` / `distinct_checkpoints` | Target check-in tercapai (misi hanya menambah XP) |
 | Challenge target `required_missions` | Semua misi wajib disetujui |
 | Challenge target `missions_completed` | Jumlah misi disetujui (wajib maupun bonus) mencapai `target_count` |
@@ -703,7 +710,8 @@ sequenceDiagram
 | Review | Tidak lewat antrean review karena pembuatnya admin; tetap dicatat di `admin_actions` |
 | Berbayar | Boleh; panitia Gasyu (admin) yang mengonfirmasi pembayaran |
 | Audiens | Selalu publik (`members_only` hanya untuk host komunitas); aturan domisili `open` atau `residents_only` tetap bisa dipilih |
-| Tampilan warga | Event tampil dengan label "Event Gasyu" dan daftar "Didukung oleh" berisi partner yang terlibat |
+| Jangkauan | Regional (default) atau **Global**. Event Global hanya bisa dibuat sebagai event Gasyu selama pilot; aturannya di bagian 22 |
+| Tampilan warga | Event tampil dengan label "Event Gasyu" (atau "Event Global") dan daftar "Didukung oleh" berisi partner yang terlibat |
 
 ---
 
@@ -834,7 +842,8 @@ flowchart TD
 
 - Kuota dihitung per orang: `registered + in_progress + completed + invited`.
 - Satu warga hanya punya satu partisipasi per aktivitas (pribadi atau lewat satu grup).
-- Join tidak memberi XP; XP baru masuk saat check-in atau misi selesai.
+- Join tidak memberi XP atau skor; XP dan skor baru masuk saat check-in atau misi selesai.
+- Event Global: tidak ada pemeriksaan domisili, keanggotaan, maupun grup. Siapa pun yang sudah onboarding, dari kota mana pun, langsung mendaftar sendiri (bagian 22).
 - Warga bisa membatalkan sebelum check-in pertama; kursinya kembali ke kuota.
 - Aktivitas berbayar lewat grup: setiap anggota yang mengonfirmasi mendapat `payment_status unpaid` dan batas waktu bayarnya sendiri.
 - Untuk aktivitas khusus member, pendaftaran grup hanya bisa memilih anggota grup yang juga member aktif komunitas host.
@@ -916,7 +925,9 @@ sequenceDiagram
 
 **Bonus grup** diberikan sekali per anggota per aktivitas per hari. Saat anggota ketiga check-in, fungsi menambahkan bonus untuk ketiganya sekaligus; anggota keempat dan seterusnya langsung mendapat bonus saat check-in.
 
-**Check-in di luar radius** tetap memberi XP (supaya warga dengan GPS kurang akurat tidak dirugikan), tetapi ditandai `flagged`. Jika admin menolaknya, fungsi `reverse_checkin` menulis baris XP dan poin bernilai negatif.
+Di Event Global, check-in dan misi memberi **skor event** (bagian 22c) lewat `award_activity_score`, tanpa XP, bonus, poin, dan batas harian.
+
+**Check-in di luar radius** tetap memberi XP atau skor (supaya warga dengan GPS kurang akurat tidak dirugikan), tetapi ditandai `flagged`. Jika admin menolaknya, fungsi `reverse_checkin` menulis baris XP dan poin bernilai negatif.
 
 ---
 
@@ -1030,7 +1041,7 @@ flowchart TB
     end
     subgraph TH["Setiap jam"]
         J3[close_expired_collab_posts<br/>open call lewat tenggat]
-        J4[settle_ended_activities<br/>ended lebih dari 48 jam ke settled<br/>challenge belum selesai ditutup,<br/>bukti foto misi tertunda ditolak]
+        J4[settle_ended_activities<br/>ended lebih dari 48 jam ke settled<br/>challenge belum selesai ditutup,<br/>bukti foto misi tertunda ditolak,<br/>pemenang Event Global ditetapkan]
     end
     subgraph TD1["Setiap hari 00.05 WIB"]
         J5[expire_points<br/>tulis baris negatif untuk<br/>poin lewat 6 bulan yang belum dipakai]
@@ -1041,6 +1052,7 @@ flowchart TB
     end
     subgraph TD8["Setiap hari 08.05 WIB"]
         J13[notify_expiring<br/>ingatkan voucher dan poin<br/>yang hangus dalam 7 hari]
+        J14[process_prizes<br/>pengingat klaim hadiah, hadiah hangus,<br/>hapus alamat pengiriman lama]
     end
     subgraph TM["Tanggal 1 pukul 00.10 WIB"]
         J8[snapshot_monthly_winners<br/>simpan juara kelurahan bulan lalu]
@@ -1054,7 +1066,7 @@ flowchart TB
 | reveal_scheduled_missions | 1 menit | Misi `scheduled` yang `reveal_at`-nya tercapai diisi `revealed_at` dan peserta diberi notifikasi; tampilan ke warga sudah dihitung dari jam, cron ini hanya untuk notifikasi dan pencatatan |
 | expire_unpaid_participations | 5 menit | Partisipasi `unpaid` yang lewat `payment_due_at` menjadi `cancelled` + notifikasi; `awaiting_confirmation` tidak disentuh supaya bukti yang sudah dikirim tetap ditinjau |
 | close_expired_collab_posts | 1 jam | `collab_posts.status = closed` setelah `deadline` |
-| settle_ended_activities | 1 jam | `ended` lebih dari 48 jam menjadi `settled`; partisipasi yang belum memenuhi syarat selesai menjadi `not_completed`; `mission_completions` yang masih `pending_review` menjadi `rejected` |
+| settle_ended_activities | 1 jam | `ended` lebih dari 48 jam menjadi `settled`; partisipasi yang belum memenuhi syarat selesai menjadi `not_completed`; `mission_completions` yang masih `pending_review` menjadi `rejected`; untuk Event Global memanggil `finalize_activity_winners` |
 | expire_points | Harian | Baris `point_ledger` negatif `reason = expiry` untuk sisa poin yang kedaluwarsa |
 | expire_redemptions | Harian | Voucher `active` lewat `expires_at` menjadi `expired` |
 | award_streak | Senin | +50 XP untuk warga dengan minimal satu check-in di setiap minggu berturut-turut |
@@ -1062,6 +1074,7 @@ flowchart TB
 | prune_code_attempts | Harian | Menghapus baris `mission_code_attempts` yang lebih dari 1 hari |
 | notify_expiring | Harian 08.05 WIB | Notifikasi ke warga untuk voucher aktif dan poin yang akan kedaluwarsa dalam `reminder.expiry_days` hari (awal 7). Voucher diingatkan sekali; poin paling sering sekali per jangka itu. Jam pagi dipilih supaya notifikasi tidak masuk tengah malam |
 | snapshot_monthly_winners | Bulanan | Insert `monthly_village_winners` untuk bulan lalu |
+| process_prizes | Harian 08.05 WIB | Mengirim `prize_claim_reminder` 3 hari sebelum `claim_deadline`; `pending_claim` yang lewat batas menjadi `forfeited` + notifikasi; mengosongkan alamat pengiriman 30 hari setelah `delivered` |
 
 Leaderboard bulanan tidak perlu di-reset: view menyaring XP berdasarkan bulan berjalan, sehingga otomatis mulai dari nol tiap tanggal 1.
 
@@ -1110,6 +1123,9 @@ flowchart TD
 | Batas percobaan kode misi (5 per 15 menit) | Menebak kode rahasia |
 | XP misi 10–100, total maks. 500 per aktivitas | Penyelenggara membuat misi XP besar untuk mendongkrak warga tertentu |
 | Misi foto dan manual dicatat siapa peninjaunya | Panitia menyetujui temannya sendiri tanpa jejak; admin bisa mengaudit |
+| Skor Event Global terpisah dari XP | Event besar dengan peserta luar kota menggeser peringkat kota dan kelurahan |
+| Masa verifikasi 48 jam sebelum pemenang ditetapkan | Juara dari check-in atau foto yang belum ditinjau |
+| Admin meninjau pemenang sebelum hadiah dikirim; akun dibekukan tidak bisa menang | Akun ganda atau curang membawa pulang hadiah |
 
 Bukti foto misi ditinjau oleh tim penyelenggara, bukan admin. Admin hanya turun tangan lewat laporan atau pola mencurigakan (misalnya satu peninjau menyetujui ratusan foto dalam beberapa menit).
 
@@ -1127,6 +1143,8 @@ Satu codebase Next.js melayani dua aplikasi: **Gasyu PWA** (warga, merchant, kom
 | --- | --- | --- |
 | Kartu level | Level, XP total, XP menuju level berikutnya, streak minggu ini | `v_user_level`, `xp_ledger` |
 | Aktivitasku | Aktivitas yang diikuti hari ini dan mendatang, status bayar, misi yang belum selesai | `participations`, `v_participation_missions` |
+| Event Global | Event Global yang diikuti beserta skor dan posisi saya; Event Global yang sedang dibuka pendaftarannya | `v_activity_scoreboard`, `activities` |
+| Hadiah perlu diklaim | Hadiah Event Global berstatus `pending_claim` beserta batas klaimnya | `activity_winners` |
 | Dompet ringkas | Saldo poin, poin yang akan kedaluwarsa 30 hari lagi, voucher aktif | `v_user_points_balance`, `redemptions` |
 | Peringkat | Posisi di kelurahan dan se-kota bulan ini, posisi kelurahan saya | `get_leaderboard` |
 | Rekomendasi | Aktivitas di kelurahan saya dan dari komunitas yang saya ikuti | `activities`, `community_memberships` |
@@ -1140,6 +1158,7 @@ Satu codebase Next.js melayani dua aplikasi: **Gasyu PWA** (warga, merchant, kom
 | Perlu tindakan | Pembayaran menunggu konfirmasi, bukti foto misi menunggu tinjauan, undangan kolaborasi, saran baru dari warga | `v_activity_payment_stats`, `v_mission_stats`, `activity_partners`, `v_organizer_suggestions` |
 | Poin dan voucher | Budget poin terpakai dan sisa, voucher ditukar dan dipakai per outlet | `v_activity_budget`, `v_activity_partner_stats` |
 | Misi | Tingkat penyelesaian tiap misi | `v_mission_stats` |
+| Hadiah yang disponsori | Hadiah Event Global yang disediakan penyelenggara ini dan status penyerahannya (tanpa alamat pemenang) | `activity_prizes`, `activity_winners` |
 | Reputasi | Skor hadir, penyelesaian, kolaborasi 90 hari | `v_organizer_reputation` |
 
 **Dashboard komunitas** (`/komunitas/[id]`)
@@ -1150,6 +1169,7 @@ Satu codebase Next.js melayani dua aplikasi: **Gasyu PWA** (warga, merchant, kom
 | Member | Member aktif, member baru bulan ini, permintaan menunggu, persentase member yang hadir 30 hari terakhir | `v_community_member_stats` |
 | Perlu tindakan | Permintaan bergabung, pembayaran menunggu konfirmasi, bukti foto misi, undangan kolaborasi, saran baru dari warga | `community_memberships`, `v_activity_payment_stats`, `v_mission_stats`, `v_organizer_suggestions` |
 | Misi | Tingkat penyelesaian tiap misi | `v_mission_stats` |
+| Hadiah yang disponsori | Hadiah Event Global yang disediakan penyelenggara ini dan status penyerahannya (tanpa alamat pemenang) | `activity_prizes`, `activity_winners` |
 | Reputasi | Skor hadir, penyelesaian, kolaborasi 90 hari | `v_organizer_reputation` |
 
 **Dashboard admin** (`admin.gasyu.id`)
@@ -1158,11 +1178,13 @@ Satu codebase Next.js melayani dua aplikasi: **Gasyu PWA** (warga, merchant, kom
 | --- | --- | --- |
 | Metrik kota | Warga aktif mingguan, aktivitas berjalan, merchant dan komunitas aktif, poin beredar vs ditukar, kelurahan teraktif | `v_admin_overview`, `v_village_active_month` |
 | Event Gasyu | Buat dan kelola event/challenge Gasyu, tambahkan merchant/komunitas, konfirmasi pembayaran, tinjau bukti misi | `activities`, `activity_partners`, `v_activity_stats` |
+| Event Global | Buat Event Global, atur hadiah per peringkat, pantau papan peringkat, statistik peserta (warga Cimahi vs luar Cimahi, misi selesai) | `activities`, `activity_prizes`, `v_activity_scoreboard`, `v_global_event_stats` |
+| Hadiah | Pemenang per event, status klaim, data pengiriman, tandai terkirim atau hangus | `activity_winners`, `fraud_flags` |
 | Antrean | Merchant/komunitas menunggu verifikasi, aktivitas menunggu review, check-in dan misi flagged, laporan pola mencurigakan | `organizers`, `activities`, `checkins`, `mission_completions`, `fraud_flags` |
 | Pembayaran | Aktivitas dibatalkan yang masih punya peserta `paid` belum `refunded` | `v_activity_payment_stats` |
 | Pengguna | Cari warga, merchant, komunitas; bekukan atau aktifkan | `profiles`, `organizers` |
 | Master misi | Template misi siap pakai untuk penyelenggara, statistik pemakaian | `mission_templates`, `v_mission_template_stats` |
-| Pengaturan | Angka aturan main (XP, batas, radius, kedaluwarsa) | `app_settings` |
+| Pengaturan | Angka aturan main (XP, batas, radius, kedaluwarsa, skor dan klaim Event Global) | `app_settings` |
 | Audit | Riwayat tindakan admin | `admin_actions` |
 
 ### 20b. Peta halaman
@@ -1176,8 +1198,9 @@ flowchart LR
     ADM([Gasyu Admin - web]) --> AD[Admin]
 
     WG --> W1[/beranda: dashboard warga/]
-    WG --> W2[/jelajah: aktivitas sekitar/]
+    WG --> W2[/jelajah: aktivitas sekitar<br/>+ tab Event Global/]
     WG --> W3[/aktivitas/id detail, join,<br/>status bayar, daftar misi/]
+    W3 --> W31[/aktivitas/id/peringkat<br/>papan peringkat dan hadiah Event Global/]
     WG --> W4[/scan: check-in dan misi QR/]
     WG --> W5[/dompet: poin, voucher/]
     WG --> W6[/grup/]
@@ -1190,6 +1213,7 @@ flowchart LR
     WG --> W13[/profil/ubah dan /profil/hapus/]
     WG --> W14[/riwayat: XP dan poin/]
     WG --> W15[/bantuan/]
+    WG --> W16[/hadiah: hadiah Event Global<br/>dan klaim/]
 
     MC --> M1[/merchant/id: dashboard/]
     MC --> M2[/merchant/id/aktivitas/]
@@ -1217,7 +1241,9 @@ flowchart LR
 
     AD --> A0[/ ringkasan metrik/]
     AD --> A1[/verifikasi: merchant dan komunitas/]
-    AD --> A2[/aktivitas: review dan<br/>event Gasyu/]
+    AD --> A2[/aktivitas: review,<br/>event Gasyu, Event Global/]
+    A2 --> A21[/aktivitas/aid/hadiah<br/>atur hadiah per peringkat/]
+    AD --> A9[/hadiah: pemenang,<br/>klaim, pengiriman/]
     AD --> A8[/misi: master misi/]
     AD --> A3[/moderasi: flag dan laporan/]
     AD --> A4[/pembayaran/]
@@ -1226,6 +1252,7 @@ flowchart LR
     AD --> A7[/audit/]
 ```
 
+- Halaman Jelajah punya tab **Event Global** yang menampilkan semua Event Global `published` atau `running` tanpa saringan kelurahan. Halaman Hadiah dibuka dari Beranda, Dompet, dan notifikasi.
 - Navigasi bawah PWA mengikuti mode aktif: mode warga (Beranda, Jelajah, Scan, Dompet, Profil), mode merchant (Dashboard, Aktivitas, QR, Kasir, Lainnya), mode komunitas (Dashboard, Aktivitas, QR, Member, Lainnya).
 - Pemilih mode hanya menampilkan merchant dan komunitas tempat akun itu tercatat di `organizer_members`. Akun yang mengelola beberapa merchant atau komunitas memilih salah satunya.
 - Staf merchant hanya melihat menu yang sesuai perannya (lihat bagian 2); misalnya kasir tetap bisa membuka QR dan Kasir, tetapi tidak Reward atau Tim.
@@ -1264,3 +1291,151 @@ sequenceDiagram
 | Notifikasi | Tim: setiap saran baru. Warga: saat ada balasan baru, atau status berubah ke Ditindaklanjuti/Selesai. Mengarsipkan tanpa balasan tidak mengirim notifikasi |
 | Admin | Bisa membaca semua saran untuk moderasi, tetapi tidak menanggapi atas nama penyelenggara |
 
+---
+
+## 22. Event Global
+
+Event Global adalah event yang **terbuka untuk pengguna dari kota mana pun**, tidak terikat ke wilayah asal tertentu. Di dalamnya ada misi seperti event biasa, tetapi hasilnya berupa **skor event** dengan **papan peringkat khusus peserta event itu**, dan **hadiah khusus event** yang diberikan menurut peringkat. Contoh: lomba foto wisata Cimahi untuk pengunjung luar kota, tantangan online saat hari jadi kota, atau festival yang mengundang peserta dari kota sekitar.
+
+### 22a. Perbedaan dengan event biasa
+
+| Hal | Event regional | Event Global |
+| --- | --- | --- |
+| Pembuat | Merchant, komunitas, admin | **Admin saja** selama pilot (host `platform`) |
+| Siapa boleh ikut | Semua warga atau hanya warga wilayah (`residency_rule`) | Semua pengguna yang sudah onboarding, dari kota mana pun, termasuk "Luar Cimahi" |
+| Tampil di | Beranda dan Jelajah, disaring per kelurahan | Tab Event Global di Jelajah dan kartu di Beranda semua pengguna, tanpa saringan wilayah |
+| Lokasi | Checkpoint fisik | `onsite` (checkpoint), `online` (tanpa checkpoint), atau `hybrid` (keduanya) |
+| Cara ikut | Pribadi atau grup | Pribadi saja |
+| Hasil check-in dan misi | XP (+ poin dari budget merchant) | **Skor event** saja; tidak menambah XP, level, peringkat kota/kelurahan, atau poin dompet |
+| Peringkat | Peringkat kota dan kelurahan bulanan | **Papan peringkat per event**, hanya berisi peserta event itu |
+| Hadiah | Poin → voucher; hadiah lain ditulis di deskripsi | **Hadiah per peringkat** dicatat di sistem, dengan alur klaim dan pengiriman |
+| Partner | Undangan, open call, atau ditambahkan admin | Ditambahkan admin; boleh menyediakan checkpoint, misi, dan hadiah |
+
+### 22b. Admin membuat Event Global
+
+```mermaid
+flowchart TD
+    S([Admin: Buat event Gasyu]) --> R{Jangkauan}
+    R -->|Regional| REG[Alur bagian 6 dan 10c]
+    R -->|Global| G1[reach = global<br/>type event, publik, domisili open,<br/>daftar pribadi, tanpa poin]
+    G1 --> G2{Mode lokasi}
+    G2 -->|onsite| L1[Checkpoint wajib]
+    G2 -->|online| L2[Tanpa checkpoint<br/>misi foto, kode, atau manual]
+    G2 -->|hybrid| L3[Checkpoint opsional]
+    L1 --> G3
+    L2 --> G3
+    L3 --> G3
+    G3[Judul, deskripsi, cover, jadwal,<br/>kuota, berbayar atau gratis] --> P1[Tambah partner opsional<br/>admin_add_partner]
+    P1 --> M1[Susun misi:<br/>skor 10-1000 per misi,<br/>total maks. 5.000]
+    M1 --> H1[Atur hadiah per peringkat<br/>upsert_activity_prize]
+    H1 --> SUB[submit_activity]
+    SUB --> V{Validasi}
+    V -->|Gagal| ERR[Tampilkan kekurangan] --> M1
+    V -->|Lolos| PUB[published<br/>tampil di tab Event Global]
+```
+
+**Validasi tambahan Event Global** (di `submit_activity` dan trigger tabel):
+
+- Host bertipe `platform` dan pemanggil admin.
+- `type = event`, `audience = public`, `residency_rule = open`, `join_mode = individual`, `points_per_completion = 0`.
+- Minimal satu misi aktif; setiap misi punya `score_reward` 10–1.000 dan `xp_reward = 0`; total skor misi aktif maksimal 5.000.
+- `onsite` wajib minimal satu checkpoint; `online` tidak boleh punya checkpoint dan misi `qr_scan`.
+- Minimal satu hadiah; rentang peringkat hadiah tidak tumpang tindih dan maksimal sampai peringkat 100.
+- Jangkauan, mode lokasi, dan hadiah yang sudah ada terkunci setelah `published`; admin hanya bisa **menambah** hadiah baru atau mengubah deskripsi dan gambarnya.
+
+### 22c. Skor dan papan peringkat
+
+**Sumber skor**
+
+| Aksi | Skor | Keterangan |
+| --- | --- | --- |
+| Check-in di checkpoint | `global_event.checkin_score` (default 100) | Tetap satu kali per hari per event, cek radius dan QR sama seperti bagian 14 |
+| Misi disetujui | `score_reward` misi (10–1.000) | Sekali per misi per peserta; misi foto masuk saat disetujui |
+| Check-in atau misi dibatalkan admin | Baris skor negatif | Lewat `reverse_checkin` atau penolakan misi |
+
+Skor ditulis ke `activity_score_ledger`, terpisah dari `xp_ledger` dan `point_ledger`. Tidak ada batas skor harian, karena skor sudah dibatasi oleh jumlah misi dan satu check-in per hari.
+
+**Aturan papan peringkat**
+
+| Aturan | Keterangan |
+| --- | --- |
+| Siapa yang masuk | Peserta terdaftar (bukan `cancelled`), pembayaran `not_required` atau `paid`, skor lebih dari 0, akun tidak dibekukan |
+| Urutan | Skor tertinggi di atas |
+| Seri | Skor sama: yang **lebih dulu mencapai skor itu** di atas, dihitung dari waktu warga mengerjakan aksinya (`occurred_at`), bukan waktu bukti disetujui. Masih sama: yang lebih dulu mendaftar |
+| Tampilan | Peringkat 1–100, ditambah baris posisi saya walaupun di luar 100 besar; hanya nickname dan skor |
+| Status | **Live** saat `running`; **Sementara** saat `ended` (48 jam masa verifikasi bukti dan check-in ditandai); **Final** saat `settled`, lengkap dengan hadiah tiap pemenang |
+| Pengunjung | Pengguna yang belum ikut boleh melihat papan peringkat dan daftar hadiah, supaya tertarik mendaftar |
+
+Papan peringkat diambil lewat `get_activity_leaderboard`, dan tidak muncul di halaman Peringkat kota (bagian 17).
+
+### 22d. Penetapan pemenang dan klaim hadiah
+
+**Hadiah per peringkat** (`activity_prizes`). Admin membuat satu baris per rentang peringkat, misalnya Juara 1, Juara 2–3, dan Peringkat 4–20.
+
+| Isi hadiah | Pilihan |
+| --- | --- |
+| Jenis | Barang fisik, voucher atau tiket dari sponsor (diserahkan di luar sistem voucher Gasyu), badge eksklusif event, atau lainnya |
+| Cara serah | Ambil di lokasi (wajib isi lokasi dan cara ambil), dikirim ke alamat, atau digital |
+| Penyedia | Gasyu, atau partner event yang menyediakan hadiah (tampil "Hadiah dari ...") |
+| Skor minimal | Peserta harus mencapai skor minimal untuk berhak, supaya hadiah tidak jatuh ke peserta yang hampir tidak ikut |
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant CR as Cron settle_ended_activities
+    participant DB as Database
+    actor W as Pemenang
+    actor A as Admin
+    CR->>DB: Event Global ended lebih dari 48 jam: status settled
+    DB->>DB: finalize_activity_winners: peringkat final dari v_activity_scoreboard
+    DB->>DB: cocokkan peringkat dengan rentang hadiah dan skor minimal
+    DB->>DB: insert activity_winners (pending_claim, batas klaim 14 hari)
+    opt Hadiah badge
+        DB->>DB: insert user_badges, status langsung delivered
+    end
+    DB-->>W: notifikasi prize_won
+    W->>DB: claim_prize(winner_id, data pengiriman jika dikirim)
+    DB->>DB: status claimed
+    DB-->>A: notifikasi prize_claimed
+    A->>A: cek flag kecurangan pemenang
+    alt Sah
+        A->>DB: mark_prize_delivered(winner_id, resi atau catatan)
+        DB-->>W: notifikasi prize_delivered
+    else Terbukti curang
+        A->>DB: forfeit_prize(winner_id, alasan)
+        DB-->>W: notifikasi prize_forfeited
+    end
+    Note over DB: process_prizes harian: pengingat H-3, lewat batas klaim menjadi forfeited, alamat dihapus 30 hari setelah terkirim
+```
+
+**Aturan hadiah**
+
+| Aturan | Keterangan |
+| --- | --- |
+| Satu hadiah per orang | Setiap peringkat maksimal satu pemenang dan setiap peserta maksimal satu hadiah per event |
+| Peringkat tanpa peserta | Jika peserta yang memenuhi skor minimal lebih sedikit dari jumlah hadiah, sisa hadiah tidak diberikan |
+| Batas klaim | 14 hari sejak pemenang ditetapkan (`global_event.claim_days`), pengingat 3 hari sebelumnya |
+| Tidak diklaim | Status `forfeited`; hadiah **tidak dialihkan** ke peringkat berikutnya selama pilot |
+| Data pengiriman | Nama, nomor HP, dan alamat hanya untuk hadiah yang dikirim; hanya terlihat oleh pemenang dan admin (partner penyedia hadiah tidak melihatnya); dihapus 30 hari setelah terkirim |
+| Pengiriman | Diurus panitia Gasyu (admin), termasuk hadiah dari partner: partner menyerahkan hadiahnya ke panitia, lalu panitia yang mengirim |
+| Event dibatalkan | Tidak ada pemenang; peserta berbayar mengikuti aturan refund bagian 8 |
+
+### 22e. Tampilan warga
+
+- **Jelajah → tab Event Global**: kartu event dengan label "Event Global", mode lokasi ("Online", "Di Cimahi", "Online + di lokasi"), jumlah peserta, dan hadiah utama.
+- **Halaman event**: deskripsi, daftar misi beserta skornya (mengikuti aturan tampil misi bagian 9e), daftar hadiah per peringkat, dan tombol ke papan peringkat.
+- **Papan peringkat** (`/aktivitas/[id]/peringkat`): 100 besar, posisi saya, label Live/Sementara/Final.
+- **Beranda**: kartu skor dan posisi saya di Event Global yang diikuti, serta kartu "Hadiah perlu diklaim".
+- **Hadiah** (`/hadiah`): semua hadiah Event Global milik saya, status klaim, formulir data pengiriman, dan batas klaim.
+- Skor event **tidak** tampil di kartu level, XP, dompet, atau peringkat kota, supaya warga tidak bingung antara skor event dan XP.
+
+### 22f. Batasan pilot dan pengembangan berikutnya
+
+| Batasan sekarang | Rencana berikutnya |
+| --- | --- |
+| Hanya admin yang membuat Event Global | Buka untuk merchant dan komunitas terverifikasi lewat peran baru, tanpa mengubah tabel (hak dicek di fungsi database) |
+| Hanya tipe event, daftar pribadi | Event Global berbentuk challenge dan papan peringkat grup |
+| Akun ganda dicegah lewat deteksi pola dan tinjauan admin sebelum hadiah dikirim | Verifikasi nomor HP sebelum klaim hadiah |
+| Kode rahasia sama untuk semua peserta (bisa bocor di event online) | Kode per peserta atau kode berganti per waktu; untuk hadiah bernilai besar, pakai misi foto atau manual |
+| Hadiah hangus tidak dialihkan | Fungsi admin untuk mengalihkan hadiah ke peringkat berikutnya |
+| Asal peserta luar kota hanya tercatat sebagai "Luar Cimahi" | Kolom kota asal di profil untuk laporan sebaran peserta ke pemkot |
