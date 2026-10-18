@@ -24,6 +24,13 @@ begin
   end if;
 end $$;
 
+-- Event Global: skor, pemenang, hadiah, dan badge hadiah milik aktivitas dummy
+delete from public.activity_score_ledger where activity_id in (select id from dm_acts) or user_id in (select id from dm_users);
+delete from public.activity_winners where activity_id in (select id from dm_acts) or user_id in (select id from dm_users);
+create temp table dm_badges as select badge_id as id from public.activity_prizes where activity_id in (select id from dm_acts) and badge_id is not null;
+delete from public.activity_prizes where activity_id in (select id from dm_acts);
+delete from public.user_badges where badge_id in (select id from dm_badges);
+delete from public.badges where id in (select id from dm_badges);
 delete from public.mission_code_attempts where user_id in (select id from dm_users) or mission_id in (select id from public.activity_missions where activity_id in (select id from dm_acts));
 delete from public.mission_completions where activity_id in (select id from dm_acts) or user_id in (select id from dm_users);
 delete from public.activity_missions where activity_id in (select id from dm_acts);

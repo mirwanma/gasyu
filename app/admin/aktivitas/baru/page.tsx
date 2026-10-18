@@ -11,7 +11,7 @@ export default function AdminAktivitasBaruPage({ searchParams }: PageProps<"/adm
     <>
       <div className="flex flex-col gap-1">
         <h1 className="font-display text-[30px] font-bold">Event Gasyu</h1>
-        <span className="text-[14px] text-fg-soft">Dibuat atas nama Gasyu, langsung terbit saat diterbitkan tanpa antrean review. Tambahkan partner dan checkpoint setelah draft tersimpan.</span>
+        <span className="text-[14px] text-fg-soft">Dibuat atas nama Gasyu, langsung terbit saat diterbitkan tanpa antrean review. Pilih jangkauan Event Global jika terbuka untuk pengguna dari kota mana pun. Tambahkan partner, checkpoint, misi, dan hadiah setelah draft tersimpan.</span>
       </div>
       <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>
         <FormLoader searchParams={searchParams} />
@@ -32,11 +32,11 @@ async function FormLoader({ searchParams }: Pick<PageProps<"/admin/aktivitas/bar
     editId ? supabase.from("activities").select("payment_instructions, payment_window_hours").eq("id", editId).maybeSingle() : Promise.resolve({ data: null }),
   ]);
   const initial: ActivityFormValues | undefined = card
-    ? { id: card.id, type: card.type, difficulty: card.difficulty, target_scope: card.target_scope, target_kind: card.target_kind, target_count: card.target_count, join_mode: card.join_mode, group_min: card.group_min, group_max: card.group_max, goal: card.goal as ActivityFormValues["goal"], title: card.title, description: card.description ?? "", scope_region_id: card.scope_region_id, starts_at: card.starts_at, ends_at: card.ends_at, quota: card.quota, residency_rule: card.residency_rule, audience: card.audience, is_paid: card.is_paid, price_idr: card.price_idr, payment_instructions: raw?.payment_instructions ?? null, payment_window_hours: raw?.payment_window_hours ?? null }
+    ? { id: card.id, type: card.type, difficulty: card.difficulty, target_scope: card.target_scope, target_kind: card.target_kind, target_count: card.target_count, join_mode: card.join_mode, group_min: card.group_min, group_max: card.group_max, goal: card.goal as ActivityFormValues["goal"], title: card.title, description: card.description ?? "", scope_region_id: card.scope_region_id, starts_at: card.starts_at, ends_at: card.ends_at, quota: card.quota, residency_rule: card.residency_rule, audience: card.audience, is_paid: card.is_paid, price_idr: card.price_idr, payment_instructions: raw?.payment_instructions ?? null, payment_window_hours: raw?.payment_window_hours ?? null, reach: card.reach, location_mode: card.location_mode }
     : undefined;
   return (
     <div className="max-w-md">
-      <ActivityForm organizerId={String(platformId ?? "")} type="merchant" cityId={(city?.id as string | undefined) ?? null} districts={districts} initial={initial} action={adminSaveActivity} />
+      <ActivityForm organizerId={String(platformId ?? "")} type="merchant" cityId={(city?.id as string | undefined) ?? null} districts={districts} initial={initial} action={adminSaveActivity} allowGlobal />
     </div>
   );
 }
