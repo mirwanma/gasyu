@@ -3,7 +3,7 @@
 --
 -- Penanda supaya mudah dibersihkan (lihat bersihkan.sql):
 --   * semua akun dummy memakai id dengan awalan  dd000000-0000-4000-8000-
---   * semua email dummy memakai domain          @dummy.ramein.id
+--   * semua email dummy memakai domain          @dummy.gasyu.id
 --   * penyelenggara, aktivitas, grup, reward, dan transaksi lain diturunkan
 --     dari akun-akun itu (pembuat/owner), jadi ikut terhapus.
 --
@@ -11,7 +11,7 @@
 -- postgres). Aman dijalankan ulang: berhenti jika data dummy sudah ada.
 -- Setelah itu jalankan `node dummy-data/unggah-gambar.cjs` untuk logo, cover,
 -- bukti bayar, dan foto misi.
--- Kata sandi semua akun dummy: RameinDummy2026!
+-- Kata sandi semua akun dummy: GasyuDummy2026!
 -- =============================================================================
 
 -- Helper: "masuk" sebagai akun tertentu supaya fungsi database berjalan atas nama akun itu.
@@ -23,7 +23,7 @@ $$;
 
 do $seed$
 declare
-  pw constant text := 'RameinDummy2026!';
+  pw constant text := 'GasyuDummy2026!';
   -- akun
   u_admin constant uuid := 'dd000000-0000-4000-8000-0000000000e1';
   w1 constant uuid := 'dd000000-0000-4000-8000-0000000000d1'; -- Rani
@@ -63,7 +63,7 @@ declare
   p_id uuid; tok text; v_checkin uuid; ms uuid;
 begin
   set constraints all immediate; -- badge dihitung langsung, bukan ditunda ke akhir transaksi
-  if exists (select 1 from auth.users where email like '%@dummy.ramein.id') then
+  if exists (select 1 from auth.users where email like '%@dummy.gasyu.id') then
     raise exception 'Data dummy sudah ada. Jalankan dummy-data/bersihkan.sql dulu.';
   end if;
 
@@ -72,28 +72,28 @@ begin
   -- ---------------------------------------------------------------------------
   for acc in
     select * from (values
-      (u_admin, 'admin@dummy.ramein.id',  'tim_gasyu', 'Tim Gasyu',         'Cimahi',        true,  40),
-      (w1,  'rani@dummy.ramein.id',        'rani',       'Rani Puspita',       'Baros',         false, 30),
-      (w2,  'dimas@dummy.ramein.id',       'dimas',      'Dimas Aditya',       'Cibabat',       false, 25),
-      (w3,  'siti@dummy.ramein.id',        'siti_nur',   'Siti Nurhaliza',     'Melong',        false, 20),
-      (w4,  'bagas@dummy.ramein.id',       'bagas',      'Bagas Pratama',      'Padasuka',      false, 18),
-      (w5,  'ayu@dummy.ramein.id',         'ayu',        'Ayu Lestari',        'Cipageran',     false, 15),
-      (w6,  'fajar@dummy.ramein.id',       'fajar',      'Fajar Ramadhan',     'Leuwigajah',    false, 12),
-      (w7,  'nadia@dummy.ramein.id',       'nadia',      'Nadia Safitri',      'Cibeureum',     false, 10),
-      (w8,  'rizky@dummy.ramein.id',       'rizky',      'Rizky Maulana',      'Setiamanah',    false, 6),
-      (w9,  'tono@dummy.ramein.id',        'pak_tono',   'Tono Suharto',       'Karangmekar',   false, 3),
-      (w10, 'vina@dummy.ramein.id',        'vina',       'Vina Anggraini',     null,            false, 1),
-      (m1,  'wisnu@dummy.ramein.id',       'wisnu',      'Wisnu Hadi',         'Baros',         false, 45),
-      (m2,  'tehai@dummy.ramein.id',       'teh_ai',     'Ai Rohaeti',         'Melong',        false, 44),
-      (m3,  'dewi@dummy.ramein.id',        'dewi',       'Dewi Kartika',       'Cimahi',        false, 43),
-      (m4,  'jaya@dummy.ramein.id',        'pak_jaya',   'Jaya Sutisna',       'Cibeureum',     false, 42),
-      (m5,  'hendra@dummy.ramein.id',      'hendra',     'Hendra Gunawan',     'Cimahi',        false, 41),
-      (m6,  'udin@dummy.ramein.id',        'mang_udin',  'Udin Saefudin',      'Padasuka',      false, 2),
-      (k1,  'andi@dummy.ramein.id',        'andi_run',   'Andi Firmansyah',    'Baros',         false, 50),
-      (k2,  'rudi@dummy.ramein.id',        'rudi',       'Rudi Hartono',       'Cibabat',       false, 48),
-      (k3,  'mega@dummy.ramein.id',        'mega',       'Mega Utami',         'Setiamanah',    false, 46),
-      (k4,  'lina@dummy.ramein.id',        'lina',       'Lina Marlina',       'Citeureup',     false, 38),
-      (k5,  'bayu@dummy.ramein.id',        'bayu',       'Bayu Nugraha',       'Cigugur Tengah',false, 2)
+      (u_admin, 'admin@dummy.gasyu.id',  'tim_gasyu', 'Tim Gasyu',         'Cimahi',        true,  40),
+      (w1,  'rani@dummy.gasyu.id',        'rani',       'Rani Puspita',       'Baros',         false, 30),
+      (w2,  'dimas@dummy.gasyu.id',       'dimas',      'Dimas Aditya',       'Cibabat',       false, 25),
+      (w3,  'siti@dummy.gasyu.id',        'siti_nur',   'Siti Nurhaliza',     'Melong',        false, 20),
+      (w4,  'bagas@dummy.gasyu.id',       'bagas',      'Bagas Pratama',      'Padasuka',      false, 18),
+      (w5,  'ayu@dummy.gasyu.id',         'ayu',        'Ayu Lestari',        'Cipageran',     false, 15),
+      (w6,  'fajar@dummy.gasyu.id',       'fajar',      'Fajar Ramadhan',     'Leuwigajah',    false, 12),
+      (w7,  'nadia@dummy.gasyu.id',       'nadia',      'Nadia Safitri',      'Cibeureum',     false, 10),
+      (w8,  'rizky@dummy.gasyu.id',       'rizky',      'Rizky Maulana',      'Setiamanah',    false, 6),
+      (w9,  'tono@dummy.gasyu.id',        'pak_tono',   'Tono Suharto',       'Karangmekar',   false, 3),
+      (w10, 'vina@dummy.gasyu.id',        'vina',       'Vina Anggraini',     null,            false, 1),
+      (m1,  'wisnu@dummy.gasyu.id',       'wisnu',      'Wisnu Hadi',         'Baros',         false, 45),
+      (m2,  'tehai@dummy.gasyu.id',       'teh_ai',     'Ai Rohaeti',         'Melong',        false, 44),
+      (m3,  'dewi@dummy.gasyu.id',        'dewi',       'Dewi Kartika',       'Cimahi',        false, 43),
+      (m4,  'jaya@dummy.gasyu.id',        'pak_jaya',   'Jaya Sutisna',       'Cibeureum',     false, 42),
+      (m5,  'hendra@dummy.gasyu.id',      'hendra',     'Hendra Gunawan',     'Cimahi',        false, 41),
+      (m6,  'udin@dummy.gasyu.id',        'mang_udin',  'Udin Saefudin',      'Padasuka',      false, 2),
+      (k1,  'andi@dummy.gasyu.id',        'andi_run',   'Andi Firmansyah',    'Baros',         false, 50),
+      (k2,  'rudi@dummy.gasyu.id',        'rudi',       'Rudi Hartono',       'Cibabat',       false, 48),
+      (k3,  'mega@dummy.gasyu.id',        'mega',       'Mega Utami',         'Setiamanah',    false, 46),
+      (k4,  'lina@dummy.gasyu.id',        'lina',       'Lina Marlina',       'Citeureup',     false, 38),
+      (k5,  'bayu@dummy.gasyu.id',        'bayu',       'Bayu Nugraha',       'Cigugur Tengah',false, 2)
     ) as t(id, email, nickname, full_name, village, is_admin, days_ago)
   loop
     if exists (select 1 from information_schema.columns where table_schema = 'auth' and table_name = 'users' and column_name = 'encrypted_password') then

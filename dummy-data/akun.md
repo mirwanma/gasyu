@@ -1,50 +1,50 @@
 # Akun dummy Gasyu
 
-Kata sandi **semua** akun di bawah: `RameinDummy2026!`
+Kata sandi **semua** akun di bawah: `GasyuDummy2026!`
 Masuk lewat halaman `/masuk` dengan email + kata sandi (bukan Google).
-Semua email memakai domain `@dummy.ramein.id` dan id akun berawalan `dd000000-0000-4000-8000-` → inilah penanda data dummy.
+Semua email memakai domain `@dummy.gasyu.id` dan id akun berawalan `dd000000-0000-4000-8000-` → inilah penanda data dummy.
 
 ## Admin
 
 | Email | Nama | Peran |
 | --- | --- | --- |
-| admin@dummy.ramein.id | Tim Gasyu | Admin (`/admin`): verifikasi, review aktivitas, moderasi, pembayaran |
+| admin@dummy.gasyu.id | Tim Gasyu | Admin (`/admin`): verifikasi, review aktivitas, moderasi, pembayaran |
 
 ## Warga (10)
 
 | Email | Nickname | Nama | Kelurahan | Apa yang sudah ia lakukan |
 | --- | --- | --- | --- | --- |
-| rani@dummy.ramein.id | rani | Rani Puspita | Baros | Ketua grup "Baros Squad", lunas Night Run, check-in Festival + misi kode (selesai, 40 poin), member Runners & Gowes |
-| dimas@dummy.ramein.id | dimas | Dimas Aditya | Cibabat | Bukti bayar Night Run menunggu konfirmasi, Festival selesai (misi kode, 40 poin) |
-| siti@dummy.ramein.id | siti_nur | Siti Nurhaliza | Melong | Belum bayar Night Run, check-in Festival, foto misi menunggu tinjauan, menang kuis kuliner |
-| bagas@dummy.ramein.id | bagas | Bagas Pratama | Padasuka | Anggota grup Night Run (lunas), 1 dari 3 checkpoint challenge kopi, member Creative Hub |
-| ayu@dummy.ramein.id | ayu | Ayu Lestari | Cipageran | Undangan grup Night Run belum dijawab, 2 dari 3 checkpoint challenge kopi, ulasan foto menunggu tinjauan |
-| fajar@dummy.ramein.id | fajar | Fajar Ramadhan | Leuwigajah | Belum bayar Night Run, check-in Festival di stand Kopi Lereng, foto misi disetujui, 2× salah kode misi, minta gabung Gowes (menunggu) |
-| nadia@dummy.ramein.id | nadia | Nadia Safitri | Cibeureum | Challenge kopi **selesai** (250 XP + 60 poin), Festival selesai, tukar poin jadi voucher kopi |
-| rizky@dummy.ramein.id | rizky | Rizky Maulana | Setiamanah | Terdaftar Festival dan challenge kopi, belum check-in |
-| tono@dummy.ramein.id | pak_tono | Tono Suharto | Karangmekar | Terdaftar Festival, member Sahabat Lingkungan |
-| vina@dummy.ramein.id | vina | Vina Anggraini | Luar Cimahi | Check-in Festival dari luar radius → ditandai (muncul di Moderasi) |
+| rani@dummy.gasyu.id | rani | Rani Puspita | Baros | Ketua grup "Baros Squad", lunas Night Run, check-in Festival + misi kode (selesai, 40 poin), member Runners & Gowes |
+| dimas@dummy.gasyu.id | dimas | Dimas Aditya | Cibabat | Bukti bayar Night Run menunggu konfirmasi, Festival selesai (misi kode, 40 poin) |
+| siti@dummy.gasyu.id | siti_nur | Siti Nurhaliza | Melong | Belum bayar Night Run, check-in Festival, foto misi menunggu tinjauan, menang kuis kuliner |
+| bagas@dummy.gasyu.id | bagas | Bagas Pratama | Padasuka | Anggota grup Night Run (lunas), 1 dari 3 checkpoint challenge kopi, member Creative Hub |
+| ayu@dummy.gasyu.id | ayu | Ayu Lestari | Cipageran | Undangan grup Night Run belum dijawab, 2 dari 3 checkpoint challenge kopi, ulasan foto menunggu tinjauan |
+| fajar@dummy.gasyu.id | fajar | Fajar Ramadhan | Leuwigajah | Belum bayar Night Run, check-in Festival di stand Kopi Lereng, foto misi disetujui, 2× salah kode misi, minta gabung Gowes (menunggu) |
+| nadia@dummy.gasyu.id | nadia | Nadia Safitri | Cibeureum | Challenge kopi **selesai** (250 XP + 60 poin), Festival selesai, tukar poin jadi voucher kopi |
+| rizky@dummy.gasyu.id | rizky | Rizky Maulana | Setiamanah | Terdaftar Festival dan challenge kopi, belum check-in |
+| tono@dummy.gasyu.id | pak_tono | Tono Suharto | Karangmekar | Terdaftar Festival, member Sahabat Lingkungan |
+| vina@dummy.gasyu.id | vina | Vina Anggraini | Luar Cimahi | Check-in Festival dari luar radius → ditandai (muncul di Moderasi) |
 
 ## Merchant (6)
 
 | Email pemilik | Nama pemilik | Merchant | Kategori | Status |
 | --- | --- | --- | --- | --- |
-| wisnu@dummy.ramein.id | Wisnu Hadi | Kopi Lereng (2 outlet: Baros, Cibabat) | kopi | Disetujui. Host challenge kopi, sponsor Night Run, cohost Festival. 2 reward |
-| tehai@dummy.ramein.id | Ai Rohaeti | Seblak Teh Ai | kuliner | Disetujui. Host Festival Kuliner. 1 reward |
-| dewi@dummy.ramein.id | Dewi Kartika | Batik Cimahi Heritage | fesyen | Disetujui |
-| jaya@dummy.ramein.id | Jaya Sutisna | Bengkel Motor Jaya | otomotif | Disetujui |
-| hendra@dummy.ramein.id | Hendra Gunawan | Toko Buku Cendekia | retail | Disetujui. 1 reward |
-| udin@dummy.ramein.id | Udin Saefudin | Nasi Liwet Mang Udin | kuliner | **Menunggu verifikasi** (antrean admin) |
+| wisnu@dummy.gasyu.id | Wisnu Hadi | Kopi Lereng (2 outlet: Baros, Cibabat) | kopi | Disetujui. Host challenge kopi, sponsor Night Run, cohost Festival. 2 reward |
+| tehai@dummy.gasyu.id | Ai Rohaeti | Seblak Teh Ai | kuliner | Disetujui. Host Festival Kuliner. 1 reward |
+| dewi@dummy.gasyu.id | Dewi Kartika | Batik Cimahi Heritage | fesyen | Disetujui |
+| jaya@dummy.gasyu.id | Jaya Sutisna | Bengkel Motor Jaya | otomotif | Disetujui |
+| hendra@dummy.gasyu.id | Hendra Gunawan | Toko Buku Cendekia | retail | Disetujui. 1 reward |
+| udin@dummy.gasyu.id | Udin Saefudin | Nasi Liwet Mang Udin | kuliner | **Menunggu verifikasi** (antrean admin) |
 
 ## Komunitas (5)
 
 | Email ketua | Nama ketua | Komunitas | Minat | Status |
 | --- | --- | --- | --- | --- |
-| andi@dummy.ramein.id | Andi Firmansyah | Cimahi Runners | olahraga (gabung bebas) | Disetujui. Host Night Run |
-| rudi@dummy.ramein.id | Rudi Hartono | Cimahi Gowes | olahraga (perlu persetujuan) | Disetujui. 1 permintaan gabung menunggu |
-| mega@dummy.ramein.id | Mega Utami | Cimahi Creative Hub | seni (perlu persetujuan) | Disetujui. Host Workshop Mural (menunggu review admin). 1 permintaan menunggu |
-| lina@dummy.ramein.id | Lina Marlina | Sahabat Lingkungan Cimahi | lingkungan (gabung bebas) | Disetujui |
-| bayu@dummy.ramein.id | Bayu Nugraha | Cimahi Foodies | hobi (gabung bebas) | **Menunggu verifikasi** (antrean admin) |
+| andi@dummy.gasyu.id | Andi Firmansyah | Cimahi Runners | olahraga (gabung bebas) | Disetujui. Host Night Run |
+| rudi@dummy.gasyu.id | Rudi Hartono | Cimahi Gowes | olahraga (perlu persetujuan) | Disetujui. 1 permintaan gabung menunggu |
+| mega@dummy.gasyu.id | Mega Utami | Cimahi Creative Hub | seni (perlu persetujuan) | Disetujui. Host Workshop Mural (menunggu review admin). 1 permintaan menunggu |
+| lina@dummy.gasyu.id | Lina Marlina | Sahabat Lingkungan Cimahi | lingkungan (gabung bebas) | Disetujui |
+| bayu@dummy.gasyu.id | Bayu Nugraha | Cimahi Foodies | hobi (gabung bebas) | **Menunggu verifikasi** (antrean admin) |
 
 ## Aktivitas (4)
 
@@ -75,9 +75,9 @@ Semua email memakai domain `@dummy.ramein.id` dan id akun berawalan `dd000000-00
 | pak_tono | Sahabat Lingkungan Cimahi | Bersih-bersih Sungai Cimahi | Baru |
 | rizky | Kopi Lereng | Roti bakar cokelat keju (dikirim saat uji) | Ditindaklanjuti, sudah dibalas Wisnu |
 
-Coba: masuk sebagai wisnu@dummy.ramein.id, buka Lainnya lalu Saran warga. Untuk sisi warga, masuk sebagai rani@dummy.ramein.id lalu buka Profil, Saran saya.
+Coba: masuk sebagai wisnu@dummy.gasyu.id, buka Lainnya lalu Saran warga. Untuk sisi warga, masuk sebagai rani@dummy.gasyu.id lalu buka Profil, Saran saya.
 
 ## Akun uji hapus akun
 
-`uji-hapus@dummy.ramein.id` dibuat untuk menguji fitur hapus akun dan sudah dihapus (nickname `hapus-dd0000000000`). Akun ini tidak bisa dipakai masuk lagi dan ikut terhapus oleh `bersihkan.sql`.
+`uji-hapus@dummy.gasyu.id` dibuat untuk menguji fitur hapus akun dan sudah dihapus (nickname `hapus-dd0000000000`). Akun ini tidak bisa dipakai masuk lagi dan ikut terhapus oleh `bersihkan.sql`.
 

@@ -2,13 +2,13 @@ import { createServerClient } from "@supabase/ssr";
 import { expect, type BrowserContext, type Page } from "@playwright/test";
 
 // Akun dummy (dummy-data/akun.md). Semua memakai kata sandi yang sama.
-export const PASSWORD = process.env.E2E_PASSWORD ?? "RameinDummy2026!";
+export const PASSWORD = process.env.E2E_PASSWORD ?? "GasyuDummy2026!";
 export const ACCOUNTS = {
-  warga: "rani@dummy.ramein.id",
-  wargaLain: "rizky@dummy.ramein.id",
-  pemilikMerchant: "wisnu@dummy.ramein.id",
-  ketuaKomunitas: "andi@dummy.ramein.id",
-  admin: "admin@dummy.ramein.id",
+  warga: "rani@dummy.gasyu.id",
+  wargaLain: "rizky@dummy.gasyu.id",
+  pemilikMerchant: "wisnu@dummy.gasyu.id",
+  ketuaKomunitas: "andi@dummy.gasyu.id",
+  admin: "admin@dummy.gasyu.id",
 } as const;
 
 // Masuk lewat Supabase (email + kata sandi) lalu pasang cookie sesi di browser,
