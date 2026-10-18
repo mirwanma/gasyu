@@ -4714,11 +4714,15 @@ export type Database = {
           id: string | null
           is_paid: boolean | null
           join_mode: Database["public"]["Enums"]["join_mode"] | null
+          location_mode:
+            | Database["public"]["Enums"]["activity_location_mode"]
+            | null
           partner_count: number | null
           points_per_completion: number | null
           price_idr: number | null
           published_at: string | null
           quota: number | null
+          reach: Database["public"]["Enums"]["activity_reach"] | null
           residency_rule: Database["public"]["Enums"]["residency_rule"] | null
           scope_region_id: string | null
           scope_region_level: Database["public"]["Enums"]["region_level"] | null
