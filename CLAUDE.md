@@ -4,8 +4,8 @@ Panduan kerja untuk Claude di proyek ini. Baca seluruh file ini di awal setiap s
 
 **Sumber kebenaran** (baca bagian yang relevan sebelum menulis kode):
 
-- `docs/ALUR-SISTEM.md` — alur, peran, aturan bisnis (v0.8)
-- `docs/DESAIN-DATABASE.md` — tabel, enum, fungsi, RLS, urutan migrasi (v0.8)
+- `docs/ALUR-SISTEM.md` — alur, peran, aturan bisnis (v0.9)
+- `docs/DESAIN-DATABASE.md` — tabel, enum, fungsi, RLS, urutan migrasi (v0.9)
 - `docs/BRAND.md` — warna, tipografi, logo, gaya bahasa
 - PRD (PDF milik pemilik proyek, tidak disimpan di repo)
 
@@ -51,6 +51,9 @@ Pilot: Kota Cimahi (3 kecamatan, 15 kelurahan). Struktur wilayah harus generik u
 | Reward / voucher | hadiah dari merchant | `rewards`, `redemptions` |
 | Event Gasyu | event buatan admin, host organizer `platform` | `organizers.type = 'platform'` |
 | Saran | saran warga untuk merchant/komunitas, dibalas tim | `suggestions` |
+| Event Global | event buatan admin yang terbuka untuk pengguna dari kota mana pun; skor, peringkat, dan hadiah khusus event | `activities.reach = 'global'` |
+| Skor event | hasil check-in dan misi di Event Global, terpisah dari XP dan poin | `activity_score_ledger` |
+| Hadiah event | hadiah per rentang peringkat Event Global, diklaim pemenang | `activity_prizes`, `activity_winners` |
 
 ## Aturan yang tidak boleh dilanggar
 
@@ -66,8 +69,15 @@ Pilot: Kota Cimahi (3 kecamatan, 15 kelurahan). Struktur wilayah harus generik u
 10. **Zona waktu tunggal:** semua batas harian dan bulanan memakai `Asia/Jakarta`.
 11. **Merchant dan komunitas dipisah** di UI, registrasi, peran tim, dan dashboard. Cek tipe penyelenggara di server dan RLS, bukan hanya menyembunyikan tombol.
 12. **Angka aturan main** dibaca dari `app_settings`, jangan di-hardcode di banyak tempat.
+13. **Event Global terpisah dari ekonomi kota** (`docs/ALUR-SISTEM.md` bagian 22):
+    - `reach = 'global'` hanya untuk host `platform` (admin), `type = 'event'`, `audience = 'public'`, `residency_rule = 'open'`, `join_mode = 'individual'`, `points_per_completion = 0`. Dicek di constraint dan trigger.
+    - Skor hanya lewat `award_activity_score` ke `activity_score_ledger`. Aktivitas global tidak pernah menulis `xp_ledger` atau `point_ledger`; `award_xp` menolak `activity_id` global. Setiap fungsi yang memberi hasil (`perform_checkin`, `complete_mission`, `review_mission_completion`, `mark_missions_manual`, `evaluate_completion`, `reverse_checkin`) wajib bercabang pada `activities.reach`.
+    - Misi global: `xp_reward = 0`, `score_reward` 10–1000, total maks. 5.000. `location_mode` online/hybrid hanya untuk global; online tanpa checkpoint dan tanpa misi `qr_scan`.
+    - Seri di papan peringkat diurutkan dari `occurred_at` (waktu aksi warga), bukan waktu disetujui. Pemenang hanya ditulis `finalize_activity_winners` saat `settled`.
+    - Hadiah terkunci setelah published (hanya boleh tambah baris baru). Kolom `activity_winners.ship_*` hanya untuk pemenang dan admin.
+    - Hak membuat Event Global dicek lewat peran di fungsi database, supaya nanti bisa dibuka untuk peran lain tanpa ubah tabel.
 
-Aturan rinci (kolaborasi, grup, misi, keanggotaan, domisili, berbayar, leaderboard) ada di `docs/ALUR-SISTEM.md`. Jangan menebak; baca bagiannya.
+Aturan rinci (kolaborasi, grup, misi, keanggotaan, domisili, berbayar, leaderboard, Event Global) ada di `docs/ALUR-SISTEM.md`. Jangan menebak; baca bagiannya.
 
 ## Cara bekerja di proyek ini
 
@@ -85,6 +95,7 @@ Aturan rinci (kolaborasi, grup, misi, keanggotaan, domisili, berbayar, leaderboa
 npm run dev                      # jalankan di http://localhost:3000
 npm run lint                     # cek kode
 npm run build                    # cek build produksi
+npm run e2e                      # uji browser Playwright (setelah build; lihat e2e/README.md)
 PGHOST=localhost PGUSER=postgres supabase/tests/run.sh   # semua uji SQL di Postgres lokal (database dibuat ulang)
 npx supabase login               # sekali saja
 npx supabase link --project-ref <ref>   # hubungkan ke project Supabase
@@ -108,9 +119,10 @@ lib/
   gamification/       # helper tampilan XP, level, badge (aturan tetap di database)
 proxy.ts              # pengganti middleware: refresh sesi, wajib onboarding
 supabase/
-  migrations/
-  tests/
-  seed.sql            # data wilayah Cimahi, levels, badges, app_settings
+  migrations/         # termasuk data awal: wilayah Cimahi, levels, badges, app_settings, master misi
+  tests/              # uji SQL (run.sh) + shim Supabase untuk Postgres biasa
+e2e/                  # uji browser Playwright (tampilan HP, data dummy)
+dummy-data/           # contoh data untuk uji coba (bukan data produksi)
 docs/
 ```
 
@@ -118,4 +130,4 @@ docs/
 
 Ikuti `docs/DESAIN-DATABASE.md` bagian 9 (irisan 1–11).
 
-Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016), foto profil (0017), master misi (0018) — pemolesan, E2E, dan rilis pilot — perbarui baris ini setiap pindah irisan.
+Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016), foto profil (0017), master misi (0018), pengingat kedaluwarsa (0019), uji E2E — pemolesan dan rilis pilot. Berikutnya (sudah didesain, belum dibangun): Event Global (0020) — perbarui baris ini setiap pindah irisan.

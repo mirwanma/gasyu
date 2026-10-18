@@ -1,7 +1,8 @@
 # Gasyu — Desain Database
 
-Versi 0.8 · 16 Oktober 2026 · Supabase (Postgres 15+)
-Perubahan 0.8: master misi (`mission_templates`, `activity_missions.template_id`, `v_mission_template_stats`); fungsi akun warga (`update_my_profile`, `change_home_village`, `delete_my_account`), `set_team_role`; saran warga (`suggestions`, enum `suggestion_category` dan `suggestion_status`, view `v_organizer_suggestions`, fungsi `submit_suggestion` dan `respond_suggestion`).
+Versi 0.9 · 18 Oktober 2026 · Supabase (Postgres 15+)
+Perubahan 0.9: Event Global, yaitu event buatan admin yang terbuka untuk pengguna dari kota mana pun, dengan skor, peringkat, dan hadiah khusus event: kolom `activities.reach` dan `activities.location_mode`, `activity_missions.score_reward`, tabel `activity_score_ledger`, `activity_prizes`, `activity_winners`, enum `activity_reach`, `activity_location_mode`, `score_reason`, `prize_kind`, `prize_fulfillment`, `winner_status`, view `v_activity_scoreboard` dan `v_global_event_stats`, fungsi `award_activity_score`, `get_activity_leaderboard`, `upsert_activity_prize`, `remove_activity_prize`, `finalize_activity_winners`, `claim_prize`, `mark_prize_delivered`, `forfeit_prize`, cron `process_prizes`, kunci `app_settings` `global_event.*`, migrasi `0020_global_events` (belum dibuat).
+Perubahan 0.8: pengingat voucher dan poin hampir kedaluwarsa (`notify_expiring`, notifikasi `points_expiring`, `reminder.expiry_days`); master misi (`mission_templates`, `activity_missions.template_id`, `v_mission_template_stats`); fungsi akun warga (`update_my_profile`, `change_home_village`, `delete_my_account`), `set_team_role`; saran warga (`suggestions`, enum `suggestion_category` dan `suggestion_status`, view `v_organizer_suggestions`, fungsi `submit_suggestion` dan `respond_suggestion`).
 Perubahan 0.7: kolom `activities.residency_rule` (enum `residency_rule`) dan helper `is_resident_of`.
 Perubahan 0.6: pengaturan tampil misi (`reveal_mode`, `reveal_at`, `prerequisite_mission_id`, `show_teaser`, `revealed_at`), fungsi `reveal_mission` dan `get_activity_missions`.
 Perubahan 0.5: event buatan admin (tipe organizer `platform`, sumber partner `admin`, fungsi `admin_add_partner`, `leave_activity`, `set_partner_budget`).
@@ -31,7 +32,7 @@ Nama tabel, kolom, dan enum ditulis dalam bahasa Inggris sesuai `CLAUDE.md`. Dia
 
 **Empat entitas, satu skema.** Admin, Merchant/UMKM, Komunitas, dan Warga (lihat `ALUR-SISTEM.md` bagian 1). Setiap orang punya baris `profiles` (warga). Merchant dan komunitas disimpan di tabel induk `organizers` dengan `type` `merchant` atau `community`; tim pengelolanya di `organizer_members`. Admin adalah `profiles.is_admin = true`. Kata "organizer" hanya dipakai di nama tabel dan kolom; di aplikasi disebut merchant, komunitas, atau penyelenggara.
 
-**35 tabel dalam 6 domain:**
+**38 tabel dalam 7 domain:**
 
 | Domain | Tabel |
 | --- | --- |
@@ -40,6 +41,7 @@ Nama tabel, kolom, dan enum ditulis dalam bahasa Inggris sesuai `CLAUDE.md`. Dia
 | Aktivitas & kolaborasi | `activities`, `challenge_targets`, `activity_partners`, `activity_checkpoints`, `activity_missions`, `collab_posts`, `collab_applications` |
 | Warga & partisipasi | `groups`, `group_members`, `participations`, `checkins`, `mission_completions` |
 | Ekonomi gamifikasi | `xp_ledger`, `point_ledger`, `point_allocations`, `rewards`, `redemptions`, `levels`, `badges`, `user_badges`, `monthly_village_winners` |
+| Event Global | `activity_score_ledger`, `activity_prizes`, `activity_winners` |
 | Operasional | `fraud_flags`, `notifications`, `admin_actions`, `app_settings`, `mission_code_attempts` |
 
 **Konvensi**
@@ -52,7 +54,7 @@ Nama tabel, kolom, dan enum ditulis dalam bahasa Inggris sesuai `CLAUDE.md`. Dia
 | Koordinat | `lat numeric(9,6)`, `lng numeric(9,6)`; jarak dihitung dengan rumus haversine di fungsi (PostGIS tidak wajib di MVP) |
 | Audit kolom | `created_at timestamptz default now()` di semua tabel; `updated_at` + trigger di tabel yang bisa diedit |
 | Penghapusan | Soft delete hanya untuk `profiles` (`deleted_at`); data lain tidak dihapus jika sudah dipakai ledger. Pengecualian: log `mission_code_attempts` dibersihkan otomatis |
-| Ledger | `xp_ledger` dan `point_ledger` hanya `insert`; koreksi ditulis sebagai baris negatif |
+| Ledger | `xp_ledger`, `point_ledger`, dan `activity_score_ledger` hanya `insert`; koreksi ditulis sebagai baris negatif |
 | Uang nyata | Tidak ada transaksi uang di aplikasi. Harga aktivitas berbayar disimpan sebagai informasi (`price_idr`, rupiah bulat) dan status bayar dikonfirmasi manual oleh tim organizer; dana sponsor dicatat sebagai teks di `contribution_note` |
 | File privat | Bukti bayar dan bukti foto misi disimpan di bucket Storage privat (`payment-proofs`, `mission-proofs`); hanya warga pemilik dan tim organizer host yang bisa membaca lewat signed URL |
 
@@ -184,6 +186,8 @@ erDiagram
         smallint group_max
         target_scope target_scope
         activity_audience audience
+        activity_reach reach
+        activity_location_mode location_mode
         boolean is_paid
         integer price_idr
         activity_status status
@@ -196,6 +200,7 @@ erDiagram
         mission_verification verification
         uuid checkpoint_id FK
         integer xp_reward
+        integer score_reward
         boolean is_required
         boolean is_active
     }
@@ -391,6 +396,55 @@ erDiagram
     }
 ```
 
+### 2e. Event Global
+
+```mermaid
+erDiagram
+    activities ||--o{ activity_score_ledger : "activity_id (reach global)"
+    profiles ||--o{ activity_score_ledger : "user_id"
+    checkins |o--o{ activity_score_ledger : "checkin_id"
+    mission_completions |o--o{ activity_score_ledger : "mission_completion_id"
+    activities ||--o{ activity_prizes : "activity_id"
+    organizers |o--o{ activity_prizes : "sponsor_organizer_id"
+    badges |o--o{ activity_prizes : "badge_id"
+    activity_prizes ||--o{ activity_winners : "prize_id"
+    activities ||--o{ activity_winners : "activity_id"
+    profiles ||--o{ activity_winners : "user_id"
+
+    activity_score_ledger {
+        uuid id PK
+        uuid activity_id FK
+        uuid user_id FK
+        integer amount
+        score_reason reason
+        uuid checkin_id FK
+        uuid mission_completion_id FK
+        timestamptz occurred_at
+    }
+    activity_prizes {
+        uuid id PK
+        uuid activity_id FK
+        smallint rank_from
+        smallint rank_to
+        text title
+        prize_kind kind
+        prize_fulfillment fulfillment
+        uuid badge_id FK
+        uuid sponsor_organizer_id FK
+        integer min_score
+    }
+    activity_winners {
+        uuid id PK
+        uuid activity_id FK
+        uuid prize_id FK
+        uuid user_id FK
+        smallint rank
+        integer score
+        winner_status status
+        timestamptz claim_deadline
+    }
+```
+
 ---
 
 ## 3. Enum
@@ -405,6 +459,8 @@ erDiagram
 | `membership_status` | pending, active, rejected, left, removed |
 | `activity_audience` | public, members_only |
 | `residency_rule` | open, residents_only |
+| `activity_reach` | regional (default, tampil per wilayah), global (Event Global: terbuka untuk pengguna dari kota mana pun, skor dan hadiah khusus event) |
+| `activity_location_mode` | onsite (wajib checkpoint), online (tanpa checkpoint), hybrid (checkpoint opsional); selain onsite hanya untuk `reach = global` |
 | `activity_type` | event, challenge |
 | `activity_goal` | awareness, visit, sales, membership |
 | `activity_status` | draft, awaiting_partners, in_review, published, running, ended, settled, cancelled |
@@ -428,6 +484,10 @@ erDiagram
 | `review_status` | ok, flagged, approved, rejected |
 | `xp_reason` | profile_complete, event_checkin, challenge_complete, mission_complete, first_visit_bonus, collab_bonus, group_bonus, streak, reversal, adjustment |
 | `point_reason` | activity_reward, redemption, refund, expiry, reversal, adjustment |
+| `score_reason` | checkin, mission_complete, reversal, adjustment |
+| `prize_kind` | physical (barang), voucher (voucher atau tiket dari sponsor, diserahkan di luar sistem `rewards`), badge (badge eksklusif event), other |
+| `prize_fulfillment` | pickup (ambil di lokasi), shipping (dikirim ke alamat pemenang), digital (diberikan di aplikasi atau lewat pesan) |
+| `winner_status` | pending_claim, claimed, delivered, forfeited |
 | `reward_status` | active, inactive |
 | `redemption_status` | active, used, expired, refunded |
 | `flag_kind` | out_of_radius, impossible_travel, shared_device, burst_accounts, manual |
@@ -587,17 +647,19 @@ Trigger: chair dan officer di `organizer_members` selalu punya baris `active`; k
 | title | text | not null |
 | description | text | termasuk syarat usia jika ada (teks bebas) |
 | cover_url | text | |
-| scope_region_id | uuid | FK `regions` (kota, kecamatan, atau kelurahan); dipakai untuk penyaringan beranda dan, jika `residents_only`, sebagai syarat domisili |
+| scope_region_id | uuid | FK `regions` (kota, kecamatan, atau kelurahan); dipakai untuk penyaringan beranda dan, jika `residents_only`, sebagai syarat domisili. Untuk Event Global boleh null atau diisi lokasi acara (hanya informasi, tidak menyaring) |
 | starts_at, ends_at | timestamptz | `ends_at > starts_at` |
 | quota | integer | null = tanpa batas |
 | difficulty | difficulty | wajib untuk challenge |
-| xp_base | integer | dihitung otomatis: event 100; challenge 150/250/400 |
-| points_per_completion | integer | default 0 |
-| join_mode | join_mode | default individual |
+| xp_base | integer | dihitung otomatis: event 100; challenge 150/250/400; 0 untuk Event Global |
+| points_per_completion | integer | default 0; wajib 0 untuk Event Global |
+| join_mode | join_mode | default individual; wajib individual untuk Event Global |
 | group_min, group_max | smallint | 2–10, wajib jika join_mode bukan individual |
 | target_scope | target_scope | default individual; group hanya untuk challenge |
-| residency_rule | residency_rule | default open; `residents_only` = hanya warga yang `home_village_id`-nya berada di dalam `scope_region_id` |
+| residency_rule | residency_rule | default open; `residents_only` = hanya warga yang `home_village_id`-nya berada di dalam `scope_region_id`; wajib open untuk Event Global |
 | audience | activity_audience | default public; members_only hanya jika host bertipe community (dicek trigger) |
+| reach | activity_reach | default regional; `global` hanya untuk host `platform` (admin) dan `type = event` (dicek trigger); tidak bisa diubah setelah published |
+| location_mode | activity_location_mode | default onsite; online dan hybrid hanya untuk `reach = global`; tidak bisa diubah setelah published |
 | is_paid | boolean | default false; tidak bisa diubah setelah published |
 | price_idr | integer | wajib ≥ 1000 jika `is_paid`, null jika gratis; tidak bisa diubah setelah published |
 | payment_instructions | text | wajib jika `is_paid`: rekening, QRIS, atau kontak panitia |
@@ -629,7 +691,7 @@ Budget poin tidak disimpan di sini; budget = jumlah `activity_partners.points_bu
 | role | partner_role | host (tepat satu per aktivitas), cohost, sponsor |
 | source | partner_source | creator untuk host, invite, open_call, admin (ditambahkan langsung oleh admin ke event Gasyu) |
 | status | partner_status | host otomatis accepted |
-| points_budget | integer | default 0; > 0 hanya jika organizer bertipe merchant |
+| points_budget | integer | default 0; > 0 hanya jika organizer bertipe merchant dan aktivitas `reach = regional` |
 | contribution_note | text | kontribusi non-poin: dana (di luar aplikasi), tenaga, perlengkapan |
 | benefits_note | text | yang didapat partner |
 | invited_by | uuid | FK |
@@ -664,11 +726,12 @@ Unik: `(activity_id, organizer_id)`. Unik parsial: satu baris `role = host` per 
 | description | text | instruksi untuk warga, termasuk kriteria foto atau kriteria berhasil |
 | icon | text | nama ikon, opsional |
 | sort_order | smallint | urutan tampil |
-| verification | mission_verification | not null |
+| verification | mission_verification | not null; `qr_scan` tidak boleh untuk aktivitas `location_mode = online` |
 | checkpoint_id | uuid | FK `activity_checkpoints`; wajib jika `qr_scan`, dan checkpoint harus milik `partner_organizer_id` |
 | qr_secret | bytea | 32 byte acak untuk `qr_scan`; tidak bisa dibaca client |
 | code_hash | text | hash kode rahasia untuk `secret_code` (bcrypt, tidak peka huruf besar/kecil); tidak bisa dibaca client |
-| xp_reward | integer | 10–100 |
+| xp_reward | integer | 10–100 untuk aktivitas `regional`; wajib 0 untuk Event Global (trigger) |
+| score_reward | integer | default 0; wajib 10–1000 untuk Event Global, wajib 0 untuk aktivitas `regional` (trigger) |
 | is_required | boolean | default true; false = misi bonus |
 | available_from, available_until | timestamptz | jendela waktu opsional di dalam `starts_at`–`ends_at` |
 | is_active | boolean | default true |
@@ -677,10 +740,10 @@ Unik: `(activity_id, organizer_id)`. Unik parsial: satu baris `role = host` per 
 | prerequisite_mission_id | uuid | FK `activity_missions` di aktivitas yang sama; wajib jika `after_mission` |
 | show_teaser | boolean | default true; false = tidak muncul sama sekali sebelum terbuka |
 | revealed_at | timestamptz | diisi saat misi terbuka untuk semua (on_publish saat terbit, scheduled oleh cron, manual oleh `reveal_mission`); null untuk `after_mission` karena terbukanya per warga |
-| locked_at | timestamptz | diisi saat completion pertama disetujui; setelah itu `verification`, `xp_reward`, `is_required`, `checkpoint_id` tidak bisa diubah (trigger) |
+| locked_at | timestamptz | diisi saat completion pertama disetujui; setelah itu `verification`, `xp_reward`, `score_reward`, `is_required`, `checkpoint_id` tidak bisa diubah (trigger) |
 | created_by | uuid | FK `profiles` |
 
-Trigger: total `xp_reward` misi aktif per aktivitas maksimal 500 (`app_settings.mission.max_total_xp`).
+Trigger: total `xp_reward` misi aktif per aktivitas maksimal 500 (`app_settings.mission.max_total_xp`); total `score_reward` misi aktif per Event Global maksimal 5.000 (`app_settings.global_event.max_total_score`).
 
 **collab_posts** — open call dan tawaran umum. Edit.
 
@@ -744,7 +807,7 @@ Trigger: maksimal 10 anggota aktif per grup; maksimal 3 grup aktif per warga.
 | id | uuid | PK |
 | activity_id | uuid | FK |
 | user_id | uuid | FK |
-| group_id | uuid | FK, null = pribadi |
+| group_id | uuid | FK, null = pribadi; selalu null untuk Event Global |
 | status | participation_status | invited (menunggu konfirmasi grup), registered, in_progress, completed, not_completed, cancelled |
 | progress | integer | default 0; untuk challenge individu (check-in atau misi, sesuai `target_kind`) |
 | registered_by | uuid | FK; ketua grup atau diri sendiri |
@@ -815,7 +878,7 @@ Unik: `(activity_id, user_id, local_date)`.
 
 ### Ekonomi gamifikasi
 
-**xp_ledger** — semua perubahan XP. Hanya insert.
+**xp_ledger** — semua perubahan XP. Hanya insert. Event Global tidak menulis ke tabel ini.
 
 | Kolom | Tipe | Aturan |
 | --- | --- | --- |
@@ -830,7 +893,7 @@ Unik: `(activity_id, user_id, local_date)`.
 | local_date | date | tanggal WIB, untuk batas 1.000/hari |
 | note | text | |
 
-**point_ledger** — semua perubahan poin. Hanya insert.
+**point_ledger** — semua perubahan poin. Hanya insert. Event Global tidak menulis ke tabel ini.
 
 | Kolom | Tipe | Aturan |
 | --- | --- | --- |
@@ -891,17 +954,74 @@ Unik: `(activity_id, user_id, local_date)`.
 | 4 | Jawara | 4000 |
 | 5 | Legenda Cimahi | 10000 |
 
-**badges** — definisi badge (seed): `id`, `code` unik, `name`, `description`, `icon_url`, `rule jsonb` (contoh `{"type":"distinct_villages","count":5}`). Badge awal ada di `ALUR-SISTEM.md` bagian 17.
+**badges** — definisi badge (seed): `id`, `code` unik, `name`, `description`, `icon_url`, `rule jsonb` (contoh `{"type":"distinct_villages","count":5}`). Badge awal ada di `ALUR-SISTEM.md` bagian 17. Badge eksklusif Event Global dibuat admin dengan `rule = {"type":"activity_prize"}`, sehingga tidak pernah diberikan otomatis oleh `award_badges`.
 
 **user_badges**: `user_id` + `badge_id` (PK gabungan), `awarded_at`, `activity_id` opsional.
 
 **monthly_village_winners**: `month date` (tanggal 1), `village_id`, `rank smallint`, `avg_xp numeric`, `active_citizens integer`. PK `(month, rank)`.
 
+### Event Global
+
+**activity_score_ledger** — semua perubahan skor di Event Global. Hanya insert (trigger `prevent_ledger_change`). Skor terpisah dari XP dan poin: tidak menambah level, peringkat kota/kelurahan, atau saldo dompet.
+
+| Kolom | Tipe | Aturan |
+| --- | --- | --- |
+| id | uuid | PK |
+| activity_id | uuid | FK `activities`; harus `reach = global` (trigger) |
+| user_id | uuid | FK `profiles` |
+| amount | integer | boleh negatif untuk reversal; tidak boleh 0 |
+| reason | score_reason | not null |
+| checkin_id | uuid | FK `checkins`, untuk reason `checkin` |
+| mission_completion_id | uuid | FK `mission_completions`, untuk reason `mission_complete` |
+| occurred_at | timestamptz | waktu warga melakukan aksinya (`checkins.checked_in_at` atau `mission_completions.submitted_at`), bukan waktu disetujui; dipakai untuk aturan seri |
+| note | text | |
+
+**activity_prizes** — hadiah per rentang peringkat di Event Global. Edit.
+
+| Kolom | Tipe | Aturan |
+| --- | --- | --- |
+| id | uuid | PK |
+| activity_id | uuid | FK `activities`; harus `reach = global` (trigger) |
+| rank_from, rank_to | smallint | `1 ≤ rank_from ≤ rank_to ≤ global_event.max_prize_rank` (100); rentang tidak boleh tumpang tindih dalam satu aktivitas (trigger) |
+| title | text | contoh "Juara 1: Sepeda lipat" |
+| description | text | syarat dan detail hadiah |
+| image_url | text | Storage |
+| kind | prize_kind | not null |
+| fulfillment | prize_fulfillment | not null; `badge` selalu `digital` |
+| badge_id | uuid | FK `badges`; wajib jika `kind = badge` |
+| sponsor_organizer_id | uuid | FK `organizers`; partner accepted di aktivitas ini yang menyediakan hadiah, null = disediakan Gasyu |
+| pickup_note | text | lokasi dan cara ambil; wajib jika `fulfillment = pickup` |
+| min_score | integer | default 1; skor minimal untuk berhak atas hadiah ini |
+| created_by | uuid | FK `profiles` admin |
+
+Setelah aktivitas `published`, baris hadiah hanya bisa ditambah; kolom selain `description` dan `image_url` terkunci dan baris tidak bisa dihapus (trigger), supaya hadiah yang sudah diumumkan tidak dikurangi.
+
+**activity_winners** — pemenang yang ditetapkan saat Event Global `settled`. Edit (status dan data klaim).
+
+| Kolom | Tipe | Aturan |
+| --- | --- | --- |
+| id | uuid | PK |
+| activity_id | uuid | FK `activities` |
+| prize_id | uuid | FK `activity_prizes` |
+| user_id | uuid | FK `profiles` |
+| rank | smallint | peringkat akhir |
+| score | integer | salinan skor akhir |
+| status | winner_status | default pending_claim; hadiah badge langsung `delivered` |
+| claim_deadline | timestamptz | waktu settled + `global_event.claim_days` (14 hari) |
+| claimed_at | timestamptz | |
+| ship_name, ship_phone, ship_address | text | hanya untuk `fulfillment = shipping`; privat; dikosongkan `global_event.shipping_retention_days` (30) hari setelah `delivered` |
+| delivered_at | timestamptz | |
+| delivered_by | uuid | FK `profiles` admin |
+| forfeited_reason | text | diisi saat `forfeited` (lewat batas klaim, akun dibekukan, atau keputusan admin) |
+| note | text | nomor resi atau catatan serah terima |
+
+Unik: `(activity_id, rank)` dan `(activity_id, user_id)`.
+
 ### Operasional
 
 **fraud_flags**: `id`, `user_id`, `checkin_id` opsional, `mission_completion_id` opsional, `kind flag_kind`, `detail jsonb`, `status flag_status` default open, `reviewed_by`, `reviewed_at`.
 
-**notifications**: `id`, `user_id`, `kind text` (partner_invite, application_received, group_registration, activity_approved, organizer_verified, badge_awarded, voucher_expiring, partner_added_by_admin, partner_left, membership_requested, membership_approved, membership_rejected, membership_removed, community_new_activity, payment_proof_submitted, payment_confirmed, payment_rejected, payment_expired, payment_refund_due, mission_proof_submitted, mission_approved, mission_rejected, mission_revealed, suggestion_received, suggestion_answered, team_role_changed), `payload jsonb`, `read_at`.
+**notifications**: `id`, `user_id`, `kind text` (partner_invite, application_received, group_registration, activity_approved, organizer_verified, badge_awarded, voucher_expiring, points_expiring, partner_added_by_admin, partner_left, membership_requested, membership_approved, membership_rejected, membership_removed, community_new_activity, payment_proof_submitted, payment_confirmed, payment_rejected, payment_expired, payment_refund_due, mission_proof_submitted, mission_approved, mission_rejected, mission_revealed, suggestion_received, suggestion_answered, team_role_changed, prize_won, prize_claim_reminder, prize_claimed, prize_delivered, prize_forfeited), `payload jsonb`, `read_at`.
 
 **suggestions** — saran warga untuk merchant/komunitas: `id`, `organizer_id` (merchant/komunitas approved), `user_id` pengirim, `category suggestion_category`, `body text` (10–1.000 karakter), `is_anonymous boolean`, `status suggestion_status` default new, `reply text` opsional, `replied_at`, `replied_by`, `status_changed_at`, `created_at`, `updated_at`. Ditulis hanya lewat fungsi. Tim membaca lewat `v_organizer_suggestions`.
 
@@ -935,6 +1055,14 @@ Unik: `(activity_id, user_id, local_date)`.
 | payment.default_window_hours | 24 |
 | suggestion.daily_limit_per_organizer | 3 |
 | profile.village_change_days | 90 |
+| reminder.expiry_days | 7 (pengingat voucher dan poin hampir kedaluwarsa) |
+| global_event.checkin_score | 100 |
+| global_event.score_min / global_event.score_max | 10 / 1000 (skor per misi) |
+| global_event.max_total_score | 5000 (total skor misi aktif per event) |
+| global_event.max_prize_rank | 100 |
+| global_event.claim_days | 14 |
+| global_event.claim_reminder_days | 3 |
+| global_event.shipping_retention_days | 30 |
 | support.whatsapp / support.email | `""` (diisi admin di Pengaturan) |
 
 ---
@@ -962,7 +1090,9 @@ Unik: `(activity_id, user_id, local_date)`.
 | `v_organizer_reputation` | (tanpa organizer `platform`) `organizer_id`, skor dari hadir, tingkat penyelesaian, jumlah kolaborasi (90 hari terakhir) | papan kolaborasi, peringkat organizer |
 | `v_merchant_dashboard` | per merchant: aktivitas berjalan, peserta, check-in hari ini, warga baru vs kembali, pembayaran menunggu, bukti misi menunggu, budget poin terpakai/sisa, voucher dipakai per outlet | dashboard merchant |
 | `v_community_dashboard` | per komunitas: aktivitas berjalan, peserta, check-in hari ini, pembayaran menunggu, bukti misi menunggu, permintaan member menunggu | dashboard komunitas |
-| `v_admin_overview` | warga aktif mingguan, aktivitas berjalan, organizer aktif, poin beredar vs ditukar, flag terbuka | dashboard admin |
+| `v_admin_overview` | warga aktif mingguan, aktivitas berjalan, organizer aktif, poin beredar vs ditukar, flag terbuka, Event Global berjalan, hadiah belum diklaim dan belum dikirim | dashboard admin |
+| `v_activity_scoreboard` | per Event Global: `activity_id`, `user_id`, `nickname`, `score` (sum `activity_score_ledger`), `last_scored_at` (`max(occurred_at)`), `registered_at`, `rank` (urut skor turun, lalu `last_scored_at` naik, lalu `registered_at` naik); hanya partisipasi registered/in_progress/completed, bayar `not_required`/`paid`, skor > 0, akun tidak dibekukan | `get_activity_leaderboard`, `finalize_activity_winners` |
+| `v_global_event_stats` | per Event Global: pendaftar, peserta aktif (skor > 0), peserta warga Cimahi vs Luar Cimahi, sebaran per kelurahan, misi selesai, skor rata-rata, hadiah per status (`pending_claim`, `claimed`, `delivered`, `forfeited`) | dashboard admin, laporan ke pemkot |
 
 View yang memuat data warga lain hanya mengekspos `nickname` dan agregat, tidak pernah `full_name`. View dibuat dengan `security_invoker = true` supaya RLS tabel dasar tetap berlaku; view leaderboard yang harus melihat semua warga dibuat lewat fungsi `security definer` yang hanya mengembalikan kolom publik.
 
@@ -991,49 +1121,57 @@ Semua fungsi yang mengubah XP, poin, status, atau hak akses berjenis `security d
 | `review_organizer(organizer_id, approve, note)` | admin | approved/rejected + `admin_actions` |
 | `submit_suggestion(organizer_id, category, body, is_anonymous)` | warga | cek tujuan approved dan bukan tim sendiri, batas harian; simpan + notifikasi ke tim |
 | `respond_suggestion(suggestion_id, status, reply)` | tim organizer | ubah status (tidak ke `new`) dan/atau balasan; notifikasi ke pengirim jika ada balasan baru atau status jadi in_progress/done |
-| `submit_activity(activity_id)` | owner/chair host | validasi (termasuk harga dan misi), `awaiting_partners` atau `in_review`, tutup open call |
+| `submit_activity(activity_id)` | owner/chair host | validasi (termasuk harga dan misi), `awaiting_partners` atau `in_review`, tutup open call; aturan Event Global (bagian 22b `ALUR-SISTEM.md`) |
 | `review_activity(activity_id, approve, note)` | admin (tidak dipakai untuk host `platform`, yang langsung published lewat `submit_activity`) | published atau kembali ke draft; saat published, kirim `community_new_activity` ke member aktif komunitas host |
-| `cancel_activity(activity_id, reason)` | host/admin | cancelled + notifikasi peserta; peserta `paid` mendapat `payment_refund_due` |
-| `upsert_mission(activity_id, mission jsonb)` | tim host atau partner accepted | buat/ubah `activity_missions`; membuat `qr_secret`, meng-hash kode; menolak ubah kolom terkunci dan total XP > 500; menerima `template_id` (harus template aktif) saat membuat misi baru |
+| `cancel_activity(activity_id, reason)` | host/admin | cancelled + notifikasi peserta; peserta `paid` mendapat `payment_refund_due`; Event Global yang dibatalkan tidak menetapkan pemenang |
+| `upsert_mission(activity_id, mission jsonb)` | tim host atau partner accepted | buat/ubah `activity_missions`; membuat `qr_secret`, meng-hash kode; menolak ubah kolom terkunci dan total XP > 500; menerima `template_id` (harus template aktif) saat membuat misi baru; Event Global: `score_reward` 10–1000, `xp_reward = 0`, total skor maks. 5.000 |
 | `upsert_mission_template(template_id, data jsonb)` | admin | buat/ubah master misi + `admin_actions` |
 | `set_mission_template_active(template_id, active)` | admin | aktif/nonaktifkan master misi + `admin_actions` |
 | `set_mission_active(mission_id, active)` | tim pembuat misi atau host | nonaktifkan/aktifkan misi |
 | `reveal_mission(mission_id)` | tim pembuat misi atau host (admin untuk event Gasyu) | buka misi `manual`: isi `revealed_at`, notifikasi `mission_revealed` ke peserta terdaftar; tidak bisa dibatalkan |
 | `get_activity_missions(activity_id)` | warga atau pengunjung | daftar misi sesuai sudut pandang pemanggil: misi terbuka lengkap, misi belum terbuka sebagai teaser (tanpa judul dan isi) jika `show_teaser`, sisanya disembunyikan |
 | `get_mission_qr(mission_id)` | tim pembuat misi | token QR misi menit berjalan |
-| `complete_mission(mission_id, token, code, proof_path, lat, lng)` | warga | tolak jika misi belum terbuka untuk pemanggil; verifikasi sesuai `verification`; approved atau pending_review; XP + `evaluate_completion` saat approved |
-| `review_mission_completion(completion_id, approve, note)` | tim host atau pembuat misi | approve → XP + `evaluate_completion`; reject → catatan + notifikasi |
-| `mark_missions_manual(mission_id, user_ids uuid[])` | tim host atau pembuat misi | approved untuk tiap peserta yang memenuhi syarat partisipasi dan bayar |
-| `evaluate_completion(participation_id)` | internal | cek syarat selesai (bagian 9d `ALUR-SISTEM.md`), tandai completed, XP challenge, poin dari budget |
+| `complete_mission(mission_id, token, code, proof_path, lat, lng)` | warga | tolak jika misi belum terbuka untuk pemanggil; verifikasi sesuai `verification`; approved atau pending_review; XP + `evaluate_completion` saat approved; saat approved di Event Global: skor lewat `award_activity_score`, bukan XP |
+| `review_mission_completion(completion_id, approve, note)` | tim host atau pembuat misi | approve → XP + `evaluate_completion`; reject → catatan + notifikasi; Event Global: skor, bukan XP |
+| `mark_missions_manual(mission_id, user_ids uuid[])` | tim host atau pembuat misi | approved untuk tiap peserta yang memenuhi syarat partisipasi dan bayar; Event Global: skor, bukan XP |
+| `evaluate_completion(participation_id)` | internal | cek syarat selesai (bagian 9d `ALUR-SISTEM.md`), tandai completed, XP challenge, poin dari budget; Event Global: hanya status, tanpa XP dan poin |
 | `submit_payment_proof(participation_id, proof_path)` | warga | `awaiting_confirmation` + notifikasi ke tim |
 | `confirm_payment(participation_id, paid, note)` | tim host | paid, atau kembali ke unpaid dengan catatan |
 | `mark_refunded(participation_id, note)` | tim host | refunded, catat `refunded_at`; hanya untuk partisipasi yang dibatalkan atau aktivitas dibatalkan |
 | `invite_partner(activity_id, organizer_id, role, budget, note)` | owner/chair host | baris `activity_partners` invited |
 | `admin_add_partner(activity_id, organizer_id, role, note)` | admin | hanya untuk host `platform`; partner `approved` langsung `accepted`, source admin, notifikasi `partner_added_by_admin`, catat `admin_actions` |
-| `set_partner_budget(partner_id, budget)` | owner merchant partner | isi atau ubah `points_budget` selama aktivitas belum `running`; tidak bisa diisi admin |
-| `leave_activity(partner_id)` | owner/chair partner | status removed selama belum `running`; checkpoint dan misinya dinonaktifkan; notifikasi ke host |
+| `set_partner_budget(partner_id, budget)` | owner merchant partner | isi atau ubah `points_budget` selama aktivitas belum `running`; tidak bisa diisi admin; ditolak untuk Event Global |
+| `leave_activity(partner_id)` | owner/chair partner | status removed selama belum `running`; checkpoint dan misinya dinonaktifkan; notifikasi ke host; ditolak jika partner menyediakan hadiah Event Global yang sudah published |
 | `respond_partner_invite(partner_id, accept, budget)` | owner/chair partner | accepted/declined, maju ke in_review jika semua menjawab |
 | `apply_open_call(post_id, role, budget, contribution, message)` | owner/chair | `collab_applications` pending |
 | `decide_application(application_id, accept)` | owner/chair pembuat post | accepted → `activity_partners` source open_call |
 | `create_group(name)` / `join_group(invite_code)` / `leave_group(group_id)` | warga | kelola grup dengan batas 10 anggota dan 3 grup |
-| `join_activity(activity_id)` | warga | partisipasi pribadi, cek kuota; `members_only` → wajib member aktif komunitas host; `residents_only` → wajib `is_resident_of(user, scope_region_id)`; berbayar → `unpaid` + `payment_due_at` |
-| `register_group(activity_id, group_id, member_ids uuid[])` | ketua grup | partisipasi `invited` untuk tiap anggota; `members_only` → setiap anggota yang dipilih wajib member aktif; `residents_only` → setiap anggota wajib warga wilayah cakupan |
+| `join_activity(activity_id)` | warga | partisipasi pribadi, cek kuota; `members_only` → wajib member aktif komunitas host; `residents_only` → wajib `is_resident_of(user, scope_region_id)`; berbayar → `unpaid` + `payment_due_at`; Event Global tidak memeriksa domisili maupun keanggotaan |
+| `register_group(activity_id, group_id, member_ids uuid[])` | ketua grup | partisipasi `invited` untuk tiap anggota; `members_only` → setiap anggota yang dipilih wajib member aktif; `residents_only` → setiap anggota wajib warga wilayah cakupan; ditolak untuk Event Global |
 | `confirm_group_registration(participation_id, accept)` | anggota | registered atau cancelled |
 | `cancel_participation(participation_id)` | warga | cancelled jika belum check-in dan belum ada misi disetujui; jika sudah `paid`, tim mendapat `payment_refund_due` |
 | `get_checkpoint_qr(checkpoint_id)` | anggota tim partner | token QR menit berjalan |
-| `perform_checkin(checkpoint_id, token, lat, lng)` | warga | seluruh alur check-in (wajib `payment_status` not_required/paid), XP, progress, `evaluate_completion`, bonus grup, badge |
-| `reverse_checkin(checkin_id, note)` | admin | baris XP/poin negatif, `review_status = rejected` |
+| `perform_checkin(checkpoint_id, token, lat, lng)` | warga | seluruh alur check-in (wajib `payment_status` not_required/paid), XP, progress, `evaluate_completion`, bonus grup, badge; Event Global: `global_event.checkin_score` skor lewat `award_activity_score`, tanpa XP, bonus, dan poin |
+| `reverse_checkin(checkin_id, note)` | admin | baris XP/poin negatif, `review_status = rejected`; Event Global: baris skor negatif |
 | `redeem_reward(reward_id)` | warga | debit poin FIFO, kurangi stok, buat voucher |
 | `use_voucher(code, outlet_id)` | owner/staff merchant | status used |
 | `refund_redemption(redemption_id)` | owner merchant/admin | poin kembali, status refunded |
-| `get_citizen_dashboard()` | warga | satu panggilan untuk beranda warga: level, aktivitasku + misi tertunda, saldo poin, poin akan kedaluwarsa, voucher aktif, posisi peringkat, badge terbaru |
+| `get_citizen_dashboard()` | warga | satu panggilan untuk beranda warga: level, aktivitasku + misi tertunda, saldo poin, poin akan kedaluwarsa, voucher aktif, posisi peringkat, badge terbaru; posisi di Event Global yang diikuti, hadiah yang perlu diklaim |
 | `is_resident_of(user_id, region_id)` | internal | true jika kelurahan asal warga sama dengan `region_id` atau berada di bawahnya (kecamatan/kota) menurut `regions.parent_id`; warga "Luar Cimahi" selalu false |
-| `get_leaderboard(scope, region_id, month)` | publik (login) | baris peringkat dengan nickname saja |
-| `award_badges(user_id)` | internal, dipanggil `perform_checkin` dan cron | cek aturan `badges.rule`, insert `user_badges` + notifikasi |
+| `get_leaderboard(scope, region_id, month)` | publik (login) | baris peringkat dengan nickname saja; tidak memuat skor Event Global |
+| `award_badges(user_id)` | internal, dipanggil `perform_checkin` dan cron | cek aturan `badges.rule`, insert `user_badges` + notifikasi; badge `activity_prize` dilewati |
+| `award_activity_score(user_id, activity_id, amount, reason, checkin_id, mission_completion_id, occurred_at, note)` | internal | satu-satunya jalan menulis skor positif; memastikan aktivitas `reach = global` dan `running` (atau `ended` untuk misi foto yang disetujui di masa tinjau); tanpa batas harian |
+| `get_activity_leaderboard(activity_id, limit)` | publik (login) | baris dari `v_activity_scoreboard` (rank, nickname, skor) sampai `limit` (default 100) + baris pemanggil sendiri; status `live` (running), `provisional` (ended), atau `final` (settled, beserta hadiah tiap pemenang) |
+| `upsert_activity_prize(activity_id, prize jsonb)` | admin | buat/ubah `activity_prizes`; cek rentang tidak tumpang tindih; setelah published hanya menambah baris baru atau mengubah `description` dan `image_url`; catat `admin_actions` |
+| `remove_activity_prize(prize_id)` | admin | hapus hadiah selama aktivitas masih `draft` |
+| `finalize_activity_winners(activity_id)` | internal, dipanggil `settle_ended_activities` | ambil peringkat final dari `v_activity_scoreboard`, cocokkan dengan rentang `activity_prizes` dan `min_score`, insert `activity_winners` dengan `claim_deadline`; hadiah badge → `user_badges` + status `delivered`; notifikasi `prize_won`; idempoten |
+| `claim_prize(winner_id, shipping jsonb)` | warga pemenang | `pending_claim` → `claimed` sebelum `claim_deadline`; `shipping` wajib berisi nama, nomor HP, dan alamat; `pickup` dan `digital` cukup konfirmasi; notifikasi `prize_claimed` ke admin |
+| `mark_prize_delivered(winner_id, note)` | admin | `claimed` → `delivered`, catat `delivered_at`, `delivered_by`, resi di `note`; notifikasi `prize_delivered` |
+| `forfeit_prize(winner_id, reason)` | admin | `pending_claim` atau `claimed` → `forfeited` (misalnya hasil tinjauan curang); catat `admin_actions`; notifikasi `prize_forfeited`; hadiah tidak dialihkan ke peringkat berikutnya |
 
-**Fungsi cron** (dipanggil `pg_cron`, tidak bisa dipanggil client): `advance_activity_status`, `expire_group_invitations`, `close_expired_collab_posts`, `settle_ended_activities`, `expire_points`, `expire_redemptions`, `award_streak`, `snapshot_monthly_winners`, `expire_membership_requests`, `expire_unpaid_participations`, `prune_code_attempts`, `reveal_scheduled_missions` (tiap menit). `settle_ended_activities` juga menolak `mission_completions` yang masih `pending_review`.
+**Fungsi cron** (dipanggil `pg_cron`, tidak bisa dipanggil client): `advance_activity_status`, `expire_group_invitations`, `close_expired_collab_posts`, `settle_ended_activities`, `expire_points`, `expire_redemptions`, `award_streak`, `snapshot_monthly_winners`, `expire_membership_requests`, `expire_unpaid_participations`, `prune_code_attempts`, `reveal_scheduled_missions` (tiap menit), `notify_expiring` (08.05 WIB: notifikasi `voucher_expiring` sekali per voucher aktif dan `points_expiring` sekali per jangka untuk poin yang hangus dalam `reminder.expiry_days` hari). `process_prizes` (08.05 WIB: `prize_claim_reminder` H-3 sebelum `claim_deadline`, `pending_claim` lewat batas menjadi `forfeited`, kosongkan `ship_*` 30 hari setelah `delivered`). `settle_ended_activities` juga menolak `mission_completions` yang masih `pending_review`, lalu memanggil `finalize_activity_winners` untuk Event Global. `award_xp` menolak `activity_id` yang `reach = global`.
 
-**Penguncian.** `perform_checkin`, `evaluate_completion`, dan `redeem_reward` memakai `select ... for update` pada baris anggaran (partner) dan reward, supaya dua permintaan bersamaan tidak membuat budget atau stok minus.
+**Penguncian.** `perform_checkin`, `evaluate_completion`, dan `redeem_reward` memakai `select ... for update` pada baris anggaran (partner) dan reward, supaya dua permintaan bersamaan tidak membuat budget atau stok minus. `finalize_activity_winners` mengunci baris aktivitas supaya pemenang tidak ditetapkan dua kali.
 
 ---
 
@@ -1072,6 +1210,9 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 | levels, badges | R | R | R | R, I, U |
 | user_badges | R | R (publik di profil) | - | R |
 | monthly_village_winners | R | R | R | R |
+| activity_score_ledger | R miliknya; I fn | - (peringkat lewat `get_activity_leaderboard`) | - | R |
+| activity_prizes | R jika aktivitas terlihat | R | R jika aktivitas terlihat | R; I/U/D fn |
+| activity_winners | R miliknya, termasuk `ship_*`; U fn | - (daftar pemenang lewat `get_activity_leaderboard`: nickname dan hadiah) | Partner sponsor: R baris hadiah yang ia sponsori tanpa kolom `ship_*` | R, U fn |
 | fraud_flags, admin_actions | - | - | - | R, U |
 | notifications | R, U (read_at) miliknya | - | - | R |
 | suggestions | R miliknya; I fn | - | R lewat `v_organizer_suggestions` (tanpa identitas jika anonim); U fn | R |
@@ -1087,6 +1228,8 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 
 **Data pembayaran.** Kolom `payment_*` di `participations` hanya terlihat oleh warga pemilik dan tim organizer **host** (bukan partner lain). Bucket `payment-proofs` dan `mission-proofs` memakai policy Storage dengan aturan yang sama: path diawali `activity_id/user_id/`, dibaca lewat signed URL berumur pendek.
 
+**Alamat pengiriman hadiah.** Kolom `ship_name`, `ship_phone`, `ship_address` di `activity_winners` hanya terlihat oleh pemenang dan admin, termasuk tidak oleh partner sponsor hadiah. Diterapkan dengan `revoke select` per kolom untuk role `authenticated`, lalu dibaca lewat fungsi.
+
 ---
 
 ## 8. Indeks dan constraint penting
@@ -1098,7 +1241,7 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 | organizers | `(status)`, `(type, village_id)` | antrean admin, penyaringan |
 | merchant_outlets | `(organizer_id)`, `(village_id)` | daftar outlet |
 | community_memberships | unique `(community_id, user_id) where status in ('pending','active')`; `(community_id, status)`; `(user_id) where status = 'active'` | satu keanggotaan berjalan, daftar member, komunitas saya |
-| activities | `(status, starts_at)`, `(scope_region_id, status)`, `(host_organizer_id)` | beranda warga, cron |
+| activities | `(status, starts_at)`, `(scope_region_id, status)`, `(host_organizer_id)`, `(reach, status) where reach = 'global'` | beranda warga, cron, tab Event Global |
 | activity_partners | unique `(activity_id, organizer_id)`; unique `(activity_id) where role = 'host'` | satu host |
 | activity_checkpoints | `(activity_id)` | |
 | activity_missions | `(activity_id, sort_order) where is_active` | daftar misi |
@@ -1112,16 +1255,22 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 | xp_ledger | `(user_id, local_date)`; `(village_id, created_at)` | batas harian, leaderboard |
 | point_ledger | `(user_id, expires_at) where amount > 0` | saldo dan kedaluwarsa |
 | redemptions | unique `(code)`; `(user_id, status)` | pemakaian kasir, dompet |
+| activity_score_ledger | `(activity_id, user_id)`; `(user_id)`; unique `(mission_completion_id) where reason = 'mission_complete'`; unique `(checkin_id) where reason = 'checkin'` | papan peringkat event, skor tidak tercatat dua kali |
+| activity_prizes | `(activity_id, rank_from)` | pencocokan peringkat |
+| activity_winners | unique `(activity_id, rank)`; unique `(activity_id, user_id)`; `(status, claim_deadline) where status = 'pending_claim'`; `(delivered_at) where ship_address is not null` | satu hadiah per peringkat dan per orang, cron klaim dan pembersihan alamat |
 | notifications | `(user_id) where read_at is null` | lencana notifikasi |
 
 **Check constraint**
 
-- `activities`: `ends_at > starts_at`; `points_per_completion >= 0`; `group_min between 2 and 10`; `group_max between group_min and 10`; `target_scope = 'individual' or type = 'challenge'`; `audience = 'members_only'` hanya untuk host komunitas (trigger); `residency_rule = 'open' or scope_region_id is not null`; `is_paid = false or (price_idr >= 1000 and payment_instructions is not null)`; `is_paid` dan `price_idr` hanya bisa diubah owner/chair host dan terkunci setelah published (trigger).
-- `activity_missions`: `xp_reward between 10 and 100`; `verification <> 'qr_scan' or checkpoint_id is not null`; `verification <> 'secret_code' or code_hash is not null`; `available_until > available_from` jika keduanya terisi; `reveal_mode <> 'scheduled' or reveal_at is not null`; `reveal_mode <> 'after_mission' or prerequisite_mission_id is not null`; `prerequisite_mission_id <> id`. Trigger: prasyarat harus di aktivitas yang sama, tidak membentuk lingkaran, dan misi wajib hanya boleh berprasyarat misi wajib; `revealed_at` tidak bisa dikosongkan lagi setelah terisi.
+- `activities`: `ends_at > starts_at`; `points_per_completion >= 0`; `group_min between 2 and 10`; `group_max between group_min and 10`; `target_scope = 'individual' or type = 'challenge'`; `audience = 'members_only'` hanya untuk host komunitas (trigger); `residency_rule = 'open' or scope_region_id is not null`; `is_paid = false or (price_idr >= 1000 and payment_instructions is not null)`; `is_paid` dan `price_idr` hanya bisa diubah owner/chair host dan terkunci setelah published (trigger); `reach = 'regional' or (type = 'event' and audience = 'public' and residency_rule = 'open' and join_mode = 'individual' and points_per_completion = 0)`; `location_mode = 'onsite' or reach = 'global'`; `reach = 'global'` hanya untuk host `platform`, dan `reach` serta `location_mode` terkunci setelah published (trigger).
+- `activity_missions`: `xp_reward` 10–100 dan `score_reward = 0` untuk aktivitas `regional`, `xp_reward = 0` dan `score_reward` 10–1000 untuk Event Global (trigger, karena butuh tabel aktivitas); `verification <> 'qr_scan' or checkpoint_id is not null`; `verification <> 'secret_code' or code_hash is not null`; `available_until > available_from` jika keduanya terisi; `reveal_mode <> 'scheduled' or reveal_at is not null`; `reveal_mode <> 'after_mission' or prerequisite_mission_id is not null`; `prerequisite_mission_id <> id`. Trigger: prasyarat harus di aktivitas yang sama, tidak membentuk lingkaran, dan misi wajib hanya boleh berprasyarat misi wajib; `revealed_at` tidak bisa dikosongkan lagi setelah terisi.
 - `mission_completions`: `verification = 'photo'` mensyaratkan `proof_path` (trigger, karena butuh tabel misi).
 - `activity_partners`: `points_budget >= 0`; budget > 0 hanya untuk organizer merchant (dicek trigger, karena butuh tabel lain).
 - `rewards`: `price_points > 0`, `stock >= 0`; organizer harus merchant (trigger).
 - `point_ledger`: `amount <> 0`; `expires_at is not null` jika `amount > 0`.
+- `activity_score_ledger`: `amount <> 0`; aktivitas harus `reach = global` (trigger).
+- `activity_prizes`: `rank_from >= 1`; `rank_to >= rank_from`; `min_score >= 1`; `kind <> 'badge' or (badge_id is not null and fulfillment = 'digital')`; `fulfillment <> 'pickup' or pickup_note is not null`; rentang tidak tumpang tindih dan `sponsor_organizer_id` harus partner accepted (trigger).
+- `activity_winners`: `status <> 'claimed' or claimed_at is not null`; `status <> 'delivered' or delivered_at is not null`.
 
 ---
 
@@ -1148,6 +1297,8 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 | Peran tim | `0016_team_roles.sql` | `set_team_role` untuk serah terima pemilik/ketua |
 | Foto profil | `0017_avatars.sql` | bucket `avatars` + policy, `set_my_avatar`, cabut update langsung `avatar_url`; perbaikan nickname pengganti di `delete_my_account` |
 | Master misi | `0018_mission_templates.sql` | enum `mission_category`, `mission_templates` + 12 template awal, `activity_missions.template_id`, fungsi admin, `v_mission_template_stats`, `upsert_mission` menerima template |
+| Pengingat kedaluwarsa | `0019_expiry_reminders.sql` | `notify_expiring` + cron 08.05 WIB, `reminder.expiry_days`, indeks voucher aktif per `expires_at` |
+| Event Global | `0020_global_events.sql` (belum dibuat) | enum `activity_reach`, `activity_location_mode`, `score_reason`, `prize_kind`, `prize_fulfillment`, `winner_status`; kolom `activities.reach`, `activities.location_mode`, `activity_missions.score_reward`; tabel `activity_score_ledger`, `activity_prizes`, `activity_winners`; `award_activity_score`, `get_activity_leaderboard`, fungsi hadiah dan klaim, `finalize_activity_winners`; cabang `reach` di `perform_checkin`, `complete_mission`, `review_mission_completion`, `mark_missions_manual`, `evaluate_completion`, `reverse_checkin`, `submit_activity`, `join_activity`, `register_group`, `settle_ended_activities`, dan penolakan di `award_xp`; `v_activity_scoreboard`, `v_global_event_stats`; cron `process_prizes`; kunci `app_settings` `global_event.*`. Uji wajib: misi Event Global tidak pernah menulis `xp_ledger` atau `point_ledger`; urutan seri benar; rentang hadiah tumpang tindih ditolak; partner sponsor tidak bisa membaca `ship_*` |
 Setiap migrasi membawa RLS policy untuk tabel barunya dan file uji SQL sederhana (`supabase/tests/`) untuk aturan yang tidak boleh dilanggar. Semua uji dijalankan dari database kosong dengan `supabase/tests/run.sh` (juga otomatis di GitHub Actions).
 
 ---
@@ -1165,5 +1316,8 @@ Setiap migrasi membawa RLS policy untuk tabel barunya dan file uji SQL sederhana
 - **Pemakaian budget gabungan.** Saat poin diberikan, `evaluate_completion` memotong dari partner yang checkpoint atau misinya menuntaskan syarat selesai; jika budget partner itu habis, dipotong dari partner merchant lain secara berurutan (host lebih dulu). `point_ledger.source_organizer_id` mencatat sumbernya.
 - **Kenapa `village_id` disalin ke `xp_ledger`.** Supaya leaderboard kelurahan tidak berubah ketika warga pindah kelurahan, dan supaya kueri leaderboard tidak perlu join ke `profiles`.
 - **Kenapa `point_allocations`.** Kedaluwarsa per 6 bulan butuh tahu sisa setiap kredit. Mencatat alokasi debit ke kredit (FIFO) membuat sisa tiap kredit bisa dihitung tepat, tanpa kolom saldo yang bisa tidak sinkron.
-- **Skala pilot.** Ribuan warga dan puluhan organizer jauh di bawah batas Postgres; view biasa cukup. Jika leaderboard melambat, ubah view leaderboard menjadi materialized view yang di-refresh tiap 5 menit.
+- **Kenapa Event Global memakai ledger skor sendiri.** Peserta Event Global bisa datang dari kota mana pun. Jika skornya masuk `xp_ledger`, peringkat kota dan kelurahan Cimahi ikut terdorong oleh event yang bukan program wilayah, dan batas 1.000 XP per hari ikut membatasi kompetisi event. Ledger terpisah membuat papan peringkat event mulai dari nol, berakhir bersama event, dan bisa dibalik (reversal) tanpa menyentuh level warga. Event Global tetap memakai tabel `activities`, `participations`, `checkins`, dan `mission_completions` yang sama, sehingga QR, misi, pembayaran, dan moderasi tidak perlu dibuat ulang.
+- **Kenapa aturan seri memakai `occurred_at`.** Bukti foto bisa disetujui berjam-jam setelah dikirim. Jika seri ditentukan dari waktu disetujui, kecepatan panitia meninjau ikut menentukan juara. `occurred_at` menyimpan kapan warga benar-benar mengerjakan misinya.
+- **Kenapa hadiah tidak dialihkan otomatis saat hangus.** Mengalihkan hadiah ke peringkat berikutnya berarti menggeser seluruh daftar pemenang setelah diumumkan. Untuk pilot, hadiah yang hangus dibiarkan hangus dan tercatat; pengalihan bisa ditambahkan nanti sebagai fungsi admin tersendiri.
+- **Skala pilot.** Ribuan warga dan puluhan organizer jauh di bawah batas Postgres; view biasa cukup. Jika leaderboard melambat, ubah view leaderboard menjadi materialized view yang di-refresh tiap 5 menit. Hal yang sama berlaku untuk `v_activity_scoreboard` jika satu Event Global diikuti puluhan ribu peserta.
 - **Multi-kota.** Cukup tambah baris `regions` untuk kota baru dengan `is_active = false`, lalu aktifkan. Tidak ada kolom yang terikat ke Cimahi.
