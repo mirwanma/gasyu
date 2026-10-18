@@ -1706,6 +1706,7 @@ export type Database = {
           id: string
           kind: Database["public"]["Enums"]["flag_kind"]
           mission_completion_id: string | null
+          organizer_id: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: Database["public"]["Enums"]["flag_status"]
@@ -1718,6 +1719,7 @@ export type Database = {
           id?: string
           kind: Database["public"]["Enums"]["flag_kind"]
           mission_completion_id?: string | null
+          organizer_id?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["flag_status"]
@@ -1730,6 +1732,7 @@ export type Database = {
           id?: string
           kind?: Database["public"]["Enums"]["flag_kind"]
           mission_completion_id?: string | null
+          organizer_id?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["flag_status"]
@@ -1770,6 +1773,48 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_mission_review_queue"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fraud_flags_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "organizers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fraud_flags_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_refund_queue"
+            referencedColumns: ["host_organizer_id"]
+          },
+          {
+            foreignKeyName: "fraud_flags_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "v_community_dashboard"
+            referencedColumns: ["organizer_id"]
+          },
+          {
+            foreignKeyName: "fraud_flags_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "v_community_member_stats"
+            referencedColumns: ["community_id"]
+          },
+          {
+            foreignKeyName: "fraud_flags_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "v_merchant_dashboard"
+            referencedColumns: ["organizer_id"]
+          },
+          {
+            foreignKeyName: "fraud_flags_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "v_organizer_reputation"
+            referencedColumns: ["organizer_id"]
           },
           {
             foreignKeyName: "fraud_flags_reviewed_by_fkey"
@@ -3473,6 +3518,7 @@ export type Database = {
           title: string
           updated_at: string
           valid_days: number
+          valid_outlet_ids: string[] | null
         }
         Insert: {
           available_until?: string | null
@@ -3488,6 +3534,7 @@ export type Database = {
           title: string
           updated_at?: string
           valid_days?: number
+          valid_outlet_ids?: string[] | null
         }
         Update: {
           available_until?: string | null
@@ -3503,6 +3550,7 @@ export type Database = {
           title?: string
           updated_at?: string
           valid_days?: number
+          valid_outlet_ids?: string[] | null
         }
         Relationships: [
           {
@@ -5727,6 +5775,9 @@ export type Database = {
           id: string | null
           kind: Database["public"]["Enums"]["flag_kind"] | null
           nickname: string | null
+          organizer_id: string | null
+          organizer_name: string | null
+          organizer_type: Database["public"]["Enums"]["organizer_type"] | null
           partner_name: string | null
           reviewed_at: string | null
           status: Database["public"]["Enums"]["flag_status"] | null
@@ -5755,6 +5806,48 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_moderation_checkins"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fraud_flags_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "organizers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fraud_flags_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_refund_queue"
+            referencedColumns: ["host_organizer_id"]
+          },
+          {
+            foreignKeyName: "fraud_flags_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "v_community_dashboard"
+            referencedColumns: ["organizer_id"]
+          },
+          {
+            foreignKeyName: "fraud_flags_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "v_community_member_stats"
+            referencedColumns: ["community_id"]
+          },
+          {
+            foreignKeyName: "fraud_flags_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "v_merchant_dashboard"
+            referencedColumns: ["organizer_id"]
+          },
+          {
+            foreignKeyName: "fraud_flags_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "v_organizer_reputation"
+            referencedColumns: ["organizer_id"]
           },
           {
             foreignKeyName: "fraud_flags_user_id_fkey"
@@ -6291,6 +6384,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      check_reviewer_burst: {
+        Args: {
+          p_activity_id: string
+          p_organizer_id: string
+          p_reviewer: string
+        }
+        Returns: undefined
+      }
       checkin_progress: {
         Args: {
           p_activity_id: string
@@ -6749,6 +6850,7 @@ export type Database = {
         | "shared_device"
         | "burst_accounts"
         | "manual"
+        | "reviewer_burst"
       flag_status: "open" | "dismissed" | "actioned"
       group_member_status: "active" | "left" | "removed"
       group_role: "leader" | "member"
@@ -6972,6 +7074,7 @@ export const Constants = {
         "shared_device",
         "burst_accounts",
         "manual",
+        "reviewer_burst",
       ],
       flag_status: ["open", "dismissed", "actioned"],
       group_member_status: ["active", "left", "removed"],

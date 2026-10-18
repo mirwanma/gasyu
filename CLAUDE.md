@@ -130,4 +130,4 @@ docs/
 
 Ikuti `docs/DESAIN-DATABASE.md` bagian 9 (irisan 1–11).
 
-Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016), foto profil (0017), master misi (0018), pengingat kedaluwarsa (0019), uji E2E, keluar dari semua perangkat, ganti bukti bayar, chat panitia di WhatsApp — pemolesan dan rilis pilot. Berikutnya (sudah didesain, belum dibangun): Event Global (0020); voucher per outlet dan deteksi peninjau cepat (0021, termasuk kunci `payment.gasyu_whatsapp`) — perbarui baris ini setiap pindah irisan.
+Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016), foto profil (0017), master misi (0018), pengingat kedaluwarsa (0019), uji E2E, keluar dari semua perangkat, ganti bukti bayar, chat panitia di WhatsApp, voucher per outlet dan deteksi peninjau cepat (0020) — pemolesan dan rilis pilot. Berikutnya (sudah didesain, belum dibangun): Event Global (0021) — perbarui baris ini setiap pindah irisan.

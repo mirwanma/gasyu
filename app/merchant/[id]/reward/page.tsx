@@ -9,6 +9,7 @@ import { SubmitButton } from "@/components/ui";
 import { refundRedemption, setRewardStatus } from "@/lib/actions/rewards";
 import { getMerchantPointsSummary, listMerchantRedemptions, listMerchantRewards } from "@/lib/data/rewards";
 import { formatDate, formatDateTime } from "@/lib/format";
+import { createClient } from "@/lib/supabase/server";
 
 // Reward & budget poin merchant: daftar voucher, tambah/ubah, voucher yang ditukar.
 export default function Page({ params, searchParams }: PageProps<"/merchant/[id]/reward">) {
@@ -32,7 +33,14 @@ async function Loader({ params, searchParams }: PageProps<"/merchant/[id]/reward
 async function Body({ id, edit, approved, isLeader }: { id: string; edit?: string; approved: boolean; isLeader: boolean }) {
   // Reward & budget poin hanya untuk pemilik (ALUR-SISTEM bagian 2).
   if (!isLeader) redirect(`/merchant/${id}/lainnya?akses=peran`);
-  const [rewards, summary, redemptions] = await Promise.all([listMerchantRewards(id), getMerchantPointsSummary(id), listMerchantRedemptions(id)]);
+  const supabase = await createClient();
+  const [rewards, summary, redemptions, { data: outletRows }] = await Promise.all([
+    listMerchantRewards(id),
+    getMerchantPointsSummary(id),
+    listMerchantRedemptions(id),
+    supabase.from("merchant_outlets").select("id, name").eq("organizer_id", id).eq("is_active", true).order("name"),
+  ]);
+  const outlets = (outletRows ?? []).map((o) => ({ id: o.id as string, name: o.name as string }));
   const editing = rewards.find((r) => r.id === edit);
   const base = `/merchant/${id}`;
 
@@ -62,7 +70,12 @@ async function Body({ id, edit, approved, isLeader }: { id: string; edit?: strin
       ) : !isLeader ? (
         <p className="rounded-2xl bg-info-tint px-4 py-3 text-[13px] text-info">Hanya pemilik yang bisa mengatur reward dan budget poin.</p>
       ) : (
-        <RewardForm organizerId={id} initial={editing ? { id: editing.id, title: editing.title, description: editing.description ?? "", price_points: editing.price_points, stock: editing.stock, valid_days: editing.valid_days, available_until: editing.available_until } : undefined} />
+        <RewardForm
+          key={editing?.id ?? "baru"}
+          organizerId={id}
+          outlets={outlets}
+          initial={editing ? { id: editing.id, title: editing.title, description: editing.description ?? "", price_points: editing.price_points, stock: editing.stock, valid_days: editing.valid_days, available_until: editing.available_until, valid_outlet_ids: editing.valid_outlet_ids } : undefined}
+        />
       )}
 
       <section className="flex flex-col gap-2.5">
@@ -77,6 +90,7 @@ async function Body({ id, edit, approved, isLeader }: { id: string; edit?: strin
                   {r.price_points} poin · stok {r.stock} · berlaku {r.valid_days} hari
                   {r.available_until ? ` · s.d. ${formatDate(r.available_until)}` : ""}
                 </span>
+                <span className="text-[12px] text-fg-soft">{r.outlet_names ? `Berlaku di: ${r.outlet_names.join(", ")}` : "Berlaku di semua outlet"}</span>
               </span>
               <span className={`${tagClass.base} ${r.status === "active" ? tagClass.success : tagClass.neutral}`}>{r.status === "active" ? "Aktif" : "Nonaktif"}</span>
             </div>

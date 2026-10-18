@@ -16,7 +16,9 @@ const ERRORS: Record<string, string> = {
   insufficient_points: "Poin kamu belum cukup.",
   invalid_code: "Kode voucher tidak ditemukan.",
   voucher_unavailable: "Voucher sudah dipakai, kedaluwarsa, atau di-refund.",
-  invalid_outlet: "Pilih outlet yang valid.",
+  invalid_outlet: "Pilih outlet yang valid dan masih aktif.",
+  outlets_required: "Pilih minimal satu outlet, atau pilih Semua outlet.",
+  outlet_not_valid: "Voucher ini tidak berlaku di outlet ini.",
   activity_locked: "Poin tidak bisa diubah setelah aktivitas berjalan.",
   invalid_points: "Poin per penyelesaian harus 0–10.000.",
   invalid_budget: "Budget poin tidak valid.",
@@ -41,6 +43,8 @@ export async function saveReward(_prev: RewardActionState, formData: FormData): 
     valid_days: text("valid_days") || "30",
     available_until: text("available_until") ? `${text("available_until")}T23:59:59+07:00` : "",
     status: text("status") || "active",
+    // Semua outlet = null; outlet tertentu = daftar id yang dicentang.
+    valid_outlet_ids: text("outlet_scope") === "some" ? formData.getAll("outlet_ids").map(String) : null,
   };
   const image = formData.get("image");
   if (image instanceof File && image.size > 0) {
