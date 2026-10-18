@@ -37,6 +37,7 @@ const FLAG_LABELS: Record<ModerationFlag["kind"], { label: string; tone: string 
   burst_accounts: { label: "Akun beruntun", tone: "bg-hot-tint text-hot border-hot/30" },
   impossible_travel: { label: "Perjalanan mustahil", tone: "bg-warn-tint text-warn border-warn/30" },
   shared_device: { label: "Perangkat sama", tone: "bg-info-tint text-info border-info/30" },
+  reviewer_burst: { label: "Peninjau terlalu cepat", tone: "bg-warn-tint text-warn border-warn/30" },
   manual: { label: "Laporan manual", tone: "bg-track text-fg-label border-line" },
 };
 
@@ -52,6 +53,12 @@ function describeFlag(f: ModerationFlag) {
     return {
       title: `Check-in ${d.distance_km ?? "?"} km dari titik sebelumnya dalam ${d.minutes ?? "?"} menit`,
       detail: [f.activity_title, f.checkpoint_name].filter(Boolean).join(" · "),
+    };
+  }
+  if (f.kind === "reviewer_burst") {
+    return {
+      title: `${d.approvals ?? "?"} bukti foto disetujui dalam ${d.window_minutes ?? 10} menit oleh satu peninjau`,
+      detail: [f.organizer_name, f.activity_title, "persetujuan tetap berlaku"].filter(Boolean).join(" · "),
     };
   }
   return { title: typeof d.title === "string" ? d.title : "Pola mencurigakan", detail: [f.activity_title, f.checkpoint_name].filter(Boolean).join(" · ") };
@@ -103,6 +110,11 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
                   {text.detail ? ` · ${text.detail}` : ""}
                   {f.suspended_at ? " · akun sedang beku" : ""}
                 </span>
+                {f.kind === "reviewer_burst" && f.organizer_name && (
+                  <a href={`/admin/pengguna?tab=penyelenggara&q=${encodeURIComponent(f.organizer_name)}`} className="text-[13px] font-semibold text-link">
+                    Lihat penyelenggara (bisa dibekukan di sana) →
+                  </a>
+                )}
                 {mode === "open" ? (
                   <form action={reviewFlag} className="flex flex-wrap items-center gap-2">
                     <input type="hidden" name="flag_id" value={f.id} />

@@ -73,6 +73,7 @@ async function Wallet({ searchParams }: Pick<PageProps<"/dompet">, "searchParams
                 <span className="text-[12px] text-fg-soft">
                   {v.reward.organizer.name} · {v.status === "used" && v.used_at ? `dipakai ${formatDate(v.used_at)}` : `berlaku s.d. ${formatDate(v.expires_at)}`}
                 </span>
+                {v.status === "active" && <OutletLine names={v.outlet_names} />}
               </div>
             </section>
           ))
@@ -89,6 +90,7 @@ async function Wallet({ searchParams }: Pick<PageProps<"/dompet">, "searchParams
                 <span className="text-[12px] text-fg-soft">
                   {active[0].reward.organizer.name} · berlaku s.d. {formatDate(active[0].expires_at)}
                 </span>
+                <OutletLine names={active[0].outlet_names} />
               </div>
             </section>
           )}
@@ -108,6 +110,7 @@ async function Wallet({ searchParams }: Pick<PageProps<"/dompet">, "searchParams
                   <div className="flex flex-1 flex-col gap-1 p-3">
                     <span className="text-[14px] font-semibold leading-[1.3]">{r.title}</span>
                     <span className="text-[11px] text-fg-soft">{r.organizer.name}</span>
+                    <OutletLine names={r.outlet_names} small />
                     {r.description && <span className="text-[11px] leading-[1.4] text-fg-soft">{r.description}</span>}
                     <div className="mt-1.5 flex items-center justify-between">
                       <span className="font-display text-[15px] font-semibold text-points">{r.price_points} poin</span>
@@ -124,5 +127,14 @@ async function Wallet({ searchParams }: Pick<PageProps<"/dompet">, "searchParams
         </>
       )}
     </>
+  );
+}
+
+// "Berlaku di: …" untuk voucher yang dibatasi outlet (ALUR bagian 16).
+function OutletLine({ names, small }: { names: string[] | null; small?: boolean }) {
+  return (
+    <span className={`${small ? "text-[11px]" : "text-[12px]"} leading-[1.4] text-fg-soft`}>
+      {names ? `Berlaku di: ${names.join(", ")}` : "Berlaku di semua outlet"}
+    </span>
   );
 }

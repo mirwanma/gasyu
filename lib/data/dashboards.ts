@@ -209,7 +209,7 @@ export type ModerationFlag = {
   id: string;
   user_id: string;
   checkin_id: string | null;
-  kind: "impossible_travel" | "shared_device" | "burst_accounts" | "manual";
+  kind: "impossible_travel" | "shared_device" | "burst_accounts" | "reviewer_burst" | "manual";
   detail: Record<string, unknown>;
   status: "open" | "dismissed" | "actioned";
   created_at: string;
@@ -220,6 +220,10 @@ export type ModerationFlag = {
   activity_title: string | null;
   checkpoint_name: string | null;
   partner_name: string | null;
+  // Penyelenggara terkait (diisi untuk reviewer_burst).
+  organizer_id: string | null;
+  organizer_name: string | null;
+  organizer_type: "merchant" | "community" | "platform" | null;
 };
 
 export async function listModerationFlags(mode: "open" | "history"): Promise<ModerationFlag[]> {

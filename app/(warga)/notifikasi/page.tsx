@@ -68,7 +68,14 @@ function describe(n: Notification): { title: string; body?: string; href?: strin
     case "checkin_rejected":
       return { title: `Check-in di "${p.activity_title}" ditolak tim Gasyu`, body: `${p.xp ?? 0} XP${Number(p.points) > 0 ? ` dan ${p.points} poin` : ""} ditarik kembali.${typeof p.note === "string" && p.note ? ` Catatan: ${p.note}` : ""}` };
     case "fraud_warning":
-      return { title: "Peringatan dari tim Gasyu", body: typeof p.note === "string" && p.note ? p.note : "Kami menemukan pola check-in yang tidak wajar di akunmu. Ulangi dan akun bisa dibekukan." };
+      return {
+        title: "Peringatan dari tim Gasyu",
+        body: typeof p.note === "string" && p.note
+          ? p.note
+          : p.kind === "reviewer_burst"
+            ? "Kamu menyetujui banyak bukti foto misi dalam waktu sangat singkat. Periksa setiap bukti sebelum menyetujui, atau akun bisa dibekukan."
+            : "Kami menemukan pola check-in yang tidak wajar di akunmu. Ulangi dan akun bisa dibekukan.",
+      };
     case "account_suspended":
       return { title: "Akunmu dibekukan", body: typeof p.note === "string" && p.note ? p.note : "Hubungi tim Gasyu lewat halaman Bantuan untuk peninjauan." };
     case "account_restored":

@@ -32,3 +32,25 @@ test.describe("akun dan pembayaran", () => {
     await expect(bayar.getByRole("button", { name: "Ganti bukti" })).toBeVisible();
   });
 });
+
+// Voucher berlaku di outlet tertentu (ALUR bagian 16).
+test.describe("voucher per outlet", () => {
+  test("pemilik merchant bisa memilih outlet tempat voucher berlaku", async ({ context, page, baseURL }) => {
+    await loginAs(context, ACCOUNTS.pemilikMerchant, baseURL!);
+    await open(page, "/profil");
+    const href = await page.locator('a[href^="/merchant/"]').first().getAttribute("href");
+    await open(page, `${href}/reward`);
+    const form = page.locator("form").filter({ hasText: "Tambah reward" });
+    await expect(form.getByText("Berlaku di outlet")).toBeVisible();
+    await expect(form.getByRole("checkbox")).toHaveCount(0);
+    await form.getByText("Outlet tertentu").click();
+    await expect(form.getByRole("checkbox", { name: /Baros/ })).toBeVisible();
+    await expect(page.getByText(/Berlaku di (semua outlet|: )/).first()).toBeVisible();
+  });
+
+  test("dompet warga menampilkan outlet tempat voucher berlaku", async ({ context, page, baseURL }) => {
+    await loginAs(context, ACCOUNTS.warga, baseURL!);
+    await open(page, "/dompet");
+    await expect(page.getByText(/Berlaku di (semua outlet|: )/).first()).toBeVisible();
+  });
+});
