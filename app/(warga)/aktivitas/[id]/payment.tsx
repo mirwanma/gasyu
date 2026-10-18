@@ -2,10 +2,10 @@ import { PaymentProofForm } from "./payment-form";
 import { Icon } from "@/components/icons";
 import { cardClass, tagClass } from "@/components/styles";
 import { PAYMENT_LABELS, formatPrice, type PaymentStatus } from "@/lib/activities";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, whatsappUrl } from "@/lib/format";
 
 // Bagian "Pembayaran" di halaman aktivitas warga (ALUR bagian 8): harga, cara
-// bayar dari penyelenggara, status, batas waktu, dan unggah bukti.
+// bayar dari penyelenggara, status, batas waktu, unggah atau ganti bukti, dan chat panitia.
 export function PaymentSection({
   participationId,
   activityId,
@@ -15,6 +15,8 @@ export function PaymentSection({
   priceIdr,
   instructions,
   cancelled,
+  hostWhatsapp,
+  activityTitle,
 }: {
   participationId: string;
   activityId: string;
@@ -24,6 +26,8 @@ export function PaymentSection({
   priceIdr: number | null;
   instructions: string | null;
   cancelled: boolean;
+  hostWhatsapp: string | null;
+  activityTitle: string;
 }) {
   if (paymentStatus === "not_required") return null;
   const tone: Record<PaymentStatus, keyof typeof tagClass> = { not_required: "neutral", unpaid: "warn", awaiting_confirmation: "info", paid: "success", refunded: "info" };
@@ -33,6 +37,8 @@ export function PaymentSection({
     : paymentStatus === "refunded" ? "Dana sudah dikembalikan penyelenggara."
     : cancelled ? "Pendaftaran dibatalkan karena lewat batas bayar."
     : "Check-in dan misi terbuka setelah lunas";
+
+  const chatUrl = whatsappUrl(hostWhatsapp, `Halo panitia ${activityTitle}, saya peserta yang terdaftar di Gasyu. Mau tanya soal pembayaran.`);
 
   return (
     <section id="bayar" className={`${cardClass} flex flex-col gap-3 p-4 ${paymentStatus === "paid" ? "border-success/40" : ""}`}>
@@ -63,7 +69,18 @@ export function PaymentSection({
           <PaymentProofForm participationId={participationId} activityId={activityId} retry={!!note} />
         </>
       )}
-      {paymentStatus === "awaiting_confirmation" && <span className="text-[12px] text-fg-soft">Kamu akan dapat notifikasi saat panitia mengonfirmasi. Uang tidak lewat Gasyu.</span>}
+      {paymentStatus === "awaiting_confirmation" && !cancelled && (
+        <>
+          <span className="text-[12px] text-fg-soft">Kamu akan dapat notifikasi saat panitia mengonfirmasi. Uang tidak lewat Gasyu. Salah kirim foto? Ganti buktinya selama belum dikonfirmasi.</span>
+          <PaymentProofForm participationId={participationId} activityId={activityId} replace />
+        </>
+      )}
+      {chatUrl && (
+        <a href={chatUrl} target="_blank" rel="noreferrer" className="flex h-10 items-center justify-center gap-2 rounded-xl border border-line-strong bg-surface px-4 text-[13px] font-semibold text-fg">
+          <Icon name="chat" size={16} />
+          Chat panitia di WhatsApp
+        </a>
+      )}
     </section>
   );
 }

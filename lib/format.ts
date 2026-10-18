@@ -48,3 +48,10 @@ export function greetingFor(now = new Date()) {
   if (hour < 18) return "Selamat sore,";
   return "Selamat malam,";
 }
+
+// Tautan wa.me dari nomor lokal (08xx) atau internasional (62xx). Kosong jika nomor tidak valid.
+export function whatsappUrl(number: string | null | undefined, message?: string) {
+  const digits = (number ?? "").replace(/\D/g, "").replace(/^0/, "62");
+  if (!/^62\d{8,14}$/.test(digits)) return null;
+  return `https://wa.me/${digits}${message ? `?text=${encodeURIComponent(message)}` : ""}`;
+}
