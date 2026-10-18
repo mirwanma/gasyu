@@ -12,7 +12,7 @@ import { DIFFICULTY_LABELS, formatPrice, formatSchedule, targetLabel, typeLabel 
 import { getActivityCard, getCheckpoints, getMyParticipation, getPartners } from "@/lib/data/activities";
 import { listGroupProgress, listMyGroups } from "@/lib/data/groups";
 import { getCitizenMissions } from "@/lib/data/missions";
-import { getPaymentInstructions } from "@/lib/data/payments";
+import { getHostWhatsapp, getPaymentInstructions } from "@/lib/data/payments";
 import { getCurrentUser } from "@/lib/data/user";
 import { formatDateTime } from "@/lib/format";
 
@@ -33,7 +33,7 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
   const { id } = await params;
   const [card, user] = await Promise.all([getActivityCard(id), getCurrentUser()]);
   if (!card || !user) notFound();
-  const [checkpoints, partners, participation, groups, groupProgress, missions, payInfo] = await Promise.all([
+  const [checkpoints, partners, participation, groups, groupProgress, missions, payInfo, hostWhatsapp] = await Promise.all([
     getCheckpoints(id),
     getPartners(id),
     getMyParticipation(id, user.id),
@@ -41,6 +41,7 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
     card.target_scope === "group" ? listGroupProgress({ activityId: id }) : Promise.resolve([]),
     getCitizenMissions(id),
     card.is_paid ? getPaymentInstructions(id) : Promise.resolve(null),
+    card.is_paid ? getHostWhatsapp(card.host_organizer_id, card.host_type) : Promise.resolve(null),
   ]);
   const leaderGroups = groups.filter((g) => g.isLeader).map((g) => ({ id: g.id, name: g.name, members: g.members.map((m) => ({ user_id: m.user_id, nickname: m.nickname })) }));
   const myGroupRow = participation?.group_id ? groupProgress.find((p) => p.group_id === participation.group_id) : undefined;
@@ -182,6 +183,8 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
             priceIdr={card.price_idr}
             instructions={payInfo?.payment_instructions ?? null}
             cancelled={participation.status === "cancelled"}
+            hostWhatsapp={hostWhatsapp}
+            activityTitle={card.title}
           />
         )}
 

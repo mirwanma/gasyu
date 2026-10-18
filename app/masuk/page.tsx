@@ -30,12 +30,18 @@ async function LoginOptions({ searchParams }: Pick<PageProps<"/masuk">, "searchP
   const next = safeNext(params.next);
   const googleFailed = params.error === "google";
   const deleted = params.akun === "dihapus";
+  const signedOutAll = params.akun === "keluar-semua";
 
   return (
     <>
       {deleted && (
         <p role="status" className="rounded-[14px] border border-line bg-surface px-4 py-3 text-[13px] leading-[1.5] text-fg-label">
           Akun ini sudah dihapus. Terima kasih sudah ikut meramaikan kota bersama Gasyu.
+        </p>
+      )}
+      {signedOutAll && (
+        <p role="status" className="rounded-[14px] border border-line bg-surface px-4 py-3 text-[13px] leading-[1.5] text-fg-label">
+          Kamu sudah keluar dari semua perangkat. Masuk lagi di HP ini kalau mau lanjut.
         </p>
       )}
       <form action={loginWithGoogle} className="flex flex-col gap-3">

@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { signOut } from "../actions";
 import { OrganizerAvatar, UserAvatar } from "@/components/avatar";
 import { BottomNav, CITIZEN_NAV } from "@/components/bottom-nav";
+import { SignOutEverywhere } from "@/components/sign-out-everywhere";
 import { Icon } from "@/components/icons";
 import { cardClass } from "@/components/styles";
 import { getMyOrganizers, ROLE_LABELS, STATUS_LABELS, TYPE_LABELS } from "@/lib/data/organizers";
@@ -205,11 +206,12 @@ async function ProfileContent() {
           <Icon name="chevron" size={16} className="text-fg-muted" />
         </a>
         <form action={signOut}>
-          <button type="submit" className="flex h-[52px] w-full items-center justify-between px-4 text-[14px] font-medium text-danger">
+          <button type="submit" className="flex h-[52px] w-full items-center justify-between border-b border-line px-4 text-[14px] font-medium text-danger">
             Keluar dari akun
             <Icon name="logout" size={16} />
           </button>
         </form>
+        <SignOutEverywhere />
       </nav>
     </>
   );

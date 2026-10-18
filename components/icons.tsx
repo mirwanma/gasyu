@@ -12,6 +12,7 @@ export const ICON_PATHS = {
   ticket: "M3 9a3 3 0 0 0 0 6v4h18v-4a3 3 0 0 1 0-6V5H3zM14 5v14",
   more: "M5 12h.01M12 12h.01M19 12h.01",
   dots: "M12 5h.01M12 12h.01M12 19h.01",
+  chat: "M7.9 20A9 9 0 1 0 4 16.1L2 22z",
   bell: "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0",
   back: "M15 6l-6 6 6 6",
   chevron: "M9 6l6 6-6 6",

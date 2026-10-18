@@ -6,6 +6,8 @@ export const PASSWORD = process.env.E2E_PASSWORD ?? "RameinDummy2026!";
 export const ACCOUNTS = {
   warga: "rani@dummy.ramein.id",
   wargaLain: "rizky@dummy.ramein.id",
+  wargaMenungguBayar: "dimas@dummy.ramein.id", // bukti bayar Night Run menunggu konfirmasi
+  wargaKeluarSemua: "tono@dummy.ramein.id", // dipakai uji keluar dari semua perangkat
   pemilikMerchant: "wisnu@dummy.ramein.id",
   ketuaKomunitas: "andi@dummy.ramein.id",
   admin: "admin@dummy.ramein.id",
