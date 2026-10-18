@@ -34,7 +34,7 @@ Night Run "3 hari lagi", challenge kopi "hari ke-5". Jika ingin suasana segar la
 
 ## Penanda data dummy
 
-- Semua akun dummy punya id berawalan `dd000000-0000-4000-8000-` dan email `@dummy.gasyu.id`.
+- Semua akun dummy punya id berawalan `dd000000-0000-4000-8000-` dan email `@dummy.ramein.id`.
 - Penyelenggara, aktivitas, grup, reward, transaksi, notifikasi, dan berkas Storage diturunkan dari akun itu
   (pembuat/pemilik), sehingga `bersihkan.sql` bisa menghapusnya tanpa daftar id.
 - Data asli (misalnya akun Anda) tidak pernah tersentuh oleh skrip ini.
@@ -46,7 +46,7 @@ Skrip ini aman dijalankan berulang.
 
 ## Skenario demo yang enak ditunjukkan
 
-- **Admin** (`admin@dummy.gasyu.id`): ada 2 penyelenggara menunggu verifikasi, 1 aktivitas menunggu review,
+- **Admin** (`admin@dummy.ramein.id`): ada 2 penyelenggara menunggu verifikasi, 1 aktivitas menunggu review,
   1 check-in di luar radius di Moderasi, Ringkasan kota terisi.
 - **Merchant Kopi Lereng** (`wisnu@`): dashboard dengan budget poin terpakai, challenge berjalan, voucher yang ditukar Nadia,
   ulasan foto menunggu tinjauan, QR checkpoint.
@@ -60,6 +60,6 @@ Skrip ini aman dijalankan berulang.
 
 ## Catatan setelah ganti nama ke Gasyu
 
-- Email akun dummy memakai domain `@dummy.gasyu.id` dan kata sandi `GasyuDummy2026!` (sebelumnya `@dummy.ramein.id` / `RameinDummy2026!`; project yang sudah terisi diganti sekali dengan `ganti-email-gasyu.sql`).
+- Email akun dummy tetap memakai domain `@dummy.ramein.id` dan kata sandi `RameinDummy2026!`. Keduanya hanya penanda data dummy, jadi sengaja tidak diubah supaya login dan skrip bersih-bersih tetap jalan.
 - Kalau gambar cover dibuat ulang (`python3 dummy-data/buat-gambar.py`), unggah ulang cover saja dengan `node dummy-data/unggah-cover.cjs`.
 - Foto profil contoh untuk akun rani (`gambar/avatar-rani.jpg`) dipasang oleh `unggah-gambar.cjs` dan dihapus oleh `bersihkan.sql`.

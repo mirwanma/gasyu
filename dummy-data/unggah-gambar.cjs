@@ -10,7 +10,7 @@ const envFile = path.join(__dirname, "..", ".env.local");
 if (fs.existsSync(envFile)) for (const line of fs.readFileSync(envFile, "utf8").split("\n")) { const m = line.match(/^([A-Z_]+)=(.*)$/); if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim(); }
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL, KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 if (!URL || !KEY) { console.error("Isi NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY di .env.local"); process.exit(1); }
-const PW = "GasyuDummy2026!";
+const PW = "RameinDummy2026!";
 const IMG = (name) => fs.readFileSync(path.join(__dirname, "gambar", name));
 const log = (...a) => console.log("•", ...a);
 
@@ -28,24 +28,24 @@ async function upload(sb, bucket, objectPath, file) {
 
 // Pemilik/ketua → slug penyelenggara → berkas logo
 const LOGOS = [
-  ["wisnu@dummy.gasyu.id", "kopi-lereng", "logo-kopi-lereng.png"],
-  ["tehai@dummy.gasyu.id", "seblak-teh-ai", "logo-seblak-teh-ai.png"],
-  ["dewi@dummy.gasyu.id", "batik-cimahi-heritage", "logo-batik-cimahi.png"],
-  ["jaya@dummy.gasyu.id", "bengkel-motor-jaya", "logo-bengkel-jaya.png"],
-  ["hendra@dummy.gasyu.id", "toko-buku-cendekia", "logo-toko-buku.png"],
-  ["udin@dummy.gasyu.id", "nasi-liwet-mang-udin", "logo-nasi-liwet.png"],
-  ["andi@dummy.gasyu.id", "cimahi-runners", "logo-cimahi-runners.png"],
-  ["rudi@dummy.gasyu.id", "cimahi-gowes", "logo-cimahi-gowes.png"],
-  ["mega@dummy.gasyu.id", "cimahi-creative-hub", "logo-creative-hub.png"],
-  ["lina@dummy.gasyu.id", "sahabat-lingkungan-cimahi", "logo-sahabat-lingkungan.png"],
-  ["bayu@dummy.gasyu.id", "cimahi-foodies", "logo-cimahi-foodies.png"],
+  ["wisnu@dummy.ramein.id", "kopi-lereng", "logo-kopi-lereng.png"],
+  ["tehai@dummy.ramein.id", "seblak-teh-ai", "logo-seblak-teh-ai.png"],
+  ["dewi@dummy.ramein.id", "batik-cimahi-heritage", "logo-batik-cimahi.png"],
+  ["jaya@dummy.ramein.id", "bengkel-motor-jaya", "logo-bengkel-jaya.png"],
+  ["hendra@dummy.ramein.id", "toko-buku-cendekia", "logo-toko-buku.png"],
+  ["udin@dummy.ramein.id", "nasi-liwet-mang-udin", "logo-nasi-liwet.png"],
+  ["andi@dummy.ramein.id", "cimahi-runners", "logo-cimahi-runners.png"],
+  ["rudi@dummy.ramein.id", "cimahi-gowes", "logo-cimahi-gowes.png"],
+  ["mega@dummy.ramein.id", "cimahi-creative-hub", "logo-creative-hub.png"],
+  ["lina@dummy.ramein.id", "sahabat-lingkungan-cimahi", "logo-sahabat-lingkungan.png"],
+  ["bayu@dummy.ramein.id", "cimahi-foodies", "logo-cimahi-foodies.png"],
 ];
 // Pemilik/ketua host → judul aktivitas → berkas cover
 const COVERS = [
-  ["andi@dummy.gasyu.id", "Cimahi Night Run 5K", "cover-night-run.png"],
-  ["tehai@dummy.gasyu.id", "Festival Kuliner Pasar Atas", "cover-festival-kuliner.png"],
-  ["wisnu@dummy.gasyu.id", "Jelajah 3 Kedai Kopi Lereng", "cover-jelajah-kopi.png"],
-  ["mega@dummy.gasyu.id", "Workshop Mural Tembok Pasar", "cover-workshop-mural.png"],
+  ["andi@dummy.ramein.id", "Cimahi Night Run 5K", "cover-night-run.png"],
+  ["tehai@dummy.ramein.id", "Festival Kuliner Pasar Atas", "cover-festival-kuliner.png"],
+  ["wisnu@dummy.ramein.id", "Jelajah 3 Kedai Kopi Lereng", "cover-jelajah-kopi.png"],
+  ["mega@dummy.ramein.id", "Workshop Mural Tembok Pasar", "cover-workshop-mural.png"],
 ];
 
 (async () => {
@@ -67,7 +67,7 @@ const COVERS = [
   }
 
   // Dimas mengirim bukti bayar Night Run (menunggu konfirmasi panitia)
-  let sb = await as("dimas@dummy.gasyu.id");
+  let sb = await as("dimas@dummy.ramein.id");
   let { data: me } = await sb.auth.getUser();
   let { data: run } = await sb.from("activities").select("id").eq("title", "Cimahi Night Run 5K").single();
   let { data: part } = await sb.from("participations").select("id, payment_status").eq("activity_id", run.id).eq("user_id", me.user.id).single();
@@ -95,19 +95,19 @@ const COVERS = [
     log("foto misi", email, missionTitle);
     return data.completion_id;
   }
-  await sendPhoto("siti@dummy.gasyu.id", fest.id, "Foto bareng Teh Ai", "foto-festival-siti.png");
-  const fajarId = await sendPhoto("fajar@dummy.gasyu.id", fest.id, "Foto bareng Teh Ai", "foto-festival-dimas.png");
+  await sendPhoto("siti@dummy.ramein.id", fest.id, "Foto bareng Teh Ai", "foto-festival-siti.png");
+  const fajarId = await sendPhoto("fajar@dummy.ramein.id", fest.id, "Foto bareng Teh Ai", "foto-festival-dimas.png");
   if (fajarId) {
-    sb = await as("tehai@dummy.gasyu.id");
+    sb = await as("tehai@dummy.ramein.id");
     const { error } = await sb.rpc("review_mission_completion", { p_completion_id: fajarId, p_approve: true, p_note: null });
     if (error) throw new Error(`tinjau foto Fajar: ${error.message}`);
     log("foto Fajar disetujui Teh Ai");
   }
   // Ulasan Ayu di challenge kopi (menunggu tinjauan Wisnu)
   let { data: ch } = await sb.from("activities").select("id").eq("title", "Jelajah 3 Kedai Kopi Lereng").single();
-  await sendPhoto("ayu@dummy.gasyu.id", ch.id, "Ulasan di media sosial", "foto-kopi-nadia.png").catch((e) => log("ulasan Ayu dilewati:", e.message));
+  await sendPhoto("ayu@dummy.ramein.id", ch.id, "Ulasan di media sosial", "foto-kopi-nadia.png").catch((e) => log("ulasan Ayu dilewati:", e.message));
   // Foto profil Rani (contoh fitur foto profil, migrasi 0017)
-  sb = await as("rani@dummy.gasyu.id");
+  sb = await as("rani@dummy.ramein.id");
   {
     const { data: me } = await sb.auth.getUser();
     const path = `${me.user.id}/avatar-dummy.jpg`;

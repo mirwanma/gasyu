@@ -8,12 +8,12 @@ const { createClient } = require("@supabase/supabase-js");
 const envFile = path.join(__dirname, "..", ".env.local");
 if (fs.existsSync(envFile)) for (const line of fs.readFileSync(envFile, "utf8").split("\n")) { const m = line.match(/^([A-Z_]+)=(.*)$/); if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim(); }
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL, KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-const PW = "GasyuDummy2026!";
+const PW = "RameinDummy2026!";
 const COVERS = [
-  ["andi@dummy.gasyu.id", "Cimahi Night Run 5K", "cover-night-run.png"],
-  ["tehai@dummy.gasyu.id", "Festival Kuliner Pasar Atas", "cover-festival-kuliner.png"],
-  ["wisnu@dummy.gasyu.id", "Jelajah 3 Kedai Kopi Lereng", "cover-jelajah-kopi.png"],
-  ["mega@dummy.gasyu.id", "Workshop Mural Tembok Pasar", "cover-workshop-mural.png"],
+  ["andi@dummy.ramein.id", "Cimahi Night Run 5K", "cover-night-run.png"],
+  ["tehai@dummy.ramein.id", "Festival Kuliner Pasar Atas", "cover-festival-kuliner.png"],
+  ["wisnu@dummy.ramein.id", "Jelajah 3 Kedai Kopi Lereng", "cover-jelajah-kopi.png"],
+  ["mega@dummy.ramein.id", "Workshop Mural Tembok Pasar", "cover-workshop-mural.png"],
 ];
 
 (async () => {
