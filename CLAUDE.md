@@ -4,8 +4,8 @@ Panduan kerja untuk Claude di proyek ini. Baca seluruh file ini di awal setiap s
 
 **Sumber kebenaran** (baca bagian yang relevan sebelum menulis kode):
 
-- `docs/ALUR-SISTEM.md` — alur, peran, aturan bisnis (v0.9)
-- `docs/DESAIN-DATABASE.md` — tabel, enum, fungsi, RLS, urutan migrasi (v0.9)
+- `docs/ALUR-SISTEM.md` — alur, peran, aturan bisnis (v0.10)
+- `docs/DESAIN-DATABASE.md` — tabel, enum, fungsi, RLS, urutan migrasi (v0.10)
 - `docs/BRAND.md` — warna, tipografi, logo, gaya bahasa
 - PRD (PDF milik pemilik proyek, tidak disimpan di repo)
 
@@ -130,4 +130,4 @@ docs/
 
 Ikuti `docs/DESAIN-DATABASE.md` bagian 9 (irisan 1–11).
 
-Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016), foto profil (0017), master misi (0018), pengingat kedaluwarsa (0019), uji E2E — pemolesan dan rilis pilot. Berikutnya (sudah didesain, belum dibangun): Event Global (0020) — perbarui baris ini setiap pindah irisan.
+Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016), foto profil (0017), master misi (0018), pengingat kedaluwarsa (0019), uji E2E — pemolesan dan rilis pilot. Berikutnya (sudah didesain, belum dibangun): Event Global (0020); voucher per outlet dan deteksi peninjau cepat (0021); tanpa migrasi: tombol keluar dari semua perangkat, ganti bukti bayar, chat panitia di WhatsApp — perbarui baris ini setiap pindah irisan.

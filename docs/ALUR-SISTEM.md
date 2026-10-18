@@ -1,6 +1,7 @@
 # Gasyu — Alur Sistem
 
-Versi 0.9 · 18 Oktober 2026 · Pilot Kota Cimahi
+Versi 0.10 · 18 Oktober 2026 · Pilot Kota Cimahi
+Perubahan 0.10: keluar dari semua perangkat (bagian 3); hadiah non-poin ditulis di deskripsi (bagian 6); ganti bukti bayar dan tombol chat panitia di WhatsApp (bagian 8); voucher berlaku di outlet tertentu (bagian 16); deteksi otomatis peninjau yang menyetujui terlalu cepat (bagian 19). Semua belum dibangun.
 Perubahan 0.9: Event Global, yaitu event buatan admin yang terbuka untuk pengguna dari kota mana pun, dengan misi, skor, papan peringkat, dan hadiah khusus event yang terpisah dari XP, level, dan poin (bagian 22); hak akses (bagian 2), validasi (bagian 6), penetapan pemenang saat settled (bagian 7), syarat selesai event online (bagian 9d), cron `process_prizes` (bagian 18), anti-curang (bagian 19), dashboard dan peta halaman (bagian 20).
 Perubahan 0.8: pengingat voucher dan poin hampir kedaluwarsa (bagian 18); master misi (bagian 9f); saran warga untuk merchant dan komunitas (bagian 21); ubah profil, ganti kelurahan, hapus akun, riwayat, bantuan (bagian 3); serah terima peran pemilik/ketua (bagian 5).
 Perubahan 0.7: aturan domisili peserta, yaitu hanya warga wilayah event atau semua warga (bagian 6).
@@ -211,6 +212,7 @@ flowchart TD
 - Foto profil juga di `/profil/ubah`: foto dipotong persegi dan diperkecil ke 512 px di HP sebelum diunggah ke bucket publik `avatars` (folder milik warga sendiri), lalu disimpan lewat `set_my_avatar`. Foto lama dihapus otomatis. Foto tampil di profil dan beranda warga sendiri, dan di daftar tim penyelenggara tempat ia bergabung. Saat akun dihapus, foto ikut dihapus.
 - Kelurahan asal bisa diganti maksimal sekali per `profile.village_change_days` hari, awal 90 (`change_home_village`, `home_village_changed_at`). Penggantian pertama setelah onboarding langsung dihitung.
 - Tidak ada batas usia dan tidak ada persetujuan orang tua selama pilot.
+- Sesi tetap aktif di HP sampai warga keluar. Selain tombol "Keluar dari akun" (perangkat ini saja), halaman profil punya **Keluar dari semua perangkat** (Supabase Auth `signOut({ scope: 'global' })`), untuk warga yang HP-nya hilang atau pernah masuk di HP orang lain.
 - Hapus akun (`/profil/hapus`, `delete_my_account`, warga mengetik HAPUS): data pribadi di `profiles` dikosongkan dan `deleted_at` diisi; baris ledger tetap ada demi audit, tetapi tidak lagi terhubung ke identitas yang bisa dikenali. Pendaftaran yang belum berjalan dibatalkan, warga keluar dari grup, komunitas, dan tim, notifikasinya dihapus. Ditolak jika ia satu-satunya pemilik/ketua, masih punya pembayaran lunas/menunggu di aktivitas yang belum selesai, atau akun admin. Sesi akun terhapus selalu dikeluarkan dan email yang sama tidak bisa dipakai masuk lagi.
 - Riwayat XP dan poin ada di `/riwayat` (dibaca dari `xp_ledger` dan `point_ledger`). Halaman `/bantuan` berisi pertanyaan umum dan kontak tim dari `app_settings` (`support.whatsapp`, `support.email`).
 
@@ -353,6 +355,8 @@ flowchart TD
 - Bisa digabung dengan aturan lain: misalnya event khusus member komunitas sekaligus khusus warga Cimahi; kedua syarat harus terpenuhi.
 - Event tetap terlihat oleh semua warga dengan label "Khusus warga [wilayah]", supaya warga lain tahu event itu ada.
 
+**Hadiah non-poin.** Merchant dan komunitas boleh menjanjikan hadiah di luar poin, misalnya merchandise, sertifikat, atau medali. Untuk aktivitas regional, hadiah ini cukup ditulis di deskripsi aktivitas dan diurus sendiri oleh penyelenggara; sistem tidak mencatat atau memeriksanya. Hadiah yang dicatat sistem hanya ada di Event Global (bagian 22d).
+
 **Aktivitas khusus member.** Tetap tampil di beranda dan halaman komunitas (dengan label "Khusus member"), supaya warga lain tahu dan tertarik bergabung, tetapi tombol join hanya aktif untuk member aktif komunitas host. Aturan XP, poin, dan check-in sama dengan aktivitas publik.
 
 ---
@@ -430,7 +434,8 @@ flowchart TD
 | Pembatalan oleh warga | Diizinkan sebelum check-in pertama; pengembalian dana diurus langsung dengan penyelenggara, tim menandai `refunded` jika dana dikembalikan |
 | Aktivitas dibatalkan | Peserta yang sudah `paid` mendapat notifikasi; tim wajib menandai `refunded` setelah mengembalikan dana, dan admin bisa melihat yang belum |
 | XP dan poin | Sama dengan aktivitas gratis; membayar tidak memberi XP |
-| Bukti bayar | Disimpan di Storage privat, hanya bisa dilihat warga pemilik dan tim penyelenggara host |
+| Bukti bayar | Disimpan di Storage privat, hanya bisa dilihat warga pemilik dan tim penyelenggara host. Selama status `awaiting_confirmation`, warga boleh mengganti bukti (bukti lama ditimpa); fungsi `submit_payment_proof` sudah mengizinkannya, tinggal tombol "Ganti bukti" di halaman status bayar |
+| Kontak panitia | Halaman status bayar punya tombol "Chat panitia di WhatsApp" yang membuka nomor WhatsApp host dari profil merchant/komunitas. Untuk event Gasyu dipakai `payment.gasyu_whatsapp` di `app_settings`, atau `support.whatsapp` jika kosong. Nomor hanya tampil ke peserta terdaftar aktivitas itu |
 
 **Di luar cakupan pilot:** payment gateway, pencairan dana, komisi Gasyu, dan faktur. Struktur `payment_status` sudah disiapkan supaya gateway bisa ditambahkan nanti tanpa mengubah alur peserta.
 
@@ -978,12 +983,14 @@ sequenceDiagram
     K->>DB: use_voucher(kode, outlet_id) dari mode kasir
     DB->>DB: cek kasir anggota merchant pemilik reward
     DB->>DB: cek status active dan belum kedaluwarsa
+    DB->>DB: cek outlet termasuk valid_outlet_ids (jika diisi)
     DB->>DB: status used, catat used_by dan outlet
     DB-->>K: berhasil: nama reward dan nama panggilan warga
 ```
 
 - Poin dipakai dengan urutan FIFO: poin yang paling cepat kedaluwarsa dipakai lebih dulu.
 - Voucher yang sudah ditukar tidak bisa dikembalikan menjadi poin. Pengecualian: jika merchant menonaktifkan reward sebelum voucher dipakai, fungsi `refund_redemption` mengembalikan poinnya.
+- Merchant memilih voucher berlaku di **semua outlet** atau hanya di **outlet tertentu** (`rewards.valid_outlet_ids`). Halaman voucher warga menampilkan daftar outlet tempat voucher berlaku. Kasir yang memindai voucher di outlet yang tidak termasuk ditolak dengan pesan "Voucher ini tidak berlaku di outlet ini".
 - Komunitas tidak punya mode kasir dan tidak bisa membuat `rewards`.
 
 ---
@@ -1127,7 +1134,9 @@ flowchart TD
 | Masa verifikasi 48 jam sebelum pemenang ditetapkan | Juara dari check-in atau foto yang belum ditinjau |
 | Admin meninjau pemenang sebelum hadiah dikirim; akun dibekukan tidak bisa menang | Akun ganda atau curang membawa pulang hadiah |
 
-Bukti foto misi ditinjau oleh tim penyelenggara, bukan admin. Admin hanya turun tangan lewat laporan atau pola mencurigakan (misalnya satu peninjau menyetujui ratusan foto dalam beberapa menit).
+Bukti foto misi ditinjau oleh tim penyelenggara, bukan admin. Admin hanya turun tangan lewat laporan atau pola mencurigakan.
+
+**Peninjau terlalu cepat (`reviewer_burst`).** Jika satu anggota tim menyetujui `fraud.reviewer_burst_count` bukti foto atau lebih (awal 50) dalam `fraud.reviewer_burst_minutes` menit (awal 10), sistem membuat satu `fraud_flags` berjenis `reviewer_burst` per jendela waktu, berisi peninjau, penyelenggara, aktivitas, dan jumlah bukti. Persetujuan tetap berlaku (tidak dibatalkan otomatis), supaya panitia yang memang meninjau cepat di acara besar tidak terganggu. Admin melihatnya di halaman Moderasi dan bisa mengabaikan, memberi peringatan, membalik misi tertentu, atau membekukan penyelenggara.
 
 ---
 
