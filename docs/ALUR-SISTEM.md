@@ -538,7 +538,7 @@ Fungsi `evaluate_completion` dipanggil setiap ada check-in atau misi yang disetu
 | Challenge target `required_missions` | Semua misi wajib disetujui |
 | Challenge target `missions_completed` | Jumlah misi disetujui (wajib maupun bonus) mencapai `target_count` |
 
-Misi bonus selalu opsional: menambah XP, tetapi tidak menghalangi status selesai. Misi wajib yang **belum pernah dibuka** (misalnya mode manual yang tidak jadi dibuka panitia) tidak dihitung sebagai syarat; begitu terbuka, ia langsung menjadi syarat. Hadiah penyelesaian (XP challenge dan poin dari budget) tetap diberikan sekali, saat status menjadi `completed`.
+Misi bonus selalu opsional: menambah XP, tetapi tidak menghalangi status selesai. Misi wajib yang **belum pernah dibuka** (misalnya mode manual yang tidak jadi dibuka panitia) tidak dihitung sebagai syarat; begitu terbuka, ia langsung menjadi syarat. Hadiah penyelesaian (XP challenge dan poin dari budget) tetap diberikan sekali, saat status menjadi `completed`. Setelah status `completed`, warga tetap boleh mengerjakan misi bonus yang masih terbuka (termasuk yang baru dibuka belakangan) sampai aktivitas berakhir; XP misi tetap diberikan sekali per misi dan status tidak berubah.
 
 ### 9e. Kapan misi tampil ke warga
 
