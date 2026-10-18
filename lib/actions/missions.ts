@@ -49,10 +49,18 @@ const ERRORS: Record<string, string> = {
   note_required: "Tulis alasan saat menolak.",
   account_inactive: "Akun kamu sedang tidak aktif.",
   title: "Judul misi harus 3–80 karakter.",
+  // Event Global
+  invalid_mission_score: "Skor misi harus 10–1.000.",
+  mission_total_score_exceeded: "Total skor semua misi aktif maksimal 5.000.",
+  global_mission_no_xp: "Misi Event Global memakai skor, bukan XP.",
+  online_no_qr_mission: "Event online tidak boleh punya misi scan QR.",
 };
 
+// Kode yang paling panjang dicocokkan dulu, supaya "invalid_mission_score" tidak terbaca sebagai "invalid_mission".
 const msg = (code: string | undefined, fallback: string) => {
-  const key = Object.keys(ERRORS).find((k) => (code ?? "").includes(k));
+  const key = Object.keys(ERRORS)
+    .sort((a, b) => b.length - a.length)
+    .find((k) => (code ?? "").includes(k));
   return key ? ERRORS[key] : fallback;
 };
 const basePath = (type: string, id: string) => (type === "admin" ? "/admin/aktivitas/misi" : `/${type === "merchant" ? "merchant" : "komunitas"}/${id}/aktivitas`);
@@ -75,6 +83,7 @@ export async function saveMission(_prev: MissionActionState, formData: FormData)
     checkpoint_id: text("checkpoint_id") || null,
     code: text("code") || null,
     xp_reward: Number(text("xp_reward") || 0),
+    score_reward: Number(text("score_reward") || 0),
     is_required: formData.get("is_required") === "on",
     reveal_mode: text("reveal_mode") || "on_publish",
     reveal_at: text("reveal_at") ? fromLocalInput(text("reveal_at")) : null,

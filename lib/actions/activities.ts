@@ -48,6 +48,17 @@ const ERRORS: Record<string, string> = {
   invalid_group_members: "Pilih anggota yang masih aktif di grup.",
   member_already_joined: "Ada anggota yang sudah terdaftar di aktivitas ini.",
   cannot_confirm: "Undangan ini sudah tidak berlaku.",
+  // Event Global (ALUR bagian 22b)
+  reach_locked_after_publish: "Jangkauan dan mode lokasi terkunci setelah terbit.",
+  reach_change_with_missions: "Jangkauan tidak bisa diganti karena sudah ada misi. Nonaktifkan misinya dulu.",
+  reach_change_with_prizes: "Hapus hadiah Event Global dulu sebelum mengubah jadi regional.",
+  online_no_checkpoint: "Event online tidak boleh punya checkpoint. Nonaktifkan checkpoint-nya atau pilih mode lain.",
+  online_no_qr_mission: "Event online tidak boleh punya misi scan QR.",
+  mission_required: "Tambahkan minimal satu misi aktif sebelum menerbitkan.",
+  prize_required: "Tambahkan minimal satu hadiah per peringkat sebelum menerbitkan.",
+  global_requires_event: "Event Global harus berjenis event, bukan challenge.",
+  global_requires_open_individual: "Event Global harus publik, terbuka untuk semua, dan daftar pribadi.",
+  global_no_points: "Event Global tidak memakai poin.",
 };
 
 const msg = (code: string | undefined, fallback: string) => ERRORS[code ?? ""] ?? fallback;
@@ -166,8 +177,20 @@ export async function adminSaveActivity(_prev: ActivityActionState, formData: Fo
   const activityId = String(formData.get("activity_id") ?? "") || null;
   const supabase = await createClient();
   const data: Record<string, unknown> = readActivityForm(formData);
+  // Jangkauan Event Global hanya lewat set_activity_reach. Kembali ke regional diatur dulu
+  // supaya isian regional (grup, khusus warga) lolos; menjadi global diatur setelah isian tersimpan.
+  const reach = formData.has("reach") ? (formData.get("reach") === "global" ? "global" : "regional") : null;
+  const locationMode = (["online", "hybrid"].includes(String(formData.get("location_mode"))) ? String(formData.get("location_mode")) : "onsite") as "onsite" | "online" | "hybrid";
+  const setReach = (target: string, r: "regional" | "global") => supabase.rpc("set_activity_reach", { p_activity_id: target, p_reach: r, p_location_mode: r === "global" ? locationMode : "onsite" });
+  // Hanya panggil set_activity_reach jika jangkauan atau mode lokasi memang berubah (terkunci setelah terbit).
+  const { data: current } = activityId ? await supabase.from("activities").select("reach, location_mode").eq("id", activityId).maybeSingle() : { data: null };
+  const reachChanged = reach !== null && (!current || current.reach !== reach || (reach === "global" && current.location_mode !== locationMode));
   let id = activityId;
   if (activityId) {
+    if (reach === "regional" && reachChanged) {
+      const { error } = await setReach(activityId, "regional");
+      if (error) return { error: msg(error.message, "Jangkauan belum tersimpan.") };
+    }
     const { error } = await supabase.rpc("update_activity", { p_activity_id: activityId, p_data: data as Json });
     if (error) return { error: msg(error.message, "Perubahan belum tersimpan.") };
   } else {
@@ -175,6 +198,13 @@ export async function adminSaveActivity(_prev: ActivityActionState, formData: Fo
     const { data: created, error } = await supabase.rpc("create_activity", { p_host_organizer_id: platformId, p_data: data as Json });
     if (error || !created) return { error: msg(error?.message, "Event belum tersimpan.") };
     id = created as string;
+  }
+  if (reach === "global" && reachChanged && id) {
+    const { error } = await setReach(id, "global");
+    if (error) {
+      revalidatePath("/admin", "layout");
+      redirect(`/admin/aktivitas?tab=semua&pilih=${id}&error=${encodeURIComponent(msg(error.message, "Draft tersimpan, tetapi jangkauan Event Global belum terpasang."))}`);
+    }
   }
   const cover = formData.get("cover");
   if (cover instanceof File && cover.size > 0 && id) {

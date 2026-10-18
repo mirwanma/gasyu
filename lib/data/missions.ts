@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 // Pembacaan misi (irisan 10). Kolom qr_secret dan code_hash tidak pernah dipilih.
 
 const MISSION_COLUMNS =
-  "id, activity_id, partner_organizer_id, title, description, icon, sort_order, verification, checkpoint_id, xp_reward, is_required, available_from, available_until, is_active, reveal_mode, reveal_at, prerequisite_mission_id, show_teaser, revealed_at, locked_at, created_at";
+  "id, activity_id, partner_organizer_id, title, description, icon, sort_order, verification, checkpoint_id, xp_reward, score_reward, is_required, available_from, available_until, is_active, reveal_mode, reveal_at, prerequisite_mission_id, show_teaser, revealed_at, locked_at, created_at";
 
 export type TeamMission = {
   id: string;
@@ -18,6 +18,7 @@ export type TeamMission = {
   verification: MissionVerification;
   checkpoint_id: string | null;
   xp_reward: number;
+  score_reward: number;
   is_required: boolean;
   available_from: string | null;
   available_until: string | null;

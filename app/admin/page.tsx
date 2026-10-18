@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { cardClass } from "@/components/styles";
 import { getAdminOverview, listActiveVillages, listWeeklyActive } from "@/lib/data/dashboards";
+import { countPrizesToDeliver } from "@/lib/data/global-events";
 import { formatDate, formatNumber } from "@/lib/format";
 
 // Ringkasan kota untuk admin, mengikuti artboard "Admin · Ringkasan".
@@ -37,7 +38,7 @@ function short(n: number) {
 }
 
 async function Overview() {
-  const [o, weeks, villages] = await Promise.all([getAdminOverview(), listWeeklyActive(), listActiveVillages(5)]);
+  const [o, weeks, villages, prizesToDeliver] = await Promise.all([getAdminOverview(), listWeeklyActive(), listActiveVillages(5), countPrizesToDeliver()]);
   if (!o) return <p className="text-[13px] text-fg-soft">Data ringkasan belum tersedia.</p>;
   const delta = o.weekly_active_prev > 0 ? Math.round(((o.weekly_active - o.weekly_active_prev) / o.weekly_active_prev) * 100) : null;
   const maxWeek = Math.max(1, ...weeks.map((w) => w.active_citizens));
@@ -113,11 +114,12 @@ async function Overview() {
 
       <section className={`${cardClass} flex flex-col gap-3 p-5`}>
         <h2 className="font-display text-[18px] font-semibold">Antrean</h2>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <QueueCard n={o.pending_organizers} title="Penyelenggara menunggu" sub={`${o.pending_merchants} merchant · ${o.pending_organizers - o.pending_merchants} komunitas`} href="/admin/verifikasi" tone="warn" />
           <QueueCard n={o.pending_activities} title="Aktivitas perlu review" sub={o.pending_activities ? `paling lama ${pendingDays} hari` : "tidak ada pengajuan"} href="/admin/aktivitas" tone="primary" />
           <QueueCard n={flagged} title="Check-in & misi ditandai" sub={`${o.flagged_checkins} di luar radius · ${o.open_pattern_flags} pola`} href="/admin/moderasi" tone="hot" />
           <QueueCard n={o.refunds_pending} title="Refund belum ditandai" sub="peserta lunas yang batal atau aktivitasnya dibatalkan" href="/admin/pembayaran" tone="neutral" />
+          <QueueCard n={prizesToDeliver} title="Hadiah Event Global perlu dikirim" sub="sudah diklaim pemenang, cek flag lalu kirim" href="/admin/aktivitas?tab=global" tone="primary" />
         </div>
       </section>
     </>

@@ -61,6 +61,7 @@ declare
   mis_ch_foto uuid; mis_ch_kode uuid;
   inv uuid; grp uuid; grp_code text; rw_kopi uuid; rw_kopi2 uuid; rw_seblak uuid; rw_buku uuid;
   p_id uuid; tok text; v_checkin uuid; ms uuid;
+  ev_global uuid; cp_global uuid; mis_g_foto uuid; mis_g_kode uuid; mis_g_tur uuid;
 begin
   set constraints all immediate; -- badge dihitung langsung, bukan ditunda ke akhir transaksi
   if exists (select 1 from auth.users where email like '%@dummy.ramein.id') then
@@ -390,6 +391,48 @@ begin
   perform public.submit_activity(ev_mural);
 
   -- ---------------------------------------------------------------------------
+  -- 8b. Event Global: Lomba Foto Wisata Cimahi (admin, online + di lokasi, terbuka untuk semua kota) — sedang berjalan
+  -- ---------------------------------------------------------------------------
+  perform pg_temp.login(w10);
+  perform public.set_home_city('32.73'); -- Vina dari Kota Bandung
+  perform pg_temp.login(u_admin);
+  ev_global := public.create_activity(public.platform_organizer_id(), jsonb_build_object(
+    'type', 'event', 'goal', 'awareness', 'title', 'Lomba Foto Wisata Cimahi',
+    'description', 'Abadikan sudut wisata Cimahi dan kumpulkan skor dari misi. Terbuka untuk pengunjung dari kota mana pun. Check-in di Alun-alun Cimahi, ikut tur sejarah, dan temukan kode rahasia di papan informasi. Skor tertinggi membawa pulang hadiah.',
+    'starts_at', now() + interval '1 day', 'ends_at', now() + interval '8 days',
+    'quota', 500, 'join_mode', 'individual', 'residency_rule', 'open', 'audience', 'public'));
+  perform public.set_activity_reach(ev_global, 'global', 'hybrid');
+  perform public.admin_add_partner(ev_global, org_kopi, 'sponsor', 'Penyedia voucher juara 2–3');
+  cp_global := public.add_checkpoint(ev_global, jsonb_build_object('name', 'Alun-alun Cimahi', 'address', 'Jl. Raden Demang Hardjakusumah, Cimahi', 'lat', -6.8722, 'lng', 107.5425, 'radius_m', 150));
+  mis_g_foto := public.upsert_mission(ev_global, jsonb_build_object('title', 'Foto ikon wisata Cimahi', 'description', 'Unggah foto kamu di salah satu ikon: Alun-alun, Masjid Agung, atau Taman Kartini.', 'verification', 'photo', 'score_reward', 300, 'is_required', false));
+  mis_g_kode := public.upsert_mission(ev_global, jsonb_build_object('title', 'Kode di papan informasi', 'description', 'Cari kode rahasia di papan informasi wisata Alun-alun.', 'verification', 'secret_code', 'code', 'WISATA', 'score_reward', 200, 'is_required', false));
+  mis_g_tur := public.upsert_mission(ev_global, jsonb_build_object('title', 'Ikut tur sejarah', 'description', 'Ikut tur jalan kaki bersama pemandu, ditandai panitia di akhir tur.', 'verification', 'manual', 'score_reward', 500, 'is_required', false));
+  perform public.upsert_activity_prize(ev_global, jsonb_build_object('rank_from', 1, 'rank_to', 1, 'title', 'Kamera mirrorless + medali', 'description', 'Untuk skor tertinggi. Dikirim panitia Gasyu ke alamat pemenang.', 'kind', 'physical', 'fulfillment', 'shipping', 'min_score', 300));
+  perform public.upsert_activity_prize(ev_global, jsonb_build_object('rank_from', 2, 'rank_to', 3, 'title', 'Voucher ngopi Rp150.000', 'kind', 'voucher', 'fulfillment', 'pickup', 'sponsor_organizer_id', org_kopi,
+    'pickup_note', 'Ambil di Kopi Lereng Cabang Baros, tunjukkan halaman Hadiah. Senin–Sabtu 10.00–21.00.', 'min_score', 200));
+  perform public.upsert_activity_prize(ev_global, jsonb_build_object('rank_from', 4, 'rank_to', 10, 'title', 'Badge Penjelajah Wisata Cimahi', 'kind', 'badge',
+    'badge_id', public.create_prize_badge('Penjelajah Wisata Cimahi', 'Masuk 10 besar Lomba Foto Wisata Cimahi'), 'min_score', 100));
+  perform public.submit_activity(ev_global);
+  update public.activities set starts_at = now() - interval '2 days', ends_at = now() + interval '5 days' where id = ev_global; -- sedang berjalan
+  perform public.advance_activity_status();
+
+  -- Peserta dari Cimahi dan luar kota; skor dari check-in, kode, dan tur
+  perform pg_temp.login(w1); perform public.join_activity(ev_global);
+  perform pg_temp.login(w2); perform public.join_activity(ev_global);
+  perform pg_temp.login(w3); perform public.join_activity(ev_global);
+  perform pg_temp.login(w7); perform public.join_activity(ev_global);
+  perform pg_temp.login(w10); perform public.join_activity(ev_global);
+  select public.qr_token(qr_secret, id, public.qr_slot()) into tok from public.activity_checkpoints where id = cp_global;
+  perform pg_temp.login(w1); perform public.perform_checkin(cp_global, tok, -6.8723, 107.5426);
+  perform pg_temp.login(w10); perform public.perform_checkin(cp_global, tok, -6.8721, 107.5424);
+  perform pg_temp.login(w2); perform public.perform_checkin(cp_global, tok, -6.8722, 107.5427);
+  perform pg_temp.login(w10); perform public.complete_mission(mis_g_kode, null, 'wisata', null, null, null);
+  perform pg_temp.login(w1); perform public.complete_mission(mis_g_kode, null, 'WISATA', null, null, null);
+  perform pg_temp.login(w7); perform public.complete_mission(mis_g_kode, null, 'WISATA', null, null, null);
+  perform pg_temp.login(u_admin);
+  perform public.mark_missions_manual(mis_g_tur, array[w10]);
+
+  -- ---------------------------------------------------------------------------
   -- 10. Saran warga (fitur saran, migrasi 0014)
   -- ---------------------------------------------------------------------------
   perform pg_temp.login(w1);
@@ -415,7 +458,7 @@ begin
   -- 9. Deteksi pola (untuk antrean moderasi) dan catatan
   -- ---------------------------------------------------------------------------
   perform public.detect_fraud_patterns();
-  raise notice 'Data dummy selesai. Night Run=% Festival=% Challenge=% Mural=%', ev_run, ev_kuliner, ch_kopi, ev_mural;
+  raise notice 'Data dummy selesai. Night Run=% Festival=% Challenge=% Mural=% Event Global=%', ev_run, ev_kuliner, ch_kopi, ev_mural, ev_global;
 end $seed$;
 
 -- Ringkasan untuk dicatat

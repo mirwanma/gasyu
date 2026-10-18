@@ -1,7 +1,7 @@
 # Data dummy Gasyu
 
 Folder ini berisi data contoh supaya alur Gasyu terlihat lengkap saat demo:
-10 warga, 6 merchant, 5 komunitas, 1 admin, 4 aktivitas (2 event, 1 challenge, 1 menunggu review)
+10 warga, 6 merchant, 5 komunitas, 1 admin, 5 aktivitas (2 event, 1 challenge, 1 menunggu review, 1 Event Global)
 beserta misi, check-in, pembayaran, poin, voucher, badge, notifikasi, dan satu kasus moderasi.
 
 Daftar akun dan kata sandinya ada di [`akun.md`](akun.md).
@@ -48,6 +48,8 @@ Skrip ini aman dijalankan berulang.
 
 - **Admin** (`admin@dummy.ramein.id`): ada 2 penyelenggara menunggu verifikasi, 1 aktivitas menunggu review,
   1 check-in di luar radius di Moderasi, Ringkasan kota terisi.
+  Tab **Event Global** di Aktivitas berisi Lomba Foto Wisata Cimahi: hadiah per peringkat, misi berskor,
+  papan peringkat live, dan sebaran kota asal peserta (Vina dari Kota Bandung).
 - **Merchant Kopi Lereng** (`wisnu@`): dashboard dengan budget poin terpakai, challenge berjalan, voucher yang ditukar Nadia,
   ulasan foto menunggu tinjauan, QR checkpoint.
 - **Merchant Seblak Teh Ai** (`tehai@`): Festival berjalan, check-in hari ini, foto misi Siti menunggu tinjauan,

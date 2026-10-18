@@ -86,7 +86,7 @@ export function ActivityRow({ card, href, selected }: { card: Card; href: string
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="truncate text-[15px] font-semibold">{card.title}</span>
         <span className="text-[12px] text-fg-soft">
-          {typeLabel(card.type)} · {formatSchedule(card.starts_at, card.ends_at)} · {card.seats_taken} peserta
+          {card.reach === "global" ? "Event Global" : typeLabel(card.type)} · {formatSchedule(card.starts_at, card.ends_at)} · {card.seats_taken} peserta
         </span>
       </span>
       <StatusTag status={card.status} />

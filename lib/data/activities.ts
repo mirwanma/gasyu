@@ -1,6 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import type { ActivityStatus, ActivityType, Audience, Difficulty, JoinMode, PaymentStatus, ParticipationStatus, ResidencyRule, TargetKind, TargetScope } from "@/lib/activities";
+import type { ActivityReach, ActivityStatus, ActivityType, Audience, Difficulty, JoinMode, LocationMode, PaymentStatus, ParticipationStatus, ResidencyRule, TargetKind, TargetScope } from "@/lib/activities";
 
 export type ActivityCard = {
   id: string;
@@ -37,6 +37,8 @@ export type ActivityCard = {
   group_max: number | null;
   target_kind: TargetKind | null;
   target_count: number | null;
+  reach: ActivityReach;
+  location_mode: LocationMode;
 };
 
 export type Checkpoint = {

@@ -9,7 +9,7 @@ import { AdminAddPartnerForm } from "@/components/organizer/collab-forms";
 import { CheckpointForm } from "@/components/organizer/checkpoint-form";
 import { listActivityPartners, listApprovedOrganizers } from "@/lib/data/collab";
 import Link from "next/link";
-import { formatPrice, formatSchedule, typeLabel } from "@/lib/activities";
+import { LOCATION_MODE_LABELS, formatPrice, formatSchedule, typeLabel } from "@/lib/activities";
 import { getActivityCard, getCheckpoints, type ActivityCard } from "@/lib/data/activities";
 import { formatDateTime, timeAgo } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
@@ -34,12 +34,13 @@ export default function AdminAktivitasPage({ searchParams }: PageProps<"/admin/a
 
 async function Board({ searchParams }: Pick<PageProps<"/admin/aktivitas">, "searchParams">) {
   const sp = await searchParams;
-  const tab = sp.tab === "semua" ? "semua" : "review";
+  const tab = sp.tab === "semua" ? "semua" : sp.tab === "global" ? "global" : "review";
   const hasil = typeof sp.hasil === "string" ? sp.hasil : undefined;
   const errorMsg = typeof sp.error === "string" ? sp.error : undefined;
   const supabase = await createClient();
   let query = supabase.from("v_activity_cards").select("*").order("starts_at", { ascending: tab === "review" }).limit(100);
   if (tab === "review") query = query.eq("status", "in_review");
+  if (tab === "global") query = query.eq("reach", "global");
   const [{ data }, { count: pending }] = await Promise.all([query, supabase.from("v_activity_cards").select("id", { count: "exact", head: true }).eq("status", "in_review")]);
   const items = (data ?? []) as ActivityCard[];
   const selectedId = typeof sp.pilih === "string" && items.some((a) => a.id === sp.pilih) ? sp.pilih : items[0]?.id;
@@ -53,6 +54,9 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/aktivitas">, "sear
         <a href="/admin/aktivitas?tab=semua" className={`${chipClass.base} ${tab === "semua" ? chipClass.selected : chipClass.idle}`}>
           Semua aktivitas
         </a>
+        <a href="/admin/aktivitas?tab=global" className={`${chipClass.base} ${tab === "global" ? chipClass.selected : chipClass.idle}`}>
+          Event Global
+        </a>
       </div>
       <div className="flex flex-wrap items-start gap-5">
         <section className={`${cardClass} min-w-0 flex-[1_1_360px] overflow-hidden`}>
@@ -61,7 +65,7 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/aktivitas">, "sear
           {hasil === "catatan" && <p className="border-b border-line bg-warn-tint px-4 py-3 text-[13px] font-semibold text-warn">Tulis catatan untuk penyelenggara saat menolak.</p>}
           {hasil === "terbit" && <p className="border-b border-line bg-success-tint px-4 py-3 text-[13px] font-semibold text-success">Event Gasyu terbit dan tampil di Jelajah.</p>}
           {errorMsg && <p className="border-b border-line bg-danger-tint px-4 py-3 text-[13px] font-semibold text-danger">{errorMsg}</p>}
-          {items.length === 0 && <p className="p-5 text-[13px] text-fg-soft">{tab === "review" ? "Tidak ada pengajuan yang menunggu." : "Belum ada aktivitas."}</p>}
+          {items.length === 0 && <p className="p-5 text-[13px] text-fg-soft">{tab === "review" ? "Tidak ada pengajuan yang menunggu." : tab === "global" ? "Belum ada Event Global. Buat lewat tombol Buat event Gasyu, lalu pilih jangkauan Event Global." : "Belum ada aktivitas."}</p>}
           {items.map((card) => (
             <ActivityRow key={card.id} card={card} href={`/admin/aktivitas?tab=${tab}&pilih=${card.id}`} selected={card.id === selectedId} />
           ))}
@@ -87,6 +91,7 @@ async function Detail({ id, tab }: { id: string; tab: string }) {
   if (!card) return null;
   const creator = (Array.isArray(raw?.creator) ? raw?.creator[0] : raw?.creator) as { nickname: string } | null | undefined;
   const isPlatform = card.host_type === "platform";
+  const isGlobal = card.reach === "global";
   const [partners, organizers] = isPlatform ? await Promise.all([listActivityPartners(id), listApprovedOrganizers()]) : [[], []];
   const partnerOutlets = isPlatform
     ? ((await supabase.from("merchant_outlets").select("id, name, address, organizer_id").in("organizer_id", partners.filter((p) => p.status === "accepted" && p.organizer_type === "merchant").map((p) => p.organizer_id)).eq("is_active", true)).data ?? [])
@@ -95,10 +100,10 @@ async function Detail({ id, tab }: { id: string; tab: string }) {
   const facts: [string, string][] = [
     ["Jadwal", formatSchedule(card.starts_at, card.ends_at)],
     ["Harga", formatPrice(card.price_idr, card.is_paid)],
-    ["Audiens", card.audience === "members_only" ? "Khusus member" : "Publik"],
-    ["Cakupan", card.scope_region_name ? `${card.scope_region_name}${card.residency_rule === "residents_only" ? " · khusus warga" : ""}` : "Tanpa cakupan"],
+    isGlobal ? ["Jangkauan", "Semua kota · daftar pribadi"] : ["Audiens", card.audience === "members_only" ? "Khusus member" : "Publik"],
+    isGlobal ? ["Lokasi", LOCATION_MODE_LABELS[card.location_mode]] : ["Cakupan", card.scope_region_name ? `${card.scope_region_name}${card.residency_rule === "residents_only" ? " · khusus warga" : ""}` : "Tanpa cakupan"],
     ["Kuota", card.quota ? card.quota.toLocaleString("id-ID") : "Tanpa batas"],
-    ["Hadiah", `+${card.xp_base} XP${card.points_per_completion ? ` · +${card.points_per_completion} poin` : ""}`],
+    ["Hadiah", isGlobal ? "Skor event + hadiah per peringkat" : `+${card.xp_base} XP${card.points_per_completion ? ` · +${card.points_per_completion} poin` : ""}`],
     ["Peserta", String(participants ?? 0)],
     ["Diajukan", `${creator?.nickname ?? "-"} · ${raw?.created_at ? timeAgo(raw.created_at) : "-"}`],
   ];
@@ -110,7 +115,7 @@ async function Detail({ id, tab }: { id: string; tab: string }) {
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col gap-1">
             <span className="text-[12px] font-bold uppercase tracking-wide text-fg-soft">
-              {typeLabel(card.type)} · host {card.host_name}
+              {isGlobal ? `Event Global · ${LOCATION_MODE_LABELS[card.location_mode]}` : typeLabel(card.type)} · host {card.host_name}
             </span>
             <h2 className="font-display text-[24px] font-semibold leading-tight">{card.title}</h2>
           </div>
@@ -140,6 +145,16 @@ async function Detail({ id, tab }: { id: string; tab: string }) {
             <Link href={`/admin/aktivitas/peserta?aid=${id}`} className="flex h-10 w-fit items-center rounded-full border border-line-strong bg-surface px-4 text-[13px] font-semibold text-fg">
               {card.is_paid ? "Peserta & pembayaran" : "Peserta"} · {participants ?? 0}
             </Link>
+            {isGlobal && (
+              <>
+                <Link href={`/admin/aktivitas/hadiah?aid=${id}`} className="flex h-10 w-fit items-center rounded-full border border-line-strong bg-surface px-4 text-[13px] font-semibold text-fg">
+                  Kelola hadiah
+                </Link>
+                <Link href={`/admin/aktivitas/peringkat?aid=${id}`} className="flex h-10 w-fit items-center rounded-full border border-line-strong bg-surface px-4 text-[13px] font-semibold text-fg">
+                  Peringkat & pemenang
+                </Link>
+              </>
+            )}
           </div>
         )}
         {isPlatform && (
@@ -162,44 +177,52 @@ async function Detail({ id, tab }: { id: string; tab: string }) {
               </div>
             ))}
             {platformEditable && organizers.length > 0 && <AdminAddPartnerForm activityId={id} organizers={organizers.filter((o) => !partners.some((p) => p.organizer_id === o.id && p.status === "accepted"))} />}
-            <p className="text-[11px] text-fg-muted">Gasyu tidak punya budget poin. Poin hanya ada jika merchant mengisi budget-nya sendiri.</p>
+            <p className="text-[11px] text-fg-muted">
+              {isGlobal
+                ? "Event Global tanpa poin. Partner boleh menyediakan checkpoint, misi, dan hadiah."
+                : "Gasyu tidak punya budget poin. Poin hanya ada jika merchant mengisi budget-nya sendiri."}
+            </p>
           </div>
         )}
 
-        <div className="flex flex-col gap-2">
-          <h3 className="text-[15px] font-bold">Checkpoint</h3>
-          {checkpoints.length === 0 && <p className="text-[13px] text-fg-soft">Belum ada checkpoint.</p>}
-          {checkpoints.map((c) => (
-            <div key={c.id} className="flex items-center gap-3 rounded-2xl border border-line p-3">
-              <span className="flex size-9 items-center justify-center rounded-xl bg-primary-tint text-link">
-                <Icon name="pin" size={16} stroke={2} />
-              </span>
-              <span className="flex flex-1 flex-col">
-                <span className="text-[14px] font-semibold">{c.name}</span>
-                <span className="text-[12px] text-fg-soft">{c.address ?? `${c.lat}, ${c.lng}`} · radius {c.radius_m} m{c.is_active ? "" : " · nonaktif"}</span>
-              </span>
-              {isPlatform && c.partner_organizer_id === card.host_organizer_id && c.is_active && ["published", "running"].includes(card.status) && (
-                <Link href={`/admin/aktivitas/qr?cp=${c.id}`} className="text-[12px] font-semibold text-link">Tampilkan QR</Link>
-              )}
-              <a href={`https://maps.google.com/?q=${c.lat},${c.lng}`} target="_blank" rel="noreferrer" className="text-[12px] font-semibold text-link">
-                Peta
-              </a>
-            </div>
-          ))}
-          {platformEditable && (
-            <div className="grid gap-3 md:grid-cols-2">
-              <CheckpointForm organizerId={card.host_organizer_id} type="admin" activityId={id} outlets={[]} />
-              {partners.filter((p) => p.status === "accepted" && p.role !== "host").map((p) => (
-                <details key={p.id} className="rounded-[20px] border border-line p-4">
-                  <summary className="cursor-pointer list-none text-[14px] font-bold">Checkpoint atas nama {p.organizer_name}…</summary>
-                  <div className="pt-3">
-                    <CheckpointForm organizerId={card.host_organizer_id} type="admin" activityId={id} outlets={partnerOutlets.filter((o) => o.organizer_id === p.organizer_id) as { id: string; name: string; address: string }[]} partnerOrganizerId={p.organizer_id} />
-                  </div>
-                </details>
-              ))}
-            </div>
-          )}
-        </div>
+        {isGlobal && card.location_mode === "online" ? (
+          <p className="rounded-xl bg-track px-3 py-2 text-[12px] text-fg-label">Event online tanpa checkpoint. Peserta mendapat skor dari misi foto, kode, atau yang ditandai panitia.</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <h3 className="text-[15px] font-bold">Checkpoint</h3>
+            {checkpoints.length === 0 && <p className="text-[13px] text-fg-soft">{isGlobal && card.location_mode === "onsite" ? "Event Global di lokasi wajib punya minimal satu checkpoint." : "Belum ada checkpoint."}</p>}
+            {checkpoints.map((c) => (
+              <div key={c.id} className="flex items-center gap-3 rounded-2xl border border-line p-3">
+                <span className="flex size-9 items-center justify-center rounded-xl bg-primary-tint text-link">
+                  <Icon name="pin" size={16} stroke={2} />
+                </span>
+                <span className="flex flex-1 flex-col">
+                  <span className="text-[14px] font-semibold">{c.name}</span>
+                  <span className="text-[12px] text-fg-soft">{c.address ?? `${c.lat}, ${c.lng}`} · radius {c.radius_m} m{c.is_active ? "" : " · nonaktif"}</span>
+                </span>
+                {isPlatform && c.partner_organizer_id === card.host_organizer_id && c.is_active && ["published", "running"].includes(card.status) && (
+                  <Link href={`/admin/aktivitas/qr?cp=${c.id}`} className="text-[12px] font-semibold text-link">Tampilkan QR</Link>
+                )}
+                <a href={`https://maps.google.com/?q=${c.lat},${c.lng}`} target="_blank" rel="noreferrer" className="text-[12px] font-semibold text-link">
+                  Peta
+                </a>
+              </div>
+            ))}
+            {platformEditable && (
+              <div className="grid gap-3 md:grid-cols-2">
+                <CheckpointForm organizerId={card.host_organizer_id} type="admin" activityId={id} outlets={[]} />
+                {partners.filter((p) => p.status === "accepted" && p.role !== "host").map((p) => (
+                  <details key={p.id} className="rounded-[20px] border border-line p-4">
+                    <summary className="cursor-pointer list-none text-[14px] font-bold">Checkpoint atas nama {p.organizer_name}…</summary>
+                    <div className="pt-3">
+                      <CheckpointForm organizerId={card.host_organizer_id} type="admin" activityId={id} outlets={partnerOutlets.filter((o) => o.organizer_id === p.organizer_id) as { id: string; name: string; address: string }[]} partnerOrganizerId={p.organizer_id} />
+                    </div>
+                  </details>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {raw?.review_note && card.status !== "in_review" && <p className="rounded-xl bg-track px-3 py-2 text-[12px] text-fg-label">Catatan terakhir: {raw.review_note}</p>}
 
