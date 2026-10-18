@@ -39,11 +39,16 @@ export async function submitPaymentProof(_prev: PaymentActionState, formData: Fo
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return { error: "Sesi habis. Masuk lagi." };
+  const { data: before } = await supabase.from("participations").select("payment_proof_path").eq("id", participationId).maybeSingle();
   const path = `${activityId}/${auth.user.id}/bayar-${Date.now()}.${ext}`;
   const { error: upErr } = await supabase.storage.from("payment-proofs").upload(path, file, { contentType: file.type });
   if (upErr) return { error: "Foto gagal diunggah. Coba lagi." };
   const { error } = await supabase.rpc("submit_payment_proof", { p_participation_id: participationId, p_proof_path: path });
   if (error) return { error: msg(error.message, "Bukti terunggah, tetapi belum tercatat. Coba lagi.") };
+  // Bukti lama yang sudah diganti tidak dibutuhkan lagi (policy hanya mengizinkan file yang tidak tercatat).
+  if (before?.payment_proof_path && before.payment_proof_path !== path) {
+    await supabase.storage.from("payment-proofs").remove([before.payment_proof_path]);
+  }
   revalidatePath(`/aktivitas/${activityId}`);
   revalidatePath("/");
   return { success: "Bukti terkirim. Panitia akan mengeceknya." };

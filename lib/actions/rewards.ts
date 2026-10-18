@@ -105,6 +105,7 @@ export type VoucherLookup = {
   expires_at: string;
   used_at: string | null;
   valid: boolean;
+  valid_outlet_ids: string[] | null;
 };
 export type KasirState = { error?: string; success?: string; voucher?: VoucherLookup };
 

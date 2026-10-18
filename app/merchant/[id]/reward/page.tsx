@@ -38,10 +38,13 @@ async function Body({ id, edit, approved, isLeader }: { id: string; edit?: strin
     listMerchantRewards(id),
     getMerchantPointsSummary(id),
     listMerchantRedemptions(id),
-    supabase.from("merchant_outlets").select("id, name").eq("organizer_id", id).eq("is_active", true).order("name"),
+    supabase.from("merchant_outlets").select("id, name, is_active").eq("organizer_id", id).order("name"),
   ]);
-  const outlets = (outletRows ?? []).map((o) => ({ id: o.id as string, name: o.name as string }));
   const editing = rewards.find((r) => r.id === edit);
+  // Outlet aktif, ditambah outlet nonaktif yang masih tercatat di reward yang sedang diubah.
+  const outlets = (outletRows ?? [])
+    .filter((o) => o.is_active || editing?.valid_outlet_ids?.includes(o.id))
+    .map((o) => ({ id: o.id, name: o.is_active ? o.name : `${o.name} (nonaktif)` }));
   const base = `/merchant/${id}`;
 
   return (
@@ -90,7 +93,7 @@ async function Body({ id, edit, approved, isLeader }: { id: string; edit?: strin
                   {r.price_points} poin · stok {r.stock} · berlaku {r.valid_days} hari
                   {r.available_until ? ` · s.d. ${formatDate(r.available_until)}` : ""}
                 </span>
-                <span className="text-[12px] text-fg-soft">{r.outlet_names ? `Berlaku di: ${r.outlet_names.join(", ")}` : "Berlaku di semua outlet"}</span>
+                <span className="text-[12px] text-fg-soft">{!r.outlet_names ? "Berlaku di semua outlet" : `Berlaku di: ${r.outlet_names.join(", ") || "outlet nonaktif"}`}</span>
               </span>
               <span className={`${tagClass.base} ${r.status === "active" ? tagClass.success : tagClass.neutral}`}>{r.status === "active" ? "Aktif" : "Nonaktif"}</span>
             </div>
