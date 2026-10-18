@@ -199,6 +199,7 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
         {participation?.status === "completed" && (
           <p className="rounded-2xl bg-success-tint px-4 py-3 text-[13px] text-success">
             Kamu sudah check-in dan menyelesaikan aktivitas ini{card.published_at ? ` · terbit ${formatDateTime(card.published_at)}` : ""}.
+            {missions?.missions.some((m) => m.open && m.can_work) ? " Misi bonus masih bisa dikerjakan untuk tambahan XP." : ""}
           </p>
         )}
       </div>
