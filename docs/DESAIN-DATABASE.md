@@ -1,6 +1,7 @@
 # Gasyu — Desain Database
 
-Versi 0.9 · 18 Oktober 2026 · Supabase (Postgres 15+)
+Versi 0.10 · 18 Oktober 2026 · Supabase (Postgres 15+)
+Perubahan 0.10: `rewards.valid_outlet_ids` dan cek outlet di `use_voucher`; `flag_kind` `reviewer_burst`, `fraud_flags.organizer_id`, deteksi di `review_mission_completion`; kunci `app_settings` `fraud.reviewer_burst_count`, `fraud.reviewer_burst_minutes`, `payment.gasyu_whatsapp`; migrasi `0021_outlet_vouchers_reviewer_flag` (belum dibuat).
 Perubahan 0.9: Event Global, yaitu event buatan admin yang terbuka untuk pengguna dari kota mana pun, dengan skor, peringkat, dan hadiah khusus event: kolom `activities.reach` dan `activities.location_mode`, `activity_missions.score_reward`, tabel `activity_score_ledger`, `activity_prizes`, `activity_winners`, enum `activity_reach`, `activity_location_mode`, `score_reason`, `prize_kind`, `prize_fulfillment`, `winner_status`, view `v_activity_scoreboard` dan `v_global_event_stats`, fungsi `award_activity_score`, `get_activity_leaderboard`, `upsert_activity_prize`, `remove_activity_prize`, `finalize_activity_winners`, `claim_prize`, `mark_prize_delivered`, `forfeit_prize`, cron `process_prizes`, kunci `app_settings` `global_event.*`, migrasi `0020_global_events` (belum dibuat).
 Perubahan 0.8: pengingat voucher dan poin hampir kedaluwarsa (`notify_expiring`, notifikasi `points_expiring`, `reminder.expiry_days`); master misi (`mission_templates`, `activity_missions.template_id`, `v_mission_template_stats`); fungsi akun warga (`update_my_profile`, `change_home_village`, `delete_my_account`), `set_team_role`; saran warga (`suggestions`, enum `suggestion_category` dan `suggestion_status`, view `v_organizer_suggestions`, fungsi `submit_suggestion` dan `respond_suggestion`).
 Perubahan 0.7: kolom `activities.residency_rule` (enum `residency_rule`) dan helper `is_resident_of`.
@@ -490,7 +491,7 @@ erDiagram
 | `winner_status` | pending_claim, claimed, delivered, forfeited |
 | `reward_status` | active, inactive |
 | `redemption_status` | active, used, expired, refunded |
-| `flag_kind` | out_of_radius, impossible_travel, shared_device, burst_accounts, manual |
+| `flag_kind` | out_of_radius, impossible_travel, shared_device, burst_accounts, reviewer_burst (satu peninjau menyetujui terlalu banyak bukti dalam waktu singkat), manual |
 | `flag_status` | open, dismissed, actioned |
 | `suggestion_category` | activity, product, service, place, other |
 | `suggestion_status` | new, in_progress, done, archived |
@@ -927,6 +928,7 @@ Unik: `(activity_id, user_id, local_date)`.
 | stock | integer | ≥ 0 |
 | valid_days | integer | masa berlaku voucher setelah ditukar, default 30 |
 | available_until | timestamptz | batas akhir penukaran |
+| valid_outlet_ids | uuid[] | null = berlaku di semua outlet merchant; jika diisi, hanya outlet aktif milik merchant yang sama (dicek trigger) |
 | status | reward_status | default active |
 
 **redemptions** — voucher milik warga. Edit (status).
@@ -1019,7 +1021,7 @@ Unik: `(activity_id, rank)` dan `(activity_id, user_id)`.
 
 ### Operasional
 
-**fraud_flags**: `id`, `user_id`, `checkin_id` opsional, `mission_completion_id` opsional, `kind flag_kind`, `detail jsonb`, `status flag_status` default open, `reviewed_by`, `reviewed_at`.
+**fraud_flags**: `id`, `user_id` (warga yang dicurigai, atau peninjau untuk `reviewer_burst`), `organizer_id` opsional (penyelenggara terkait, wajib untuk `reviewer_burst`), `checkin_id` opsional, `mission_completion_id` opsional, `kind flag_kind`, `detail jsonb`, `status flag_status` default open, `reviewed_by`, `reviewed_at`.
 
 **notifications**: `id`, `user_id`, `kind text` (partner_invite, application_received, group_registration, activity_approved, organizer_verified, badge_awarded, voucher_expiring, points_expiring, partner_added_by_admin, partner_left, membership_requested, membership_approved, membership_rejected, membership_removed, community_new_activity, payment_proof_submitted, payment_confirmed, payment_rejected, payment_expired, payment_refund_due, mission_proof_submitted, mission_approved, mission_rejected, mission_revealed, suggestion_received, suggestion_answered, team_role_changed, prize_won, prize_claim_reminder, prize_claimed, prize_delivered, prize_forfeited), `payload jsonb`, `read_at`.
 
@@ -1064,6 +1066,8 @@ Unik: `(activity_id, rank)` dan `(activity_id, user_id)`.
 | global_event.claim_reminder_days | 3 |
 | global_event.shipping_retention_days | 30 |
 | support.whatsapp / support.email | `""` (diisi admin di Pengaturan) |
+| payment.gasyu_whatsapp | `""` (nomor panitia event Gasyu untuk tombol chat di halaman bayar; jika kosong dipakai `support.whatsapp`) |
+| fraud.reviewer_burst_count / fraud.reviewer_burst_minutes | 50 / 10 |
 
 ---
 
@@ -1132,10 +1136,10 @@ Semua fungsi yang mengubah XP, poin, status, atau hak akses berjenis `security d
 | `get_activity_missions(activity_id)` | warga atau pengunjung | daftar misi sesuai sudut pandang pemanggil: misi terbuka lengkap, misi belum terbuka sebagai teaser (tanpa judul dan isi) jika `show_teaser`, sisanya disembunyikan |
 | `get_mission_qr(mission_id)` | tim pembuat misi | token QR misi menit berjalan |
 | `complete_mission(mission_id, token, code, proof_path, lat, lng)` | warga | tolak jika misi belum terbuka untuk pemanggil; verifikasi sesuai `verification`; approved atau pending_review; XP + `evaluate_completion` saat approved; saat approved di Event Global: skor lewat `award_activity_score`, bukan XP |
-| `review_mission_completion(completion_id, approve, note)` | tim host atau pembuat misi | approve → XP + `evaluate_completion`; reject → catatan + notifikasi; Event Global: skor, bukan XP |
+| `review_mission_completion(completion_id, approve, note)` | tim host atau pembuat misi | approve → XP + `evaluate_completion`; reject → catatan + notifikasi; Event Global: skor, bukan XP; jika peninjau yang sama menyetujui ≥ `fraud.reviewer_burst_count` bukti dalam `fraud.reviewer_burst_minutes` menit, buat satu `fraud_flags` `reviewer_burst` per jendela (persetujuan tetap berlaku) |
 | `mark_missions_manual(mission_id, user_ids uuid[])` | tim host atau pembuat misi | approved untuk tiap peserta yang memenuhi syarat partisipasi dan bayar; Event Global: skor, bukan XP |
 | `evaluate_completion(participation_id)` | internal | cek syarat selesai (bagian 9d `ALUR-SISTEM.md`), tandai completed, XP challenge, poin dari budget; Event Global: hanya status, tanpa XP dan poin |
-| `submit_payment_proof(participation_id, proof_path)` | warga | `awaiting_confirmation` + notifikasi ke tim |
+| `submit_payment_proof(participation_id, proof_path)` | warga | `awaiting_confirmation` + notifikasi ke tim; boleh dipanggil ulang selama masih `awaiting_confirmation` untuk mengganti bukti (sudah begitu di `0011`) |
 | `confirm_payment(participation_id, paid, note)` | tim host | paid, atau kembali ke unpaid dengan catatan |
 | `mark_refunded(participation_id, note)` | tim host | refunded, catat `refunded_at`; hanya untuk partisipasi yang dibatalkan atau aktivitas dibatalkan |
 | `invite_partner(activity_id, organizer_id, role, budget, note)` | owner/chair host | baris `activity_partners` invited |
@@ -1154,7 +1158,7 @@ Semua fungsi yang mengubah XP, poin, status, atau hak akses berjenis `security d
 | `perform_checkin(checkpoint_id, token, lat, lng)` | warga | seluruh alur check-in (wajib `payment_status` not_required/paid), XP, progress, `evaluate_completion`, bonus grup, badge; Event Global: `global_event.checkin_score` skor lewat `award_activity_score`, tanpa XP, bonus, dan poin |
 | `reverse_checkin(checkin_id, note)` | admin | baris XP/poin negatif, `review_status = rejected`; Event Global: baris skor negatif |
 | `redeem_reward(reward_id)` | warga | debit poin FIFO, kurangi stok, buat voucher |
-| `use_voucher(code, outlet_id)` | owner/staff merchant | status used |
+| `use_voucher(code, outlet_id)` | owner/staff merchant | cek outlet milik merchant dan termasuk `valid_outlet_ids` (jika diisi), error `outlet_not_valid`; status used |
 | `refund_redemption(redemption_id)` | owner merchant/admin | poin kembali, status refunded |
 | `get_citizen_dashboard()` | warga | satu panggilan untuk beranda warga: level, aktivitasku + misi tertunda, saldo poin, poin akan kedaluwarsa, voucher aktif, posisi peringkat, badge terbaru; posisi di Event Global yang diikuti, hadiah yang perlu diklaim |
 | `is_resident_of(user_id, region_id)` | internal | true jika kelurahan asal warga sama dengan `region_id` atau berada di bawahnya (kecamatan/kota) menurut `regions.parent_id`; warga "Luar Cimahi" selalu false |
@@ -1266,7 +1270,7 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 - `activity_missions`: `xp_reward` 10–100 dan `score_reward = 0` untuk aktivitas `regional`, `xp_reward = 0` dan `score_reward` 10–1000 untuk Event Global (trigger, karena butuh tabel aktivitas); `verification <> 'qr_scan' or checkpoint_id is not null`; `verification <> 'secret_code' or code_hash is not null`; `available_until > available_from` jika keduanya terisi; `reveal_mode <> 'scheduled' or reveal_at is not null`; `reveal_mode <> 'after_mission' or prerequisite_mission_id is not null`; `prerequisite_mission_id <> id`. Trigger: prasyarat harus di aktivitas yang sama, tidak membentuk lingkaran, dan misi wajib hanya boleh berprasyarat misi wajib; `revealed_at` tidak bisa dikosongkan lagi setelah terisi.
 - `mission_completions`: `verification = 'photo'` mensyaratkan `proof_path` (trigger, karena butuh tabel misi).
 - `activity_partners`: `points_budget >= 0`; budget > 0 hanya untuk organizer merchant (dicek trigger, karena butuh tabel lain).
-- `rewards`: `price_points > 0`, `stock >= 0`; organizer harus merchant (trigger).
+- `rewards`: `price_points > 0`, `stock >= 0`; organizer harus merchant (trigger); setiap id di `valid_outlet_ids` harus outlet milik merchant yang sama (trigger).
 - `point_ledger`: `amount <> 0`; `expires_at is not null` jika `amount > 0`.
 - `activity_score_ledger`: `amount <> 0`; aktivitas harus `reach = global` (trigger).
 - `activity_prizes`: `rank_from >= 1`; `rank_to >= rank_from`; `min_score >= 1`; `kind <> 'badge' or (badge_id is not null and fulfillment = 'digital')`; `fulfillment <> 'pickup' or pickup_note is not null`; rentang tidak tumpang tindih dan `sponsor_organizer_id` harus partner accepted (trigger).
@@ -1299,6 +1303,7 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 | Master misi | `0018_mission_templates.sql` | enum `mission_category`, `mission_templates` + 12 template awal, `activity_missions.template_id`, fungsi admin, `v_mission_template_stats`, `upsert_mission` menerima template |
 | Pengingat kedaluwarsa | `0019_expiry_reminders.sql` | `notify_expiring` + cron 08.05 WIB, `reminder.expiry_days`, indeks voucher aktif per `expires_at` |
 | Event Global | `0020_global_events.sql` (belum dibuat) | enum `activity_reach`, `activity_location_mode`, `score_reason`, `prize_kind`, `prize_fulfillment`, `winner_status`; kolom `activities.reach`, `activities.location_mode`, `activity_missions.score_reward`; tabel `activity_score_ledger`, `activity_prizes`, `activity_winners`; `award_activity_score`, `get_activity_leaderboard`, fungsi hadiah dan klaim, `finalize_activity_winners`; cabang `reach` di `perform_checkin`, `complete_mission`, `review_mission_completion`, `mark_missions_manual`, `evaluate_completion`, `reverse_checkin`, `submit_activity`, `join_activity`, `register_group`, `settle_ended_activities`, dan penolakan di `award_xp`; `v_activity_scoreboard`, `v_global_event_stats`; cron `process_prizes`; kunci `app_settings` `global_event.*`. Uji wajib: misi Event Global tidak pernah menulis `xp_ledger` atau `point_ledger`; urutan seri benar; rentang hadiah tumpang tindih ditolak; partner sponsor tidak bisa membaca `ship_*` |
+| Voucher per outlet + peninjau cepat | `0021_outlet_vouchers_reviewer_flag.sql` (belum dibuat) | `rewards.valid_outlet_ids` + trigger, cek di `use_voucher`; nilai enum `reviewer_burst`, `fraud_flags.organizer_id` + indeks `(organizer_id) where kind = 'reviewer_burst'`, deteksi di `review_mission_completion`; kunci `fraud.reviewer_burst_*` dan `payment.gasyu_whatsapp`. Uji: voucher ditolak di outlet lain; flag dibuat sekali per jendela |
 Setiap migrasi membawa RLS policy untuk tabel barunya dan file uji SQL sederhana (`supabase/tests/`) untuk aturan yang tidak boleh dilanggar. Semua uji dijalankan dari database kosong dengan `supabase/tests/run.sh` (juga otomatis di GitHub Actions).
 
 ---
