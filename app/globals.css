@@ -2,7 +2,7 @@
 
 /*
   Token UI Gasyu — lihat docs/BRAND.md. Jangan menambah warna di luar daftar ini.
-  Dua tema mengikuti Ramein UI Mockup:
+  Dua tema mengikuti UI Mockup (lihat docs/BRAND.md):
   - gelap (bawaan): mode warga
   - terang (.theme-light): mode merchant, komunitas, dan admin
   Nilai token dibaca lewat variabel --ui-* supaya bisa diganti per subtree.

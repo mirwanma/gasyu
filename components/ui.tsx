@@ -3,7 +3,7 @@
 import { useFormStatus } from "react-dom";
 import { buttonStyles, smallButton } from "./styles";
 
-// Komponen kecil yang dipakai ulang. Gaya mengikuti Ramein UI Mockup (lihat docs/BRAND.md).
+// Komponen kecil yang dipakai ulang. Gaya mengikuti UI Mockup (lihat docs/BRAND.md).
 
 export function LogoMark({ size = 48 }: { size?: number }) {
   return (

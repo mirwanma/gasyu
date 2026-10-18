@@ -1,4 +1,4 @@
-// Ikon garis gaya Lucide, path diambil dari Ramein UI Mockup.
+// Ikon garis gaya Lucide, path diambil dari UI Mockup (lihat docs/BRAND.md).
 export const ICON_PATHS = {
   home: "M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z",
   compass: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM15.5 8.5l-2 5-5 2 2-5z",
