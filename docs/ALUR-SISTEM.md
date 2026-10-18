@@ -1,6 +1,7 @@
 # Gasyu — Alur Sistem
 
-Versi 0.10 · 18 Oktober 2026 · Pilot Kota Cimahi
+Versi 0.11 · 18 Oktober 2026 · Pilot Kota Cimahi
+Perubahan 0.11: database Event Global sudah dibangun (bagian 22; halaman admin dan warga menyusul); warga luar Cimahi memilih kota/kabupaten asal dari daftar (bagian 3); di Event Global peserta tidak pernah berstatus selesai, jadi tetap bisa menambah skor lewat misi sampai acara berakhir (bagian 22c).
 Perubahan 0.10: keluar dari semua perangkat (bagian 3); hadiah non-poin ditulis di deskripsi (bagian 6); ganti bukti bayar dan tombol chat panitia di WhatsApp (bagian 8); voucher berlaku di outlet tertentu (bagian 16); deteksi otomatis peninjau yang menyetujui terlalu cepat (bagian 19). Semua sudah dibangun (voucher per outlet dan peninjau cepat di migrasi 0020).
 Perubahan 0.9: Event Global, yaitu event buatan admin yang terbuka untuk pengguna dari kota mana pun, dengan misi, skor, papan peringkat, dan hadiah khusus event yang terpisah dari XP, level, dan poin (bagian 22); hak akses (bagian 2), validasi (bagian 6), penetapan pemenang saat settled (bagian 7), syarat selesai event online (bagian 9d), cron `process_prizes` (bagian 18), anti-curang (bagian 19), dashboard dan peta halaman (bagian 20).
 Perubahan 0.8: pengingat voucher dan poin hampir kedaluwarsa (bagian 18); master misi (bagian 9f); saran warga untuk merchant dan komunitas (bagian 21); ubah profil, ganti kelurahan, hapus akun, riwayat, bantuan (bagian 3); serah terima peran pemilik/ketua (bagian 5).
@@ -210,6 +211,7 @@ flowchart TD
 - Nama panggilan harus unik (case-insensitive), 3–20 karakter.
 - Warga mengubah nama panggilan dan nama lengkap di `/profil/ubah` (`update_my_profile`).
 - Foto profil juga di `/profil/ubah`: foto dipotong persegi dan diperkecil ke 512 px di HP sebelum diunggah ke bucket publik `avatars` (folder milik warga sendiri), lalu disimpan lewat `set_my_avatar`. Foto lama dihapus otomatis. Foto tampil di profil dan beranda warga sendiri, dan di daftar tim penyelenggara tempat ia bergabung. Saat akun dihapus, foto ikut dihapus.
+- Warga yang memilih "Luar Cimahi" bisa mengisi **kota/kabupaten asal** dari daftar 514 kota/kabupaten (tidak wajib) di onboarding dan Ubah profil (`set_home_city`). Data ini dipakai untuk statistik sebaran peserta Event Global; warga Cimahi tidak mengisinya.
 - Kelurahan asal bisa diganti maksimal sekali per `profile.village_change_days` hari, awal 90 (`change_home_village`, `home_village_changed_at`). Penggantian pertama setelah onboarding langsung dihitung.
 - Tidak ada batas usia dan tidak ada persetujuan orang tua selama pilot.
 - Sesi tetap aktif di HP sampai warga keluar. Selain tombol "Keluar dari akun" (perangkat ini saja), halaman profil punya **Keluar dari semua perangkat** (Supabase Auth `signOut({ scope: 'global' })`), untuk warga yang HP-nya hilang atau pernah masuk di HP orang lain.
@@ -1363,6 +1365,8 @@ flowchart TD
 | Check-in atau misi dibatalkan admin | Baris skor negatif | Lewat `reverse_checkin` atau penolakan misi |
 
 Skor ditulis ke `activity_score_ledger`, terpisah dari `xp_ledger` dan `point_ledger`. Tidak ada batas skor harian, karena skor sudah dibatasi oleh jumlah misi dan satu check-in per hari.
+
+Event Global tidak punya status "selesai" seperti event regional: check-in tidak menutup partisipasi, sehingga peserta tetap bisa mengerjakan misi dan menambah skor sampai acara berakhir. Peringkat dan pemenang hanya ditentukan dari skor.
 
 **Aturan papan peringkat**
 

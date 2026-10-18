@@ -30,12 +30,14 @@ export type Database = {
           id: string
           is_paid: boolean
           join_mode: Database["public"]["Enums"]["join_mode"]
+          location_mode: Database["public"]["Enums"]["activity_location_mode"]
           payment_instructions: string | null
           payment_window_hours: number
           points_per_completion: number
           price_idr: number | null
           published_at: string | null
           quota: number | null
+          reach: Database["public"]["Enums"]["activity_reach"]
           residency_rule: Database["public"]["Enums"]["residency_rule"]
           review_note: string | null
           reviewed_by: string | null
@@ -64,12 +66,14 @@ export type Database = {
           id?: string
           is_paid?: boolean
           join_mode?: Database["public"]["Enums"]["join_mode"]
+          location_mode?: Database["public"]["Enums"]["activity_location_mode"]
           payment_instructions?: string | null
           payment_window_hours?: number
           points_per_completion?: number
           price_idr?: number | null
           published_at?: string | null
           quota?: number | null
+          reach?: Database["public"]["Enums"]["activity_reach"]
           residency_rule?: Database["public"]["Enums"]["residency_rule"]
           review_note?: string | null
           reviewed_by?: string | null
@@ -98,12 +102,14 @@ export type Database = {
           id?: string
           is_paid?: boolean
           join_mode?: Database["public"]["Enums"]["join_mode"]
+          location_mode?: Database["public"]["Enums"]["activity_location_mode"]
           payment_instructions?: string | null
           payment_window_hours?: number
           points_per_completion?: number
           price_idr?: number | null
           published_at?: string | null
           quota?: number | null
+          reach?: Database["public"]["Enums"]["activity_reach"]
           residency_rule?: Database["public"]["Enums"]["residency_rule"]
           review_note?: string | null
           reviewed_by?: string | null
@@ -297,6 +303,13 @@ export type Database = {
             foreignKeyName: "activity_checkpoints_activity_id_fkey"
             columns: ["activity_id"]
             isOneToOne: false
+            referencedRelation: "v_global_event_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_checkpoints_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
             referencedRelation: "v_group_progress"
             referencedColumns: ["activity_id"]
           },
@@ -379,6 +392,7 @@ export type Database = {
           reveal_at: string | null
           reveal_mode: Database["public"]["Enums"]["mission_reveal"]
           revealed_at: string | null
+          score_reward: number
           show_teaser: boolean
           sort_order: number
           template_id: string | null
@@ -407,6 +421,7 @@ export type Database = {
           reveal_at?: string | null
           reveal_mode?: Database["public"]["Enums"]["mission_reveal"]
           revealed_at?: string | null
+          score_reward?: number
           show_teaser?: boolean
           sort_order?: number
           template_id?: string | null
@@ -435,6 +450,7 @@ export type Database = {
           reveal_at?: string | null
           reveal_mode?: Database["public"]["Enums"]["mission_reveal"]
           revealed_at?: string | null
+          score_reward?: number
           show_teaser?: boolean
           sort_order?: number
           template_id?: string | null
@@ -477,6 +493,13 @@ export type Database = {
             columns: ["activity_id"]
             isOneToOne: false
             referencedRelation: "v_admin_refund_queue"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_missions_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_global_event_stats"
             referencedColumns: ["activity_id"]
           },
           {
@@ -686,6 +709,13 @@ export type Database = {
             foreignKeyName: "activity_partners_activity_id_fkey"
             columns: ["activity_id"]
             isOneToOne: false
+            referencedRelation: "v_global_event_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_partners_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
             referencedRelation: "v_group_progress"
             referencedColumns: ["activity_id"]
           },
@@ -751,6 +781,490 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_organizer_reputation"
             referencedColumns: ["organizer_id"]
+          },
+        ]
+      }
+      activity_prizes: {
+        Row: {
+          activity_id: string
+          badge_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          fulfillment: Database["public"]["Enums"]["prize_fulfillment"]
+          id: string
+          image_url: string | null
+          kind: Database["public"]["Enums"]["prize_kind"]
+          min_score: number
+          pickup_note: string | null
+          rank_from: number
+          rank_to: number
+          sponsor_organizer_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          activity_id: string
+          badge_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          fulfillment: Database["public"]["Enums"]["prize_fulfillment"]
+          id?: string
+          image_url?: string | null
+          kind: Database["public"]["Enums"]["prize_kind"]
+          min_score?: number
+          pickup_note?: string | null
+          rank_from: number
+          rank_to: number
+          sponsor_organizer_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          activity_id?: string
+          badge_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          fulfillment?: Database["public"]["Enums"]["prize_fulfillment"]
+          id?: string
+          image_url?: string | null
+          kind?: Database["public"]["Enums"]["prize_kind"]
+          min_score?: number
+          pickup_note?: string | null
+          rank_from?: number
+          rank_to?: number
+          sponsor_organizer_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_prizes_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_prizes_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_activity_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_prizes_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_activity_payment_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_prizes_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_activity_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_prizes_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_refund_queue"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_prizes_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_global_event_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_prizes_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_group_progress"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_prizes_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_prizes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_prizes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "v_admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_prizes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "activity_prizes_sponsor_organizer_id_fkey"
+            columns: ["sponsor_organizer_id"]
+            isOneToOne: false
+            referencedRelation: "organizers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_prizes_sponsor_organizer_id_fkey"
+            columns: ["sponsor_organizer_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_refund_queue"
+            referencedColumns: ["host_organizer_id"]
+          },
+          {
+            foreignKeyName: "activity_prizes_sponsor_organizer_id_fkey"
+            columns: ["sponsor_organizer_id"]
+            isOneToOne: false
+            referencedRelation: "v_community_dashboard"
+            referencedColumns: ["organizer_id"]
+          },
+          {
+            foreignKeyName: "activity_prizes_sponsor_organizer_id_fkey"
+            columns: ["sponsor_organizer_id"]
+            isOneToOne: false
+            referencedRelation: "v_community_member_stats"
+            referencedColumns: ["community_id"]
+          },
+          {
+            foreignKeyName: "activity_prizes_sponsor_organizer_id_fkey"
+            columns: ["sponsor_organizer_id"]
+            isOneToOne: false
+            referencedRelation: "v_merchant_dashboard"
+            referencedColumns: ["organizer_id"]
+          },
+          {
+            foreignKeyName: "activity_prizes_sponsor_organizer_id_fkey"
+            columns: ["sponsor_organizer_id"]
+            isOneToOne: false
+            referencedRelation: "v_organizer_reputation"
+            referencedColumns: ["organizer_id"]
+          },
+        ]
+      }
+      activity_score_ledger: {
+        Row: {
+          activity_id: string
+          amount: number
+          checkin_id: string | null
+          created_at: string
+          id: string
+          mission_completion_id: string | null
+          note: string | null
+          occurred_at: string
+          reason: Database["public"]["Enums"]["score_reason"]
+          user_id: string
+        }
+        Insert: {
+          activity_id: string
+          amount: number
+          checkin_id?: string | null
+          created_at?: string
+          id?: string
+          mission_completion_id?: string | null
+          note?: string | null
+          occurred_at?: string
+          reason: Database["public"]["Enums"]["score_reason"]
+          user_id: string
+        }
+        Update: {
+          activity_id?: string
+          amount?: number
+          checkin_id?: string | null
+          created_at?: string
+          id?: string
+          mission_completion_id?: string | null
+          note?: string | null
+          occurred_at?: string
+          reason?: Database["public"]["Enums"]["score_reason"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_score_ledger_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_activity_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_activity_payment_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_activity_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_refund_queue"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_global_event_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_group_progress"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_checkin_id_fkey"
+            columns: ["checkin_id"]
+            isOneToOne: false
+            referencedRelation: "checkins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_checkin_id_fkey"
+            columns: ["checkin_id"]
+            isOneToOne: false
+            referencedRelation: "v_checkpoint_checkins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_checkin_id_fkey"
+            columns: ["checkin_id"]
+            isOneToOne: false
+            referencedRelation: "v_moderation_checkins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_mission_completion_id_fkey"
+            columns: ["mission_completion_id"]
+            isOneToOne: false
+            referencedRelation: "mission_completions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_mission_completion_id_fkey"
+            columns: ["mission_completion_id"]
+            isOneToOne: false
+            referencedRelation: "v_mission_review_queue"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      activity_winners: {
+        Row: {
+          activity_id: string
+          claim_deadline: string
+          claimed_at: string | null
+          created_at: string
+          delivered_at: string | null
+          delivered_by: string | null
+          forfeited_reason: string | null
+          id: string
+          note: string | null
+          prize_id: string
+          rank: number
+          score: number
+          ship_address: string | null
+          ship_name: string | null
+          ship_phone: string | null
+          status: Database["public"]["Enums"]["winner_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_id: string
+          claim_deadline: string
+          claimed_at?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          delivered_by?: string | null
+          forfeited_reason?: string | null
+          id?: string
+          note?: string | null
+          prize_id: string
+          rank: number
+          score: number
+          ship_address?: string | null
+          ship_name?: string | null
+          ship_phone?: string | null
+          status?: Database["public"]["Enums"]["winner_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_id?: string
+          claim_deadline?: string
+          claimed_at?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          delivered_by?: string | null
+          forfeited_reason?: string | null
+          id?: string
+          note?: string | null
+          prize_id?: string
+          rank?: number
+          score?: number
+          ship_address?: string | null
+          ship_name?: string | null
+          ship_phone?: string | null
+          status?: Database["public"]["Enums"]["winner_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_winners_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_winners_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_activity_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_winners_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_activity_payment_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_winners_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_activity_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_winners_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_refund_queue"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_winners_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_global_event_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_winners_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_group_progress"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_winners_delivered_by_fkey"
+            columns: ["delivered_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_winners_delivered_by_fkey"
+            columns: ["delivered_by"]
+            isOneToOne: false
+            referencedRelation: "v_admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_winners_delivered_by_fkey"
+            columns: ["delivered_by"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "activity_winners_prize_id_fkey"
+            columns: ["prize_id"]
+            isOneToOne: false
+            referencedRelation: "activity_prizes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_winners_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_winners_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_winners_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -925,6 +1439,13 @@ export type Database = {
             foreignKeyName: "challenge_targets_activity_id_fkey"
             columns: ["activity_id"]
             isOneToOne: true
+            referencedRelation: "v_global_event_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "challenge_targets_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: true
             referencedRelation: "v_group_progress"
             referencedColumns: ["activity_id"]
           },
@@ -1019,6 +1540,13 @@ export type Database = {
             columns: ["activity_id"]
             isOneToOne: false
             referencedRelation: "v_admin_refund_queue"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "checkins_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_global_event_stats"
             referencedColumns: ["activity_id"]
           },
           {
@@ -1141,6 +1669,27 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      cities: {
+        Row: {
+          code: string
+          name: string
+          province_code: string
+          province_name: string
+        }
+        Insert: {
+          code: string
+          name: string
+          province_code: string
+          province_name: string
+        }
+        Update: {
+          code?: string
+          name?: string
+          province_code?: string
+          province_name?: string
+        }
+        Relationships: []
       }
       collab_applications: {
         Row: {
@@ -1365,6 +1914,13 @@ export type Database = {
             columns: ["activity_id"]
             isOneToOne: false
             referencedRelation: "v_admin_refund_queue"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "collab_posts_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_global_event_stats"
             referencedColumns: ["activity_id"]
           },
           {
@@ -2327,6 +2883,13 @@ export type Database = {
             foreignKeyName: "mission_completions_activity_id_fkey"
             columns: ["activity_id"]
             isOneToOne: false
+            referencedRelation: "v_global_event_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "mission_completions_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
             referencedRelation: "v_group_progress"
             referencedColumns: ["activity_id"]
           },
@@ -3026,6 +3589,13 @@ export type Database = {
             foreignKeyName: "participations_activity_id_fkey"
             columns: ["activity_id"]
             isOneToOne: false
+            referencedRelation: "v_global_event_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "participations_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
             referencedRelation: "v_group_progress"
             referencedColumns: ["activity_id"]
           },
@@ -3218,6 +3788,13 @@ export type Database = {
             foreignKeyName: "point_ledger_activity_id_fkey"
             columns: ["activity_id"]
             isOneToOne: false
+            referencedRelation: "v_global_event_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "point_ledger_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
             referencedRelation: "v_group_progress"
             referencedColumns: ["activity_id"]
           },
@@ -3306,6 +3883,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           full_name: string | null
+          home_city_code: string | null
           home_village_changed_at: string | null
           home_village_id: string | null
           id: string
@@ -3321,6 +3899,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           full_name?: string | null
+          home_city_code?: string | null
           home_village_changed_at?: string | null
           home_village_id?: string | null
           id: string
@@ -3336,6 +3915,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           full_name?: string | null
+          home_city_code?: string | null
           home_village_changed_at?: string | null
           home_village_id?: string | null
           id?: string
@@ -3347,6 +3927,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_home_city_code_fkey"
+            columns: ["home_city_code"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["code"]
+          },
           {
             foreignKeyName: "profiles_home_village_id_fkey"
             columns: ["home_village_id"]
@@ -3810,6 +4397,13 @@ export type Database = {
             foreignKeyName: "user_badges_activity_id_fkey"
             columns: ["activity_id"]
             isOneToOne: false
+            referencedRelation: "v_global_event_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "user_badges_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
             referencedRelation: "v_group_progress"
             referencedColumns: ["activity_id"]
           },
@@ -3917,6 +4511,13 @@ export type Database = {
             columns: ["activity_id"]
             isOneToOne: false
             referencedRelation: "v_admin_refund_queue"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "xp_ledger_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_global_event_stats"
             referencedColumns: ["activity_id"]
           },
           {
@@ -4035,6 +4636,13 @@ export type Database = {
             columns: ["activity_id"]
             isOneToOne: false
             referencedRelation: "v_admin_refund_queue"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_partners_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_global_event_stats"
             referencedColumns: ["activity_id"]
           },
           {
@@ -4224,6 +4832,13 @@ export type Database = {
             foreignKeyName: "checkins_activity_id_fkey"
             columns: ["activity_id"]
             isOneToOne: false
+            referencedRelation: "v_global_event_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "checkins_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
             referencedRelation: "v_group_progress"
             referencedColumns: ["activity_id"]
           },
@@ -4282,6 +4897,13 @@ export type Database = {
             columns: ["activity_id"]
             isOneToOne: false
             referencedRelation: "v_admin_refund_queue"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "participations_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_global_event_stats"
             referencedColumns: ["activity_id"]
           },
           {
@@ -4375,6 +4997,13 @@ export type Database = {
             columns: ["activity_id"]
             isOneToOne: false
             referencedRelation: "v_admin_refund_queue"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_partners_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_global_event_stats"
             referencedColumns: ["activity_id"]
           },
           {
@@ -4534,6 +5163,13 @@ export type Database = {
             foreignKeyName: "activity_partners_activity_id_fkey"
             columns: ["activity_id"]
             isOneToOne: false
+            referencedRelation: "v_global_event_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_partners_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
             referencedRelation: "v_group_progress"
             referencedColumns: ["activity_id"]
           },
@@ -4663,6 +5299,89 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_organizer_reputation"
             referencedColumns: ["organizer_id"]
+          },
+        ]
+      }
+      v_activity_scoreboard: {
+        Row: {
+          activity_id: string | null
+          last_scored_at: string | null
+          nickname: string | null
+          rank: number | null
+          registered_at: string | null
+          score: number | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_score_ledger_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_activity_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_activity_payment_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_activity_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_refund_queue"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_global_event_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_group_progress"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_score_ledger_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -4873,6 +5592,13 @@ export type Database = {
             foreignKeyName: "checkins_activity_id_fkey"
             columns: ["activity_id"]
             isOneToOne: false
+            referencedRelation: "v_global_event_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "checkins_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
             referencedRelation: "v_group_progress"
             referencedColumns: ["activity_id"]
           },
@@ -5060,6 +5786,75 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      v_global_event_stats: {
+        Row: {
+          active_participants: number | null
+          activity_id: string | null
+          avg_score: number | null
+          cimahi_participants: number | null
+          cities: Json | null
+          ends_at: string | null
+          location_mode:
+            | Database["public"]["Enums"]["activity_location_mode"]
+            | null
+          missions_completed: number | null
+          outside_participants: number | null
+          prizes_claimed: number | null
+          prizes_delivered: number | null
+          prizes_forfeited: number | null
+          prizes_pending_claim: number | null
+          registrants: number | null
+          starts_at: string | null
+          status: Database["public"]["Enums"]["activity_status"] | null
+          title: string | null
+          villages: Json | null
+        }
+        Insert: {
+          active_participants?: never
+          activity_id?: string | null
+          avg_score?: never
+          cimahi_participants?: never
+          cities?: never
+          ends_at?: string | null
+          location_mode?:
+            | Database["public"]["Enums"]["activity_location_mode"]
+            | null
+          missions_completed?: never
+          outside_participants?: never
+          prizes_claimed?: never
+          prizes_delivered?: never
+          prizes_forfeited?: never
+          prizes_pending_claim?: never
+          registrants?: never
+          starts_at?: string | null
+          status?: Database["public"]["Enums"]["activity_status"] | null
+          title?: string | null
+          villages?: never
+        }
+        Update: {
+          active_participants?: never
+          activity_id?: string | null
+          avg_score?: never
+          cimahi_participants?: never
+          cities?: never
+          ends_at?: string | null
+          location_mode?:
+            | Database["public"]["Enums"]["activity_location_mode"]
+            | null
+          missions_completed?: never
+          outside_participants?: never
+          prizes_claimed?: never
+          prizes_delivered?: never
+          prizes_forfeited?: never
+          prizes_pending_claim?: never
+          registrants?: never
+          starts_at?: string | null
+          status?: Database["public"]["Enums"]["activity_status"] | null
+          title?: string | null
+          villages?: never
+        }
+        Relationships: []
       }
       v_group_members: {
         Row: {
@@ -5330,6 +6125,13 @@ export type Database = {
             foreignKeyName: "participations_activity_id_fkey"
             columns: ["activity_id"]
             isOneToOne: false
+            referencedRelation: "v_global_event_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "participations_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
             referencedRelation: "v_group_progress"
             referencedColumns: ["activity_id"]
           },
@@ -5470,6 +6272,13 @@ export type Database = {
             foreignKeyName: "mission_completions_activity_id_fkey"
             columns: ["activity_id"]
             isOneToOne: false
+            referencedRelation: "v_global_event_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "mission_completions_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
             referencedRelation: "v_group_progress"
             referencedColumns: ["activity_id"]
           },
@@ -5595,6 +6404,13 @@ export type Database = {
             foreignKeyName: "activity_missions_activity_id_fkey"
             columns: ["activity_id"]
             isOneToOne: false
+            referencedRelation: "v_global_event_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "activity_missions_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
             referencedRelation: "v_group_progress"
             referencedColumns: ["activity_id"]
           },
@@ -5684,6 +6500,13 @@ export type Database = {
             columns: ["activity_id"]
             isOneToOne: false
             referencedRelation: "v_admin_refund_queue"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "checkins_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "v_global_event_stats"
             referencedColumns: ["activity_id"]
           },
           {
@@ -6083,6 +6906,13 @@ export type Database = {
             foreignKeyName: "participations_activity_id_fkey"
             columns: ["activity_id"]
             isOneToOne: false
+            referencedRelation: "v_global_event_stats"
+            referencedColumns: ["activity_id"]
+          },
+          {
+            foreignKeyName: "participations_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
             referencedRelation: "v_group_progress"
             referencedColumns: ["activity_id"]
           },
@@ -6296,6 +7126,10 @@ export type Database = {
         Args: { p_status: Database["public"]["Enums"]["activity_status"] }
         Returns: boolean
       }
+      activity_score: {
+        Args: { p_activity_id: string; p_user_id: string }
+        Returns: number
+      }
       activity_seats_taken: { Args: { p_activity_id: string }; Returns: number }
       add_checkpoint: {
         Args: { p_activity_id: string; p_data: Json }
@@ -6334,6 +7168,19 @@ export type Database = {
         Args: { p_checkin_id: string; p_note?: string }
         Returns: undefined
       }
+      award_activity_score: {
+        Args: {
+          p_activity_id: string
+          p_amount: number
+          p_checkin_id?: string
+          p_mission_completion_id?: string
+          p_note?: string
+          p_occurred_at?: string
+          p_reason: Database["public"]["Enums"]["score_reason"]
+          p_user_id: string
+        }
+        Returns: number
+      }
       award_badges: { Args: { p_user_id: string }; Returns: number }
       award_challenge_completion: {
         Args: {
@@ -6356,6 +7203,10 @@ export type Database = {
         }
         Returns: number
       }
+      can_create_global_event: {
+        Args: { p_host_organizer_id: string }
+        Returns: boolean
+      }
       can_manage_missions: {
         Args: { p_activity_id: string; p_partner_organizer_id: string }
         Returns: boolean
@@ -6374,6 +7225,10 @@ export type Database = {
       }
       change_home_village: {
         Args: { p_village_id: string }
+        Returns: undefined
+      }
+      check_global_event_ready: {
+        Args: { p_activity_id: string }
         Returns: undefined
       }
       check_partner_candidate: {
@@ -6402,6 +7257,10 @@ export type Database = {
         Returns: number
       }
       checkpoint_village: { Args: { p_checkpoint_id: string }; Returns: string }
+      claim_prize: {
+        Args: { p_shipping?: Json; p_winner_id: string }
+        Returns: undefined
+      }
       close_collab_post: { Args: { p_post_id: string }; Returns: undefined }
       close_expired_collab_posts: { Args: never; Returns: number }
       community_public_stats: {
@@ -6447,6 +7306,10 @@ export type Database = {
           p_organizer_id: string
           p_role: Database["public"]["Enums"]["member_role"]
         }
+        Returns: string
+      }
+      create_prize_badge: {
+        Args: { p_description: string; p_name: string }
         Returns: string
       }
       credit_points: {
@@ -6497,6 +7360,18 @@ export type Database = {
       expire_points: { Args: never; Returns: number }
       expire_redemptions: { Args: never; Returns: number }
       expire_unpaid_participations: { Args: never; Returns: number }
+      finalize_activity_winners: {
+        Args: { p_activity_id: string }
+        Returns: number
+      }
+      forfeit_prize: {
+        Args: { p_reason: string; p_winner_id: string }
+        Returns: undefined
+      }
+      get_activity_leaderboard: {
+        Args: { p_activity_id: string; p_limit?: number }
+        Returns: Json
+      }
       get_activity_missions: { Args: { p_activity_id: string }; Returns: Json }
       get_checkpoint_qr: { Args: { p_checkpoint_id: string }; Returns: Json }
       get_citizen_dashboard: { Args: never; Returns: Json }
@@ -6505,6 +7380,7 @@ export type Database = {
         Returns: Json
       }
       get_mission_qr: { Args: { p_mission_id: string }; Returns: Json }
+      get_winner_shipping: { Args: { p_winner_id: string }; Returns: Json }
       grant_completion_points: {
         Args: {
           p_activity: Database["public"]["Tables"]["activities"]["Row"]
@@ -6586,6 +7462,10 @@ export type Database = {
         Returns: number
       }
       mark_notifications_read: { Args: { p_id?: string }; Returns: undefined }
+      mark_prize_delivered: {
+        Args: { p_note?: string; p_winner_id: string }
+        Returns: undefined
+      }
       mark_refunded: {
         Args: { p_note?: string; p_participation_id: string }
         Returns: Json
@@ -6609,6 +7489,10 @@ export type Database = {
         Args: { p_kind: string; p_payload?: Json; p_user_id: string }
         Returns: undefined
       }
+      notify_admins: {
+        Args: { p_kind: string; p_payload?: Json }
+        Returns: undefined
+      }
       notify_expiring: { Args: never; Returns: number }
       notify_team: {
         Args: { p_kind: string; p_organizer_id: string; p_payload?: Json }
@@ -6629,6 +7513,7 @@ export type Database = {
       }
       platform_organizer_id: { Args: never; Returns: string }
       points_balance: { Args: { p_user_id: string }; Returns: number }
+      process_prizes: { Args: never; Returns: number }
       prune_code_attempts: { Args: never; Returns: number }
       public_profile: {
         Args: { p_user_id: string }
@@ -6665,6 +7550,10 @@ export type Database = {
           p_type: Database["public"]["Enums"]["organizer_type"]
         }
         Returns: string
+      }
+      remove_activity_prize: {
+        Args: { p_prize_id: string }
+        Returns: undefined
       }
       remove_group_member: {
         Args: { p_group_id: string; p_user_id: string }
@@ -6720,10 +7609,19 @@ export type Database = {
         Args: { p_approve: boolean; p_note?: string; p_organizer_id: string }
         Returns: undefined
       }
+      set_activity_reach: {
+        Args: {
+          p_activity_id: string
+          p_location_mode?: Database["public"]["Enums"]["activity_location_mode"]
+          p_reach: Database["public"]["Enums"]["activity_reach"]
+        }
+        Returns: undefined
+      }
       set_checkpoint_active: {
         Args: { p_active: boolean; p_checkpoint_id: string }
         Returns: undefined
       }
+      set_home_city: { Args: { p_code: string }; Returns: undefined }
       set_join_policy: {
         Args: {
           p_community_id: string
@@ -6800,6 +7698,10 @@ export type Database = {
         Args: { p_full_name: string; p_nickname: string }
         Returns: undefined
       }
+      upsert_activity_prize: {
+        Args: { p_activity_id: string; p_prize: Json }
+        Returns: string
+      }
       upsert_challenge_target: {
         Args: { p_activity_id: string; p_data: Json }
         Returns: undefined
@@ -6830,6 +7732,8 @@ export type Database = {
     Enums: {
       activity_audience: "public" | "members_only"
       activity_goal: "awareness" | "visit" | "sales" | "membership"
+      activity_location_mode: "onsite" | "online" | "hybrid"
+      activity_reach: "regional" | "global"
       activity_status:
         | "draft"
         | "awaiting_partners"
@@ -6895,11 +7799,14 @@ export type Database = {
         | "reversal"
         | "adjustment"
       post_status: "open" | "closed"
+      prize_fulfillment: "pickup" | "shipping" | "digital"
+      prize_kind: "physical" | "voucher" | "badge" | "other"
       redemption_status: "active" | "used" | "expired" | "refunded"
       region_level: "city" | "district" | "village"
       residency_rule: "open" | "residents_only"
       review_status: "ok" | "flagged" | "approved" | "rejected"
       reward_status: "active" | "inactive"
+      score_reason: "checkin" | "mission_complete" | "reversal" | "adjustment"
       suggestion_category:
         | "activity"
         | "product"
@@ -6913,6 +7820,7 @@ export type Database = {
         | "required_missions"
         | "missions_completed"
       target_scope: "individual" | "group"
+      winner_status: "pending_claim" | "claimed" | "delivered" | "forfeited"
       xp_reason:
         | "profile_complete"
         | "event_checkin"
@@ -7053,6 +7961,8 @@ export const Constants = {
     Enums: {
       activity_audience: ["public", "members_only"],
       activity_goal: ["awareness", "visit", "sales", "membership"],
+      activity_location_mode: ["onsite", "online", "hybrid"],
+      activity_reach: ["regional", "global"],
       activity_status: [
         "draft",
         "awaiting_partners",
@@ -7124,11 +8034,14 @@ export const Constants = {
         "adjustment",
       ],
       post_status: ["open", "closed"],
+      prize_fulfillment: ["pickup", "shipping", "digital"],
+      prize_kind: ["physical", "voucher", "badge", "other"],
       redemption_status: ["active", "used", "expired", "refunded"],
       region_level: ["city", "district", "village"],
       residency_rule: ["open", "residents_only"],
       review_status: ["ok", "flagged", "approved", "rejected"],
       reward_status: ["active", "inactive"],
+      score_reason: ["checkin", "mission_complete", "reversal", "adjustment"],
       suggestion_category: ["activity", "product", "service", "place", "other"],
       suggestion_status: ["new", "in_progress", "done", "archived"],
       target_kind: [
@@ -7138,6 +8051,7 @@ export const Constants = {
         "missions_completed",
       ],
       target_scope: ["individual", "group"],
+      winner_status: ["pending_claim", "claimed", "delivered", "forfeited"],
       xp_reason: [
         "profile_complete",
         "event_checkin",
