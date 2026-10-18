@@ -45,7 +45,7 @@ Wordmark di semua file sudah berupa outline, jadi tampil sama walau font belum t
 
 ## 2. Warna UI aplikasi (tema gelap)
 
-Sumber: artifact "Ramein UI Mockup". Token didefinisikan di `app/globals.css`; pakai nama token, jangan hex langsung.
+Sumber: artifact "Ramein UI Mockup" (judul lama artifact; isinya tetap acuan UI Gasyu). Token didefinisikan di `app/globals.css`; pakai nama token, jangan hex langsung.
 
 | Token | Hex | Pakai untuk |
 | --- | --- | --- |
