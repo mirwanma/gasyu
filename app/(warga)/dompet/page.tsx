@@ -134,7 +134,7 @@ async function Wallet({ searchParams }: Pick<PageProps<"/dompet">, "searchParams
 function OutletLine({ names, small }: { names: string[] | null; small?: boolean }) {
   return (
     <span className={`${small ? "text-[11px]" : "text-[12px]"} leading-[1.4] text-fg-soft`}>
-      {names ? `Berlaku di: ${names.join(", ")}` : "Berlaku di semua outlet"}
+      {!names ? "Berlaku di semua outlet" : names.length > 0 ? `Berlaku di: ${names.join(", ")}` : "Berlaku di outlet tertentu"}
     </span>
   );
 }

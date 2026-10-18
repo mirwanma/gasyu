@@ -11,9 +11,11 @@ export async function signOut() {
 }
 
 // Keluar dari semua perangkat (ALUR bagian 3): mencabut semua sesi akun ini, misalnya saat HP hilang.
-export async function signOutEverywhere() {
+export async function signOutEverywhere(): Promise<{ error?: string }> {
   const supabase = await createClient();
-  await supabase.auth.signOut({ scope: "global" });
+  const { error } = await supabase.auth.signOut({ scope: "global" });
+  // Jika gagal, sesi lain masih aktif: jangan tampilkan pesan berhasil.
+  if (error) return { error: "Belum berhasil keluar dari semua perangkat. Periksa koneksi lalu coba lagi." };
   redirect("/masuk?akun=keluar-semua");
 }
 

@@ -16,6 +16,10 @@ export function KasirForm({ organizerId, outlets }: { organizerId: string; outle
   const [code, setCode] = useState("");
   const voucher = lookupState.voucher;
   const outletName = outlets.find((o) => o.id === outletId)?.name ?? "-";
+  // Voucher yang dibatasi outlet hanya bisa dipakai di outlet yang termasuk (ALUR bagian 16).
+  const outletOk = !voucher?.valid_outlet_ids || voucher.valid_outlet_ids.includes(outletId);
+  const usable = !!voucher?.valid && outletOk;
+  const validNames = voucher?.valid_outlet_ids ? outlets.filter((o) => voucher.valid_outlet_ids!.includes(o.id)).map((o) => o.name) : [];
 
   return (
     <>
@@ -45,13 +49,13 @@ export function KasirForm({ organizerId, outlets }: { organizerId: string; outle
       {useState_.success ? (
         <SuccessMessage message={useState_.success} />
       ) : voucher ? (
-        <section className={`flex flex-col gap-3 rounded-[20px] border p-4 ${voucher.valid ? "border-success/40 bg-success-tint" : "border-danger/40 bg-danger-tint"}`}>
+        <section className={`flex flex-col gap-3 rounded-[20px] border p-4 ${usable ? "border-success/40 bg-success-tint" : "border-danger/40 bg-danger-tint"}`}>
           <div className="flex items-center gap-2.5">
-            <span className={`flex size-9 items-center justify-center rounded-full text-white ${voucher.valid ? "bg-success" : "bg-danger"}`}>
-              <Icon name={voucher.valid ? "check" : "close"} size={20} stroke={2.6} />
+            <span className={`flex size-9 items-center justify-center rounded-full text-white ${usable ? "bg-success" : "bg-danger"}`}>
+              <Icon name={usable ? "check" : "close"} size={20} stroke={2.6} />
             </span>
-            <span className={`text-[15px] font-bold ${voucher.valid ? "text-success" : "text-danger"}`}>
-              {voucher.valid ? "Voucher valid" : voucher.status === "used" ? "Sudah dipakai" : voucher.status === "refunded" ? "Sudah di-refund" : "Kedaluwarsa"}
+            <span className={`text-[15px] font-bold ${usable ? "text-success" : "text-danger"}`}>
+              {usable ? "Voucher valid" : !voucher.valid ? (voucher.status === "used" ? "Sudah dipakai" : voucher.status === "refunded" ? "Sudah di-refund" : "Kedaluwarsa") : "Tidak berlaku di outlet ini"}
             </span>
           </div>
           <span className="font-display text-[20px] font-semibold text-fg">{voucher.title}</span>
@@ -59,7 +63,10 @@ export function KasirForm({ organizerId, outlets }: { organizerId: string; outle
             Milik <b>{voucher.nickname}</b> · berlaku s.d. {new Intl.DateTimeFormat("id-ID", { timeZone: "Asia/Jakarta", day: "numeric", month: "short" }).format(new Date(voucher.expires_at))}
             {voucher.description ? ` · ${voucher.description}` : ""}
           </span>
-          {voucher.valid && (
+          {voucher.valid_outlet_ids && (
+            <span className="text-[13px] text-fg-label">Berlaku di: {validNames.length > 0 ? validNames.join(", ") : "outlet lain"}</span>
+          )}
+          {usable && (
             <form action={useAction} className="flex flex-col gap-2">
               <input type="hidden" name="organizer_id" value={organizerId} />
               <input type="hidden" name="code" value={voucher.code} />

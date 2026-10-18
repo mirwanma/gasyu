@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { BottomNav, CITIZEN_NAV } from "@/components/bottom-nav";
 import { Icon } from "@/components/icons";
 import { cardClass } from "@/components/styles";
+import { whatsappUrl } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 
 // Bantuan: pertanyaan umum dan kontak tim Gasyu. Angka aturan dan kontak
@@ -34,7 +35,7 @@ async function Content() {
   const s = Object.fromEntries((data ?? []).map((r) => [r.key as string, r.value as unknown]));
   const text = (k: string) => (typeof s[k] === "string" ? (s[k] as string).trim() : "");
   const num = (k: string, fallback: number) => Number(s[k] ?? fallback);
-  const wa = text("support.whatsapp").replace(/\D/g, "").replace(/^0/, "62");
+  const wa = whatsappUrl(text("support.whatsapp"));
   const email = text("support.email");
 
   const faqs: [string, string][] = [
@@ -71,7 +72,7 @@ async function Content() {
         {wa || email ? (
           <div className="flex flex-col gap-2">
             {wa && (
-              <a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer" className="flex h-12 items-center justify-center rounded-[14px] bg-success text-[14px] font-bold text-bg">
+              <a href={wa} target="_blank" rel="noreferrer" className="flex h-12 items-center justify-center rounded-[14px] bg-success text-[14px] font-bold text-bg">
                 Chat WhatsApp
               </a>
             )}
