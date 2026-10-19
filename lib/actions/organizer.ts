@@ -111,7 +111,7 @@ export async function updateOrganizerProfile(_prev: ActionState, formData: FormD
 
   const proof = formData.get("proof");
   if (proof instanceof File && proof.size > 0) {
-    if (proof.size > 5 * 1024 * 1024) return { error: "Foto bukti terlalu besar, maksimal 5 MB." };
+    if (proof.size > 3 * 1024 * 1024) return { error: "Foto bukti terlalu besar, maksimal 3 MB." };
     const path = await uploadOrganizerFile(supabase, "organizer-proofs", organizerId, "bukti", proof);
     if (!path) return { error: "Foto bukti belum terunggah." };
     const table = type === "merchant" ? "merchant_profiles" : "community_profiles";

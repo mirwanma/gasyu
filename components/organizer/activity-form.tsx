@@ -5,6 +5,7 @@ import { createActivity, updateActivity, type ActivityActionState } from "@/lib/
 import { DIFFICULTY_LABELS, GOAL_OPTIONS, JOIN_MODE_LABELS, LOCATION_MODE_OPTIONS, TARGET_KIND_LABELS, toLocalInput, type ActivityGoal, type ActivityReach, type ActivityType, type Difficulty, type JoinMode, type LocationMode, type TargetKind, type TargetScope } from "@/lib/activities";
 import { cardClass, chipClass, inputClass, labelClass, textareaClass } from "@/components/styles";
 import { ErrorMessage, SubmitButton, SuccessMessage } from "@/components/ui";
+import { ImageFileInput } from "@/components/image-file-input";
 
 type District = { id: string; name: string; villages: { id: string; name: string }[] };
 export type ActivityFormValues = {
@@ -185,7 +186,7 @@ export function ActivityForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="cover" className={labelClass}>Gambar cover (opsional, maks. 3 MB)</label>
-          <input id="cover" name="cover" type="file" accept="image/png,image/jpeg,image/webp" className="text-[13px] text-fg-label file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-surface file:px-3 file:py-1.5 file:text-[12px] file:font-semibold file:text-fg" />
+          <ImageFileInput id="cover" name="cover" accept="image/png,image/jpeg,image/webp" className="text-[13px] text-fg-label file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-surface file:px-3 file:py-1.5 file:text-[12px] file:font-semibold file:text-fg" maxMb={3} />
         </div>
       </section>
 
@@ -395,7 +396,7 @@ export function ActivityLiteForm({ organizerId, type, activityId, description }:
       <ErrorMessage message={state.error} />
       <SuccessMessage message={state.success} />
       <textarea name="description" rows={4} maxLength={2000} defaultValue={description} className={textareaClass} aria-label="Deskripsi" />
-      <input name="cover" type="file" accept="image/png,image/jpeg,image/webp" aria-label="Cover" className="text-[13px] text-fg-label file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-surface file:px-3 file:py-1.5 file:text-[12px] file:font-semibold file:text-fg" />
+      <ImageFileInput name="cover" accept="image/png,image/jpeg,image/webp" aria-label="Cover" className="text-[13px] text-fg-label file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-surface file:px-3 file:py-1.5 file:text-[12px] file:font-semibold file:text-fg" maxMb={3} />
       <SubmitButton size="small" variant="dark" pendingText="Menyimpan…" className="self-end">
         Simpan
       </SubmitButton>

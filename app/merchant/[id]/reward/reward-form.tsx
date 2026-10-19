@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { saveReward, type RewardActionState } from "@/lib/actions/rewards";
 import { cardClass, inputClass, labelClass, textareaClass } from "@/components/styles";
 import { ErrorMessage, SubmitButton, SuccessMessage } from "@/components/ui";
+import { ImageFileInput } from "@/components/image-file-input";
 
 export type RewardFormValues = { id: string; title: string; description: string; price_points: number; stock: number; valid_days: number; available_until: string | null; valid_outlet_ids: string[] | null };
 export type OutletOption = { id: string; name: string };
@@ -71,7 +72,7 @@ export function RewardForm({ organizerId, initial, outlets }: { organizerId: str
       </fieldset>
       <div className="flex flex-col gap-1.5">
         <label htmlFor={`image-${initial?.id ?? "new"}`} className={labelClass}>Gambar (opsional, maks. 2 MB)</label>
-        <input id={`image-${initial?.id ?? "new"}`} name="image" type="file" accept="image/png,image/jpeg,image/webp" className="text-[13px] text-fg-label file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-surface file:px-3 file:py-1.5 file:text-[12px] file:font-semibold file:text-fg" />
+        <ImageFileInput id={`image-${initial?.id ?? "new"}`} name="image" accept="image/png,image/jpeg,image/webp" className="text-[13px] text-fg-label file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-surface file:px-3 file:py-1.5 file:text-[12px] file:font-semibold file:text-fg" maxMb={2} />
       </div>
       <SubmitButton size="small" variant="dark" pendingText="Menyimpan…" className="self-end">
         {initial ? "Simpan" : "Tambah reward"}

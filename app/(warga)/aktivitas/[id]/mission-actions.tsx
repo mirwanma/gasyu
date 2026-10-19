@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { submitMissionCode, submitMissionPhoto, type MissionActionState } from "@/lib/actions/missions";
 import { inputClass, smallButton } from "@/components/styles";
+import { ImageFileInput, type ImagePick } from "@/components/image-file-input";
 import { ErrorMessage, SubmitButton, SuccessMessage } from "@/components/ui";
 
 // Aksi warga untuk satu misi terbuka: ketik kode atau unggah foto (QR lewat halaman Scan).
@@ -36,7 +37,7 @@ export function MissionCodeForm({ missionId, activityId }: { missionId: string; 
 export function MissionPhotoForm({ missionId, activityId, retry }: { missionId: string; activityId: string; retry?: boolean }) {
   const [state, formAction] = useActionState<MissionActionState, FormData>(submitMissionPhoto, {});
   const [open, setOpen] = useState(false);
-  const [fileName, setFileName] = useState<string>();
+  const [pick, setPick] = useState<ImagePick>(null);
   if (state.success) return <SuccessMessage message={state.success} />;
   if (!open) {
     return (
@@ -49,10 +50,10 @@ export function MissionPhotoForm({ missionId, activityId, retry }: { missionId: 
     <form action={formAction} className="flex flex-col gap-2">
       <input type="hidden" name="mission_id" value={missionId} />
       <input type="hidden" name="activity_id" value={activityId} />
-      <ErrorMessage message={state.error} />
+      <ErrorMessage message={pick?.error ?? state.error} />
       <label className="flex h-11 cursor-pointer items-center justify-center rounded-xl border border-dashed border-line-strong px-3 text-[13px] font-semibold text-fg">
-        {fileName ?? "Pilih atau ambil foto (maks. 5 MB)"}
-        <input type="file" name="proof" accept="image/*" capture="environment" required className="hidden" onChange={(e) => setFileName(e.target.files?.[0]?.name)} />
+        {pick?.busy ? "Menyiapkan foto…" : (pick?.name ?? "Pilih atau ambil foto")}
+        <ImageFileInput name="proof" accept="image/*" capture="environment" required className="hidden" maxMb={3} onPick={setPick} />
       </label>
       <SubmitButton size="small" variant="dark" pendingText="Mengunggah…" className="self-start">
         Kirim bukti

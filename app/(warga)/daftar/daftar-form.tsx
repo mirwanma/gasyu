@@ -6,6 +6,7 @@ import { Icon } from "@/components/icons";
 import { cardClass, chipClass, inputClass, labelClass, textareaClass } from "@/components/styles";
 import { ErrorMessage, SubmitButton } from "@/components/ui";
 import { COMMUNITY_CATEGORIES, MERCHANT_CATEGORIES } from "@/lib/organizers";
+import { ImageFileInput } from "@/components/image-file-input";
 
 type District = { id: string; name: string; villages: { id: string; name: string }[] };
 type OrganizerKind = "merchant" | "community";
@@ -78,7 +79,7 @@ export function DaftarForm({ districts, initialType }: { districts: District[]; 
           </span>
           <span className="flex flex-col gap-1">
             <span className="text-[13px] text-fg-soft">{kind === "merchant" ? "Logo usaha" : "Logo komunitas"}, persegi, maks. 2 MB</span>
-            <input name="logo" type="file" accept="image/png,image/jpeg,image/webp" className="text-[12px] text-fg-label" />
+            <ImageFileInput name="logo" accept="image/png,image/jpeg,image/webp" className="text-[12px] text-fg-label" maxMb={2} />
           </span>
         </label>
 
@@ -208,7 +209,7 @@ export function DaftarForm({ districts, initialType }: { districts: District[]; 
             ? "Foto tampak depan dengan papan nama, untuk verifikasi tim Gasyu."
             : "Foto kegiatan komunitas, untuk verifikasi tim Gasyu."}
         </span>
-        <input name="proof" type="file" accept="image/png,image/jpeg,image/webp" required className="text-[12px] text-fg-label" />
+        <ImageFileInput name="proof" accept="image/png,image/jpeg,image/webp" required className="text-[12px] text-fg-label" maxMb={3} />
       </section>
 
       <ErrorMessage message={state.error} />
