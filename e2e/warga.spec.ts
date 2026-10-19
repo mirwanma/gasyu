@@ -34,16 +34,23 @@ test.describe("warga", () => {
     await expect(page.getByText("vina").first()).toBeVisible();
   });
 
-  test("Event Global: hadiah juara siap diklaim dan muncul di beranda", async ({ page }) => {
-    await open(page, "/");
-    await expect(page.getByRole("link", { name: /Hadiah perlu diklaim/ })).toBeVisible();
+  test("Event Global: hadiah juara tampil di halaman Hadiah dan beranda", async ({ page }) => {
+    // Rani juara 1 (data dummy). Pemilik proyek boleh mencoba klaim di HP, jadi uji ini menerima
+    // dua keadaan: belum diklaim (formulir alamat + kartu di Beranda) atau sudah diklaim.
     await open(page, "/hadiah");
     await expect(page.getByText("Tumbler + kaos HUT Cimahi")).toBeVisible();
-    await expect(page.getByText("Perlu diklaim")).toBeVisible();
-    await expect(page.getByLabel("Alamat lengkap")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Klaim hadiah" })).toBeVisible();
-    await open(page, "/aktivitas/" + (await page.getByRole("link", { name: "Tantangan Online HUT Cimahi" }).getAttribute("href"))!.split("/")[2] + "/peringkat");
+    const pending = (await page.getByText("Perlu diklaim").count()) > 0;
+    if (pending) {
+      await expect(page.getByLabel("Alamat lengkap")).toBeVisible();
+      await expect(page.getByRole("button", { name: "Klaim hadiah" })).toBeVisible();
+    } else {
+      await expect(page.getByText(/Sedang diproses|Sudah diterima/).first()).toBeVisible();
+    }
+    const href = await page.getByRole("link", { name: "Tantangan Online HUT Cimahi" }).getAttribute("href");
+    await open(page, href!);
     await expect(page.getByText("Final", { exact: true })).toBeVisible();
+    await open(page, "/");
+    await expect(page.getByRole("link", { name: /Hadiah perlu diklaim/ })).toHaveCount(pending ? 1 : 0);
   });
 
   test("halaman akun dan dompet terbuka", async ({ page }) => {
