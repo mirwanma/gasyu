@@ -62,6 +62,7 @@ declare
   inv uuid; grp uuid; grp_code text; rw_kopi uuid; rw_kopi2 uuid; rw_seblak uuid; rw_buku uuid;
   p_id uuid; tok text; v_checkin uuid; ms uuid;
   ev_global uuid; cp_global uuid; mis_g_foto uuid; mis_g_kode uuid; mis_g_tur uuid;
+  ev_global2 uuid; mis_g2_kode uuid; mis_g2_tebak uuid; mis_g2_cerita uuid;
 begin
   set constraints all immediate; -- badge dihitung langsung, bukan ditunda ke akhir transaksi
   if exists (select 1 from auth.users where email like '%@dummy.ramein.id') then
@@ -431,6 +432,42 @@ begin
   perform pg_temp.login(w7); perform public.complete_mission(mis_g_kode, null, 'WISATA', null, null, null);
   perform pg_temp.login(u_admin);
   perform public.mark_missions_manual(mis_g_tur, array[w10]);
+
+  -- ---------------------------------------------------------------------------
+  -- 8c. Event Global yang sudah selesai: Tantangan Online HUT Cimahi (online) — pemenang ditetapkan, hadiah siap diklaim
+  -- ---------------------------------------------------------------------------
+  perform pg_temp.login(u_admin);
+  ev_global2 := public.create_activity(public.platform_organizer_id(), jsonb_build_object(
+    'type', 'event', 'goal', 'awareness', 'title', 'Tantangan Online HUT Cimahi',
+    'description', 'Tantangan online menyambut hari jadi Kota Cimahi. Jawab kuis sejarah lewat kode rahasia di siaran langsung dan ikut sesi tebak foto lawas. Terbuka untuk semua kota.',
+    'starts_at', now() + interval '1 day', 'ends_at', now() + interval '2 days',
+    'join_mode', 'individual', 'residency_rule', 'open', 'audience', 'public'));
+  perform public.set_activity_reach(ev_global2, 'global', 'online');
+  perform public.admin_add_partner(ev_global2, org_kopi, 'sponsor', 'Penyedia voucher juara 2–3');
+  mis_g2_kode := public.upsert_mission(ev_global2, jsonb_build_object('title', 'Kode kuis siaran langsung', 'description', 'Kode diumumkan pembawa acara di akhir siaran.', 'verification', 'secret_code', 'code', 'HUTCIMAHI', 'score_reward', 300, 'is_required', false));
+  mis_g2_tebak := public.upsert_mission(ev_global2, jsonb_build_object('title', 'Tebak foto lawas', 'description', 'Ditandai panitia untuk jawaban yang benar.', 'verification', 'manual', 'score_reward', 500, 'is_required', false));
+  mis_g2_cerita := public.upsert_mission(ev_global2, jsonb_build_object('title', 'Cerita kenangan Cimahi', 'description', 'Kirim cerita singkat di kolom komentar siaran, cerita terpilih ditandai panitia.', 'verification', 'manual', 'score_reward', 150, 'is_required', false));
+  perform public.upsert_activity_prize(ev_global2, jsonb_build_object('rank_from', 1, 'rank_to', 1, 'title', 'Tumbler + kaos HUT Cimahi', 'description', 'Dikirim panitia Gasyu ke alamat pemenang.', 'kind', 'physical', 'fulfillment', 'shipping', 'min_score', 100));
+  perform public.upsert_activity_prize(ev_global2, jsonb_build_object('rank_from', 2, 'rank_to', 3, 'title', 'Voucher ngopi Rp100.000', 'kind', 'voucher', 'fulfillment', 'pickup', 'sponsor_organizer_id', org_kopi,
+    'pickup_note', 'Ambil di Kopi Lereng Cabang Baros, tunjukkan halaman Hadiah. Senin–Sabtu 10.00–21.00.', 'min_score', 100));
+  perform public.submit_activity(ev_global2);
+  update public.activities set starts_at = now() - interval '5 days', ends_at = now() + interval '1 hour' where id = ev_global2;
+  perform public.advance_activity_status();
+  perform pg_temp.login(w1); perform public.join_activity(ev_global2);
+  perform pg_temp.login(w3); perform public.join_activity(ev_global2);
+  perform pg_temp.login(w10); perform public.join_activity(ev_global2);
+  perform pg_temp.login(w1); perform public.complete_mission(mis_g2_kode, null, 'hutcimahi', null, null, null);
+  perform pg_temp.login(w10); perform public.complete_mission(mis_g2_kode, null, 'HUTCIMAHI', null, null, null);
+  perform pg_temp.login(u_admin);
+  perform public.mark_missions_manual(mis_g2_tebak, array[w1]);
+  perform public.mark_missions_manual(mis_g2_cerita, array[w3]);
+  -- Acara berakhir 3 hari lalu: lewat masa verifikasi 48 jam, jadi settled dan pemenang ditetapkan otomatis.
+  update public.activities set ends_at = now() - interval '3 days' where id = ev_global2;
+  perform public.advance_activity_status();
+  perform public.settle_ended_activities();
+  -- Vina (juara 2) sudah mengklaim voucher; Rani (juara 1) dan Siti (juara 3) belum.
+  perform pg_temp.login(w10);
+  perform public.claim_prize((select id from public.activity_winners where activity_id = ev_global2 and user_id = w10), null);
 
   -- ---------------------------------------------------------------------------
   -- 10. Saran warga (fitur saran, migrasi 0014)

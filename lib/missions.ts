@@ -35,6 +35,7 @@ export type CitizenMission =
       icon: string | null;
       verification: MissionVerification;
       xp_reward: number;
+      score_reward: number;
       is_required: boolean;
       available_from: string | null;
       available_until: string | null;
@@ -45,9 +46,10 @@ export type CitizenMission =
       my_submitted_at: string | null;
       can_work: boolean;
     }
-  | { id: string; open: false; xp_reward: number; is_required: boolean; hint: string };
+  | { id: string; open: false; xp_reward: number; score_reward: number; is_required: boolean; hint: string };
 
 export type CitizenMissionList = {
+  reach?: "regional" | "global";
   missions: CitizenMission[];
   required_total: number;
   required_done: number;
@@ -62,6 +64,8 @@ export type MissionResult = {
   completion_id?: string;
   mission_title: string;
   mission_xp?: number;
+  mission_score?: number; // Event Global: skor event, bukan XP
+  reach?: "regional" | "global";
   xp?: number;
   points?: number;
   completed?: boolean;

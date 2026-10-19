@@ -19,6 +19,33 @@ test.describe("warga", () => {
     await expect(page.getByRole("link", { name: /Cimahi Night Run 5K/ }).first()).toBeVisible();
   });
 
+  test("Event Global: tab Jelajah, halaman event, papan peringkat", async ({ page }) => {
+    await open(page, "/jelajah");
+    await expect(page.getByRole("link", { name: /Lomba Foto Wisata Cimahi/ })).toHaveCount(0);
+    await open(page, "/jelajah?filter=global");
+    await page.getByRole("link", { name: /Lomba Foto Wisata Cimahi/ }).first().click();
+    await expect(page.getByRole("heading", { name: "Lomba Foto Wisata Cimahi" })).toBeVisible();
+    await expect(page.getByText("+200 skor")).toBeVisible();
+    await expect(page.getByText("Kamera mirrorless + medali").first()).toBeVisible();
+    await expect(page.getByText(/^Posisi$/)).toBeVisible();
+    await page.getByRole("link", { name: "Lihat papan peringkat" }).click();
+    await expect(page.getByText("Papan peringkat", { exact: true })).toBeVisible();
+    await expect(page.getByText("Live", { exact: true })).toBeVisible();
+    await expect(page.getByText("vina").first()).toBeVisible();
+  });
+
+  test("Event Global: hadiah juara siap diklaim dan muncul di beranda", async ({ page }) => {
+    await open(page, "/");
+    await expect(page.getByRole("link", { name: /Hadiah perlu diklaim/ })).toBeVisible();
+    await open(page, "/hadiah");
+    await expect(page.getByText("Tumbler + kaos HUT Cimahi")).toBeVisible();
+    await expect(page.getByText("Perlu diklaim")).toBeVisible();
+    await expect(page.getByLabel("Alamat lengkap")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Klaim hadiah" })).toBeVisible();
+    await open(page, "/aktivitas/" + (await page.getByRole("link", { name: "Tantangan Online HUT Cimahi" }).getAttribute("href"))!.split("/")[2] + "/peringkat");
+    await expect(page.getByText("Final", { exact: true })).toBeVisible();
+  });
+
   test("halaman akun dan dompet terbuka", async ({ page }) => {
     for (const path of ["/dompet", "/peringkat", "/riwayat", "/riwayat?tab=poin", "/saran", "/komunitas-saya", "/notifikasi", "/grup", "/bantuan", "/profil/ubah"]) {
       await open(page, path);

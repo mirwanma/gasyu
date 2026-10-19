@@ -1,7 +1,7 @@
 # Data dummy Gasyu
 
 Folder ini berisi data contoh supaya alur Gasyu terlihat lengkap saat demo:
-10 warga, 6 merchant, 5 komunitas, 1 admin, 5 aktivitas (2 event, 1 challenge, 1 menunggu review, 1 Event Global)
+10 warga, 6 merchant, 5 komunitas, 1 admin, 6 aktivitas (2 event, 1 challenge, 1 menunggu review, 2 Event Global: satu berjalan, satu sudah selesai dengan pemenang)
 beserta misi, check-in, pembayaran, poin, voucher, badge, notifikasi, dan satu kasus moderasi.
 
 Daftar akun dan kata sandinya ada di [`akun.md`](akun.md).
@@ -59,6 +59,8 @@ Skrip ini aman dijalankan berulang.
 - **Warga Nadia** (`nadia@`): challenge selesai, badge, poin, voucher aktif di Dompet, peringkat.
 - **Warga Dimas** (`dimas@`): status "Cek bukti" di Night Run, Festival sudah selesai.
 - **Warga Siti** (`siti@`): foto misi "sedang ditinjau", belum bayar Night Run.
+- **Warga Rani** (`rani@`), Event Global: kartu "Hadiah perlu diklaim" di Beranda, klaim tumbler juara 1 di halaman Hadiah
+  (isi alamat), tab Event Global di Jelajah, papan peringkat Lomba Foto Wisata (posisi Rani terlihat).
 
 ## Catatan setelah ganti nama ke Gasyu
 

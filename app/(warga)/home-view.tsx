@@ -4,6 +4,7 @@ import { ActivityCard } from "@/components/activity-card";
 import { cardClass } from "@/components/styles";
 import { PARTICIPATION_LABELS, PAYMENT_LABELS } from "@/lib/activities";
 import type { ActivityCard as Card, Participation } from "@/lib/data/activities";
+import { formatDateTime } from "@/lib/format";
 import { badgeMeta } from "@/lib/gamification/badges";
 import { levelFor, type LevelRow } from "@/lib/gamification/level";
 
@@ -21,6 +22,9 @@ export function HomeView({
   wallet,
   rank,
   badges,
+  globalScores = {},
+  openGlobal = [],
+  prizeAlert,
 }: {
   nickname: string;
   avatarUrl?: string | null;
@@ -34,6 +38,10 @@ export function HomeView({
   wallet: { balance: number; activeVouchers: number; expiring30d: number };
   rank?: { village: number | null; city: number | null; xpMonth: number; streakWeeks: number; villageRank: number | null };
   badges?: { recent: { code: string; name: string; awarded_at: string }[]; earned: number; total: number };
+  // Event Global (ALUR bagian 22e): skor dan posisi per event yang diikuti, event yang dibuka, dan hadiah yang perlu diklaim.
+  globalScores?: Record<string, { rank: number | null; score: number }>;
+  openGlobal?: { card: Card; topPrize: string | null }[];
+  prizeAlert?: { count: number; deadline: string };
 }) {
   const level = levelFor(totalXp, levels);
   const currentMin = levels.find((row) => row.level === level.level)?.min_xp ?? 0;
@@ -60,6 +68,19 @@ export function HomeView({
           )}
         </a>
       </header>
+
+      {prizeAlert && prizeAlert.count > 0 && (
+        <a href="/hadiah" className="flex items-center gap-3 rounded-[20px] border border-hot/40 bg-hot-tint p-4 text-fg">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-hot text-bg">
+            <Icon name="ticket" size={22} stroke={2} />
+          </span>
+          <span className="flex flex-1 flex-col gap-0.5">
+            <span className="text-[15px] font-semibold">{prizeAlert.count > 1 ? `${prizeAlert.count} hadiah perlu diklaim` : "Hadiah perlu diklaim"}</span>
+            <span className="text-[12px] text-fg-label">Klaim sebelum {formatDateTime(prizeAlert.deadline)}</span>
+          </span>
+          <Icon name="chevron" size={16} stroke={2} className="text-fg-muted" />
+        </a>
+      )}
 
       <section
         aria-label="Level dan XP"
@@ -157,7 +178,11 @@ export function HomeView({
               card={card}
               href={`/aktivitas/${card.id}`}
               footer={
-                participation.payment_status === "unpaid" || participation.payment_status === "awaiting_confirmation" ? (
+                card.reach === "global" && globalScores[card.id] && participation.payment_status !== "unpaid" && participation.payment_status !== "awaiting_confirmation" ? (
+                  <span className="text-[12px] font-bold text-hot">
+                    {globalScores[card.id].score.toLocaleString("id-ID")} skor{globalScores[card.id].rank ? ` · posisi #${globalScores[card.id].rank}` : ""}
+                  </span>
+                ) : participation.payment_status === "unpaid" || participation.payment_status === "awaiting_confirmation" ? (
                   <span className={`text-[12px] font-bold ${participation.payment_status === "unpaid" ? "text-warn" : "text-info"}`}>{PAYMENT_LABELS[participation.payment_status]}</span>
                 ) : (
                   <span className="text-[12px] font-bold text-success">{PARTICIPATION_LABELS[participation.status]}</span>
@@ -167,6 +192,20 @@ export function HomeView({
           ))
         )}
       </section>
+
+      {openGlobal.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-display text-[19px] font-semibold">Event Global</h2>
+            <a href="/jelajah?filter=global" className="text-[13px] font-semibold text-link">
+              Lihat semua
+            </a>
+          </div>
+          {openGlobal.map(({ card, topPrize }) => (
+            <ActivityCard key={card.id} card={card} href={`/aktivitas/${card.id}`} topPrize={topPrize} footer={<span className="text-[12px] font-bold text-hot">Terbuka untuk semua kota</span>} />
+          ))}
+        </section>
+      )}
 
       {recommended.length > 0 && (
         <section className="flex flex-col gap-3">

@@ -71,6 +71,7 @@ export async function getActivityCard(id: string): Promise<ActivityCard | null> 
 }
 
 // Daftar aktivitas publik untuk Jelajah, terbaru dulu.
+// Event Global hanya tampil di tab Event Global (filter "global"), tidak bercampur dengan aktivitas kota.
 export async function listPublicActivities(opts: { filter?: string; q?: string } = {}): Promise<ActivityCard[]> {
   const supabase = await createClient();
   let query = supabase
@@ -79,6 +80,7 @@ export async function listPublicActivities(opts: { filter?: string; q?: string }
     .in("status", ["published", "running"])
     .order("starts_at", { ascending: true })
     .limit(50);
+  query = query.eq("reach", opts.filter === "global" ? "global" : "regional");
   if (opts.filter === "event" || opts.filter === "challenge") query = query.eq("type", opts.filter);
   if (opts.filter === "gratis") query = query.eq("is_paid", false);
   if (opts.filter === "berbayar") query = query.eq("is_paid", true);

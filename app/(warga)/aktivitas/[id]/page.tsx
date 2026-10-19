@@ -2,15 +2,17 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { JoinPanel } from "./join-panel";
+import { GlobalSection } from "./global-section";
 import { MissionSection } from "./missions";
 import { PaymentSection } from "./payment";
 import { coverStyle, cardTag } from "@/components/activity-card";
 import { OrganizerAvatar } from "@/components/avatar";
 import { Icon } from "@/components/icons";
 import { cardClass, tagClass } from "@/components/styles";
-import { DIFFICULTY_LABELS, formatPrice, formatSchedule, targetLabel, typeLabel } from "@/lib/activities";
+import { DIFFICULTY_LABELS, LOCATION_MODE_LABELS, formatPrice, formatSchedule, targetLabel, typeLabel } from "@/lib/activities";
 import { getActivityCard, getCheckpoints, getMyParticipation, getPartners } from "@/lib/data/activities";
 import { listGroupProgress, listMyGroups } from "@/lib/data/groups";
+import { getClaimDays, getLeaderboard, listPrizes } from "@/lib/data/global-events";
 import { getCitizenMissions } from "@/lib/data/missions";
 import { getHostWhatsapp, getPaymentInstructions } from "@/lib/data/payments";
 import { getCurrentUser } from "@/lib/data/user";
@@ -43,6 +45,9 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
     card.is_paid ? getPaymentInstructions(id) : Promise.resolve(null),
     card.is_paid ? getHostWhatsapp(card.host_organizer_id, card.host_type) : Promise.resolve(null),
   ]);
+  // Event Global: papan peringkat (cuplikan 3 besar + posisi saya) dan hadiah per peringkat.
+  const isGlobal = card.reach === "global";
+  const [board, prizes, claimDays] = isGlobal ? await Promise.all([getLeaderboard(id, 3), listPrizes(id), getClaimDays()]) : [null, [], 0];
   const leaderGroups = groups.filter((g) => g.isLeader).map((g) => ({ id: g.id, name: g.name, members: g.members.map((m) => ({ user_id: m.user_id, nickname: m.nickname })) }));
   const myGroupRow = participation?.group_id ? groupProgress.find((p) => p.group_id === participation.group_id) : undefined;
   const tag = cardTag(card);
@@ -57,21 +62,23 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
 
   const facts: [string, string][] = [
     ["Waktu", formatSchedule(card.starts_at, card.ends_at)],
-    ["Lokasi", checkpoints[0]?.name ?? card.scope_region_name ?? "Diumumkan penyelenggara"],
+    isGlobal
+      ? ["Lokasi", card.location_mode === "online" ? "Online" : `${LOCATION_MODE_LABELS[card.location_mode]}${checkpoints[0] ? ` · ${checkpoints[0].name}` : ""}`]
+      : ["Lokasi", checkpoints[0]?.name ?? card.scope_region_name ?? "Diumumkan penyelenggara"],
     ["Kuota", card.quota ? `${card.seats_taken} dari ${card.quota.toLocaleString("id-ID")}` : `${card.seats_taken} peserta`],
-    ["Hadiah", `+${card.xp_base} XP${card.points_per_completion > 0 ? ` · +${card.points_per_completion} poin` : ""}`],
+    isGlobal ? ["Hadiah", prizes[0] ? prizes[0].title : "Skor & hadiah per peringkat"] : ["Hadiah", `+${card.xp_base} XP${card.points_per_completion > 0 ? ` · +${card.points_per_completion} poin` : ""}`],
   ];
   if (card.type === "challenge") facts.splice(2, 0, ["Target", `${targetLabel(card.target_kind, card.target_count, card.target_scope)} · ${DIFFICULTY_LABELS[card.difficulty ?? "easy"]}`]);
 
   return (
     <>
       <div className="relative h-[220px]" style={coverStyle(card)}>
-        <Link href="/jelajah" aria-label="Kembali" className="absolute left-5 top-5 flex size-11 items-center justify-center rounded-full bg-[#0D1024]/70 text-cream">
+        <Link href={isGlobal ? "/jelajah?filter=global" : "/jelajah"} aria-label="Kembali" className="absolute left-5 top-5 flex size-11 items-center justify-center rounded-full bg-[#0D1024]/70 text-cream">
           <Icon name="back" stroke={2} />
         </Link>
         <div className="absolute bottom-4 left-5 flex gap-2">
           {tag && <span className={`${tagClass.base} ${tagClass[tag.tone]}`}>{tag.label}</span>}
-          <span className="rounded-full bg-[#0D1024]/70 px-2.5 py-1 text-[11px] font-bold text-cream">{typeLabel(card.type)}</span>
+          <span className="rounded-full bg-[#0D1024]/70 px-2.5 py-1 text-[11px] font-bold text-cream">{isGlobal ? LOCATION_MODE_LABELS[card.location_mode] : typeLabel(card.type)}</span>
         </div>
       </div>
 
@@ -92,6 +99,12 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
             </div>
           ))}
         </dl>
+
+        {isGlobal && (
+          <p className="rounded-2xl bg-hot-tint px-4 py-3 text-[13px] leading-[1.5] text-hot">
+            Event Global terbuka untuk pengguna dari kota mana pun. Check-in dan misi menambah skor event untuk papan peringkat ini, bukan XP atau poin.
+          </p>
+        )}
 
         {(card.audience === "members_only" || card.residency_rule === "residents_only") && (
           <p className="rounded-2xl bg-warn-tint px-4 py-3 text-[13px] text-warn">
@@ -188,9 +201,19 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
           />
         )}
 
+        {isGlobal && (
+          <GlobalSection
+            activityId={id}
+            board={board}
+            prizes={prizes}
+            joined={!!participation && !["cancelled", "invited"].includes(participation.status)}
+            claimDays={claimDays}
+          />
+        )}
+
         <MissionSection list={missions} activityId={id} activityType={card.type} targetKind={card.target_kind} />
 
-        {participation && ["registered", "in_progress"].includes(participation.status) && card.status === "running" && ["not_required", "paid"].includes(participation.payment_status) && (
+        {participation && ["registered", "in_progress"].includes(participation.status) && card.status === "running" && ["not_required", "paid"].includes(participation.payment_status) && !(isGlobal && card.location_mode === "online") && (
           <Link href="/scan" className="flex h-[54px] items-center justify-center gap-2 rounded-2xl bg-hot text-[16px] font-semibold text-bg">
             <Icon name="scan" size={22} stroke={2.2} />
             Check-in: scan QR staf

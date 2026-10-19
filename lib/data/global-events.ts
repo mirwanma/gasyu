@@ -116,9 +116,9 @@ export type Leaderboard = {
   participants: number;
 };
 
-export async function getLeaderboard(activityId: string): Promise<Leaderboard | null> {
+export async function getLeaderboard(activityId: string, limit = 100): Promise<Leaderboard | null> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_activity_leaderboard", { p_activity_id: activityId, p_limit: 100 });
+  const { data, error } = await supabase.rpc("get_activity_leaderboard", { p_activity_id: activityId, p_limit: limit });
   if (error || !data) return null;
   return data as unknown as Leaderboard;
 }
@@ -128,4 +128,71 @@ export async function countPrizesToDeliver() {
   const supabase = await createClient();
   const { count } = await supabase.from("activity_winners").select("id", { count: "exact", head: true }).eq("status", "claimed");
   return count ?? 0;
+}
+
+// Hadiah peringkat teratas per Event Global, untuk kartu di Jelajah dan Beranda.
+export async function listTopPrizes(activityIds: string[]): Promise<Map<string, string>> {
+  if (activityIds.length === 0) return new Map();
+  const supabase = await createClient();
+  const { data } = await supabase.from("activity_prizes").select("activity_id, title, rank_from").in("activity_id", activityIds).order("rank_from");
+  const map = new Map<string, string>();
+  for (const p of data ?? []) if (!map.has(p.activity_id)) map.set(p.activity_id, p.title);
+  return map;
+}
+
+export type MyPrize = {
+  id: string;
+  activity_id: string;
+  rank: number;
+  score: number;
+  status: WinnerStatus;
+  claim_deadline: string;
+  claimed_at: string | null;
+  delivered_at: string | null;
+  forfeited_reason: string | null;
+  note: string | null;
+  activity_title: string;
+  prize: Pick<Prize, "title" | "description" | "image_url" | "kind" | "fulfillment" | "pickup_note" | "sponsor_name">;
+};
+
+// Hadiah Event Global milik warga yang masuk (RLS: hanya baris miliknya). Alamat tidak ikut dibaca.
+export async function listMyPrizes(userId: string): Promise<MyPrize[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("activity_winners")
+    .select("id, activity_id, rank, score, status, claim_deadline, claimed_at, delivered_at, forfeited_reason, note, activity:activities(title), prize:activity_prizes(title, description, image_url, kind, fulfillment, pickup_note, sponsor:organizers(name))")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  const one = <T,>(v: T | T[] | null) => (Array.isArray(v) ? (v[0] ?? null) : v);
+  return (data ?? []).map((r) => {
+    const { activity, prize, ...rest } = r;
+    const pz = one(prize) as (Omit<MyPrize["prize"], "sponsor_name"> & { sponsor: { name: string } | { name: string }[] | null }) | null;
+    return {
+      ...(rest as Omit<MyPrize, "activity_title" | "prize">),
+      activity_title: (one(activity) as { title: string } | null)?.title ?? "Event Global",
+      prize: {
+        title: pz?.title ?? "Hadiah",
+        description: pz?.description ?? null,
+        image_url: pz?.image_url ?? null,
+        kind: pz?.kind ?? "other",
+        fulfillment: pz?.fulfillment ?? "digital",
+        pickup_note: pz?.pickup_note ?? null,
+        sponsor_name: one(pz?.sponsor ?? null)?.name ?? null,
+      },
+    };
+  });
+}
+
+// Data pengiriman milik pemenang sendiri (lewat get_winner_shipping, bukan kolom langsung).
+export async function getMyShipping(winnerId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("get_winner_shipping", { p_winner_id: winnerId });
+  return (data as { name: string | null; phone: string | null; address: string | null } | null) ?? null;
+}
+
+// Angka aturan main Event Global dari app_settings (bukan hardcode).
+export async function getClaimDays() {
+  const supabase = await createClient();
+  const { data } = await supabase.from("app_settings").select("value").eq("key", "global_event.claim_days").maybeSingle();
+  return Number(data?.value ?? 14);
 }

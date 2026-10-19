@@ -1,4 +1,4 @@
-import { formatPrice, formatSchedule, typeLabel, type ActivityStatus, STATUS_LABELS, STATUS_TONE } from "@/lib/activities";
+import { LOCATION_MODE_LABELS, formatPrice, formatSchedule, typeLabel, type ActivityStatus, STATUS_LABELS, STATUS_TONE } from "@/lib/activities";
 import type { ActivityCard as Card } from "@/lib/data/activities";
 import { tagClass } from "@/components/styles";
 
@@ -17,6 +17,7 @@ export function coverStyle(card: { id: string; cover_url: string | null }) {
 }
 
 export function cardTag(card: Card): { label: string; tone: keyof typeof tagClass } | null {
+  if (card.reach === "global") return { label: "Event Global", tone: "hot" };
   if (card.host_type === "platform") return { label: "Event Gasyu", tone: "primary" };
   if (card.partner_count > 0) return { label: "Kolaborasi", tone: "info" };
   if (card.is_paid) return { label: "Berbayar", tone: "warn" };
@@ -30,15 +31,17 @@ export function StatusTag({ status }: { status: ActivityStatus }) {
 }
 
 // Kartu aktivitas untuk warga (Jelajah, beranda), mengikuti artboard "Warga · Jelajah".
-export function ActivityCard({ card, href, footer }: { card: Card; href: string; footer?: React.ReactNode }) {
+// Event Global: skor dan hadiah utama menggantikan XP dan poin (ALUR bagian 22e).
+export function ActivityCard({ card, href, footer, topPrize }: { card: Card; href: string; footer?: React.ReactNode; topPrize?: string | null }) {
   const tag = cardTag(card);
+  const isGlobal = card.reach === "global";
   const quota = card.quota ? Math.min(100, Math.round((card.seats_taken / card.quota) * 100)) : 0;
   return (
     <a href={href} className="flex flex-col overflow-hidden rounded-[22px] border border-line bg-surface text-fg">
       <div className="relative h-[120px]" style={coverStyle(card)}>
         <div className="absolute inset-x-3 top-3 flex items-center justify-between">
           <span className="rounded-full bg-[#0D1024]/70 px-2.5 py-1 text-[11px] font-bold text-cream">
-            {typeLabel(card.type)}
+            {isGlobal ? LOCATION_MODE_LABELS[card.location_mode] : typeLabel(card.type)}
             {card.join_mode !== "individual" ? " · grup" : ""}
           </span>
           {tag && <span className={`${tagClass.base} ${tagClass[tag.tone]}`}>{tag.label}</span>}
@@ -49,12 +52,18 @@ export function ActivityCard({ card, href, footer }: { card: Card; href: string;
           <span className="font-display text-[17px] font-semibold leading-tight">{card.title}</span>
           <span className="text-[12px] text-fg-soft">{card.host_name}</span>
           <span className="text-[12px] text-fg-soft">
-            {formatSchedule(card.starts_at, card.ends_at)} · {card.join_mode === "individual" ? "individu" : card.join_mode === "both" ? "individu / grup" : `grup ${card.group_min}–${card.group_max} orang`}
+            {formatSchedule(card.starts_at, card.ends_at)} · {isGlobal ? "terbuka untuk semua kota" : card.join_mode === "individual" ? "individu" : card.join_mode === "both" ? "individu / grup" : `grup ${card.group_min}–${card.group_max} orang`}
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] font-bold">
-          <span className="text-xp">+{card.xp_base} XP</span>
-          <span className="text-success">{card.points_per_completion > 0 ? `+${card.points_per_completion} poin` : "Tanpa poin"}</span>
+          {isGlobal ? (
+            <span className="min-w-0 truncate text-hot">{topPrize ? `Hadiah: ${topPrize}` : "Skor & hadiah per peringkat"}</span>
+          ) : (
+            <>
+              <span className="text-xp">+{card.xp_base} XP</span>
+              <span className="text-success">{card.points_per_completion > 0 ? `+${card.points_per_completion} poin` : "Tanpa poin"}</span>
+            </>
+          )}
           <span className="ml-auto text-fg-label">{formatPrice(card.price_idr, card.is_paid)}</span>
         </div>
         {card.quota ? (
