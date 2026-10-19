@@ -16,6 +16,16 @@ test.describe("penyelenggara", () => {
     await expect(page.getByRole("main").getByRole("link", { name: /^Saran warga/ })).toBeVisible();
   });
 
+  test("hadiah yang disponsori tampil tanpa identitas pemenang", async ({ page, context, baseURL }) => {
+    await loginAs(context, ACCOUNTS.pemilikMerchant, baseURL!);
+    await open(page, await organizerHref(page, "merchant"));
+    await expect(page.getByRole("heading", { name: "Hadiah yang disponsori" })).toBeVisible();
+    await expect(page.getByText("Tantangan Online HUT Cimahi")).toBeVisible();
+    await expect(page.getByText(/#2 · (Perlu dikirim|Terkirim)/)).toBeVisible();
+    // Privasi: nickname pemenang (vina) dan alamat tidak pernah tampil ke partner
+    await expect(page.getByText("vina")).toHaveCount(0);
+  });
+
   test("saran warga: saran tanpa nama tidak menampilkan identitas", async ({ page, context, baseURL }) => {
     await loginAs(context, ACCOUNTS.pemilikMerchant, baseURL!);
     const base = await organizerHref(page, "merchant");

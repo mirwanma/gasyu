@@ -196,3 +196,37 @@ export async function getClaimDays() {
   const { data } = await supabase.from("app_settings").select("value").eq("key", "global_event.claim_days").maybeSingle();
   return Number(data?.value ?? 14);
 }
+
+export type SponsoredPrize = {
+  id: string;
+  activity_id: string;
+  activity_title: string;
+  activity_status: string;
+  rank_from: number;
+  rank_to: number;
+  title: string;
+  winners: { rank: number; status: WinnerStatus }[];
+};
+
+// Hadiah Event Global yang disediakan penyelenggara ini (ALUR bagian 20a). RLS activity_winners
+// mengizinkan tim penyedia membaca peringkat dan status saja: tanpa nama, nomor HP, atau alamat pemenang.
+export async function listSponsoredPrizes(organizerId: string): Promise<SponsoredPrize[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("activity_prizes")
+    .select("id, activity_id, rank_from, rank_to, title, activity:activities(title, status), winners:activity_winners(rank, status)")
+    .eq("sponsor_organizer_id", organizerId)
+    .order("created_at", { ascending: false })
+    .limit(30);
+  const one = <T,>(v: T | T[] | null) => (Array.isArray(v) ? (v[0] ?? null) : v);
+  return (data ?? []).map((p) => {
+    const { activity, winners, ...rest } = p;
+    const a = one(activity) as { title: string; status: string } | null;
+    return {
+      ...(rest as Omit<SponsoredPrize, "activity_title" | "activity_status" | "winners">),
+      activity_title: a?.title ?? "Event Global",
+      activity_status: a?.status ?? "",
+      winners: ((winners ?? []) as { rank: number; status: WinnerStatus }[]).sort((x, y) => x.rank - y.rank),
+    };
+  });
+}

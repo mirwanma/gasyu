@@ -1,12 +1,14 @@
 import { Suspense } from "react";
 import { StatusTag } from "@/components/activity-card";
 import { Kpi, OrganizerShell, StatusBanner, TodoItem } from "@/components/organizer/shell";
+import { SponsoredPrizes } from "@/components/organizer/sponsored-prizes";
 import { cardClass } from "@/components/styles";
 import { formatSchedule } from "@/lib/activities";
 import { listOrganizerActivities } from "@/lib/data/activities";
 import { getCommunityDashboard } from "@/lib/data/dashboards";
 import { createClient } from "@/lib/supabase/server";
 import { countNewSuggestions } from "@/lib/data/suggestions";
+import { listSponsoredPrizes } from "@/lib/data/global-events";
 
 // Dashboard komunitas, mengikuti artboard "Komunitas · Dashboard".
 // Angka dari v_community_dashboard dan v_community_member_stats.
@@ -29,11 +31,12 @@ async function Dashboard({ params }: Pick<PageProps<"/komunitas/[id]">, "params"
 
 async function DashboardBody({ id, org }: { id: string; org: { status: string } }) {
   const supabase = await createClient();
-  const [{ data: stats }, d, activities, newSuggestions] = await Promise.all([
+  const [{ data: stats }, d, activities, newSuggestions, sponsored] = await Promise.all([
     supabase.from("v_community_member_stats").select("*").eq("community_id", id).maybeSingle(),
     getCommunityDashboard(id),
     listOrganizerActivities(id),
     countNewSuggestions(id),
+    listSponsoredPrizes(id),
   ]);
   const s = (stats ?? {}) as { active_members?: number; pending_requests?: number; new_members_month?: number; attending_members_30d?: number };
   const active = Number(s.active_members ?? 0);
@@ -130,6 +133,8 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string } 
           ))
         )}
       </section>
+
+      <SponsoredPrizes prizes={sponsored} />
     </>
   );
 }

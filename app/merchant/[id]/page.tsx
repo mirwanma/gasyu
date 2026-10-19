@@ -1,9 +1,11 @@
 import { Suspense } from "react";
 import { Kpi, OrganizerShell, StatusBanner, TodoItem } from "@/components/organizer/shell";
+import { SponsoredPrizes } from "@/components/organizer/sponsored-prizes";
 import { cardClass } from "@/components/styles";
 import { getMerchantDashboard, getReputation, listOutletVouchers } from "@/lib/data/dashboards";
 import { formatDate } from "@/lib/format";
 import { countNewSuggestions } from "@/lib/data/suggestions";
+import { listSponsoredPrizes } from "@/lib/data/global-events";
 
 // Dashboard merchant, mengikuti artboard "Merchant · Dashboard".
 // Semua angka dari v_merchant_dashboard, v_merchant_outlet_vouchers, v_organizer_reputation.
@@ -25,7 +27,7 @@ async function Dashboard({ params }: Pick<PageProps<"/merchant/[id]">, "params">
 }
 
 async function DashboardBody({ id, org }: { id: string; org: { status: string; name: string } }) {
-  const [d, outlets, rep, newSuggestions] = await Promise.all([getMerchantDashboard(id), listOutletVouchers(id), getReputation(id), countNewSuggestions(id)]);
+  const [d, outlets, rep, newSuggestions, sponsored] = await Promise.all([getMerchantDashboard(id), listOutletVouchers(id), getReputation(id), countNewSuggestions(id), listSponsoredPrizes(id)]);
   const base = `/merchant/${id}`;
   if (!d) {
     return (
@@ -105,6 +107,8 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string; n
           )}
         </div>
       </a>
+
+      <SponsoredPrizes prizes={sponsored} />
 
       <section className={`${cardClass} flex flex-col gap-2 p-4`}>
         <div className="flex items-baseline justify-between">
