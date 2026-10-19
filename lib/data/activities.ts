@@ -40,6 +40,9 @@ export type ActivityCard = {
   target_count: number | null;
   reach: ActivityReach;
   location_mode: LocationMode;
+  // Kota aktivitas (dari cakupan, atau kelurahan penyelenggara). NULL = berlaku untuk semua kota.
+  city_id: string | null;
+  city_name: string | null;
 };
 
 export type Checkpoint = {
@@ -73,7 +76,8 @@ export async function getActivityCard(id: string): Promise<ActivityCard | null> 
 
 // Daftar aktivitas publik untuk Jelajah, terbaru dulu.
 // Event Global hanya tampil di tab Event Global (filter "global"), tidak bercampur dengan aktivitas kota.
-export async function listPublicActivities(opts: { filter?: string; q?: string } = {}): Promise<ActivityCard[]> {
+// cityId: hanya aktivitas di kota itu, ditambah aktivitas yang tidak terikat kota. Tidak berlaku untuk Event Global.
+export async function listPublicActivities(opts: { filter?: string; q?: string; cityId?: string | null } = {}): Promise<ActivityCard[]> {
   const supabase = await createClient();
   let query = supabase
     .from("v_activity_cards")
@@ -86,10 +90,31 @@ export async function listPublicActivities(opts: { filter?: string; q?: string }
   if (opts.filter === "gratis") query = query.eq("is_paid", false);
   if (opts.filter === "berbayar") query = query.eq("is_paid", true);
   if (opts.filter === "member") query = query.eq("audience", "members_only");
+  if (opts.cityId && opts.filter !== "global") query = query.or(`city_id.eq.${opts.cityId},city_id.is.null`);
   const q = opts.q ? filterTerm(opts.q) : "";
   if (q) query = query.or(`title.ilike.%${q}%,host_name.ilike.%${q}%`);
   const { data } = await query;
   return (data ?? []) as ActivityCard[];
+}
+
+export type CityOption = { id: string; name: string; slug: string };
+
+// Kota yang aktif di Gasyu, untuk pemilih kota di Jelajah. slug = kode Kemendagri (atau id jika kosong).
+export async function listCities(): Promise<CityOption[]> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("regions").select("id, name, code").eq("level", "city").eq("is_active", true).order("name");
+  return (data ?? []).map((r) => ({ id: r.id, name: r.name, slug: r.code ?? r.id }));
+}
+
+// Kota tempat tinggal warga: dari kelurahannya, atau kota asal warga luar Cimahi jika kota itu sudah aktif di Gasyu.
+export async function getHomeCityId(userId: string, cities: CityOption[]): Promise<string | null> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("profiles").select("home_village_id, home_city_code").eq("id", userId).maybeSingle();
+  if (data?.home_village_id) {
+    const { data: cityId } = await supabase.rpc("region_city", { p_region_id: data.home_village_id });
+    return cityId ?? null;
+  }
+  return cities.find((c) => data?.home_city_code && c.slug === data.home_city_code)?.id ?? null;
 }
 
 // Aktivitas terbit/berjalan milik satu penyelenggara, untuk profil publik /m dan /k.

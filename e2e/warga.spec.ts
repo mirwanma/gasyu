@@ -19,6 +19,18 @@ test.describe("warga", () => {
     await expect(page.getByRole("link", { name: /Cimahi Night Run 5K/ }).first()).toBeVisible();
   });
 
+  test("jelajah: kota warga terpilih otomatis dan bisa diganti ke semua kota", async ({ page }) => {
+    await open(page, "/jelajah");
+    await page.locator("summary", { hasText: "Kota Cimahi" }).click();
+    await page.getByRole("navigation", { name: "Pilih kota" }).getByRole("link", { name: "Semua kota" }).click();
+    await expect(page).toHaveURL(/kota=semua/);
+    await expect(page.locator("summary", { hasText: "Semua kota" })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Cimahi Night Run 5K/ }).first()).toBeVisible();
+    // Pilihan kota ikut terbawa saat pindah filter
+    await page.getByRole("link", { name: "Event", exact: true }).click();
+    await expect(page).toHaveURL(/filter=event.*kota=semua|kota=semua.*filter=event/);
+  });
+
   test("Event Global: tab Jelajah, halaman event, papan peringkat", async ({ page }) => {
     await open(page, "/jelajah");
     await expect(page.getByRole("link", { name: /Lomba Foto Wisata Cimahi/ })).toHaveCount(0);
