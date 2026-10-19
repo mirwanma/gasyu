@@ -4,10 +4,12 @@ import { BottomNav, CITIZEN_NAV } from "@/components/bottom-nav";
 import { Icon } from "@/components/icons";
 import { cardClass, chipClass, inputClass } from "@/components/styles";
 import { listPublicActivities } from "@/lib/data/activities";
+import { listTopPrizes } from "@/lib/data/global-events";
 import { getCurrentUser } from "@/lib/data/user";
 
 const FILTERS: [string, string][] = [
   ["", "Semua"],
+  ["global", "Event Global"],
   ["event", "Event"],
   ["challenge", "Challenge"],
   ["gratis", "Gratis"],
@@ -34,6 +36,8 @@ async function Explore({ searchParams }: Pick<PageProps<"/jelajah">, "searchPara
   const filter = typeof sp.filter === "string" ? sp.filter : "";
   const q = typeof sp.q === "string" ? sp.q.trim() : "";
   const [user, items] = await Promise.all([getCurrentUser(), listPublicActivities({ filter, q })]);
+  const isGlobal = filter === "global";
+  const topPrizes = isGlobal ? await listTopPrizes(items.map((c) => c.id)) : new Map<string, string>();
 
   return (
     <>
@@ -65,17 +69,23 @@ async function Explore({ searchParams }: Pick<PageProps<"/jelajah">, "searchPara
         })}
       </nav>
 
+      {isGlobal && (
+        <p className="rounded-2xl bg-hot-tint px-4 py-3 text-[12px] leading-[1.5] text-hot">
+          Event Global terbuka untuk pengguna dari kota mana pun. Hasilnya skor event dan papan peringkat khusus event, dengan hadiah untuk peringkat teratas. Skor tidak menambah XP atau poin.
+        </p>
+      )}
+
       {items.length === 0 ? (
         <div className={`${cardClass} flex flex-col gap-1 p-4`}>
           <span className="text-[15px] font-semibold">Belum ada aktivitas</span>
           <span className="text-[13px] leading-[1.5] text-fg-soft">
-            {q || filter ? "Coba kata kunci atau filter lain." : "Event dan challenge dari UMKM dan komunitas akan tampil di sini."}
+            {isGlobal && !q ? "Belum ada Event Global yang dibuka. Pantau terus, tim Gasyu akan mengumumkannya." : q || filter ? "Coba kata kunci atau filter lain." : "Event dan challenge dari UMKM dan komunitas akan tampil di sini."}
           </span>
         </div>
       ) : (
         <div className="flex flex-col gap-3.5">
           {items.map((card) => (
-            <ActivityCard key={card.id} card={card} href={`/aktivitas/${card.id}`} />
+            <ActivityCard key={card.id} card={card} href={`/aktivitas/${card.id}`} topPrize={topPrizes.get(card.id)} />
           ))}
         </div>
       )}

@@ -58,15 +58,35 @@ function describe(n: Notification): { title: string; body?: string; href?: strin
     case "mission_proof_submitted":
       return { title: `Bukti foto baru: ${p.mission_title}`, body: `Dari aktivitas "${p.title}". Tinjau di halaman Misi.` };
     case "mission_approved":
+      // Event Global memberi skor event, bukan XP.
+      if (Number(p.score) > 0) return { title: `Misi "${p.mission_title}" disetujui · +${Number(p.score).toLocaleString("id-ID")} skor`, body: `Event Global "${p.title}".`, href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
       return { title: `Misi "${p.mission_title}" disetujui · +${p.xp ?? 0} XP`, body: p.completed ? `Aktivitas "${p.title}" selesai!` : `Aktivitas "${p.title}".`, href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
     case "mission_rejected":
       return { title: `Bukti misi "${p.mission_title}" ditolak`, body: typeof p.note === "string" && p.note ? `${p.note} · unggah ulang selama aktivitas berjalan.` : "Unggah ulang selama aktivitas berjalan.", href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
     case "mission_revealed":
-      return { title: `Misi baru terbuka: ${p.mission_title}`, body: `+${p.xp ?? 0} XP di "${p.title}".`, href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
+      return { title: `Misi baru terbuka: ${p.mission_title}`, body: Number(p.score) > 0 ? `+${Number(p.score).toLocaleString("id-ID")} skor di "${p.title}".` : `+${p.xp ?? 0} XP di "${p.title}".`, href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
     case "badge_awarded":
       return { title: `Badge baru: ${p.badge_name}`, body: "Lihat koleksi badge kamu di Profil.", href: "/profil" };
     case "checkin_rejected":
-      return { title: `Check-in di "${p.activity_title}" ditolak tim Gasyu`, body: `${p.xp ?? 0} XP${Number(p.points) > 0 ? ` dan ${p.points} poin` : ""} ditarik kembali.${typeof p.note === "string" && p.note ? ` Catatan: ${p.note}` : ""}` };
+      return {
+        title: `Check-in di "${p.activity_title}" ditolak tim Gasyu`,
+        body: `${Number(p.score) > 0 ? `${Number(p.score).toLocaleString("id-ID")} skor event` : `${p.xp ?? 0} XP${Number(p.points) > 0 ? ` dan ${p.points} poin` : ""}`} ditarik kembali.${typeof p.note === "string" && p.note ? ` Catatan: ${p.note}` : ""}`,
+      };
+    // Event Global: hadiah per peringkat (ALUR bagian 22d)
+    case "prize_won":
+      return {
+        title: `Selamat! Kamu peringkat ${p.rank} di "${p.activity_title}"`,
+        body: `Hadiah: ${p.prize_title}.${p.kind === "badge" ? " Badge sudah masuk ke profilmu." : ` Klaim sebelum ${typeof p.claim_deadline === "string" ? formatDate(p.claim_deadline) : "batas waktu"}.`}`,
+        href: "/hadiah",
+      };
+    case "prize_claim_reminder":
+      return { title: `Hadiah "${p.prize_title}" belum diklaim`, body: `Batas klaim ${typeof p.claim_deadline === "string" ? formatDate(p.claim_deadline) : "sebentar lagi"}. Lewat dari itu hadiah hangus.`, href: "/hadiah" };
+    case "prize_delivered":
+      return { title: `Hadiah "${p.prize_title}" sudah dikirim`, body: typeof p.note === "string" && p.note ? p.note : "Panitia Gasyu menandai hadiahmu sudah diserahkan.", href: "/hadiah" };
+    case "prize_forfeited":
+      return { title: `Hadiah "${p.prize_title}" hangus`, body: typeof p.reason === "string" ? p.reason : undefined, href: "/hadiah" };
+    case "prize_claimed":
+      return { title: `Hadiah "${p.prize_title}" diklaim pemenang peringkat ${p.rank}`, body: "Cek flag kecurangan lalu kirim dari dashboard admin (Peringkat & pemenang)." };
     case "fraud_warning":
       return {
         title: "Peringatan dari tim Gasyu",

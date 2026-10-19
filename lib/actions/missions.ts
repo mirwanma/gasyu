@@ -185,6 +185,7 @@ export async function submitMissionCode(_prev: MissionActionState, formData: For
   if (r.status === "wrong_code") return { error: `Kode salah. Sisa percobaan: ${r.attempts_left ?? 0}.` };
   revalidatePath(`/aktivitas/${activityId}`);
   revalidatePath("/");
+  if (r.reach === "global") return { success: `Misi "${r.mission_title}" selesai: +${(r.mission_score ?? 0).toLocaleString("id-ID")} skor event` };
   return { success: `Misi "${r.mission_title}" selesai: +${r.mission_xp ?? 0} XP${r.completed ? " · aktivitas selesai!" : ""}` };
 }
 

@@ -22,6 +22,10 @@ export type CheckinResult = {
   points: number;
   points_balance: number;
   total_xp: number;
+  // Event Global: skor event menggantikan XP dan poin (ALUR bagian 22c).
+  reach?: "regional" | "global";
+  score?: number;
+  event_score?: number;
 };
 
 export type QrPayload = { kind: "checkin"; checkpointId: string; token: string } | { kind: "mission"; missionId: string; token: string };

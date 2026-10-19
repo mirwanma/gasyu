@@ -119,8 +119,8 @@ export function Scanner({ initial, levels }: { initial: QrPayload | null; levels
     };
   }, [phase.kind, submit]);
 
-  if (phase.kind === "done") return <Reward result={phase.result} levels={levels} />;
-  if (phase.kind === "mission") return <MissionReward result={phase.result} levels={levels} />;
+  if (phase.kind === "done") return phase.result.reach === "global" ? <ScoreReward kind="checkin" result={phase.result} /> : <Reward result={phase.result} levels={levels} />;
+  if (phase.kind === "mission") return phase.result.reach === "global" ? <ScoreReward kind="mission" result={phase.result} /> : <MissionReward result={phase.result} levels={levels} />;
 
   return (
     <div className="flex min-h-screen flex-col items-center gap-6 px-5 pb-8 pt-6" style={{ background: "radial-gradient(circle at 50% 40%, #2A2F4F 0%, #0B0E22 65%)" }}>
@@ -182,6 +182,54 @@ export function Scanner({ initial, levels }: { initial: QrPayload | null; levels
           Ketik kode misi di halaman aktivitas
         </Link>
         <span className="text-center text-[12px] text-fg-muted">QR check-in dan QR misi berganti tiap 60 detik. Foto QR yang disebar tidak akan berlaku.</span>
+      </div>
+    </div>
+  );
+}
+
+// Event Global: hasil berupa skor event, tanpa XP, level, atau poin (ALUR bagian 22c).
+function ScoreReward(props: { kind: "checkin"; result: CheckinResult } | { kind: "mission"; result: MissionResult }) {
+  const isCheckin = props.kind === "checkin";
+  const gained = isCheckin ? (props.result.score ?? 0) : (props.result.mission_score ?? 0);
+  const total = isCheckin ? props.result.event_score : undefined;
+  const activityId = props.result.activity_id;
+  return (
+    <div className="flex min-h-screen flex-col items-center gap-[18px] px-5 pb-7 pt-12" style={{ background: "radial-gradient(circle at 50% 18%, #3B2F8F 0%, #0D1024 60%)" }}>
+      <div className="flex size-24 items-center justify-center rounded-full bg-success text-bg shadow-[0_0_0_12px_rgba(52,211,153,0.15)]">
+        <Icon name="check" size={48} stroke={2.6} />
+      </div>
+      <div className="flex flex-col items-center gap-1.5 text-center">
+        <span className="text-[13px] text-fg-label">{isCheckin ? `${props.result.partner_name} · ${props.result.checkpoint_name}` : props.result.activity_title}</span>
+        <h1 className="font-display text-[28px] font-bold">{isCheckin ? "Check-in berhasil!" : "Misi selesai!"}</h1>
+        <span className="text-[14px] text-fg-soft">{isCheckin ? props.result.activity_title : props.result.mission_title}</span>
+      </div>
+      <div className="flex w-full gap-3">
+        <div className="flex flex-1 flex-col items-center gap-1 rounded-[20px] border border-line bg-surface p-4">
+          <span className="font-display text-[32px] font-bold text-hot">+{gained.toLocaleString("id-ID")}</span>
+          <span className="text-[12px] text-fg-soft">skor event</span>
+        </div>
+        {total !== undefined && (
+          <div className="flex flex-1 flex-col items-center gap-1 rounded-[20px] border border-line bg-surface p-4">
+            <span className="font-display text-[32px] font-bold">{total.toLocaleString("id-ID")}</span>
+            <span className="text-[12px] text-fg-soft">total skor kamu</span>
+          </div>
+        )}
+      </div>
+      <p className="w-full rounded-2xl border border-line bg-surface px-4 py-3 text-[13px] leading-[1.5] text-fg-label">
+        Ini Event Global: skor hanya dihitung untuk papan peringkat event ini, tidak menambah XP, level, atau poin.
+      </p>
+      {props.result.flagged && (
+        <p className="w-full rounded-2xl bg-warn-tint px-4 py-3 text-[12px] leading-[1.5] text-warn">
+          Lokasi kamu {props.result.distance_m != null ? `${props.result.distance_m} m dari checkpoint` : "tidak terbaca"}. Tetap dihitung, tetapi akan ditinjau tim Gasyu.
+        </p>
+      )}
+      <div className="mt-auto flex w-full flex-col gap-2.5">
+        <Link href={activityId ? `/aktivitas/${activityId}/peringkat` : "/"} className="flex h-[52px] items-center justify-center rounded-2xl bg-primary text-[15px] font-semibold text-on-primary">
+          Lihat papan peringkat
+        </Link>
+        <Link href={activityId ? `/aktivitas/${activityId}` : "/"} className="flex h-12 items-center justify-center rounded-2xl text-[14px] font-semibold text-fg-label">
+          Lihat misi lainnya
+        </Link>
       </div>
     </div>
   );

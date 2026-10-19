@@ -11,10 +11,13 @@ const ICONS: Record<string, IconName> = { qr_scan: "qr", secret_code: "keyboard"
 // misi terbuka lengkap dengan aksi; misi belum terbuka sebagai kartu rahasia (teaser).
 export function MissionSection({ list, activityId, activityType, targetKind }: { list: CitizenMissionList | null; activityId: string; activityType: "event" | "challenge"; targetKind: string | null }) {
   const missions = list?.missions ?? [];
+  // Event Global: misi memberi skor event, tanpa wajib/bonus dan tanpa status selesai (ALUR bagian 22c).
+  const global = list?.reach === "global";
   const requiredTotal = list?.required_total ?? 0;
   const requiredDone = list?.required_done ?? 0;
-  const rule =
-    activityType === "event"
+  const rule = global
+    ? "Setiap misi yang berhasil menambah skor event. Skor tertinggi memenangkan hadiah, dan kamu bisa terus menambah skor sampai acara berakhir."
+    : activityType === "event"
       ? requiredTotal > 0
         ? "Selesai saat kamu check-in di checkpoint dan semua misi wajib disetujui. Misi bonus menambah XP."
         : "Selesai saat kamu check-in di checkpoint. Misi bonus menambah XP."
@@ -28,7 +31,7 @@ export function MissionSection({ list, activityId, activityType, targetKind }: {
     <section className="flex flex-col gap-2.5">
       <div className="flex items-baseline justify-between">
         <h2 className="font-display text-[18px] font-semibold">Misi</h2>
-        {requiredTotal > 0 && (
+        {requiredTotal > 0 && !global && (
           <span className="text-[12px] font-semibold text-fg-soft">
             {requiredDone} dari {requiredTotal} wajib selesai
           </span>
@@ -40,13 +43,15 @@ export function MissionSection({ list, activityId, activityType, targetKind }: {
       )}
       {missions.length === 0 && <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>Belum ada misi di aktivitas ini.</p>}
       {missions.map((m) => (
-        <MissionCard key={m.id} m={m} activityId={activityId} />
+        <MissionCard key={m.id} m={m} activityId={activityId} global={global} />
       ))}
     </section>
   );
 }
 
-function MissionCard({ m, activityId }: { m: CitizenMission; activityId: string }) {
+function MissionCard({ m, activityId, global }: { m: CitizenMission; activityId: string; global: boolean }) {
+  const reward = global ? `+${m.score_reward.toLocaleString("id-ID")} skor` : `+${m.xp_reward} XP`;
+  const kindTag = global ? null : <span className={`${tagClass.base} ${m.is_required ? tagClass.hot : tagClass.info}`}>{m.is_required ? "WAJIB" : "BONUS"}</span>;
   if (!m.open) {
     return (
       <div className={`${cardClass} flex items-center gap-3 border-dashed p-3.5 opacity-80`}>
@@ -55,12 +60,12 @@ function MissionCard({ m, activityId }: { m: CitizenMission; activityId: string 
         </span>
         <span className="flex flex-1 flex-col gap-0.5">
           <span className="flex items-center gap-1.5">
-            <span className={`${tagClass.base} ${m.is_required ? tagClass.hot : tagClass.info}`}>{m.is_required ? "WAJIB" : "BONUS"}</span>
+            {kindTag}
             <span className="text-[14px] font-semibold">Misi rahasia</span>
           </span>
           <span className="text-[12px] text-fg-soft">{m.hint}</span>
         </span>
-        <span className="text-[13px] font-semibold text-xp">+{m.xp_reward} XP</span>
+        <span className={`text-[13px] font-semibold ${global ? "text-hot" : "text-xp"}`}>{reward}</span>
       </div>
     );
   }
@@ -75,7 +80,7 @@ function MissionCard({ m, activityId }: { m: CitizenMission; activityId: string 
         </span>
         <span className="flex flex-1 flex-col gap-0.5">
           <span className="flex flex-wrap items-center gap-1.5">
-            <span className={`${tagClass.base} ${m.is_required ? tagClass.hot : tagClass.info}`}>{m.is_required ? "WAJIB" : "BONUS"}</span>
+            {kindTag}
             <span className="text-[11px] text-fg-soft">{VERIFICATION_HOW[m.verification]}</span>
           </span>
           <span className="text-[14px] font-semibold">{m.title}</span>
@@ -89,7 +94,7 @@ function MissionCard({ m, activityId }: { m: CitizenMission; activityId: string 
             </span>
           )}
         </span>
-        <span className={`text-[13px] font-semibold ${done ? "text-success" : "text-xp"}`}>+{m.xp_reward} XP</span>
+        <span className={`text-[13px] font-semibold ${done ? "text-success" : global ? "text-hot" : "text-xp"}`}>{reward}</span>
       </div>
       {done && <span className="text-[12px] font-semibold text-success">Selesai{m.my_submitted_at ? ` · ${formatDateTime(m.my_submitted_at)}` : ""}</span>}
       {pending && <span className="text-[12px] font-semibold text-warn">Foto sedang ditinjau panitia</span>}

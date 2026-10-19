@@ -46,7 +46,7 @@ Semua email memakai domain `@dummy.ramein.id` dan id akun berawalan `dd000000-00
 | lina@dummy.ramein.id | Lina Marlina | Sahabat Lingkungan Cimahi | lingkungan (gabung bebas) | Disetujui |
 | bayu@dummy.ramein.id | Bayu Nugraha | Cimahi Foodies | hobi (gabung bebas) | **Menunggu verifikasi** (antrean admin) |
 
-## Aktivitas (5)
+## Aktivitas (6)
 
 | Judul | Jenis | Host | Status | Isi |
 | --- | --- | --- | --- | --- |
@@ -54,6 +54,7 @@ Semua email memakai domain `@dummy.ramein.id` dan id akun berawalan `dd000000-00
 | Festival Kuliner Pasar Atas | event gratis | Seblak Teh Ai + cohost Kopi Lereng | Berjalan hari ini | 2 stand; misi: kode struk `PEDAS3` (wajib), foto bareng Teh Ai (bonus), kuis (manual, sudah dibuka; Siti pemenangnya). 40 poin per penyelesaian |
 | Jelajah 3 Kedai Kopi Lereng | challenge sedang, target 3 checkpoint berbeda | Kopi Lereng | Berjalan (hari ke-5 dari 14) | 3 checkpoint; misi bonus kode struk `ARENKU` dan ulasan (foto). 250 XP + 60 poin saat selesai |
 | Lomba Foto Wisata Cimahi | **Event Global** (online + di lokasi), gratis | Gasyu (admin) + sponsor hadiah Kopi Lereng | Berjalan (5 hari lagi selesai) | Checkpoint Alun-alun; misi: foto ikon wisata (300 skor), kode papan informasi `WISATA` (200 skor), tur sejarah (manual, 500 skor). Hadiah: Juara 1 kamera (dikirim), Juara 2–3 voucher ngopi dari Kopi Lereng (ambil di outlet), peringkat 4–10 badge. Peserta: Rani, Dimas, Siti, Nadia, Vina |
+| Tantangan Online HUT Cimahi | **Event Global** (online), sudah selesai | Gasyu (admin) + sponsor hadiah Kopi Lereng | **Selesai, pemenang ditetapkan** | Misi: kode siaran `HUTCIMAHI` (300 skor), tebak foto lawas (manual, 500), cerita kenangan (manual, 150). Pemenang: Rani juara 1 tumbler + kaos (dikirim, **belum diklaim**, coba klaim di HP), Vina juara 2 voucher (sudah diklaim), Siti juara 3 voucher (belum diklaim) |
 | Workshop Mural Tembok Pasar | event khusus member | Cimahi Creative Hub | **Menunggu review admin** | 1 checkpoint, 1 misi manual |
 
 ## Kode rahasia misi (untuk uji di HP)
@@ -64,6 +65,7 @@ Semua email memakai domain `@dummy.ramein.id` dan id akun berawalan `dd000000-00
 | Jelajah 3 Kedai Kopi Lereng | Kode di struk | `ARENKU` |
 | Cimahi Night Run 5K | Kode rahasia dari MC | `LARI2026` (misi masih tersembunyi; buka dulu dari halaman Misi) |
 | Lomba Foto Wisata Cimahi (Event Global) | Kode di papan informasi | `WISATA` (Vina, Rani, dan Nadia sudah memakainya) |
+| Tantangan Online HUT Cimahi (Event Global, sudah selesai) | Kode kuis siaran langsung | `HUTCIMAHI` |
 
 ## Saran warga (contoh)
 

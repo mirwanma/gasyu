@@ -4,6 +4,7 @@ import { BottomNav, CITIZEN_NAV } from "@/components/bottom-nav";
 import { listMyActivities, listPublicActivities, type ActivityCard } from "@/lib/data/activities";
 import { listMyCommunityIds } from "@/lib/data/communities";
 import { getCitizenDashboard } from "@/lib/data/dashboards";
+import { getLeaderboard, listMyPrizes, listTopPrizes } from "@/lib/data/global-events";
 import { getWallet, listMyVouchers } from "@/lib/data/rewards";
 import { getCurrentUser, getUnreadCount } from "@/lib/data/user";
 import { greetingFor } from "@/lib/format";
@@ -28,7 +29,7 @@ async function CitizenHome() {
   if (!user) return null;
   const supabase = await createClient();
 
-  const [{ data: xpRows }, { data: levels }, unread, myActivities, wallet, vouchers, dashboard, publicActivities, myCommunityIds] = await Promise.all([
+  const [{ data: xpRows }, { data: levels }, unread, myActivities, wallet, vouchers, dashboard, publicActivities, myCommunityIds, globalActivities, myPrizes] = await Promise.all([
     supabase.from("xp_ledger").select("amount").eq("user_id", user.id),
     supabase.from("levels").select("level, name, min_xp"),
     getUnreadCount(user.id),
@@ -38,9 +39,18 @@ async function CitizenHome() {
     getCitizenDashboard(),
     listPublicActivities(),
     listMyCommunityIds(user.id),
+    listPublicActivities({ filter: "global" }),
+    listMyPrizes(user.id),
   ]);
+  // Event Global: skor dan posisi saya di event yang diikuti, event yang dibuka, dan hadiah yang perlu diklaim.
+  const joinedIds = new Set(myActivities.map((row) => row.card.id));
+  const myGlobal = myActivities.filter((row) => row.card.reach === "global").map((row) => row.card.id);
+  const openGlobal = globalActivities.filter((card) => !joinedIds.has(card.id)).slice(0, 2);
+  const [boards, topPrizes] = await Promise.all([Promise.all(myGlobal.map((id) => getLeaderboard(id, 1))), listTopPrizes(openGlobal.map((c) => c.id))]);
+  const globalScores = Object.fromEntries(myGlobal.map((id, i) => [id, { rank: boards[i]?.me?.rank ?? null, score: boards[i]?.me?.score ?? 0 }]));
+  const pendingPrizes = myPrizes.filter((p) => p.status === "pending_claim" && isFuture(p.claim_deadline));
   const recommended = recommend(publicActivities, {
-    joinedIds: new Set(myActivities.map((row) => row.card.id)),
+    joinedIds,
     communityIds: new Set(myCommunityIds),
     villageId: user.homeVillageId,
   });
@@ -59,8 +69,16 @@ async function CitizenHome() {
       wallet={{ balance: wallet.balance, activeVouchers: vouchers.filter((v) => v.status === "active").length, expiring30d: wallet.expiring_30d }}
       rank={dashboard ? { village: dashboard.rank_village, city: dashboard.rank_city, xpMonth: dashboard.xp_month, streakWeeks: dashboard.streak_weeks, villageRank: dashboard.village_rank } : undefined}
       badges={dashboard ? { recent: dashboard.badges.slice(0, 3), earned: dashboard.badges.length, total: dashboard.badge_total } : undefined}
+      globalScores={globalScores}
+      openGlobal={openGlobal.map((card) => ({ card, topPrize: topPrizes.get(card.id) ?? null }))}
+      prizeAlert={pendingPrizes.length ? { count: pendingPrizes.length, deadline: pendingPrizes.map((p) => p.claim_deadline).sort()[0] } : undefined}
     />
   );
+}
+
+// Dipisah dari render supaya aturan "komponen harus murni" terpenuhi.
+function isFuture(value: string) {
+  return new Date(value).getTime() > Date.now();
 }
 
 // Rekomendasi: aktivitas terbit yang belum diikuti, diutamakan dari komunitas
