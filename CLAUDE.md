@@ -7,6 +7,7 @@ Panduan kerja untuk Claude di proyek ini. Baca seluruh file ini di awal setiap s
 - `docs/ALUR-SISTEM.md` — alur, peran, aturan bisnis (v0.12)
 - `docs/DESAIN-DATABASE.md` — tabel, enum, fungsi, RLS, urutan migrasi (v0.12)
 - `docs/BRAND.md` — warna, tipografi, logo, gaya bahasa
+- `docs/RILIS-PILOT.md` — daftar cek rilis pilot (pengaturan Supabase, Vercel, data, konten hukum)
 - PRD (PDF milik pemilik proyek, tidak disimpan di repo)
 
 Jika `CLAUDE.md` dan dokumen di `docs/` berbeda, ikuti `docs/` dan beri tahu pemilik proyek supaya file ini diperbarui.
