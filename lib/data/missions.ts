@@ -96,12 +96,18 @@ export async function listReviewQueue(activityId: string, mode: "pending" | "his
   return (data ?? []) as ReviewItem[];
 }
 
-export type ManualCandidate = { user_id: string; nickname: string; village_name: string | null; group_id: string | null; done: boolean };
+// eligible = boleh ditandai: sudah check-in (jika aktivitas punya checkpoint) dan bukan akun penanda sendiri.
+// self = akun yang sedang membuka halaman ini.
+export type ManualCandidate = { user_id: string; nickname: string; village_name: string | null; group_id: string | null; done: boolean; eligible: boolean; self: boolean };
 
 export async function listManualCandidates(missionId: string): Promise<ManualCandidate[]> {
   const supabase = await createClient();
-  const { data } = await supabase.from("v_mission_manual_candidates").select("user_id, nickname, village_name, group_id, done").eq("mission_id", missionId).order("nickname");
-  return (data ?? []) as ManualCandidate[];
+  const [{ data }, { data: claims }] = await Promise.all([
+    supabase.from("v_mission_manual_candidates").select("user_id, nickname, village_name, group_id, done, eligible").eq("mission_id", missionId).order("nickname"),
+    supabase.auth.getClaims(),
+  ]);
+  const uid = claims?.claims?.sub;
+  return (data ?? []).map((c) => ({ ...c, eligible: c.eligible ?? false, self: c.user_id === uid })) as ManualCandidate[];
 }
 
 // Jumlah bukti foto menunggu per aktivitas untuk tim (badge di daftar aktivitas).

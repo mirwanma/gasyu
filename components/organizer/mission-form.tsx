@@ -155,7 +155,7 @@ export function MissionForm({
       {verification === "secret_code" && (
         <div className="flex flex-col gap-1.5">
           <label htmlFor="m_code" className={labelClass}>Kode rahasia {initial?.id ? "(kosongkan jika tidak diubah)" : ""}</label>
-          <input id="m_code" name="code" minLength={3} maxLength={40} required={!initial?.id} autoComplete="off" placeholder="contoh: MALAM19" className={inputClass} />
+          <input id="m_code" name="code" minLength={6} maxLength={40} required={!initial?.id} autoComplete="off" placeholder="contoh: MALAM19" className={inputClass} />
           <span className="text-[12px] text-fg-soft">Disimpan terenkripsi, tidak peka huruf besar/kecil.</span>
         </div>
       )}

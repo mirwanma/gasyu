@@ -6,6 +6,7 @@ import { cardClass } from "@/components/styles";
 import { getWallet, listActiveRewards, listMyVouchers } from "@/lib/data/rewards";
 import { getCurrentUser } from "@/lib/data/user";
 import { formatDate } from "@/lib/format";
+import { backgroundImage } from "@/lib/safe-url";
 
 const VOUCHER_LABELS = { active: "VOUCHER AKTIF", used: "SUDAH DIPAKAI", expired: "KEDALUWARSA", refunded: "DI-REFUND" };
 
@@ -54,6 +55,11 @@ async function Wallet({ searchParams }: Pick<PageProps<"/dompet">, "searchParams
               ? `Poin berlaku 6 bulan · terdekat ${formatDate(wallet.next_expiry_at)}`
               : "Dapatkan poin dengan menyelesaikan aktivitas merchant"}
         </span>
+        {wallet.held > 0 && (
+          <span className="text-[12px] text-[#F3DDEA]">
+            + {wallet.held.toLocaleString("id-ID")} poin tertahan: check-in di luar radius sedang ditinjau admin
+          </span>
+        )}
       </section>
 
       <div role="tablist" className="grid grid-cols-2 gap-1.5 rounded-2xl border border-line bg-surface p-[5px]">
@@ -109,7 +115,7 @@ async function Wallet({ searchParams }: Pick<PageProps<"/dompet">, "searchParams
             <div className="grid grid-cols-2 gap-3">
               {rewards.map((r) => (
                 <div key={r.id} className={`${cardClass} flex flex-col overflow-hidden`}>
-                  <div className="flex h-[92px] items-center justify-center bg-accent-merchant" style={r.image_url ? { backgroundImage: `url(${r.image_url})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}>
+                  <div className="flex h-[92px] items-center justify-center bg-accent-merchant" style={backgroundImage(r.image_url)}>
                     {!r.image_url && <OrganizerAvatar name={r.organizer.name} type="merchant" logoUrl={r.organizer.logo_url} size={44} />}
                   </div>
                   <div className="flex flex-1 flex-col gap-1 p-3">

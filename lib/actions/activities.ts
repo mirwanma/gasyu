@@ -32,6 +32,7 @@ const ERRORS: Record<string, string> = {
   not_in_review: "Aktivitas ini tidak sedang menunggu review.",
   note_required: "Tulis catatan untuk penyelenggara jika menolak.",
   checkpoint_partner_not_accepted: "Partner itu belum menerima undangan di aktivitas ini.",
+  partner_inactive: "Partner itu sudah keluar atau dibekukan, checkpoint-nya tidak bisa diaktifkan.",
   activity_unavailable: "Aktivitas ini belum bisa diikuti.",
   members_only: "Aktivitas ini khusus member komunitas penyelenggara.",
   residents_only: "Aktivitas ini khusus warga wilayah cakupannya.",

@@ -20,7 +20,7 @@ const ERRORS: Record<string, string> = {
   mission_checkpoint_required: "Misi scan QR butuh checkpoint.",
   mission_checkpoint_not_owned: "Checkpoint itu bukan milik partner pembuat misi.",
   mission_code_required: "Isi kode rahasia untuk misi kode.",
-  invalid_code: "Kode rahasia minimal 3 karakter.",
+  invalid_code: "Kode rahasia minimal 6 karakter.",
   mission_reveal_at_required: "Isi jam buka untuk misi terjadwal.",
   mission_prerequisite_required: "Pilih misi prasyarat.",
   mission_prerequisite_other_activity: "Misi prasyarat harus dari aktivitas yang sama.",
@@ -48,6 +48,8 @@ const ERRORS: Record<string, string> = {
   completion_not_pending: "Bukti ini sudah ditinjau.",
   note_required: "Tulis alasan saat menolak.",
   account_inactive: "Akun kamu sedang tidak aktif.",
+  self_review_not_allowed: "Kamu tidak bisa meninjau atau menandai misimu sendiri. Minta anggota tim lain.",
+  partner_inactive: "Penyelenggara ini sudah tidak aktif di aktivitas ini.",
   title: "Judul misi harus 3–80 karakter.",
   // Event Global
   invalid_mission_score: "Skor misi harus 10–1.000.",

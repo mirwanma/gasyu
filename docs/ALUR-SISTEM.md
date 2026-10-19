@@ -1,6 +1,7 @@
 # Gasyu — Alur Sistem
 
-Versi 0.11 · 18 Oktober 2026 · Pilot Kota Cimahi
+Versi 0.12 · 19 Oktober 2026 · Pilot Kota Cimahi
+Perubahan 0.12 (tinjauan keamanan, migrasi 0025): anggota tim tidak bisa meninjau atau menandai misinya sendiri, dan misi manual hanya untuk peserta yang sudah check-in (bagian 9b); kode misi minimal 6 karakter dan tebakan massal dari banyak akun ditandai (bagian 9c dan 19); poin dari check-in di luar radius ditahan sampai admin memutuskan (bagian 14c); admin bisa membatalkan misi yang sudah disetujui (bagian 19); refund voucher oleh merchant hanya untuk reward nonaktif dan kode voucher aktif hanya dilihat pemiliknya (bagian 16); kode undangan grup maks. 5 percobaan salah per 15 menit (bagian 11); partner yang keluar atau dibekukan tidak bisa lagi menampilkan QR, dan misinya ikut nonaktif (bagian 10); identitas pemenang Event Global hanya untuk pemenang dan admin.
 Perubahan 0.11: database Event Global sudah dibangun (bagian 22); halaman admin sudah ada: jangkauan dan mode lokasi di formulir event Gasyu, misi berskor, Kelola hadiah, serta Peringkat & pemenang (bagian 20); halaman warga juga sudah ada: tab Event Global di Jelajah, skor dan hadiah di halaman event, papan peringkat `/aktivitas/[id]/peringkat`, hasil scan berupa skor, kartu Beranda, halaman Hadiah `/hadiah` dengan klaim, dan notifikasi hadiah (bagian 22e); kartu "Hadiah yang disponsori" di dashboard merchant dan komunitas (bagian 20a) hanya menampilkan peringkat dan status, tanpa identitas pemenang; warga luar Cimahi memilih kota/kabupaten asal dari daftar (bagian 3); di Event Global peserta tidak pernah berstatus selesai, jadi tetap bisa menambah skor lewat misi sampai acara berakhir (bagian 22c).
 Perubahan 0.10: keluar dari semua perangkat (bagian 3); hadiah non-poin ditulis di deskripsi (bagian 6); ganti bukti bayar dan tombol chat panitia di WhatsApp (bagian 8); voucher berlaku di outlet tertentu (bagian 16); deteksi otomatis peninjau yang menyetujui terlalu cepat (bagian 19). Semua sudah dibangun (voucher per outlet dan peninjau cepat di migrasi 0020).
 Perubahan 0.9: Event Global, yaitu event buatan admin yang terbuka untuk pengguna dari kota mana pun, dengan misi, skor, papan peringkat, dan hadiah khusus event yang terpisah dari XP, level, dan poin (bagian 22); hak akses (bagian 2), validasi (bagian 6), penetapan pemenang saat settled (bagian 7), syarat selesai event online (bagian 9d), cron `process_prizes` (bagian 18), anti-curang (bagian 19), dashboard dan peta halaman (bagian 20).
@@ -486,6 +487,10 @@ flowchart TD
 - Partner yang punya checkpoint di aktivitas boleh membuat misi `qr_scan` di checkpoint miliknya; misi itu tercatat atas nama partner tersebut untuk atribusi.
 - Misi yang dinonaktifkan hilang dari daftar warga, tetapi XP yang sudah diberikan tetap.
 - Setiap misi hanya bisa diselesaikan sekali per warga.
+- Kode rahasia minimal 6 karakter (`mission.code_min_length`).
+- Anggota tim tidak bisa menyetujui bukti foto atau menandai misi manual untuk akunnya sendiri; anggota tim lain yang melakukannya.
+- Misi manual hanya bisa ditandai untuk peserta yang sudah check-in (jika aktivitas punya checkpoint). Di dashboard, peserta yang belum memenuhi syarat tampil abu-abu.
+- Misi dan checkpoint milik partner yang keluar dari aktivitas atau dibekukan otomatis nonaktif, dan tidak bisa diaktifkan lagi selama partner itu tidak aktif.
 - Tim penyelenggara selalu melihat semua misi di dashboard-nya, termasuk yang belum tampil ke warga, lengkap dengan label statusnya ("Tersembunyi", "Terbuka 19.00", "Terkunci, menunggu misi X").
 
 ### 9c. Warga mengerjakan misi
@@ -522,6 +527,7 @@ sequenceDiagram
 ```
 
 - Foto yang ditolak boleh diunggah ulang selama aktivitas masih `running`.
+- Jika satu misi kode menerima lebih dari `mission.code_flag_attempts` tebakan salah (awal 50) dari semua akun dalam 15 menit, admin mendapat laporan `code_bruteforce` di Moderasi.
 - Bukti foto yang masih `pending_review` saat aktivitas `settled` otomatis ditolak (warga mendapat notifikasi).
 - Menyelesaikan misi `qr_scan` atau `secret_code` di hari yang belum ada check-in tidak otomatis dihitung sebagai check-in; check-in kehadiran tetap lewat QR checkpoint.
 
@@ -740,6 +746,7 @@ flowchart TD
 
 - Ketua bisa mengeluarkan anggota dan menyerahkan peran ketua. Jika ketua keluar, peran ketua otomatis pindah ke anggota paling lama.
 - Grup dengan anggota aktif kurang dari 2 tetap ada, tetapi tidak bisa mendaftar ke aktivitas.
+- Kode undangan grup maks. 5 kali salah per 15 menit per warga (`group.join_max_attempts`, `group.join_window_minutes`). Warga yang dikeluarkan ketua tidak bisa bergabung lagi lewat kode.
 
 ---
 
@@ -936,6 +943,8 @@ Di Event Global, check-in dan misi memberi **skor event** (bagian 22c) lewat `aw
 
 **Check-in di luar radius** tetap memberi XP atau skor (supaya warga dengan GPS kurang akurat tidak dirugikan), tetapi ditandai `flagged`. Jika admin menolaknya, fungsi `reverse_checkin` menulis baris XP dan poin bernilai negatif.
 
+**Poin tertahan.** Poin dari check-in yang ditandai belum bisa dipakai sampai admin menyatakan check-in itu sah. Di Dompet tampil "X poin tertahan". Jika ditolak, poinnya ditarik; jika sah, poin langsung masuk saldo.
+
 ---
 
 ## 15. Progress dan penyelesaian challenge
@@ -991,7 +1000,8 @@ sequenceDiagram
 ```
 
 - Poin dipakai dengan urutan FIFO: poin yang paling cepat kedaluwarsa dipakai lebih dulu.
-- Voucher yang sudah ditukar tidak bisa dikembalikan menjadi poin. Pengecualian: jika merchant menonaktifkan reward sebelum voucher dipakai, fungsi `refund_redemption` mengembalikan poinnya.
+- Voucher yang sudah ditukar tidak bisa dikembalikan menjadi poin. Pengecualian: jika merchant menonaktifkan reward sebelum voucher dipakai, fungsi `refund_redemption` mengembalikan poinnya. Pemilik merchant hanya bisa me-refund voucher dari reward yang sudah nonaktif; admin bisa kapan saja. Poin yang dikembalikan tetap memakai tanggal kedaluwarsa aslinya.
+- Kode voucher yang masih aktif hanya dilihat warga pemiliknya. Daftar "Voucher ditukar" di dashboard merchant baru menampilkan kode setelah voucher dipakai atau berakhir.
 - Merchant memilih voucher berlaku di **semua outlet** atau hanya di **outlet tertentu** (`rewards.valid_outlet_ids`). Halaman voucher warga menampilkan daftar outlet tempat voucher berlaku. Kasir yang memindai voucher di outlet yang tidak termasuk ditolak dengan pesan "Voucher ini tidak berlaku di outlet ini".
 - Komunitas tidak punya mode kasir dan tidak bisa membuat `rewards`.
 
@@ -1129,7 +1139,9 @@ flowchart TD
 | Deteksi pola (`fraud_flags`) | Banyak akun dari satu lokasi dan waktu yang sama, check-in beruntun di lokasi berjauhan dalam waktu tidak wajar |
 | Kode voucher sekali pakai | Voucher dipakai ulang |
 | QR misi berganti tiap 60 detik + cek radius | Foto QR misi disebar |
-| Batas percobaan kode misi (5 per 15 menit) | Menebak kode rahasia |
+| Batas percobaan kode misi (5 per 15 menit) + kode minimal 6 karakter + laporan tebakan massal | Menebak kode rahasia, termasuk dari banyak akun |
+| Peninjau tidak bisa menyetujui misinya sendiri; misi manual hanya untuk yang sudah check-in | Panitia memberi XP ke diri sendiri atau ke orang yang tidak hadir |
+| Poin dari check-in di luar radius ditahan sampai ditinjau | Poin dari QR curian langsung ditukar voucher sebelum admin sempat menolak |
 | XP misi 10–100, total maks. 500 per aktivitas | Penyelenggara membuat misi XP besar untuk mendongkrak warga tertentu |
 | Misi foto dan manual dicatat siapa peninjaunya | Panitia menyetujui temannya sendiri tanpa jejak; admin bisa mengaudit |
 | Skor Event Global terpisah dari XP | Event besar dengan peserta luar kota menggeser peringkat kota dan kelurahan |
@@ -1139,6 +1151,8 @@ flowchart TD
 Bukti foto misi ditinjau oleh tim penyelenggara, bukan admin. Admin hanya turun tangan lewat laporan atau pola mencurigakan.
 
 **Peninjau terlalu cepat (`reviewer_burst`).** Jika satu anggota tim menyetujui `fraud.reviewer_burst_count` bukti foto atau lebih (awal 50) dalam `fraud.reviewer_burst_minutes` menit (awal 10), sistem membuat satu `fraud_flags` berjenis `reviewer_burst` per jendela waktu, berisi peninjau, penyelenggara, aktivitas, dan jumlah bukti. Persetujuan tetap berlaku (tidak dibatalkan otomatis), supaya panitia yang memang meninjau cepat di acara besar tidak terganggu. Admin melihatnya di halaman Moderasi dan bisa mengabaikan, memberi peringatan, membalik misi tertentu, atau membekukan penyelenggara.
+
+**Membatalkan misi.** Admin bisa membatalkan misi yang sudah disetujui lewat `reverse_mission_completion` (wajib alasan): status misi menjadi ditolak, XP atau skor ditarik dengan baris negatif, laporan terkait ditutup, dan warga mendapat notifikasi. Di halaman Moderasi tombol ini ada di kartu "Peninjau terlalu cepat" (daftar persetujuan dalam jendela itu) dan di daftar "Misi QR di luar radius".
 
 ---
 

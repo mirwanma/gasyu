@@ -4,6 +4,7 @@ import { cardClass, tagClass } from "@/components/styles";
 import type { Leaderboard, Prize } from "@/lib/data/global-events";
 import { FULFILLMENT_LABELS, LEADERBOARD_STATUS_LABELS, rankLabel } from "@/lib/global-events";
 import { formatNumber } from "@/lib/format";
+import { safeImageUrl } from "@/lib/safe-url";
 
 // Bagian khusus Event Global di halaman aktivitas warga (ALUR bagian 22e):
 // skor dan posisi saya, cuplikan papan peringkat, dan hadiah per peringkat.
@@ -60,9 +61,9 @@ export function GlobalSection({ activityId, board, prizes, joined, claimDays }: 
           <div className="flex flex-col gap-2">
             {prizes.map((p) => (
               <div key={p.id} className={`${cardClass} flex gap-3 p-3`}>
-                {p.image_url ? (
+                {safeImageUrl(p.image_url) ? (
                   // eslint-disable-next-line @next/next/no-img-element -- gambar hadiah dari bucket publik
-                  <img src={p.image_url} alt="" className="size-14 shrink-0 rounded-xl bg-track object-cover" />
+                  <img src={safeImageUrl(p.image_url) ?? undefined} alt="" className="size-14 shrink-0 rounded-xl bg-track object-cover" />
                 ) : (
                   <span className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-hot-tint text-hot">
                     <Icon name="ticket" size={22} stroke={1.8} />

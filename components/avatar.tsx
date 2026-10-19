@@ -1,5 +1,7 @@
 // Inisial berwarna untuk warga atau penyelenggara (logo dipakai jika ada).
 
+import { safeImageUrl } from "@/lib/safe-url";
+
 const ORGANIZER_COLORS = {
   merchant: "bg-accent-merchant",
   community: "bg-accent-komunitas",
@@ -27,9 +29,10 @@ export function OrganizerAvatar({
   radius?: number;
 }) {
   const style = { width: size, height: size, borderRadius: radius, fontSize: Math.round(size / 3) };
-  if (logoUrl) {
+  const logo = safeImageUrl(logoUrl);
+  if (logo) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={logoUrl} alt="" style={{ ...style, objectFit: "cover" }} className="shrink-0" />;
+    return <img src={logo} alt="" style={{ ...style, objectFit: "cover" }} className="shrink-0" />;
   }
   return (
     <span
@@ -43,11 +46,12 @@ export function OrganizerAvatar({
 }
 
 export function UserAvatar({ nickname, size = 48, avatarUrl }: { nickname: string; size?: number; avatarUrl?: string | null }) {
-  if (avatarUrl) {
+  const avatar = safeImageUrl(avatarUrl);
+  if (avatar) {
     return (
       // eslint-disable-next-line @next/next/no-img-element -- foto profil dari bucket publik avatars
       <img
-        src={avatarUrl}
+        src={avatar}
         alt=""
         style={{ width: size, height: size, objectFit: "cover" }}
         className="shrink-0 rounded-full border-2 border-avatar-ring bg-avatar"

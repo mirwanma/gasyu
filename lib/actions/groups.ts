@@ -24,6 +24,8 @@ const ERRORS: Record<string, string> = {
   residents_only: "Semua anggota harus warga wilayah cakupan.",
   cannot_confirm: "Undangan ini sudah tidak berlaku.",
   account_inactive: "Akun kamu sedang tidak aktif.",
+  too_many_attempts: "Terlalu banyak kode salah. Coba lagi 15 menit lagi.",
+  removed_from_group: "Kamu sudah dikeluarkan dari grup ini.",
 };
 const msg = (code: string | undefined, fallback: string) => ERRORS[code ?? ""] ?? fallback;
 
@@ -37,8 +39,10 @@ export async function createGroup(_prev: GroupActionState, formData: FormData): 
 
 export async function joinGroup(_prev: GroupActionState, formData: FormData): Promise<GroupActionState> {
   const supabase = await createClient();
-  const { error } = await supabase.rpc("join_group", { p_invite_code: String(formData.get("code") ?? "") });
+  const { data, error } = await supabase.rpc("join_group", { p_invite_code: String(formData.get("code") ?? "") });
   if (error) return { error: msg(error.message, "Belum bisa bergabung.") };
+  // Kode salah tidak dilempar sebagai error supaya percobaannya tetap tercatat.
+  if (!data) return { error: ERRORS.invalid_invite_code };
   revalidatePath("/grup");
   return { success: "Kamu bergabung ke grup." };
 }

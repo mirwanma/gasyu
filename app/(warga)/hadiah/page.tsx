@@ -8,6 +8,7 @@ import { getMyShipping, listMyPrizes, type MyPrize } from "@/lib/data/global-eve
 import { getCurrentUser } from "@/lib/data/user";
 import { FULFILLMENT_LABELS, WINNER_STATUS_TONE, rankLabel } from "@/lib/global-events";
 import { formatDateTime, formatNumber } from "@/lib/format";
+import { safeImageUrl } from "@/lib/safe-url";
 
 const STATUS_LABELS: Record<MyPrize["status"], string> = {
   pending_claim: "Perlu diklaim",
@@ -69,9 +70,9 @@ async function PrizeCard({ p }: { p: MyPrize }) {
   return (
     <section className={`${cardClass} flex flex-col gap-3 p-4 ${p.status === "forfeited" ? "opacity-70" : ""}`}>
       <div className="flex gap-3">
-        {p.prize.image_url ? (
+        {safeImageUrl(p.prize.image_url) ? (
           // eslint-disable-next-line @next/next/no-img-element -- gambar hadiah dari bucket publik
-          <img src={p.prize.image_url} alt="" className="size-16 shrink-0 rounded-2xl bg-track object-cover" />
+          <img src={safeImageUrl(p.prize.image_url) ?? undefined} alt="" className="size-16 shrink-0 rounded-2xl bg-track object-cover" />
         ) : (
           <span className="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-hot-tint text-hot">
             <Icon name="ticket" size={26} stroke={1.8} />

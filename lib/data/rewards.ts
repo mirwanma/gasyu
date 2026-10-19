@@ -47,12 +47,13 @@ export async function listMerchantRewards(organizerId: string): Promise<Reward[]
   return withOutletNames((data ?? []).map(normalize));
 }
 
-export type Wallet = { balance: number; next_expiry_at: string | null; expiring_30d: number };
+// held = poin dari check-in yang ditandai (di luar radius) dan masih menunggu tinjauan admin; belum bisa dipakai.
+export type Wallet = { balance: number; next_expiry_at: string | null; expiring_30d: number; held: number };
 
 export async function getWallet(): Promise<Wallet> {
   const supabase = await createClient();
-  const { data } = await supabase.from("v_user_points_balance").select("balance, next_expiry_at, expiring_30d").maybeSingle();
-  return (data as Wallet | null) ?? { balance: 0, next_expiry_at: null, expiring_30d: 0 };
+  const { data } = await supabase.from("v_user_points_balance").select("balance, next_expiry_at, expiring_30d, held").maybeSingle();
+  return (data as Wallet | null) ?? { balance: 0, next_expiry_at: null, expiring_30d: 0, held: 0 };
 }
 
 export type Voucher = {
@@ -88,7 +89,8 @@ export async function listMyVouchers(userId: string): Promise<Voucher[]> {
   return withOutletNames(vouchers);
 }
 
-export type RedemptionRow = { id: string; reward_id: string; title: string; code: string; status: string; nickname: string; used_at: string | null; created_at: string; outlet_name: string | null; expires_at: string };
+// code kosong selama voucher masih aktif: hanya pemilik voucher yang memegang kodenya.
+export type RedemptionRow = { id: string; reward_id: string; title: string; code: string | null; status: string; nickname: string; used_at: string | null; created_at: string; outlet_name: string | null; expires_at: string };
 
 // Voucher untuk reward merchant (semua status), terbaru dulu.
 export async function listMerchantRedemptions(organizerId: string, opts: { usedToday?: boolean } = {}): Promise<RedemptionRow[]> {

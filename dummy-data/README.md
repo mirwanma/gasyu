@@ -6,6 +6,8 @@ beserta misi, check-in, pembayaran, poin, voucher, badge, notifikasi, dan satu k
 
 Daftar akun dan kata sandinya ada di [`akun.md`](akun.md).
 
+> **Penting sebelum rilis:** semua akun dummy memakai kata sandi yang tertulis di repo ini, termasuk satu akun **admin**. Pakai data dummy hanya di project uji coba. Sebelum warga sungguhan masuk, jalankan `bersihkan.sql` (atau setidaknya hapus/ganti kata sandi akun admin dummy) supaya tidak ada orang lain yang bisa masuk sebagai admin.
+
 ## Isi folder
 
 | Berkas | Fungsi |

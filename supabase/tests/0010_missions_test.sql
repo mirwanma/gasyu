@@ -230,7 +230,7 @@ select pg_temp.login('00000000-0000-0000-0000-00000000000a');
 select pg_temp.assert(public.mark_missions_manual((select v from ids where k = 'mis_manual'), array['00000000-0000-0000-0000-0000000000d1', '00000000-0000-0000-0000-0000000000d2']::uuid[]) = 1, 'hanya peserta terdaftar yang ditandai (W2 belum daftar)');
 reset role;
 select pg_temp.assert((select status from public.participations where user_id = '00000000-0000-0000-0000-0000000000d1') = 'completed', 'semua misi wajib disetujui + check-in → selesai');
-select pg_temp.assert(public.points_balance('00000000-0000-0000-0000-0000000000d1') = 100, 'poin penyelesaian diberikan sekali saat selesai');
+select pg_temp.assert((select sum(amount) from public.point_ledger where user_id = '00000000-0000-0000-0000-0000000000d1' and amount > 0) = 100, 'poin penyelesaian diberikan sekali saat selesai');
 select pg_temp.assert((select coalesce(sum(amount), 0) from public.xp_ledger where user_id = '00000000-0000-0000-0000-0000000000d1') = 100 + 50 + 25 + 30 + 20 + 40 + 50, 'total XP: check-in 100 + kunjungan 50 + kolab 25 + misi 30+20+40+50');
 set local role authenticated;
 select pg_temp.login('00000000-0000-0000-0000-0000000000d1');
@@ -261,7 +261,7 @@ insert into ids select 'ch', public.create_activity((select v from ids where k =
   'starts_at', '2030-02-01T10:00+07', 'ends_at', '2030-02-05T14:00+07')::jsonb);
 insert into ids select 'ch_cp', public.add_checkpoint((select v from ids where k = 'ch'), json_build_object('outlet_id', (select v from ids where k = 'outlet'))::jsonb);
 select pg_temp.assert_fails($$select public.submit_activity((select v from ids where k = 'ch'))$$, 'mission_required', 'challenge bertarget misi wajib punya misi');
-insert into ids select 'ch_m1', public.upsert_mission((select v from ids where k = 'ch'), '{"title":"Kode pos satu","verification":"secret_code","code":"POS1","xp_reward":30}');
+insert into ids select 'ch_m1', public.upsert_mission((select v from ids where k = 'ch'), '{"title":"Kode pos satu","verification":"secret_code","code":"POSSATU","xp_reward":30}');
 select public.submit_activity((select v from ids where k = 'ch'));
 select pg_temp.login('00000000-0000-0000-0000-00000000000e');
 select public.review_activity((select v from ids where k = 'ch'), true, null);
@@ -270,7 +270,7 @@ update public.activities set starts_at = now() - interval '1 hour', ends_at = no
 set local role authenticated;
 select pg_temp.login('00000000-0000-0000-0000-0000000000d2');
 select public.join_activity((select v from ids where k = 'ch'));
-insert into res select 'chk', public.complete_mission((select v from ids where k = 'ch_m1'), null, 'pos1', null, null, null);
+insert into res select 'chk', public.complete_mission((select v from ids where k = 'ch_m1'), null, 'possatu', null, null, null);
 select pg_temp.assert(((select v from res where k = 'chk') ->> 'completed')::boolean, 'challenge misi selesai saat semua misi wajib disetujui');
 select pg_temp.assert(((select v from res where k = 'chk') ->> 'xp')::int = 150, 'XP challenge mudah 150');
 reset role;

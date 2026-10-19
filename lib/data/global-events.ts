@@ -208,25 +208,11 @@ export type SponsoredPrize = {
   winners: { rank: number; status: WinnerStatus }[];
 };
 
-// Hadiah Event Global yang disediakan penyelenggara ini (ALUR bagian 20a). RLS activity_winners
-// mengizinkan tim penyedia membaca peringkat dan status saja: tanpa nama, nomor HP, atau alamat pemenang.
+// Hadiah Event Global yang disediakan penyelenggara ini (ALUR bagian 20a). Tim penyedia tidak bisa
+// membaca activity_winners langsung; get_sponsored_prizes hanya memberi peringkat dan status,
+// tanpa nama, nomor HP, atau alamat pemenang.
 export async function listSponsoredPrizes(organizerId: string): Promise<SponsoredPrize[]> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("activity_prizes")
-    .select("id, activity_id, rank_from, rank_to, title, activity:activities(title, status), winners:activity_winners(rank, status)")
-    .eq("sponsor_organizer_id", organizerId)
-    .order("created_at", { ascending: false })
-    .limit(30);
-  const one = <T,>(v: T | T[] | null) => (Array.isArray(v) ? (v[0] ?? null) : v);
-  return (data ?? []).map((p) => {
-    const { activity, winners, ...rest } = p;
-    const a = one(activity) as { title: string; status: string } | null;
-    return {
-      ...(rest as Omit<SponsoredPrize, "activity_title" | "activity_status" | "winners">),
-      activity_title: a?.title ?? "Event Global",
-      activity_status: a?.status ?? "",
-      winners: ((winners ?? []) as { rank: number; status: WinnerStatus }[]).sort((x, y) => x.rank - y.rank),
-    };
-  });
+  const { data } = await supabase.rpc("get_sponsored_prizes", { p_organizer_id: organizerId });
+  return ((data ?? []) as unknown as SponsoredPrize[]).slice(0, 30);
 }

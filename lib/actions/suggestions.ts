@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { safeNext } from "@/lib/safe-next";
 
 // Aksi saran warga. Aturan (batas harian, privasi, hak tim) ditegakkan oleh
 // fungsi database submit_suggestion dan respond_suggestion.
@@ -58,7 +59,7 @@ export async function respondSuggestion(formData: FormData) {
   const status = STATUSES.find((s) => s === statusRaw) ?? "in_progress";
   const replyRaw = formData.get("reply");
   const reply = replyRaw === null ? null : String(replyRaw);
-  const backTo = String(formData.get("back") ?? "/");
+  const backTo = safeNext(formData.get("back"));
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("respond_suggestion", { p_suggestion_id: id, p_status: status, p_reply: reply });

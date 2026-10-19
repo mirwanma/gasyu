@@ -116,7 +116,7 @@ select pg_temp.assert_fails($$select public.upsert_mission((select v from ids wh
 insert into ids select 'm_photo', public.upsert_mission((select v from ids where k = 'g'),
   '{"title":"Foto di Alun-alun","verification":"photo","score_reward":300,"xp_reward":50,"is_required":false}');
 insert into ids select 'm_code', public.upsert_mission((select v from ids where k = 'g'),
-  '{"title":"Kode rahasia panggung","verification":"secret_code","code":"GASYU","score_reward":200,"is_required":false}');
+  '{"title":"Kode rahasia panggung","verification":"secret_code","code":"GASYU26","score_reward":200,"is_required":false}');
 reset role;
 select pg_temp.assert((select bool_and(xp_reward = 0) from public.activity_missions where activity_id = (select v from ids where k = 'g')), 'misi global selalu 0 XP');
 set local role authenticated;
@@ -186,14 +186,14 @@ select pg_temp.login('00000000-0000-0000-0000-0000000000d1');
 insert into res select 'ci', public.perform_checkin((select v from ids where k = 'cp'), (select v from tok where k = 'cp'), -6.8701, 107.5401);
 select pg_temp.assert(((select v from res where k = 'ci') ->> 'score')::int = 100 and ((select v from res where k = 'ci') ->> 'xp_total')::int = 0,
   'check-in Event Global: +100 skor, 0 XP');
-select public.complete_mission((select v from ids where k = 'm_code'), null, 'gasyu', null, null, null);
+select public.complete_mission((select v from ids where k = 'm_code'), null, 'gasyu26', null, null, null);
 select pg_temp.login('00000000-0000-0000-0000-0000000000d2');
-select public.complete_mission((select v from ids where k = 'm_code'), null, 'GASYU', null, null, null);
+select public.complete_mission((select v from ids where k = 'm_code'), null, 'GASYU26', null, null, null);
 select public.complete_mission((select v from ids where k = 'm_photo'), null, null, (select v from ids where k = 'g') || '/00000000-0000-0000-0000-0000000000d2/foto.jpg', null, null);
 select pg_temp.login('00000000-0000-0000-0000-0000000000d3');
 select public.complete_mission((select v from ids where k = 'm_photo'), null, null, (select v from ids where k = 'g') || '/00000000-0000-0000-0000-0000000000d3/foto.jpg', null, null);
 select pg_temp.login('00000000-0000-0000-0000-0000000000d4');
-select public.complete_mission((select v from ids where k = 'm_code'), null, 'GASYU', null, null, null);
+select public.complete_mission((select v from ids where k = 'm_code'), null, 'GASYU26', null, null, null);
 
 -- W3 mengirim foto lebih dulu daripada aksi terakhir W1 (seri dihitung dari waktu aksi)
 reset role;
@@ -284,9 +284,12 @@ reset role;
 select pg_temp.assert((select count(*) = 2 from public.notifications where kind = 'prize_claimed'), 'admin diberi tahu setiap klaim');
 set local role authenticated;
 
--- Partner sponsor melihat pemenang hadiahnya, tetapi tidak alamatnya
+-- Partner sponsor hanya melihat peringkat dan status hadiahnya (0025), tanpa identitas atau alamat pemenang
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
-select pg_temp.assert((select count(*) = 1 from public.activity_winners where prize_id = (select v from ids where k = 'pz1')), 'sponsor melihat pemenang hadiahnya');
+select pg_temp.assert((select count(*) = 0 from public.activity_winners where prize_id = (select v from ids where k = 'pz1')), 'sponsor tidak membaca baris pemenang');
+select pg_temp.assert((select jsonb_array_length(p -> 'winners') = 1 and not (p -> 'winners' -> 0 ? 'user_id')
+  from jsonb_array_elements(public.get_sponsored_prizes((select v from ids where k = 'm'))) p
+  where p ->> 'id' = (select v from ids where k = 'pz1')::text), 'sponsor melihat peringkat dan status lewat get_sponsored_prizes');
 select pg_temp.assert_fails($$select ship_address from public.activity_winners$$, 'permission denied', 'sponsor tidak bisa membaca alamat pemenang');
 select pg_temp.assert_fails($$select public.get_winner_shipping((select v from ids where k = 'w1'))$$, 'not_allowed', 'sponsor tidak bisa memanggil fungsi alamat');
 

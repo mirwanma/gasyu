@@ -1,6 +1,7 @@
 import { LOCATION_MODE_LABELS, formatPrice, formatSchedule, typeLabel, type ActivityStatus, STATUS_LABELS, STATUS_TONE } from "@/lib/activities";
 import type { ActivityCard as Card } from "@/lib/data/activities";
 import { tagClass } from "@/components/styles";
+import { backgroundImage } from "@/lib/safe-url";
 
 // Warna cover cadangan jika penyelenggara belum mengunggah gambar.
 const COVERS = [
@@ -11,7 +12,8 @@ const COVERS = [
 ];
 
 export function coverStyle(card: { id: string; cover_url: string | null }) {
-  if (card.cover_url) return { backgroundImage: `url(${card.cover_url})`, backgroundSize: "cover", backgroundPosition: "center" };
+  const image = backgroundImage(card.cover_url);
+  if (image) return image;
   const n = parseInt(card.id.slice(0, 2), 16) || 0;
   return { background: COVERS[n % COVERS.length] };
 }

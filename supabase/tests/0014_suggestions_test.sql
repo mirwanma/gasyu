@@ -89,8 +89,8 @@ select pg_temp.assert_fails($$select public.submit_suggestion((select v from ids
 -- Tulis langsung ke tabel ditolak (tidak ada policy insert/update)
 select pg_temp.login('00000000-0000-0000-0000-0000000000d2');
 select pg_temp.assert_fails($$insert into public.suggestions (organizer_id, user_id, body) values ((select v from ids where k = 'm'), auth.uid(), 'Insert langsung ke tabel')$$,
-  'row-level security', 'insert langsung ke tabel ditolak');
-update public.suggestions set status = 'done' where id = (select v from ids where k = 's1');
+  'permission denied', 'insert langsung ke tabel ditolak');
+select pg_temp.assert_fails($$update public.suggestions set status = 'done' where id = (select v from ids where k = 's1')$$, 'permission denied', 'update langsung ditolak');
 reset role;
 select pg_temp.assert((select status = 'new' from public.suggestions where id = (select v from ids where k = 's1')), 'update langsung tidak berpengaruh');
 set local role authenticated;

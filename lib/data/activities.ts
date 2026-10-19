@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { ActivityReach, ActivityStatus, ActivityType, Audience, Difficulty, JoinMode, LocationMode, PaymentStatus, ParticipationStatus, ResidencyRule, TargetKind, TargetScope } from "@/lib/activities";
+import { filterTerm } from "@/lib/safe-url";
 
 export type ActivityCard = {
   id: string;
@@ -85,7 +86,8 @@ export async function listPublicActivities(opts: { filter?: string; q?: string }
   if (opts.filter === "gratis") query = query.eq("is_paid", false);
   if (opts.filter === "berbayar") query = query.eq("is_paid", true);
   if (opts.filter === "member") query = query.eq("audience", "members_only");
-  if (opts.q) query = query.or(`title.ilike.%${opts.q.replace(/[%,]/g, "")}%,host_name.ilike.%${opts.q.replace(/[%,]/g, "")}%`);
+  const q = opts.q ? filterTerm(opts.q) : "";
+  if (q) query = query.or(`title.ilike.%${q}%,host_name.ilike.%${q}%`);
   const { data } = await query;
   return (data ?? []) as ActivityCard[];
 }

@@ -63,6 +63,12 @@ function describe(n: Notification): { title: string; body?: string; href?: strin
       return { title: `Misi "${p.mission_title}" disetujui · +${p.xp ?? 0} XP`, body: p.completed ? `Aktivitas "${p.title}" selesai!` : `Aktivitas "${p.title}".`, href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
     case "mission_rejected":
       return { title: `Bukti misi "${p.mission_title}" ditolak`, body: typeof p.note === "string" && p.note ? `${p.note} · unggah ulang selama aktivitas berjalan.` : "Unggah ulang selama aktivitas berjalan.", href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
+    case "mission_reversed":
+      return {
+        title: `Misi "${p.mission_title}" dibatalkan tim Gasyu`,
+        body: `${Number(p.score) > 0 ? `${Number(p.score).toLocaleString("id-ID")} skor event` : `${p.xp ?? 0} XP`} ditarik kembali.${typeof p.note === "string" && p.note ? ` Catatan: ${p.note}` : ""}`,
+        href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined,
+      };
     case "mission_revealed":
       return { title: `Misi baru terbuka: ${p.mission_title}`, body: Number(p.score) > 0 ? `+${Number(p.score).toLocaleString("id-ID")} skor di "${p.title}".` : `+${p.xp ?? 0} XP di "${p.title}".`, href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
     case "badge_awarded":
@@ -94,7 +100,9 @@ function describe(n: Notification): { title: string; body?: string; href?: strin
           ? p.note
           : p.kind === "reviewer_burst"
             ? "Kamu menyetujui banyak bukti foto misi dalam waktu sangat singkat. Periksa setiap bukti sebelum menyetujui, atau akun bisa dibekukan."
-            : "Kami menemukan pola check-in yang tidak wajar di akunmu. Ulangi dan akun bisa dibekukan.",
+            : p.kind === "code_bruteforce"
+              ? "Kami menemukan banyak tebakan kode misi yang salah. Kode misi didapat di lokasi, bukan ditebak. Ulangi dan akun bisa dibekukan."
+              : "Kami menemukan pola check-in yang tidak wajar di akunmu. Ulangi dan akun bisa dibekukan.",
       };
     case "account_suspended":
       return { title: "Akunmu dibekukan", body: typeof p.note === "string" && p.note ? p.note : "Hubungi tim Gasyu lewat halaman Bantuan untuk peninjauan." };
