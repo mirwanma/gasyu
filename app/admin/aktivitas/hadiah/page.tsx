@@ -11,6 +11,7 @@ import { listActivityPartners } from "@/lib/data/collab";
 import { listPrizeBadges, listPrizes } from "@/lib/data/global-events";
 import { FULFILLMENT_LABELS, PRIZE_KIND_LABELS, rankLabel } from "@/lib/global-events";
 import { formatNumber } from "@/lib/format";
+import { safeImageUrl } from "@/lib/safe-url";
 import { PrizeForm } from "./prize-form";
 
 // Admin mengatur hadiah per peringkat Event Global (ALUR bagian 22b dan 22d).
@@ -79,9 +80,9 @@ async function Body({ searchParams }: Pick<PageProps<"/admin/aktivitas/hadiah">,
       {prizes.length === 0 && !adding && <p className={`${cardClass} p-5 text-[13px] text-fg-soft`}>Belum ada hadiah. Event Global wajib punya minimal satu hadiah sebelum terbit.</p>}
       {prizes.map((p) => (
         <section key={p.id} className={`${cardClass} flex gap-4 p-4`}>
-          {p.image_url ? (
+          {safeImageUrl(p.image_url) ? (
             // eslint-disable-next-line @next/next/no-img-element -- gambar hadiah dari bucket publik
-            <img src={p.image_url} alt="" className="size-20 shrink-0 rounded-2xl bg-track object-cover" />
+            <img src={safeImageUrl(p.image_url) ?? undefined} alt="" className="size-20 shrink-0 rounded-2xl bg-track object-cover" />
           ) : (
             <span className="flex size-20 shrink-0 items-center justify-center rounded-2xl bg-primary-tint text-link">
               <Icon name="ticket" size={28} stroke={1.8} />

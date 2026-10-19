@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { safeNext } from "@/lib/safe-next";
 
 // Aksi pembayaran (irisan 11). Semua keputusan dieksekusi fungsi database
 // security definer (submit_payment_proof, confirm_payment, mark_refunded).
@@ -66,7 +67,7 @@ export async function decidePayment(formData: FormData) {
   const participationId = String(formData.get("participation_id"));
   const decision = String(formData.get("decision"));
   const note = String(formData.get("note") ?? "").trim() || null;
-  const backTo = String(formData.get("back") ?? "/");
+  const backTo = safeNext(formData.get("back"));
   const supabase = await createClient();
   let error: { message: string } | null = null;
   let ok = "lunas";

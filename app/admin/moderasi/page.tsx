@@ -1,8 +1,16 @@
 import { Suspense } from "react";
 import { chipClass, cardClass, inputClass, smallButton, tagClass } from "@/components/styles";
 import { SubmitButton } from "@/components/ui";
-import { approveCheckin, reverseCheckin, reviewFlag, suspendUser } from "@/lib/actions/moderation";
-import { getAdminOverview, listModerationCheckins, listModerationFlags, type ModerationFlag } from "@/lib/data/dashboards";
+import { approveCheckin, reverseCheckin, reverseMission, reviewFlag, suspendUser } from "@/lib/actions/moderation";
+import {
+  getAdminOverview,
+  listBurstApprovals,
+  listFlaggedMissions,
+  listModerationCheckins,
+  listModerationFlags,
+  type ModerationFlag,
+  type ReversibleMission,
+} from "@/lib/data/dashboards";
 import { formatDateTime, formatNumber } from "@/lib/format";
 
 // Admin: antrean moderasi dan anti-curang, mengikuti artboard "Admin · Moderasi".
@@ -38,6 +46,7 @@ const FLAG_LABELS: Record<ModerationFlag["kind"], { label: string; tone: string 
   impossible_travel: { label: "Perjalanan mustahil", tone: "bg-warn-tint text-warn border-warn/30" },
   shared_device: { label: "Perangkat sama", tone: "bg-info-tint text-info border-info/30" },
   reviewer_burst: { label: "Peninjau terlalu cepat", tone: "bg-warn-tint text-warn border-warn/30" },
+  code_bruteforce: { label: "Tebak kode misi", tone: "bg-hot-tint text-hot border-hot/30" },
   manual: { label: "Laporan manual", tone: "bg-track text-fg-label border-line" },
 };
 
@@ -61,6 +70,12 @@ function describeFlag(f: ModerationFlag) {
       detail: [f.organizer_name, f.activity_title, "persetujuan tetap berlaku"].filter(Boolean).join(" · "),
     };
   }
+  if (f.kind === "code_bruteforce") {
+    return {
+      title: `${d.attempts ?? "?"} tebakan kode salah untuk satu misi dalam ${d.window_minutes ?? 15} menit`,
+      detail: [f.activity_title, "dari semua akun; akun ini yang terakhir menebak", "pertimbangkan ganti kode misinya"].filter(Boolean).join(" · "),
+    };
+  }
   return { title: typeof d.title === "string" ? d.title : "Pola mencurigakan", detail: [f.activity_title, f.checkpoint_name].filter(Boolean).join(" · ") };
 }
 
@@ -69,7 +84,14 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
   const mode = sp.tab === "riwayat" ? "history" : "open";
   const hasil = typeof sp.hasil === "string" ? sp.hasil : undefined;
   const errorMsg = typeof sp.error === "string" ? sp.error : undefined;
-  const [flags, checkins] = await Promise.all([listModerationFlags(mode), listModerationCheckins(mode)]);
+  const [flags, checkins, flaggedMissions] = await Promise.all([
+    listModerationFlags(mode),
+    listModerationCheckins(mode),
+    mode === "open" ? listFlaggedMissions() : Promise.resolve([]),
+  ]);
+  const burstApprovals = new Map(
+    await Promise.all(flags.filter((f) => mode === "open" && f.kind === "reviewer_burst").map(async (f) => [f.id, await listBurstApprovals(f)] as const)),
+  );
   const notices: Record<string, string> = {
     sah: "Check-in dinyatakan sah. XP dan poin tetap.",
     balik: "Check-in ditolak. XP dan poin warga dibalik dan warga diberi tahu.",
@@ -78,6 +100,7 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
     suspend: "Akun warga dibekukan.",
     beku: "Akun dibekukan.",
     aktif: "Akun diaktifkan kembali.",
+    misi: "Misi dibatalkan. XP atau skor warga dibalik dan warga diberi tahu.",
   };
 
   return (
@@ -115,6 +138,16 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
                     Lihat penyelenggara (bisa dibekukan di sana) →
                   </a>
                 )}
+                {(burstApprovals.get(f.id)?.length ?? 0) > 0 && (
+                  <details className="rounded-2xl border border-line bg-surface px-3 py-2">
+                    <summary className="cursor-pointer text-[13px] font-semibold">Periksa {burstApprovals.get(f.id)!.length} persetujuan</summary>
+                    <div className="mt-2 flex flex-col gap-2">
+                      {burstApprovals.get(f.id)!.map((m) => (
+                        <ReverseMissionRow key={m.completion_id} m={m} defaultNote="Bukti foto tidak sesuai kriteria" />
+                      ))}
+                    </div>
+                  </details>
+                )}
                 {mode === "open" ? (
                   <form action={reviewFlag} className="flex flex-wrap items-center gap-2">
                     <input type="hidden" name="flag_id" value={f.id} />
@@ -143,9 +176,21 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
         </div>
       )}
 
+      {flaggedMissions.length > 0 && (
+        <section className={`${cardClass} flex flex-col gap-2 p-5`}>
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="font-display text-[18px] font-semibold">Misi QR di luar radius</h2>
+            <span className="text-[12px] text-fg-soft">XP sudah diberikan · batalkan = XP atau skor dibalik</span>
+          </div>
+          {flaggedMissions.map((m) => (
+            <ReverseMissionRow key={m.completion_id} m={m} defaultNote="Di luar radius checkpoint" />
+          ))}
+        </section>
+      )}
+
       <section className={`${cardClass} overflow-hidden`}>
         <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line px-5 py-4">
-          <h2 className="font-display text-[18px] font-semibold">Check-in dan misi QR ditandai</h2>
+          <h2 className="font-display text-[18px] font-semibold">Check-in ditandai</h2>
           <span className="text-[12px] text-fg-soft">XP sudah diberikan · tolak = XP dan poin dibalik</span>
         </div>
         {checkins.length === 0 ? (
@@ -229,5 +274,39 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
         )}
       </section>
     </>
+  );
+}
+
+// Satu misi yang bisa dibatalkan admin; "Sah" hanya untuk misi yang punya laporan terbuka.
+function ReverseMissionRow({ m, defaultNote }: { m: ReversibleMission; defaultNote: string }) {
+  return (
+    <div className="flex flex-col gap-2 border-t border-line pt-2 first:border-t-0 first:pt-0 sm:flex-row sm:items-center">
+      <span className="flex flex-1 flex-col text-[13px]">
+        <span>
+          <b>@{m.nickname}</b> · {m.mission_title} · {m.reward}
+        </span>
+        <span className="text-[12px] text-fg-soft">
+          {[m.activity_title, formatDateTime(m.at), m.distance_m !== null && m.flag_id ? `${formatNumber(m.distance_m)} m dari checkpoint` : null].filter(Boolean).join(" · ")}
+        </span>
+      </span>
+      <div className="flex flex-wrap items-center gap-2">
+        {m.flag_id && (
+          <form action={reviewFlag}>
+            <input type="hidden" name="flag_id" value={m.flag_id} />
+            <input type="hidden" name="flag_action" value="dismiss" />
+            <SubmitButton size="small" variant="outline" pendingText="…">
+              Sah
+            </SubmitButton>
+          </form>
+        )}
+        <form action={reverseMission} className="flex items-center gap-2">
+          <input type="hidden" name="completion_id" value={m.completion_id} />
+          <input name="note" required defaultValue={defaultNote} aria-label="Alasan pembatalan" className={`${inputClass} h-9 w-44 text-[12px]`} />
+          <SubmitButton size="small" variant="danger" pendingText="…">
+            Batalkan misi
+          </SubmitButton>
+        </form>
+      </div>
+    </div>
   );
 }

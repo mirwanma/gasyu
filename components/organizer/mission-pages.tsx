@@ -359,16 +359,20 @@ async function ManualMarker({ missionId, organizerId, type, aid }: { missionId: 
       ) : (
         <div className="flex max-h-72 flex-col gap-1 overflow-y-auto">
           {todo.map((c) => (
-            <label key={c.user_id} className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 text-[13px] hover:bg-bg">
-              <input type="checkbox" name="user_id" value={c.user_id} />
+            <label key={c.user_id} className={`flex items-center gap-2.5 rounded-xl px-2 py-1.5 text-[13px] ${c.eligible ? "hover:bg-bg" : "opacity-60"}`}>
+              <input type="checkbox" name="user_id" value={c.user_id} disabled={!c.eligible} />
               <span className="flex-1">
                 <b>{c.nickname}</b> <span className="text-fg-soft">· {c.village_name ?? "Luar Cimahi"}</span>
               </span>
+              {!c.eligible && <span className="text-[11px] text-fg-soft">{c.self ? "kamu sendiri" : "belum check-in"}</span>}
             </label>
           ))}
         </div>
       )}
-      {todo.length > 0 && (
+      {todo.some((c) => !c.eligible) && (
+        <span className="text-[11px] text-fg-soft">Peserta yang belum check-in tidak bisa ditandai. Misi akunmu sendiri ditandai anggota tim lain.</span>
+      )}
+      {todo.some((c) => c.eligible) && (
         <SubmitButton size="small" variant="dark" pendingText="Menandai…" className="self-start">
           Tandai selesai
         </SubmitButton>

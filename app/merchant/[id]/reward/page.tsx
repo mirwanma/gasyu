@@ -41,6 +41,8 @@ async function Body({ id, edit, approved, isLeader }: { id: string; edit?: strin
     supabase.from("merchant_outlets").select("id, name, is_active").eq("organizer_id", id).order("name"),
   ]);
   const editing = rewards.find((r) => r.id === edit);
+  // Refund oleh pemilik hanya untuk reward yang sudah nonaktif (fungsi refund_redemption menolak selain itu).
+  const inactiveRewards = new Set(rewards.filter((r) => r.status === "inactive").map((r) => r.id));
   // Outlet aktif, ditambah outlet nonaktif yang masih tercatat di reward yang sedang diubah.
   const outlets = (outletRows ?? [])
     .filter((o) => o.is_active || editing?.valid_outlet_ids?.includes(o.id))
@@ -118,6 +120,9 @@ async function Body({ id, edit, approved, isLeader }: { id: string; edit?: strin
 
       <section className="flex flex-col gap-2.5">
         <h2 className="font-display text-[18px] font-semibold">Voucher ditukar</h2>
+        {isLeader && redemptions.some((rd) => rd.status === "active") && (
+          <p className="text-[12px] text-fg-soft">Refund hanya untuk reward yang sudah dinonaktifkan, misalnya karena stok habis.</p>
+        )}
         {redemptions.length === 0 && <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>Belum ada warga yang menukar poin.</p>}
         {redemptions.length > 0 && (
           <div className={`${cardClass} overflow-hidden`}>
@@ -128,10 +133,10 @@ async function Body({ id, edit, approved, isLeader }: { id: string; edit?: strin
                     {rd.nickname} · {rd.title}
                   </span>
                   <span className="text-[12px] text-fg-soft">
-                    {rd.code} · {rd.status === "used" && rd.used_at ? `dipakai ${formatDateTime(rd.used_at)}${rd.outlet_name ? ` di ${rd.outlet_name}` : ""}` : rd.status === "active" ? `berlaku s.d. ${formatDate(rd.expires_at)}` : rd.status}
+                    {rd.code ? `${rd.code} · ` : ""}{rd.status === "used" && rd.used_at ? `dipakai ${formatDateTime(rd.used_at)}${rd.outlet_name ? ` di ${rd.outlet_name}` : ""}` : rd.status === "active" ? `berlaku s.d. ${formatDate(rd.expires_at)}` : rd.status}
                   </span>
                 </span>
-                {rd.status === "active" && isLeader && (
+                {rd.status === "active" && isLeader && inactiveRewards.has(rd.reward_id) && (
                   <form action={refundRedemption}>
                     <input type="hidden" name="organizer_id" value={id} />
                     <input type="hidden" name="redemption_id" value={rd.id} />

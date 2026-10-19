@@ -15,6 +15,7 @@ const ERRORS: Record<string, string> = {
   not_authenticated: "Masuk dulu untuk check-in.",
   not_allowed: "Kamu tidak punya akses ke checkpoint ini.",
   checkpoint_inactive: "Checkpoint ini sedang nonaktif.",
+  partner_inactive: "Penyelenggara checkpoint ini sudah tidak aktif di aktivitas ini.",
   activity_not_open: "Aktivitas belum terbit atau sudah selesai.",
 };
 

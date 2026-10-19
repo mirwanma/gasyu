@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { safeNext } from "@/lib/safe-next";
 
 // Aksi moderasi admin (irisan 8). Semua keputusan dieksekusi fungsi database
 // security definer yang memeriksa is_admin(); di sini hanya meneruskan form.
@@ -19,6 +20,8 @@ const ERRORS: Record<string, string> = {
   invalid_organizer: "Penyelenggara tidak ditemukan.",
   already_suspended: "Penyelenggara sudah dibekukan.",
   not_suspended: "Penyelenggara tidak sedang dibekukan.",
+  note_required: "Tulis alasan pembatalan misi.",
+  invalid_completion: "Misi ini sudah dibatalkan atau belum disetujui.",
 };
 
 function message(error: { message: string } | null) {
@@ -45,6 +48,16 @@ export async function reverseCheckin(formData: FormData) {
   back("/admin/moderasi", error, "balik");
 }
 
+// Batalkan misi yang sudah disetujui: XP/skor dibalik dengan baris negatif dan warga diberi tahu.
+export async function reverseMission(formData: FormData) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("reverse_mission_completion", {
+    p_completion_id: String(formData.get("completion_id")),
+    p_note: String(formData.get("note") ?? "").trim(),
+  });
+  back("/admin/moderasi", error, "misi");
+}
+
 export async function reviewFlag(formData: FormData) {
   const supabase = await createClient();
   const action = String(formData.get("flag_action"));
@@ -56,7 +69,7 @@ export async function suspendUser(formData: FormData) {
   const supabase = await createClient();
   const suspend = formData.get("suspend") === "1";
   const { error } = await supabase.rpc("suspend_user", { p_user_id: String(formData.get("user_id")), p_suspend: suspend, p_note: String(formData.get("note") ?? "") || null });
-  const kembali = String(formData.get("kembali") ?? "/admin/pengguna");
+  const kembali = safeNext(formData.get("kembali"), "/admin/pengguna");
   back(kembali, error, suspend ? "beku" : "aktif");
 }
 

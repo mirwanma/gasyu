@@ -11,9 +11,20 @@ export default function AdminLayout({ children }: LayoutProps<"/admin">) {
       <Suspense fallback={<aside className="w-full border-b border-line bg-surface p-6 md:w-[260px] md:border-b-0 md:border-r" />}>
         <AdminGuard />
       </Suspense>
-      <main className="flex min-w-0 flex-1 flex-col gap-6 p-5 md:p-8">{children}</main>
+      <Suspense fallback={<main className="flex min-w-0 flex-1 flex-col gap-6 p-5 md:p-8" />}>
+        <AdminOnly>
+          <main className="flex min-w-0 flex-1 flex-col gap-6 p-5 md:p-8">{children}</main>
+        </AdminOnly>
+      </Suspense>
     </div>
   );
+}
+
+// Isi halaman admin baru dikirim setelah dipastikan akun ini admin (lapisan kedua; proxy dan database juga menjaga).
+async function AdminOnly({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUser();
+  if (!user?.isAdmin) redirect("/profil?akses=admin");
+  return <>{children}</>;
 }
 
 async function AdminGuard() {

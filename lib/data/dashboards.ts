@@ -1,5 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { formatNumber } from "@/lib/format";
+import { filterTerm } from "@/lib/safe-url";
 
 // Pembacaan view dashboard dan moderasi (irisan 8). Angka dihitung di database;
 // di sini hanya diteruskan ke halaman.
@@ -209,7 +211,7 @@ export type ModerationFlag = {
   id: string;
   user_id: string;
   checkin_id: string | null;
-  kind: "impossible_travel" | "shared_device" | "burst_accounts" | "reviewer_burst" | "manual";
+  kind: "impossible_travel" | "shared_device" | "burst_accounts" | "reviewer_burst" | "code_bruteforce" | "manual";
   detail: Record<string, unknown>;
   status: "open" | "dismissed" | "actioned";
   created_at: string;
@@ -234,6 +236,80 @@ export async function listModerationFlags(mode: "open" | "history"): Promise<Mod
   return (data ?? []) as ModerationFlag[];
 }
 
+// Misi yang sudah disetujui dan bisa dibatalkan admin (reverse_mission_completion).
+export type ReversibleMission = {
+  completion_id: string;
+  flag_id: string | null;
+  nickname: string;
+  mission_title: string;
+  activity_title: string;
+  at: string;
+  distance_m: number | null;
+  reward: string;
+};
+
+type CompletionRow = {
+  id: string;
+  status: string;
+  submitted_at: string;
+  reviewed_at: string | null;
+  distance_m: number | null;
+  user: { nickname: string } | null;
+  mission: { title: string; xp_reward: number; score_reward: number } | null;
+  activity: { title: string } | null;
+};
+
+const COMPLETION_SELECT =
+  "id, status, submitted_at, reviewed_at, distance_m, user:profiles!mission_completions_user_id_fkey(nickname), mission:activity_missions(title, xp_reward, score_reward), activity:activities(title)";
+
+function toReversible(c: CompletionRow, flagId: string | null): ReversibleMission {
+  const score = c.mission?.score_reward ?? 0;
+  return {
+    completion_id: c.id,
+    flag_id: flagId,
+    nickname: c.user?.nickname ?? "?",
+    mission_title: c.mission?.title ?? "Misi",
+    activity_title: c.activity?.title ?? "",
+    at: c.reviewed_at ?? c.submitted_at,
+    distance_m: c.distance_m,
+    reward: score > 0 ? `${formatNumber(score)} skor` : `${c.mission?.xp_reward ?? 0} XP`,
+  };
+}
+
+// Misi scan QR yang dikerjakan di luar radius checkpoint dan belum diputuskan admin.
+export async function listFlaggedMissions(): Promise<ReversibleMission[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("fraud_flags")
+    .select(`id, completion:mission_completions(${COMPLETION_SELECT})`)
+    .eq("kind", "out_of_radius")
+    .eq("status", "open")
+    .not("mission_completion_id", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(100);
+  return ((data ?? []) as unknown as { id: string; completion: CompletionRow | null }[])
+    .filter((f) => f.completion?.status === "approved")
+    .map((f) => toReversible(f.completion!, f.id));
+}
+
+// Bukti foto yang disetujui peninjau dalam jendela laporan "peninjau terlalu cepat".
+export async function listBurstApprovals(flag: ModerationFlag): Promise<ReversibleMission[]> {
+  const supabase = await createClient();
+  const minutes = Number((flag.detail as { window_minutes?: number }).window_minutes ?? 10);
+  const end = new Date(flag.created_at).getTime();
+  const { data } = await supabase
+    .from("mission_completions")
+    .select(COMPLETION_SELECT)
+    .eq("reviewed_by", flag.user_id)
+    .eq("status", "approved")
+    .not("proof_path", "is", null)
+    .gte("reviewed_at", new Date(end - (minutes + 1) * 60_000).toISOString())
+    .lte("reviewed_at", new Date(end + 60_000).toISOString())
+    .order("reviewed_at", { ascending: false })
+    .limit(50);
+  return ((data ?? []) as unknown as CompletionRow[]).map((c) => toReversible(c, null));
+}
+
 export type AdminUser = {
   id: string;
   nickname: string;
@@ -253,7 +329,8 @@ export type AdminUser = {
 export async function listAdminUsers(opts: { q?: string; suspended?: boolean } = {}): Promise<AdminUser[]> {
   const supabase = await createClient();
   let query = supabase.from("v_admin_users").select("*").is("deleted_at", null).limit(50);
-  if (opts.q) query = query.or(`nickname.ilike.%${opts.q}%,full_name.ilike.%${opts.q}%`);
+  const q = opts.q ? filterTerm(opts.q) : "";
+  if (q) query = query.or(`nickname.ilike.%${q}%,full_name.ilike.%${q}%`);
   if (opts.suspended) query = query.not("suspended_at", "is", null);
   const { data } = await query.order("created_at", { ascending: false });
   return (data ?? []) as AdminUser[];
