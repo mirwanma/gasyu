@@ -85,7 +85,7 @@ select pg_temp.login('00000000-0000-0000-0000-00000000000a');
 insert into ids select 'ev', public.create_activity((select v from ids where k = 'm'), json_build_object(
   'title', 'Ngopi Pagi', 'starts_at', '2030-01-01T10:00+07', 'ends_at', '2030-01-01T14:00+07')::jsonb);
 insert into ids select 'cp', public.add_checkpoint((select v from ids where k = 'ev'), json_build_object('outlet_id', (select v from ids where k = 'o_baros'))::jsonb);
-insert into ids select 'm_code', public.upsert_mission((select v from ids where k = 'ev'), '{"title":"Kode di kasir","verification":"secret_code","code":"PAGI","xp_reward":30,"is_required":false}');
+insert into ids select 'm_code', public.upsert_mission((select v from ids where k = 'ev'), '{"title":"Kode di kasir","verification":"secret_code","code":"PAGIHARI","xp_reward":30,"is_required":false}');
 insert into ids select 'm_manual', public.upsert_mission((select v from ids where k = 'ev'), '{"title":"Ikut kelas seduh","verification":"manual","xp_reward":40,"is_required":false}');
 select public.submit_activity((select v from ids where k = 'ev'));
 select pg_temp.login('00000000-0000-0000-0000-00000000000e');
@@ -105,7 +105,7 @@ set local role authenticated;
 insert into res select 'list', public.get_activity_missions((select v from ids where k = 'ev'));
 select pg_temp.assert((select bool_or((e ->> 'can_work')::boolean) from jsonb_array_elements((select v from res where k = 'list') -> 'missions') e),
   'warga yang sudah selesai masih melihat misi bonus bisa dikerjakan');
-insert into res select 'code', public.complete_mission((select v from ids where k = 'm_code'), null, 'pagi', null, null, null);
+insert into res select 'code', public.complete_mission((select v from ids where k = 'm_code'), null, 'pagihari', null, null, null);
 select pg_temp.assert((select v ->> 'status' = 'approved' from res where k = 'code'), 'misi bonus diterima setelah selesai');
 
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');

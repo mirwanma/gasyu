@@ -192,6 +192,7 @@ select pg_temp.assert(((select v from res where k = 'rev') ->> 'points_reversed'
 select pg_temp.assert_fails($$select public.reverse_checkin((select v from ids where k = 'ci_w1'), 'lagi')$$, 'already_rejected', 'tidak bisa dibalik dua kali');
 reset role;
 select pg_temp.assert((select coalesce(sum(amount), 0) from public.xp_ledger where user_id = '00000000-0000-0000-0000-0000000000d1') = 0, 'total XP W1 kembali 0');
+select pg_temp.login('00000000-0000-0000-0000-0000000000d1');
 select pg_temp.assert(public.points_balance('00000000-0000-0000-0000-0000000000d1') = 0, 'saldo poin W1 kembali 0');
 select pg_temp.assert((select count(*) from public.xp_ledger where user_id = '00000000-0000-0000-0000-0000000000d1') = 3, 'ledger XP hanya bertambah (2 kredit + 1 baris negatif)');
 select pg_temp.assert((select review_status from public.checkins where id = (select v from ids where k = 'ci_w1')) = 'rejected', 'check-in W1 ditolak');

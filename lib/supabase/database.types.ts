@@ -2416,6 +2416,46 @@ export type Database = {
           },
         ]
       }
+      group_join_attempts: {
+        Row: {
+          attempted_at: string
+          id: number
+          user_id: string
+        }
+        Insert: {
+          attempted_at?: string
+          id?: never
+          user_id: string
+        }
+        Update: {
+          attempted_at?: string
+          id?: never
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_join_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_join_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_join_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       group_members: {
         Row: {
           group_id: string
@@ -6083,6 +6123,7 @@ export type Database = {
         Row: {
           activity_id: string | null
           done: boolean | null
+          eligible: boolean | null
           group_id: string | null
           mission_id: string | null
           nickname: string | null
@@ -7061,18 +7102,21 @@ export type Database = {
         Row: {
           balance: number | null
           expiring_30d: number | null
+          held: number | null
           next_expiry_at: string | null
           user_id: string | null
         }
         Insert: {
           balance?: never
           expiring_30d?: never
+          held?: never
           next_expiry_at?: never
           user_id?: string | null
         }
         Update: {
           balance?: never
           expiring_30d?: never
+          held?: never
           next_expiry_at?: never
           user_id?: string | null
         }
@@ -7231,6 +7275,10 @@ export type Database = {
         Args: { p_village_id: string }
         Returns: undefined
       }
+      check_code_bruteforce: {
+        Args: { p_activity_id: string; p_mission_id: string; p_user_id: string }
+        Returns: undefined
+      }
       check_global_event_ready: {
         Args: { p_activity_id: string }
         Returns: undefined
@@ -7384,6 +7432,7 @@ export type Database = {
         Returns: Json
       }
       get_mission_qr: { Args: { p_mission_id: string }; Returns: Json }
+      get_sponsored_prizes: { Args: { p_organizer_id: string }; Returns: Json }
       get_winner_shipping: { Args: { p_winner_id: string }; Returns: Json }
       grant_completion_points: {
         Args: {
@@ -7461,6 +7510,10 @@ export type Database = {
         Returns: Json
       }
       make_organizer_slug: { Args: { p_name: string }; Returns: string }
+      manual_mark_eligible: {
+        Args: { p_activity_id: string; p_participation_id: string }
+        Returns: boolean
+      }
       mark_missions_manual: {
         Args: { p_mission_id: string; p_user_ids: string[] }
         Returns: number
@@ -7502,6 +7555,10 @@ export type Database = {
         Args: { p_kind: string; p_organizer_id: string; p_payload?: Json }
         Returns: undefined
       }
+      partner_is_active: {
+        Args: { p_activity_id: string; p_organizer_id: string }
+        Returns: boolean
+      }
       payment_due_for: {
         Args: { p_activity: Database["public"]["Tables"]["activities"]["Row"] }
         Returns: string
@@ -7516,7 +7573,16 @@ export type Database = {
         Returns: Json
       }
       platform_organizer_id: { Args: never; Returns: string }
+      point_credit_held: {
+        Args: {
+          p_activity_id: string
+          p_reason: Database["public"]["Enums"]["point_reason"]
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       points_balance: { Args: { p_user_id: string }; Returns: number }
+      points_held: { Args: { p_user_id: string }; Returns: number }
       process_prizes: { Args: never; Returns: number }
       prune_code_attempts: { Args: never; Returns: number }
       public_profile: {
@@ -7595,6 +7661,10 @@ export type Database = {
       reveal_scheduled_missions: { Args: never; Returns: number }
       reverse_checkin: {
         Args: { p_checkin_id: string; p_note?: string }
+        Returns: Json
+      }
+      reverse_mission_completion: {
+        Args: { p_completion_id: string; p_note: string }
         Returns: Json
       }
       review_activity: {
@@ -7759,6 +7829,7 @@ export type Database = {
         | "burst_accounts"
         | "manual"
         | "reviewer_burst"
+        | "code_bruteforce"
       flag_status: "open" | "dismissed" | "actioned"
       group_member_status: "active" | "left" | "removed"
       group_role: "leader" | "member"
@@ -7989,6 +8060,7 @@ export const Constants = {
         "burst_accounts",
         "manual",
         "reviewer_burst",
+        "code_bruteforce",
       ],
       flag_status: ["open", "dismissed", "actioned"],
       group_member_status: ["active", "left", "removed"],

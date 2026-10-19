@@ -76,7 +76,7 @@ select pg_temp.assert_fails($$select public.join_group((select v from tok where 
 select pg_temp.assert_fails($$insert into public.groups (name, leader_id, invite_code) values ('X', auth.uid(), 'ABCDEF')$$, 'permission denied', 'grup hanya lewat fungsi');
 
 select pg_temp.login('00000000-0000-0000-0000-000000000002');
-select pg_temp.assert_fails($$select public.join_group('ZZZZZZ')$$, 'invalid_invite_code', 'kode salah ditolak');
+select pg_temp.assert(public.join_group('ZZZZZZ') is null, 'kode salah ditolak (null, percobaan dicatat)');
 select pg_temp.assert((select count(*) from public.groups) = 0, 'bukan anggota tidak melihat grup');
 select public.join_group(lower((select v from tok where k = 'code')));
 select pg_temp.assert((select count(*) from public.groups) = 1, 'anggota melihat grupnya');
@@ -96,7 +96,7 @@ select pg_temp.assert_fails($$select public.create_group('Grup Empat')$$, 'too_m
 select pg_temp.assert_fails($$select public.remove_group_member((select v from ids where k = 'g1'), '00000000-0000-0000-0000-000000000003')$$, 'not_group_leader', 'anggota biasa tidak bisa mengeluarkan');
 select pg_temp.login('00000000-0000-0000-0000-000000000001');
 select pg_temp.assert(public.regenerate_invite_code((select v from ids where k = 'g1')) <> (select v from tok where k = 'code'), 'kode baru berbeda');
-select pg_temp.assert_fails($$select public.join_group((select v from tok where k = 'code'))$$, 'invalid_invite_code', 'kode lama tidak berlaku');
+select pg_temp.assert(public.join_group((select v from tok where k = 'code')) is null, 'kode lama tidak berlaku');
 
 -- ---------------------------------------------------------------------------
 -- 2. Challenge grup: target 4 check-in berbeda, join lewat grup

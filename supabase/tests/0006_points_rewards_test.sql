@@ -174,6 +174,8 @@ select pg_temp.assert_fails($$select full_name from public.v_reward_redemptions$
 select pg_temp.login('00000000-0000-0000-0000-00000000000f');
 select pg_temp.assert_fails($$select public.refund_redemption(((select v from res where k = 'rd2') ->> 'redemption_id')::uuid)$$, 'not_allowed', 'staf tidak bisa refund');
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
+select pg_temp.assert_fails($$select public.refund_redemption(((select v from res where k = 'rd2') ->> 'redemption_id')::uuid)$$, 'reward_still_active', 'refund hanya setelah reward dinonaktifkan');
+select public.upsert_reward((select v from ids where k = 'merchant'), (select v from ids where k = 'rw'), '{"status":"inactive"}');
 select public.refund_redemption(((select v from res where k = 'rd2') ->> 'redemption_id')::uuid);
 select pg_temp.assert((select stock from public.rewards where id = (select v from ids where k = 'rw')) = 1, 'stok kembali 1');
 select pg_temp.login('00000000-0000-0000-0000-00000000000c');
