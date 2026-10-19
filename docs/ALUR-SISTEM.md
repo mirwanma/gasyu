@@ -1,6 +1,7 @@
 # Gasyu — Alur Sistem
 
-Versi 0.12 · 19 Oktober 2026 · Pilot Kota Cimahi
+Versi 0.13 · 19 Oktober 2026 · Pilot Kota Cimahi
+Perubahan 0.13: pemilih kota di Jelajah (bagian 20b). Warga melihat aktivitas di kotanya sendiri secara otomatis dan bisa memilih kota lain atau Semua kota (migrasi 0026).
 Perubahan 0.12 (tinjauan keamanan, migrasi 0025): anggota tim tidak bisa meninjau atau menandai misinya sendiri, dan misi manual hanya untuk peserta yang sudah check-in (bagian 9b); kode misi minimal 6 karakter dan tebakan massal dari banyak akun ditandai (bagian 9c dan 19); poin dari check-in di luar radius ditahan sampai admin memutuskan (bagian 14c); admin bisa membatalkan misi yang sudah disetujui (bagian 19); refund voucher oleh merchant hanya untuk reward nonaktif dan kode voucher aktif hanya dilihat pemiliknya (bagian 16); kode undangan grup maks. 5 percobaan salah per 15 menit (bagian 11); partner yang keluar atau dibekukan tidak bisa lagi menampilkan QR, dan misinya ikut nonaktif (bagian 10); identitas pemenang Event Global hanya untuk pemenang dan admin.
 Perubahan 0.11: database Event Global sudah dibangun (bagian 22); halaman admin sudah ada: jangkauan dan mode lokasi di formulir event Gasyu, misi berskor, Kelola hadiah, serta Peringkat & pemenang (bagian 20); halaman warga juga sudah ada: tab Event Global di Jelajah, skor dan hadiah di halaman event, papan peringkat `/aktivitas/[id]/peringkat`, hasil scan berupa skor, kartu Beranda, halaman Hadiah `/hadiah` dengan klaim, dan notifikasi hadiah (bagian 22e); kartu "Hadiah yang disponsori" di dashboard merchant dan komunitas (bagian 20a) hanya menampilkan peringkat dan status, tanpa identitas pemenang; warga luar Cimahi memilih kota/kabupaten asal dari daftar (bagian 3); di Event Global peserta tidak pernah berstatus selesai, jadi tetap bisa menambah skor lewat misi sampai acara berakhir (bagian 22c).
 Perubahan 0.10: keluar dari semua perangkat (bagian 3); hadiah non-poin ditulis di deskripsi (bagian 6); ganti bukti bayar dan tombol chat panitia di WhatsApp (bagian 8); voucher berlaku di outlet tertentu (bagian 16); deteksi otomatis peninjau yang menyetujui terlalu cepat (bagian 19). Semua sudah dibangun (voucher per outlet dan peninjau cepat di migrasi 0020).
@@ -1278,6 +1279,11 @@ flowchart LR
 ```
 
 - Halaman Jelajah punya tab **Event Global** yang menampilkan semua Event Global `published` atau `running` tanpa saringan kelurahan. Halaman Hadiah dibuka dari Beranda, Dompet, dan notifikasi.
+- **Pemilih kota di Jelajah.** Tombol kota di pojok kanan atas memuat daftar kota yang aktif di Gasyu (`regions` tingkat kota) dan pilihan **Semua kota**. Aturannya:
+  - Pilihan awal adalah kota tempat tinggal warga, dari kelurahannya. Untuk warga luar Cimahi, dipakai kota asalnya jika kota itu sudah aktif di Gasyu (kode Kemendagri sama); jika belum, Semua kota.
+  - Kota sebuah aktivitas diambil dari wilayah cakupannya, ditarik ke tingkat kota. Jika cakupan kosong, dipakai kelurahan penyelenggara. Aktivitas tanpa keduanya, misalnya event Gasyu tanpa cakupan, tampil di semua kota.
+  - Pencarian dan filter berlaku di dalam kota terpilih. Pilihan kota tersimpan di alamat halaman (`?kota=32.77` atau `?kota=semua`), sehingga terbawa saat pindah filter dan bisa dibagikan.
+  - Tab Event Global tidak memakai pemilih kota.
 - Navigasi bawah PWA mengikuti mode aktif: mode warga (Beranda, Jelajah, Scan, Dompet, Profil), mode merchant (Dashboard, Aktivitas, QR, Kasir, Lainnya), mode komunitas (Dashboard, Aktivitas, QR, Member, Lainnya).
 - Pemilih mode hanya menampilkan merchant dan komunitas tempat akun itu tercatat di `organizer_members`. Akun yang mengelola beberapa merchant atau komunitas memilih salah satunya.
 - Staf merchant hanya melihat menu yang sesuai perannya (lihat bagian 2); misalnya kasir tetap bisa membuka QR dan Kasir, tetapi tidak Reward atau Tim.
@@ -1328,7 +1334,7 @@ Event Global adalah event yang **terbuka untuk pengguna dari kota mana pun**, ti
 | --- | --- | --- |
 | Pembuat | Merchant, komunitas, admin | **Admin saja** selama pilot (host `platform`) |
 | Siapa boleh ikut | Semua warga atau hanya warga wilayah (`residency_rule`) | Semua pengguna yang sudah onboarding, dari kota mana pun, termasuk "Luar Cimahi" |
-| Tampil di | Beranda dan Jelajah, disaring per kelurahan | Tab Event Global di Jelajah dan kartu di Beranda semua pengguna, tanpa saringan wilayah |
+| Tampil di | Beranda dan Jelajah, disaring per kota (bagian 20b) | Tab Event Global di Jelajah dan kartu di Beranda semua pengguna, tanpa saringan wilayah |
 | Lokasi | Checkpoint fisik | `onsite` (checkpoint), `online` (tanpa checkpoint), atau `hybrid` (keduanya) |
 | Cara ikut | Pribadi atau grup | Pribadi saja |
 | Hasil check-in dan misi | XP (+ poin dari budget merchant) | **Skor event** saja; tidak menambah XP, level, peringkat kota/kelurahan, atau poin dompet |

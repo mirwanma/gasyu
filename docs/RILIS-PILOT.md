@@ -6,7 +6,7 @@ Panduan langkah demi langkah sebelum warga sungguhan mulai memakai Gasyu.
 Centang `[x]` setiap langkah yang sudah selesai. Langkah bertanda **(wajib)** harus beres sebelum rilis.
 Langkah lain sangat disarankan, tetapi bisa menyusul.
 
-Kode, database, dan uji otomatis sudah selesai (migrasi 0001–0025, uji SQL, dan uji browser lolos).
+Kode, database, dan uji otomatis sudah selesai (migrasi 0001–0026, uji SQL, dan uji browser lolos).
 Yang tersisa di sini adalah **pengaturan di luar kode** yang hanya bisa dilakukan pemilik akun.
 
 ---
@@ -15,7 +15,7 @@ Yang tersisa di sini adalah **pengaturan di luar kode** yang hanya bisa dilakuka
 
 | Hal | Kondisi | Perlu tindakan? |
 | --- | --- | --- |
-| Migrasi database | 25 dari 25 sudah terpasang | Tidak |
+| Migrasi database | 26 dari 26 sudah terpasang | Tidak |
 | Jadwal otomatis (cron) | 14 aktif, 0 gagal dalam 24 jam terakhir | Tidak |
 | Bucket Storage | 6 bucket: `logos`, `covers`, `avatars` publik; `organizer-proofs`, `payment-proofs`, `mission-proofs` privat | Tidak |
 | Wilayah | 1 kota, 3 kecamatan, 15 kelurahan Cimahi | Tidak |

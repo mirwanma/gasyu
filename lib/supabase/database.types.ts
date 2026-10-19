@@ -4739,6 +4739,8 @@ export type Database = {
       v_activity_cards: {
         Row: {
           audience: Database["public"]["Enums"]["activity_audience"] | null
+          city_id: string | null
+          city_name: string | null
           cover_url: string | null
           description: string | null
           difficulty: Database["public"]["Enums"]["difficulty"] | null
@@ -7606,6 +7608,7 @@ export type Database = {
         Returns: undefined
       }
       regenerate_invite_code: { Args: { p_group_id: string }; Returns: string }
+      region_city: { Args: { p_region_id: string }; Returns: string }
       register_group: {
         Args: {
           p_activity_id: string

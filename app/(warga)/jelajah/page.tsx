@@ -1,9 +1,10 @@
 import { Suspense } from "react";
 import { ActivityCard } from "@/components/activity-card";
 import { BottomNav, CITIZEN_NAV } from "@/components/bottom-nav";
+import { CityPicker } from "@/components/city-picker";
 import { Icon } from "@/components/icons";
 import { cardClass, chipClass, inputClass } from "@/components/styles";
-import { listPublicActivities } from "@/lib/data/activities";
+import { getHomeCityId, listCities, listPublicActivities } from "@/lib/data/activities";
 import { listTopPrizes } from "@/lib/data/global-events";
 import { getCurrentUser } from "@/lib/data/user";
 
@@ -35,21 +36,36 @@ async function Explore({ searchParams }: Pick<PageProps<"/jelajah">, "searchPara
   const sp = await searchParams;
   const filter = typeof sp.filter === "string" ? sp.filter : "";
   const q = typeof sp.q === "string" ? sp.q.trim() : "";
-  const [user, items] = await Promise.all([getCurrentUser(), listPublicActivities({ filter, q })]);
+  const kota = typeof sp.kota === "string" ? sp.kota : "";
+  const [user, cities] = await Promise.all([getCurrentUser(), listCities()]);
+  // Kota terpilih: dari alamat (?kota=32.77 atau ?kota=semua), selain itu kota tempat tinggal warga.
+  const homeCityId = !kota && user ? await getHomeCityId(user.id, cities) : null;
+  const city = kota === "semua" ? null : (cities.find((c) => c.slug === kota) ?? cities.find((c) => c.id === homeCityId) ?? null);
   const isGlobal = filter === "global";
+  const items = await listPublicActivities({ filter, q, cityId: city?.id });
+  // Alamat Jelajah dengan filter, kata kunci, dan kota yang sedang aktif; kota hanya ditulis jika berbeda dari bawaan.
+  const hrefFor = (next: { filter?: string; kota?: string }) => {
+    const params = new URLSearchParams();
+    const f = next.filter ?? filter;
+    const k = next.kota ?? kota;
+    if (f) params.set("filter", f);
+    if (q) params.set("q", q);
+    if (k) params.set("kota", k);
+    const qs = params.toString();
+    return `/jelajah${qs ? `?${qs}` : ""}`;
+  };
   const topPrizes = isGlobal ? await listTopPrizes(items.map((c) => c.id)) : new Map<string, string>();
 
   return (
     <>
       <header className="flex items-center justify-between">
         <h1 className="font-display text-[24px] font-bold">Jelajah</h1>
-        <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-[12px] font-semibold text-fg-label">
-          {user?.villageName ?? "Luar Cimahi"}
-        </span>
+        {!isGlobal && <CityPicker cities={cities} selected={city} hrefFor={(slug) => hrefFor({ kota: slug })} />}
       </header>
 
       <form className="relative" role="search">
         {filter && <input type="hidden" name="filter" value={filter} />}
+        {kota && <input type="hidden" name="kota" value={kota} />}
         <Icon name="search" size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-fg-muted" />
         <input name="q" defaultValue={q} placeholder="Cari event, challenge, atau penyelenggara" className={`${inputClass} pl-11`} aria-label="Cari aktivitas" />
       </form>
@@ -57,12 +73,8 @@ async function Explore({ searchParams }: Pick<PageProps<"/jelajah">, "searchPara
       <nav aria-label="Filter" className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
         {FILTERS.map(([value, label]) => {
           const on = value === filter;
-          const params = new URLSearchParams();
-          if (value) params.set("filter", value);
-          if (q) params.set("q", q);
-          const qs = params.toString();
           return (
-            <a key={label} href={`/jelajah${qs ? `?${qs}` : ""}`} aria-current={on ? "page" : undefined} className={`${chipClass.base} shrink-0 ${on ? chipClass.selected : chipClass.idle}`}>
+            <a key={label} href={hrefFor({ filter: value })} aria-current={on ? "page" : undefined} className={`${chipClass.base} shrink-0 ${on ? chipClass.selected : chipClass.idle}`}>
               {label}
             </a>
           );
@@ -81,6 +93,11 @@ async function Explore({ searchParams }: Pick<PageProps<"/jelajah">, "searchPara
           <span className="text-[13px] leading-[1.5] text-fg-soft">
             {isGlobal && !q ? "Belum ada Event Global yang dibuka. Pantau terus, tim Gasyu akan mengumumkannya." : q || filter ? "Coba kata kunci atau filter lain." : "Event dan challenge dari UMKM dan komunitas akan tampil di sini."}
           </span>
+          {!isGlobal && city && (
+            <a href={hrefFor({ kota: "semua" })} className="mt-1 text-[13px] font-semibold text-link">
+              Belum ada di {city.name}. Lihat semua kota →
+            </a>
+          )}
         </div>
       ) : (
         <div className="flex flex-col gap-3.5">
