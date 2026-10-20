@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
     ];
   },
   partialPrefetching: true,
+  // Bawaan server action hanya 1 MB. Foto sudah diperkecil di HP (components/image-file-input.tsx),
+  // batas ini cadangan untuk foto yang tidak bisa diperkecil. Vercel sendiri menolak di atas 4,5 MB.
+  experimental: {
+    serverActions: { bodySizeLimit: "4mb" },
+  },
   turbopack: {
     rules: {
       "*.css": {

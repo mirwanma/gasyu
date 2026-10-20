@@ -19,7 +19,7 @@ const ERRORS: Record<string, string> = {
 };
 
 const MAX_LOGO = 2 * 1024 * 1024;
-const MAX_PROOF = 5 * 1024 * 1024;
+const MAX_PROOF = 3 * 1024 * 1024;
 
 export async function registerOrganizer(_prev: RegisterState, formData: FormData): Promise<RegisterState> {
   const type = formData.get("type") === "community" ? "community" : "merchant";
@@ -30,7 +30,7 @@ export async function registerOrganizer(_prev: RegisterState, formData: FormData
   if (!text("category")) return { error: ERRORS.invalid_category };
   if (logo instanceof File && logo.size > MAX_LOGO) return { error: "Logo terlalu besar, maksimal 2 MB." };
   if (!(proof instanceof File) || proof.size === 0) return { error: "Unggah foto untuk verifikasi dulu, ya." };
-  if (proof.size > MAX_PROOF) return { error: "Foto bukti terlalu besar, maksimal 5 MB." };
+  if (proof.size > MAX_PROOF) return { error: "Foto bukti terlalu besar, maksimal 3 MB." };
 
   let data: Record<string, unknown>;
   if (type === "merchant") {

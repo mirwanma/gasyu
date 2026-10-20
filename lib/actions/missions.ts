@@ -196,7 +196,7 @@ export async function submitMissionPhoto(_prev: MissionActionState, formData: Fo
   const activityId = String(formData.get("activity_id"));
   const file = formData.get("proof");
   if (!(file instanceof File) || file.size === 0) return { error: "Pilih foto dulu." };
-  if (file.size > 5 * 1024 * 1024) return { error: "Ukuran foto maksimal 5 MB." };
+  if (file.size > 3 * 1024 * 1024) return { error: "Ukuran foto maksimal 3 MB." };
   const ext = ({ "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" } as Record<string, string>)[file.type];
   if (!ext) return { error: "Format foto harus JPG, PNG, atau WebP." };
   const supabase = await createClient();

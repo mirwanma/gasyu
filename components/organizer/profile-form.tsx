@@ -5,6 +5,7 @@ import { updateOrganizerProfile, type ActionState } from "@/lib/actions/organize
 import { cardClass, chipClass, inputClass, labelClass, textareaClass } from "@/components/styles";
 import { ErrorMessage, SubmitButton, SuccessMessage } from "@/components/ui";
 import { COMMUNITY_CATEGORIES, MERCHANT_CATEGORIES } from "@/lib/organizers";
+import { ImageFileInput } from "@/components/image-file-input";
 
 type District = { id: string; name: string; villages: { id: string; name: string }[] };
 
@@ -97,13 +98,13 @@ export function ProfileForm({
 
       <div className="flex flex-col gap-1.5">
         <span className={labelClass}>Logo baru (opsional, maks. 2 MB)</span>
-        <input name="logo" type="file" accept="image/png,image/jpeg,image/webp" className="text-[12px] text-fg-label" />
+        <ImageFileInput name="logo" accept="image/png,image/jpeg,image/webp" className="text-[12px] text-fg-label" maxMb={2} />
       </div>
       <div className="flex flex-col gap-1.5">
         <span className={labelClass}>
           {type === "merchant" ? "Foto tempat usaha" : "Foto kegiatan"} {values.hasProof ? "(ganti, opsional)" : "(belum ada, wajib untuk verifikasi)"}
         </span>
-        <input name="proof" type="file" accept="image/png,image/jpeg,image/webp" className="text-[12px] text-fg-label" />
+        <ImageFileInput name="proof" accept="image/png,image/jpeg,image/webp" className="text-[12px] text-fg-label" maxMb={3} />
       </div>
 
       <ErrorMessage message={state.error} />

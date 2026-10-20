@@ -7,6 +7,7 @@ import { FULFILLMENT_LABELS, PRIZE_KIND_LABELS, type PrizeFulfillment, type Priz
 import type { Prize } from "@/lib/data/global-events";
 import { cardClass, chipClass, inputClass, labelClass, textareaClass } from "@/components/styles";
 import { ErrorMessage, SubmitButton } from "@/components/ui";
+import { ImageFileInput } from "@/components/image-file-input";
 
 const KINDS = Object.keys(PRIZE_KIND_LABELS) as PrizeKind[];
 const FULFILLMENTS = Object.keys(FULFILLMENT_LABELS) as PrizeFulfillment[];
@@ -138,7 +139,7 @@ export function PrizeForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="p_image" className={labelClass}>Gambar (opsional, maks. 3 MB)</label>
-          <input id="p_image" name="image" type="file" accept="image/png,image/jpeg,image/webp" className="text-[13px] text-fg-label file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-surface file:px-3 file:py-1.5 file:text-[12px] file:font-semibold file:text-fg" />
+          <ImageFileInput id="p_image" name="image" accept="image/png,image/jpeg,image/webp" className="text-[13px] text-fg-label file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-surface file:px-3 file:py-1.5 file:text-[12px] file:font-semibold file:text-fg" maxMb={3} />
         </div>
       </div>
 
