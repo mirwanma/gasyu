@@ -46,6 +46,7 @@ async function Content() {
     ["Bagaimana cara bayar aktivitas berbayar?", "Pembayaran langsung ke penyelenggara sesuai instruksi di halaman aktivitas, lalu unggah foto bukti bayar. Penyelenggara yang menandai lunas. Gasyu tidak memegang uang."],
     ["Bagaimana kalau aktivitas berbayar dibatalkan?", "Pengembalian dana diurus penyelenggara. Kamu mendapat notifikasi saat refund ditandai selesai. Jika lama tidak ada kabar, hubungi tim Gasyu lewat kontak di bawah."],
     ["Bisakah saya ganti kelurahan?", `Bisa, di Profil, Ubah profil. Kelurahan hanya bisa diganti sekali setiap ${num("profile.village_change_days", 90)} hari supaya leaderboard tetap adil.`],
+    ["Lupa kata sandi, bagaimana?", "Di halaman masuk, pilih Lupa kata sandi. Kami kirim kode 6 angka ke email, lalu kamu bisa membuat kata sandi baru. Kata sandi juga bisa diganti kapan saja di Profil, Kata sandi."],
     ["Bagaimana mendaftarkan usaha atau komunitas?", "Buka Profil, lalu Daftarkan merchant atau komunitas. Tim Gasyu memverifikasi data, biasanya 1–2 hari kerja."],
     ["Akun saya dibekukan, apa yang harus dilakukan?", "Hubungi tim Gasyu lewat kontak di bawah dan sebutkan nama panggilanmu. Kami akan meninjau ulang."],
   ];
