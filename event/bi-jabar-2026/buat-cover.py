@@ -2,7 +2,7 @@
 # Jalankan: FONT_DIR=<folder berisi outfit-latin-700-normal.woff dan
 #   plus-jakarta-sans-latin-{500,700}-normal.woff> python3 event/bi-jabar-2026/buat-cover.py
 # Font dari paket npm @fontsource/outfit dan @fontsource/plus-jakarta-sans (folder files/).
-# Tanpa FONT_DIR dipakai DejaVu Sans.
+# Tanpa FONT_DIR dipakai DejaVu Sans. Tambahkan VERSI=demo untuk tanggal demo.
 #
 # Kartu Jelajah memotong cover menjadi pita tengah (kira-kira y 115-515),
 # jadi judul dan elemen penting diletakkan di sana.
@@ -14,6 +14,13 @@ SS = 2  # supersampling supaya tepi lingkaran halus
 OUT = os.path.join(os.path.dirname(__file__), "gambar")
 os.makedirs(OUT, exist_ok=True)
 FONT_DIR = os.environ.get("FONT_DIR", "")
+
+# Tanggal di cover. VERSI=demo dipakai untuk demo ke BI (event dimajukan ke Oktober).
+JADWAL = {
+    "asli": ("Sabtu, 21 November 2026", "22 November – 6 Desember 2026", ""),
+    "demo": ("21 – 28 Oktober 2026", "21 Oktober – 4 November 2026", "-demo"),
+}
+TGL_FESTIVAL, TGL_JELAJAH, SUFFIX = JADWAL[os.environ.get("VERSI", "asli")]
 
 def font(name, size, fallback="/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"):
     path = os.path.join(FONT_DIR, name)
@@ -105,9 +112,9 @@ symbol(img, 600, 150, 54)
 d = ImageDraw.Draw(img, "RGBA")
 centered(d, 200, "Festival Rupiah & QRIS", DISPLAY(78), CREAM)
 centered(d, 300, "Cimahi", DISPLAY(56), rgb(WARN))
-chip(d, 388, "Sabtu, 21 November 2026  ·  Alun-alun Kota Cimahi", SANS_BOLD(26))
+chip(d, 388, TGL_FESTIVAL + "  ·  Alun-alun Kota Cimahi", SANS_BOLD(26))
 centered(d, 455, "Gasyu bersama Bank Indonesia Jawa Barat, UMKM, dan komunitas Cimahi", SANS(24), ON_HERO)
-finish(img, "cover-festival-rupiah-qris.png")
+finish(img, f"cover-festival-rupiah-qris{SUFFIX}.png")
 
 # --- Jelajah QRIS UMKM Cimahi --------------------------------------------
 img = gradient(KOMUNITAS, IRIS[2])
@@ -130,6 +137,6 @@ symbol(img, 600, 150, 54)
 d = ImageDraw.Draw(img, "RGBA")
 centered(d, 200, "Jelajah QRIS UMKM", DISPLAY(80), CREAM)
 centered(d, 300, "Cimahi", DISPLAY(56), rgb(WARN))
-chip(d, 388, "22 November – 6 Desember 2026  ·  Selesaikan 10 misi", SANS_BOLD(26))
+chip(d, 388, TGL_JELAJAH + "  ·  Selesaikan 10 misi", SANS_BOLD(26))
 centered(d, 455, "Belanja di UMKM Cimahi pakai QRIS, sendiri atau bareng grup", SANS(24), (226, 243, 238))
-finish(img, "cover-jelajah-qris-umkm.png")
+finish(img, f"cover-jelajah-qris-umkm{SUFFIX}.png")
