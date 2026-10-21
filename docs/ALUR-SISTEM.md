@@ -178,7 +178,7 @@ Untuk event Gasyu, admin memegang semua kemampuan tim penyelenggara host: membua
 
 ## 3. Login dan onboarding warga
 
-Login tanpa password. Tautan undangan (grup, tim, aktivitas) disimpan sebagai `next` supaya pengguna kembali ke tujuan setelah onboarding.
+Tiga cara masuk: Google, **email + kata sandi** (cara utama untuk email), dan **kode 6 angka lewat email** (cadangan, tanpa kata sandi). Tautan undangan (grup, tim, aktivitas) disimpan sebagai `next` supaya pengguna kembali ke tujuan setelah onboarding.
 
 ```mermaid
 flowchart TD
@@ -186,7 +186,10 @@ flowchart TD
     L -- Ya --> O
     L -- Tidak --> M{Pilih metode}
     M -->|Google| G[OAuth Google]
-    M -->|Email| E[Masukkan email]
+    M -->|Email + kata sandi| PW{Sudah punya akun?}
+    PW -- Ya --> PL[Masukkan email<br/>dan kata sandi] --> SES
+    PW -- Belum --> SU[Daftar: email, kata sandi<br/>minimal 8 karakter] --> OT
+    M -->|Kode email| E[Masukkan email]
     E --> OT[Kirim OTP 6 digit<br/>berlaku 10 menit]
     OT --> IN[Masukkan kode]
     IN --> V{Kode benar?}
@@ -209,6 +212,9 @@ flowchart TD
 
 **Aturan tambahan**
 
+- Daftar dengan kata sandi (`/masuk/daftar`) selalu mengonfirmasi email dengan kode 6 angka sebelum akun aktif. Email yang sudah terdaftar ditolak dengan ajakan masuk atau memakai Lupa kata sandi. Akun yang belum dikonfirmasi dan mencoba masuk diarahkan untuk mengirim kode konfirmasi.
+- Lupa kata sandi (`/masuk/lupa`): warga masuk dengan kode email (tanpa membuat akun baru), lalu langsung dibawa ke `/profil/kata-sandi` untuk membuat kata sandi baru. Halaman yang sama dipakai untuk membuat kata sandi bagi akun lama (Google atau kode email) dan mengganti kata sandi.
+- Kata sandi disimpan dan dicek oleh Supabase Auth, tidak di tabel Gasyu. Minimal 8 karakter; kata sandi yang pernah bocor ditolak (Leaked password protection). Batas percobaan masuk mengikuti rate limit Supabase Auth.
 - Middleware Next.js mengalihkan semua halaman ke onboarding selama `onboarded_at` kosong.
 - Nama panggilan harus unik (case-insensitive), 3–20 karakter.
 - Warga mengubah nama panggilan dan nama lengkap di `/profil/ubah` (`update_my_profile`).

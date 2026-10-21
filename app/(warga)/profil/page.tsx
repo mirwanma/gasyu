@@ -177,6 +177,10 @@ async function ProfileContent() {
           Ubah profil
           <Icon name="chevron" size={16} className="text-fg-muted" />
         </a>
+        <a href="/profil/kata-sandi" className="flex h-[52px] items-center justify-between border-b border-line px-4 text-[14px] font-medium text-fg">
+          Kata sandi
+          <Icon name="chevron" size={16} className="text-fg-muted" />
+        </a>
         <a href="/riwayat" className="flex h-[52px] items-center justify-between border-b border-line px-4 text-[14px] font-medium text-fg">
           Riwayat XP & poin
           <Icon name="chevron" size={16} className="text-fg-muted" />

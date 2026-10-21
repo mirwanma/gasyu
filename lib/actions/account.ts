@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { checkNewPassword, passwordErrorMessage } from "@/lib/password";
 import { createClient } from "@/lib/supabase/server";
 
 // Aksi akun warga. Aturan (unik, 90 hari, syarat hapus akun) ditegakkan oleh
@@ -108,4 +109,21 @@ export async function deleteAccount(_prev: AccountState, formData: FormData): Pr
   if (auth.user) await clearAvatarFiles(supabase, auth.user.id);
   await supabase.auth.signOut();
   redirect("/masuk?akun=dihapus");
+}
+
+// Buat atau ganti kata sandi akun yang sedang masuk (juga dipakai setelah Lupa kata sandi).
+export async function setPassword(_prev: AccountState, formData: FormData): Promise<AccountState> {
+  const password = String(formData.get("password") ?? "");
+  const invalid = checkNewPassword(password, String(formData.get("password_confirm") ?? ""));
+  if (invalid) return { error: invalid };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    if (error.code === "reauthentication_needed") {
+      return { error: "Demi keamanan, keluar lalu masuk lagi pakai kode email, kemudian ganti kata sandi di sini." };
+    }
+    return { error: passwordErrorMessage(error.code) ?? "Kata sandi gagal disimpan. Coba lagi sebentar lagi." };
+  }
+  return { success: "Kata sandi tersimpan. Lain kali kamu bisa masuk dengan email dan kata sandi ini." };
 }

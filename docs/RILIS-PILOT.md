@@ -47,9 +47,10 @@ Apa pun pilihannya:
 
 ---
 
-## 2. Login email dengan kode (wajib)
+## 2. Login email: kata sandi dan kode (wajib)
 
-Warga masuk dengan **kode 6 angka** yang dikirim ke email.
+Warga masuk dengan **email + kata sandi**, atau dengan **kode 6 angka** yang dikirim ke email.
+Kode juga dipakai saat daftar (konfirmasi email) dan Lupa kata sandi.
 Bawaan Supabase mengirim tautan, bukan kode, jadi templatenya harus diganti.
 
 Di Supabase → **Authentication**:
@@ -59,6 +60,8 @@ Di Supabase → **Authentication**:
 - [ ] **Emails → Templates → Confirm signup**: isi dengan file yang sama (warga baru juga menerima kode).
 - [ ] **Sign In / Providers → Email**: panjang kode (Email OTP Length) **6**,
       masa berlaku (Email OTP Expiration) **600** detik (10 menit, sesuai tulisan di email).
+- [ ] **Sign In / Providers → Email**: **Confirm email** menyala (warga yang daftar dengan kata sandi harus memasukkan kode dulu),
+      dan **Minimum password length** diisi **8** (sama dengan `lib/password.ts`).
 - [ ] **Emails → SMTP Settings**: pakai layanan email sendiri (misalnya Resend, Brevo, atau Mailgun).
       **Ini penting:** pengirim bawaan Supabase hanya untuk uji coba. Batasnya sangat kecil (beberapa email per jam)
       dan hanya sampai ke alamat anggota tim project. Tanpa SMTP sendiri, warga tidak akan menerima kode.
@@ -66,7 +69,7 @@ Di Supabase → **Authentication**:
   - Di pengelola domain, tambahkan catatan SPF dan DKIM dari layanan email itu supaya email tidak masuk spam.
 - [ ] **Rate Limits**: setelah SMTP aktif, naikkan batas email per jam sesuai perkiraan pendaftar hari pertama
       (misalnya 100–300 per jam saat peluncuran).
-- [ ] **Attack Protection → Leaked password protection**: nyalakan. Ini satu-satunya catatan dari
+- [ ] **Attack Protection → Leaked password protection**: nyalakan (kata sandi yang pernah bocor ditolak saat daftar atau ganti kata sandi). Ini satu-satunya catatan dari
       pemeriksa keamanan Supabase yang masih tersisa.
 
 ## 3. Alamat situs dan login Google (wajib)
@@ -97,6 +100,7 @@ Login Google (tombol "Masuk dengan Google"):
 **Bersihkan data dummy** (jika memakai project yang sekarang):
 
 - [ ] Buka Supabase → SQL Editor, tempel seluruh isi `dummy-data/bersihkan.sql`, lalu jalankan.
+      **Wajib** karena halaman masuk sekarang menerima kata sandi: kata sandi akun dummy (termasuk admin) tertulis di repo.
       Hasil akhirnya harus "Data dummy dihapus".
 - [ ] Pastikan tidak ada lagi akun `@dummy.ramein.id`, terutama **admin dummy**, karena kata sandinya tertulis di repo.
       Cek dengan:

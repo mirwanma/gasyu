@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { loginWithGoogle } from "./actions";
-import { LoginForm } from "./login-form";
+import { CodeLoginForm, PasswordLoginForm } from "./login-form";
 import { ErrorMessage, GoogleIcon, Logo, SubmitButton } from "@/components/ui";
 import { safeNext } from "@/lib/safe-next";
 
@@ -15,7 +15,7 @@ export default function MasukPage({ searchParams }: PageProps<"/masuk">) {
           kumpulkan XP-nya.
         </h1>
         <p className="text-[15px] leading-[1.55] text-fg-soft">
-          Ikut event dan challenge dari UMKM dan komunitas di Cimahi. Tanpa kata sandi.
+          Ikut event dan challenge dari UMKM dan komunitas di Cimahi.
         </p>
       </div>
       <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>
@@ -31,6 +31,7 @@ async function LoginOptions({ searchParams }: Pick<PageProps<"/masuk">, "searchP
   const googleFailed = params.error === "google";
   const deleted = params.akun === "dihapus";
   const signedOutAll = params.akun === "keluar-semua";
+  const withCode = params.cara === "kode";
 
   return (
     <>
@@ -57,11 +58,23 @@ async function LoginOptions({ searchParams }: Pick<PageProps<"/masuk">, "searchP
 
       <div className="flex items-center gap-3 text-[13px] text-fg-muted">
         <span className="h-px flex-1 bg-line" />
-        atau pakai email
+        {withCode ? "atau pakai kode email" : "atau pakai email"}
         <span className="h-px flex-1 bg-line" />
       </div>
 
-      <LoginForm next={next} />
+      {withCode ? (
+        <>
+          <CodeLoginForm next={next} />
+          <a
+            href={`/masuk?next=${encodeURIComponent(next)}`}
+            className="-mt-3 text-center text-[13px] font-semibold text-fg-soft underline underline-offset-4"
+          >
+            Masuk pakai kata sandi
+          </a>
+        </>
+      ) : (
+        <PasswordLoginForm next={next} />
+      )}
     </>
   );
 }
