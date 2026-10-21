@@ -124,6 +124,7 @@ supabase/
   tests/              # uji SQL (run.sh) + shim Supabase untuk Postgres biasa
 e2e/                  # uji browser Playwright (tampilan HP, data dummy)
 dummy-data/           # contoh data untuk uji coba (bukan data produksi)
+event/                # skrip pembuat event nyata (mis. bi-jabar-2026)
 docs/
 ```
 
