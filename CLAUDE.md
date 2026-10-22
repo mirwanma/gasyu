@@ -4,8 +4,8 @@ Panduan kerja untuk Claude di proyek ini. Baca seluruh file ini di awal setiap s
 
 **Sumber kebenaran** (baca bagian yang relevan sebelum menulis kode):
 
-- `docs/ALUR-SISTEM.md` — alur, peran, aturan bisnis (v0.13)
-- `docs/DESAIN-DATABASE.md` — tabel, enum, fungsi, RLS, urutan migrasi (v0.13)
+- `docs/ALUR-SISTEM.md` — alur, peran, aturan bisnis (v0.14)
+- `docs/DESAIN-DATABASE.md` — tabel, enum, fungsi, RLS, urutan migrasi (v0.14)
 - `docs/BRAND.md` — warna, tipografi, logo, gaya bahasa
 - `docs/RILIS-PILOT.md` — daftar cek rilis pilot (pengaturan Supabase, Vercel, data, konten hukum)
 - PRD (PDF milik pemilik proyek, tidak disimpan di repo)
@@ -116,7 +116,9 @@ app/                  # route Next.js
   masuk/, onboarding/
 components/
 lib/
-  supabase/           # client.ts (browser), server.ts, proxy.ts (sesi), database.types.ts (otomatis), types.ts
+  auth/               # schemas.ts (validasi Zod masuk/daftar), rate-limit.ts (batas gagal masuk)
+  supabase/           # server.ts, proxy.ts (sesi), cookies.ts (cookie HttpOnly), database.types.ts (otomatis), types.ts
+                      # tidak ada client browser: cookie sesi HttpOnly, semua akses Supabase lewat server
   gamification/       # helper tampilan XP, level, badge (aturan tetap di database)
 proxy.ts              # pengganti middleware: refresh sesi, wajib onboarding
 supabase/
@@ -132,4 +134,4 @@ docs/
 
 Ikuti `docs/DESAIN-DATABASE.md` bagian 9 (irisan 1–11).
 
-Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016), foto profil (0017), master misi (0018), pengingat kedaluwarsa (0019), uji E2E, keluar dari semua perangkat, ganti bukti bayar, chat panitia di WhatsApp, voucher per outlet dan deteksi peninjau cepat (0020), perbaikan review (0021), Event Global tahap 1 database + kota asal (0022), misi bonus setelah selesai (0023), Event Global tahap 2 halaman admin (0024), Event Global tahap 3 halaman warga, kartu Hadiah yang disponsori di dashboard merchant/komunitas, perbaikan keamanan (0025), daftar cek rilis, pemilih kota di Jelajah (0026), login dan daftar dengan email + kata sandi, tema Hangat & Menantang (BRAND v1.4: dua tema terang/gelap di Profil, Bricolage + Figtree, ikon Phosphor, beranda bento + misi hari ini + podium) — pemolesan dan rilis pilot — perbarui baris ini setiap pindah irisan.
+Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016), foto profil (0017), master misi (0018), pengingat kedaluwarsa (0019), uji E2E, keluar dari semua perangkat, ganti bukti bayar, chat panitia di WhatsApp, voucher per outlet dan deteksi peninjau cepat (0020), perbaikan review (0021), Event Global tahap 1 database + kota asal (0022), misi bonus setelah selesai (0023), Event Global tahap 2 halaman admin (0024), Event Global tahap 3 halaman warga, kartu Hadiah yang disponsori di dashboard merchant/komunitas, perbaikan keamanan (0025), daftar cek rilis, pemilih kota di Jelajah (0026), login dan daftar dengan email + kata sandi, tema Hangat & Menantang (BRAND v1.4: dua tema terang/gelap di Profil, Bricolage + Figtree, ikon Phosphor, beranda bento + misi hari ini + podium), daftar nama+email+kata sandi dengan validasi Zod + batas gagal masuk per email + cookie sesi HttpOnly (0027) — pemolesan dan rilis pilot — perbarui baris ini setiap pindah irisan.

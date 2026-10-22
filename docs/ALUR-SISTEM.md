@@ -1,6 +1,7 @@
 # Gasyu — Alur Sistem
 
-Versi 0.13 · 19 Oktober 2026 · Pilot Kota Cimahi
+Versi 0.14 · 22 Oktober 2026 · Pilot Kota Cimahi
+Perubahan 0.14: daftar akun cukup nama lengkap, email, dan kata sandi sekali (tanpa ulangi kata sandi); nama lengkap otomatis terisi di onboarding. Masuk dengan kata sandi atau kode email dibatasi 5 kali gagal per email per 15 menit (migrasi 0027). Cookie sesi HttpOnly (bagian 3).
 Perubahan 0.13: pemilih kota di Jelajah (bagian 20b). Warga melihat aktivitas di kotanya sendiri secara otomatis dan bisa memilih kota lain atau Semua kota (migrasi 0026).
 Perubahan 0.12 (tinjauan keamanan, migrasi 0025): anggota tim tidak bisa meninjau atau menandai misinya sendiri, dan misi manual hanya untuk peserta yang sudah check-in (bagian 9b); kode misi minimal 6 karakter dan tebakan massal dari banyak akun ditandai (bagian 9c dan 19); poin dari check-in di luar radius ditahan sampai admin memutuskan (bagian 14c); admin bisa membatalkan misi yang sudah disetujui (bagian 19); refund voucher oleh merchant hanya untuk reward nonaktif dan kode voucher aktif hanya dilihat pemiliknya (bagian 16); kode undangan grup maks. 5 percobaan salah per 15 menit (bagian 11); partner yang keluar atau dibekukan tidak bisa lagi menampilkan QR, dan misinya ikut nonaktif (bagian 10); identitas pemenang Event Global hanya untuk pemenang dan admin.
 Perubahan 0.11: database Event Global sudah dibangun (bagian 22); halaman admin sudah ada: jangkauan dan mode lokasi di formulir event Gasyu, misi berskor, Kelola hadiah, serta Peringkat & pemenang (bagian 20); halaman warga juga sudah ada: tab Event Global di Jelajah, skor dan hadiah di halaman event, papan peringkat `/aktivitas/[id]/peringkat`, hasil scan berupa skor, kartu Beranda, halaman Hadiah `/hadiah` dengan klaim, dan notifikasi hadiah (bagian 22e); kartu "Hadiah yang disponsori" di dashboard merchant dan komunitas (bagian 20a) hanya menampilkan peringkat dan status, tanpa identitas pemenang; warga luar Cimahi memilih kota/kabupaten asal dari daftar (bagian 3); di Event Global peserta tidak pernah berstatus selesai, jadi tetap bisa menambah skor lewat misi sampai acara berakhir (bagian 22c).
@@ -187,20 +188,22 @@ flowchart TD
     L -- Tidak --> M{Pilih metode}
     M -->|Google| G[OAuth Google]
     M -->|Email + kata sandi| PW{Sudah punya akun?}
-    PW -- Ya --> PL[Masukkan email<br/>dan kata sandi] --> SES
-    PW -- Belum --> SU[Daftar: email, kata sandi<br/>minimal 8 karakter] --> OT
+    PW -- Ya --> PL[Masukkan email<br/>dan kata sandi] --> PV{Benar?}
+    PV -- Ya --> SES
+    PV -- Tidak, maks. 5 kali<br/>per email per 15 menit --> PL
+    PW -- Belum --> SU[Daftar: nama lengkap, email,<br/>kata sandi minimal 8 karakter] --> OT
     M -->|Kode email| E[Masukkan email]
     E --> OT[Kirim OTP 6 digit<br/>berlaku 10 menit]
     OT --> IN[Masukkan kode]
     IN --> V{Kode benar?}
-    V -- Tidak --> R{Percobaan lebih dari 5<br/>dalam 15 menit?}
+    V -- Tidak --> R{Sudah 5 kali gagal<br/>untuk email ini<br/>dalam 15 menit?}
     R -- Ya --> BL[Tunggu 15 menit] --> E
     R -- Tidak --> IN
     V -- Ya --> SES
     G --> SES[Sesi dibuat<br/>baris profiles dibuat otomatis]
     SES --> O{onboarded_at terisi?}
     O -- Ya --> NX
-    O -- Tidak --> F1[Isi nama panggilan<br/>dan nama lengkap]
+    O -- Tidak --> F1[Isi nama panggilan<br/>dan nama lengkap<br/>nama terisi dari daftar/Google]
     F1 --> F2[Pilih kelurahan asal<br/>atau Luar Cimahi]
     F2 --> F3[Setujui S&K dan<br/>kebijakan privasi]
     F3 --> F4[Simpan profil<br/>onboarded_at = now]
@@ -214,7 +217,10 @@ flowchart TD
 
 - Daftar dengan kata sandi (`/masuk/daftar`) selalu mengonfirmasi email dengan kode 6 angka sebelum akun aktif. Email yang sudah terdaftar ditolak dengan ajakan masuk atau memakai Lupa kata sandi. Akun yang belum dikonfirmasi dan mencoba masuk diarahkan untuk mengirim kode konfirmasi.
 - Lupa kata sandi (`/masuk/lupa`): warga masuk dengan kode email (tanpa membuat akun baru), lalu langsung dibawa ke `/profil/kata-sandi` untuk membuat kata sandi baru. Halaman yang sama dipakai untuk membuat kata sandi bagi akun lama (Google atau kode email) dan mengganti kata sandi.
-- Kata sandi disimpan dan dicek oleh Supabase Auth, tidak di tabel Gasyu. Minimal 8 karakter; kata sandi yang pernah bocor ditolak (Leaked password protection). Batas percobaan masuk mengikuti rate limit Supabase Auth.
+- Form daftar hanya meminta **nama lengkap, email, dan kata sandi** (sekali, dengan tombol Lihat/Sembunyikan). Nama lengkap disimpan di metadata akun dan mengisi otomatis kolom nama lengkap di onboarding; untuk akun Google dipakai nama dari Google. Warga tetap bisa mengubahnya di onboarding. Isian dicek di server dengan skema Zod (`lib/auth/schemas.ts`).
+- Kata sandi disimpan dan dicek oleh Supabase Auth (bcrypt dengan salt), tidak di tabel Gasyu. Minimal 8, maksimal 72 karakter; kata sandi yang pernah bocor ditolak (Leaked password protection).
+- **Batas gagal masuk per email** (migrasi 0027): kata sandi salah dan kode 6 angka salah (masuk, Lupa kata sandi, atau konfirmasi daftar) dihitung bersama per email. Setelah 5 kali gagal dalam 15 menit (`auth.login_max_failures`, `auth.login_window_minutes`), email itu ditolak sampai 15 menit sejak gagal pertama lewat. Masuk berhasil menghapus hitungan. Dihitung per email karena login dipanggil dari server, sehingga batas per-IP Supabase Auth melihat IP server, bukan IP warga. Konsekuensi yang diterima: orang lain bisa sengaja mengunci email seseorang selama 15 menit; pemiliknya tetap bisa masuk lewat Google. CAPTCHA menyusul.
+- Sesi: access token (JWT, 1 jam) dan refresh token (sekali pakai, berganti setiap dipakai) disimpan Supabase di cookie **HttpOnly**, Secure (produksi), SameSite=Lax. JavaScript di browser tidak bisa membacanya, jadi semua akses Supabase lewat server.
 - Middleware Next.js mengalihkan semua halaman ke onboarding selama `onboarded_at` kosong.
 - Nama panggilan harus unik (case-insensitive), 3–20 karakter.
 - Warga mengubah nama panggilan dan nama lengkap di `/profil/ubah` (`update_my_profile`).

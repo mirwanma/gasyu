@@ -69,6 +69,10 @@ Di Supabase → **Authentication**:
   - Di pengelola domain, tambahkan catatan SPF dan DKIM dari layanan email itu supaya email tidak masuk spam.
 - [ ] **Rate Limits**: setelah SMTP aktif, naikkan batas email per jam sesuai perkiraan pendaftar hari pertama
       (misalnya 100–300 per jam saat peluncuran).
+- [ ] **Rate Limits → Sign-ups and sign-ins** dan **Token verifications**: login Gasyu dipanggil dari server Vercel,
+      jadi Supabase menghitung semua warga sebagai satu IP. Naikkan kedua batas ini (misalnya 300–600 per 5 menit)
+      supaya warga tidak saling menghalangi saat ramai. Perlindungan brute-force per email sudah ada di database
+      (migrasi 0027, 5 kali gagal per 15 menit).
 - [ ] **Attack Protection → Leaked password protection**: nyalakan (kata sandi yang pernah bocor ditolak saat daftar atau ganti kata sandi). Ini satu-satunya catatan dari
       pemeriksa keamanan Supabase yang masih tersisa.
 

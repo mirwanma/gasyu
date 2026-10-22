@@ -3,7 +3,8 @@
 Uji ini membuka aplikasi seperti pengguna sungguhan (warga, pemilik merchant,
 ketua komunitas, admin) dan memastikan halaman terbuka tanpa error serta aturan
 akses berjalan. Semua uji **hanya membaca data**, jadi aman dijalankan berulang
-di project yang berisi data dummy.
+di project yang berisi data dummy. Satu pengecualian: uji batas gagal masuk mencatat
+5 percobaan untuk email acak yang tidak terdaftar (dibersihkan otomatis setelah 1 hari).
 
 ## Syarat
 
