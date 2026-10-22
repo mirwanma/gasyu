@@ -3,7 +3,7 @@ import { SaranPage } from "@/components/organizer/suggestion-pages";
 
 export default function Page(props: PageProps<"/komunitas/[id]/saran">) {
   return (
-    <Suspense fallback={<p className="px-5 pt-6 text-[16px] text-fg-muted">Memuat…</p>}>
+    <Suspense fallback={<p className="px-5 pt-6 text-[15px] text-fg-muted">Memuat…</p>}>
       <Loader {...props} />
     </Suspense>
   );

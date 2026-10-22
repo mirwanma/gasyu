@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 export default function ScanPage({ searchParams }: PageProps<"/scan">) {
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col">
-      <Suspense fallback={<p className="px-5 pt-6 text-[16px] text-fg-muted">Memuat…</p>}>
+      <Suspense fallback={<p className="px-5 pt-6 text-[15px] text-fg-muted">Memuat…</p>}>
         <ScanLoader searchParams={searchParams} />
       </Suspense>
     </main>

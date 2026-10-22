@@ -11,7 +11,7 @@ import { listSponsoredPrizes } from "@/lib/data/global-events";
 // Semua angka dari v_merchant_dashboard, v_merchant_outlet_vouchers, v_organizer_reputation.
 export default function MerchantDashboardPage({ params }: PageProps<"/merchant/[id]">) {
   return (
-    <Suspense fallback={<p className="px-5 pt-6 text-[16px] text-fg-muted">Memuat…</p>}>
+    <Suspense fallback={<p className="px-5 pt-6 text-[15px] text-fg-muted">Memuat…</p>}>
       <Dashboard params={params} />
     </Suspense>
   );
@@ -33,7 +33,7 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string; n
     return (
       <>
         <StatusBanner org={org as never} base={base} />
-        <p className={`${cardClass} p-4 text-[16px] text-fg-soft`}>Data dashboard belum tersedia.</p>
+        <p className={`${cardClass} p-4 text-[15px] text-fg-soft`}>Data dashboard belum tersedia.</p>
       </>
     );
   }
@@ -66,9 +66,9 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string; n
       </div>
 
       <section className="flex flex-col gap-2.5">
-        <h2 className="font-display text-[20px] font-semibold">Perlu tindakan</h2>
+        <h2 className="font-display text-[18px] font-semibold">Perlu tindakan</h2>
         {todos.length === 0 ? (
-          <p className={`${cardClass} p-4 text-[16px] text-fg-soft`}>Tidak ada yang perlu ditindak. Mantap.</p>
+          <p className={`${cardClass} p-4 text-[15px] text-fg-soft`}>Tidak ada yang perlu ditindak. Mantap.</p>
         ) : (
           todos.map((t) => <TodoItem key={t.title} n={t.n} title={t.title} sub={t.sub} href={t.href} tone={t.tone} />)
         )}
@@ -76,11 +76,11 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string; n
 
       <a href={`${base}/reward`} className={`${cardClass} flex flex-col gap-3 p-4 text-fg`}>
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-[20px] font-semibold">Poin dan voucher</h2>
-          <span className="text-[16px] font-semibold text-link">Kelola reward</span>
+          <h2 className="font-display text-[18px] font-semibold">Poin dan voucher</h2>
+          <span className="text-[15px] font-semibold text-link">Kelola reward</span>
         </div>
         <div className="flex flex-col gap-1.5">
-          <div className="flex justify-between text-[14px]">
+          <div className="flex justify-between text-[13px]">
             <span className="text-fg-soft">Budget poin terpakai</span>
             <span className="font-semibold">
               {d.points_used.toLocaleString("id-ID")} / {d.points_budget.toLocaleString("id-ID")}
@@ -92,17 +92,17 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string; n
         </div>
         <div className="flex items-end gap-[18px]">
           <div className="flex flex-col gap-0.5">
-            <span className="font-display text-[28px] font-bold leading-none">{d.vouchers_redeemed}</span>
-            <span className="text-[14px] text-fg-soft">ditukar</span>
+            <span className="font-display text-[26px] font-bold leading-none">{d.vouchers_redeemed}</span>
+            <span className="text-[13px] text-fg-soft">ditukar</span>
           </div>
           <div className="flex flex-col gap-0.5">
-            <span className="font-display text-[28px] font-bold leading-none text-success">{d.vouchers_used}</span>
-            <span className="text-[14px] text-fg-soft">dipakai</span>
+            <span className="font-display text-[26px] font-bold leading-none text-success">{d.vouchers_used}</span>
+            <span className="text-[13px] text-fg-soft">dipakai</span>
           </div>
           {outlets.length > 0 && (
             <div className="flex min-w-0 flex-col gap-0.5">
-              <span className="truncate font-display text-[20px] font-semibold leading-none">{outlets.map((o) => o.vouchers_used).join(" · ")}</span>
-              <span className="truncate text-[14px] text-fg-soft">{outlets.map((o) => o.outlet_name.replace(/^(Cabang|Outlet)\s+/i, "")).join(" · ")}</span>
+              <span className="truncate font-display text-[18px] font-semibold leading-none">{outlets.map((o) => o.vouchers_used).join(" · ")}</span>
+              <span className="truncate text-[13px] text-fg-soft">{outlets.map((o) => o.outlet_name.replace(/^(Cabang|Outlet)\s+/i, "")).join(" · ")}</span>
             </div>
           )}
         </div>
@@ -112,13 +112,13 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string; n
 
       <section className={`${cardClass} flex flex-col gap-2 p-4`}>
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-[20px] font-semibold">Reputasi 90 hari</h2>
-          <span className="font-display text-[26px] font-bold text-link">{rep?.score ?? 0}</span>
+          <h2 className="font-display text-[18px] font-semibold">Reputasi 90 hari</h2>
+          <span className="font-display text-[24px] font-bold text-link">{rep?.score ?? 0}</span>
         </div>
         <div className="h-2 overflow-hidden rounded-md bg-track">
           <div className="h-full bg-primary" style={{ width: `${rep?.score ?? 0}%` }} />
         </div>
-        <span className="text-[16px] text-fg-soft">
+        <span className="text-[15px] text-fg-soft">
           {rep && rep.registered_90d > 0
             ? `Hadir ${rep.attendance_pct ?? 0}% · selesai ${rep.completion_pct ?? 0}% · ${rep.collabs_90d} kolaborasi`
             : "Belum ada aktivitas 90 hari terakhir. Reputasi naik dari tingkat hadir, selesai, dan kolaborasi."}
@@ -128,7 +128,7 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string; n
       {org.status === "approved" && (
         <a
           href={`${base}/aktivitas/baru`}
-          className="fixed bottom-[104px] right-5 z-10 flex h-[52px] items-center gap-2 rounded-full bg-primary px-[18px] text-[18px] font-semibold text-on-primary shadow-lg shadow-primary/30 hover:bg-primary-hover"
+          className="fixed bottom-[104px] right-5 z-10 flex h-[52px] items-center gap-2 rounded-full bg-primary px-[18px] text-[16px] font-semibold text-on-primary shadow-lg shadow-primary/30 hover:bg-primary-hover"
         >
           + Buat aktivitas
         </a>

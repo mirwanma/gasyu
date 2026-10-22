@@ -17,9 +17,9 @@ export default function KomunitasSayaPage() {
             <Icon name="back" stroke={2} />
             Kembali
           </a>
-          <h1 className="font-display text-[28px] font-bold">Komunitas saya</h1>
+          <h1 className="font-display text-[26px] font-bold">Komunitas saya</h1>
         </div>
-        <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
+        <Suspense fallback={<p className="text-[15px] text-fg-muted">Memuat…</p>}>
           <Content />
         </Suspense>
       </main>
@@ -38,9 +38,9 @@ async function Content() {
   return (
     <>
       <section className="flex flex-col gap-2.5">
-        <span className="text-[16px] font-bold text-fg-label">Diikuti ({mine.length})</span>
+        <span className="text-[15px] font-bold text-fg-label">Diikuti ({mine.length})</span>
         {mine.length === 0 ? (
-          <p className={`${cardClass} p-4 text-[16px] leading-[1.5] text-fg-soft`}>
+          <p className={`${cardClass} p-4 text-[15px] leading-[1.5] text-fg-soft`}>
             Kamu belum bergabung ke komunitas mana pun. Member komunitas bisa ikut aktivitas khusus member dan dapat kabar aktivitas baru.
           </p>
         ) : (
@@ -49,9 +49,9 @@ async function Content() {
       </section>
 
       <section className="flex flex-col gap-2.5">
-        <span className="text-[16px] font-bold text-fg-label">Temukan komunitas</span>
+        <span className="text-[15px] font-bold text-fg-label">Temukan komunitas</span>
         {others.length === 0 ? (
-          <p className={`${cardClass} p-4 text-[16px] text-fg-soft`}>Belum ada komunitas lain yang terverifikasi.</p>
+          <p className={`${cardClass} p-4 text-[15px] text-fg-soft`}>Belum ada komunitas lain yang terverifikasi.</p>
         ) : (
           others.map((c) => <CommunityRow key={c.id} c={c} />)
         )}
@@ -65,8 +65,8 @@ function CommunityRow({ c }: { c: CommunityCard }) {
     <a href={`/k/${c.slug}`} className={`${cardClass} flex items-center gap-3 p-3 text-fg`}>
       <OrganizerAvatar name={c.name} type="community" logoUrl={c.logoUrl} size={44} />
       <span className="flex flex-1 flex-col gap-0.5">
-        <span className="text-[17px] font-semibold">{c.name}</span>
-        <span className="text-[14px] text-fg-soft">
+        <span className="text-[15px] font-semibold">{c.name}</span>
+        <span className="text-[13px] text-fg-soft">
           {categoryLabel(c.category)}
           {c.villageName ? ` · ${c.villageName}` : ""}
           {c.membershipStatus === null && (c.joinPolicy === "open" ? " · gabung langsung" : " · perlu persetujuan")}

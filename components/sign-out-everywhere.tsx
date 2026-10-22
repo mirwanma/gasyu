@@ -12,7 +12,7 @@ export function SignOutEverywhere() {
   const [state, action] = useActionState<{ error?: string }, FormData>(() => signOutEverywhere(), {});
   if (!confirming) {
     return (
-      <button type="button" onClick={() => setConfirming(true)} className="flex h-[52px] w-full items-center justify-between px-4 text-[17px] font-medium text-danger">
+      <button type="button" onClick={() => setConfirming(true)} className="flex h-[52px] w-full items-center justify-between px-4 text-[15px] font-medium text-danger">
         Keluar dari semua perangkat
         <Icon name="logout" size={16} />
       </button>
@@ -20,7 +20,7 @@ export function SignOutEverywhere() {
   }
   return (
     <form action={action} className="flex flex-col gap-3 px-4 py-4">
-      <p className="text-[16px] leading-[1.5] text-fg-label">
+      <p className="text-[15px] leading-[1.5] text-fg-label">
         Semua HP dan browser yang memakai akun ini akan keluar, termasuk HP ini. Cocok kalau HP hilang atau kamu pernah masuk di HP orang lain.
       </p>
       <ErrorMessage message={state.error} />

@@ -1,79 +1,243 @@
 @import "tailwindcss";
 
 /*
-  Token UI Gasyu: palet "Ramah Semua Umur 2026". Lihat docs/BRAND.md bagian 2.
+  Token UI Gasyu: tema "Hangat & Menantang" (docs/BRAND.md bagian 2, v1.4).
   Jangan menambah warna di luar daftar ini; pakai nama token, bukan hex langsung.
-  Porsi: 60% latar (bg), 30% kartu (surface), 10% tombol utama (primary).
-  Satu tema terang untuk warga, merchant, komunitas, dan admin.
+  Dua tema: terang (bawaan) dan gelap. Pilihan warga disimpan di cookie `gasyu-theme`
+  dan dipasang sebagai <html data-theme="...">. Tanpa pilihan, tema mengikuti pengaturan HP.
 */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @theme inline {
-  --font-sans: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-outfit), "Outfit", var(--font-jakarta), sans-serif;
+  --font-sans: var(--font-figtree), "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), "Bricolage Grotesque", var(--font-figtree), sans-serif;
 
-  /* Latar, kartu, garis */
-  --color-bg: #F3F3F1; /* Cloud Dancer */
-  --color-surface: #FFFFFF; /* Pure White */
-  --color-surface-deep: #FFFFFF;
-  --color-track: #E5E5E2;
-  --color-line: #E5E5E2;
-  --color-line-strong: #A3A39E;
-  --color-scrim: rgb(26 26 26 / 0.72); /* lapisan gelap di atas foto sampul */
+  --color-bg: var(--ui-bg);
+  --color-surface: var(--ui-surface);
+  --color-surface-deep: var(--ui-surface-2);
+  --color-surface-2: var(--ui-surface-2);
+  --color-track: var(--ui-track);
+  --color-line: var(--ui-line);
+  --color-line-strong: var(--ui-line-strong);
+  --color-scrim: rgb(23 14 10 / 0.6);
+  --color-glass: var(--ui-glass);
+  --color-glass-line: var(--ui-glass-line);
 
-  /* Teks */
-  --color-fg: #1A1A1A; /* Ink Black */
-  --color-fg-label: #2E2E2E;
-  --color-fg-soft: #5A5A5A; /* Slate Muted */
-  --color-fg-muted: #6B6B6B;
-  --color-cream: #FAF7F2;
+  --color-fg: var(--ui-fg);
+  --color-fg-label: var(--ui-fg-label);
+  --color-fg-soft: var(--ui-fg-soft);
+  --color-fg-muted: var(--ui-fg-muted);
+  --color-cream: #FFF7EF;
 
-  /* Tombol utama (CTA) */
-  --color-primary: #C15F3C; /* Crail Orange */
-  --color-primary-hover: #A84F2E;
-  --color-primary-soft: #C15F3C;
-  --color-primary-tint: #F8E9E3;
-  --color-link: #A84F2E;
+  /* Tombol utama: oranye terakota, sama di dua tema */
+  --color-primary: #E2622F;
+  --color-primary-hover: #CF5524;
+  --color-primary-press: #B8471C;
+  --color-primary-soft: #E2622F;
+  --color-primary-tint: var(--ui-primary-tint);
+  --color-link: var(--ui-link);
   --color-on-primary: #FFFFFF;
 
-  /* Kartu level & avatar */
-  --color-hero-from: #FFFFFF;
-  --color-hero-to: #FFFFFF;
-  --color-on-hero: #5A5A5A;
-  --color-avatar: #F8E9E3;
-  --color-avatar-ring: #C15F3C;
+  /* Kartu level: gradien senja, satu-satunya hero di layar */
+  --color-hero-from: #FF9A3D;
+  --color-hero-via: #E2622F;
+  --color-hero-to: #C2375F;
+  --color-on-hero: #FFFFFF;
+  --color-avatar: var(--ui-primary-tint);
+  --color-avatar-ring: #E2622F;
 
-  /* Status */
-  --color-xp: #2B6E57; /* Bio-Mint Moss: progress bar */
-  --color-points: #A84F2E;
-  --color-hot: #C15F3C;
-  --color-hot-tint: #F8E9E3;
-  --color-success: #2B6E57;
-  --color-success-tint: #E3F0EA;
-  --color-warn: #8A5A00;
-  --color-warn-tint: #FBF0D9;
-  --color-info: #1F5F86;
-  --color-info-tint: #E3EEF5;
-  --color-danger: #B42318;
-  --color-danger-tint: #FBEDEB;
-  --color-bronze: #A0643A;
+  /* Tiga aksen: oranye (aksi), kuning matahari (XP, poin, juara), berry (tantangan, waktu) */
+  --color-sun: #FFB938;
+  --color-on-sun: #6B3A00;
+  --color-gold-from: var(--ui-gold-from);
+  --color-gold-to: var(--ui-gold-to);
+  --color-on-gold: var(--ui-on-gold);
+  --color-sun-tint: var(--ui-sun-tint);
+  --color-berry: var(--ui-berry);
+  --color-berry-tint: var(--ui-berry-tint);
+
+  --color-xp: var(--ui-success);
+  --color-points: var(--ui-points);
+  --color-hot: #E2622F;
+  --color-hot-tint: var(--ui-primary-tint);
+  --color-success: var(--ui-success);
+  --color-success-tint: var(--ui-success-tint);
+  --color-warn: var(--ui-warn);
+  --color-warn-tint: var(--ui-warn-tint);
+  --color-info: var(--ui-info);
+  --color-info-tint: var(--ui-info-tint);
+  --color-danger: var(--ui-danger);
+  --color-danger-tint: var(--ui-danger-tint);
+  --color-silver: #A9A39C;
+  --color-bronze: #C9814E;
 
   /* Warna tiga pihak (logo, label merchant/komunitas/warga) */
   --color-merchant: #F06A2A;
   --color-komunitas: #0F8B6D;
   --color-warga: #2D4FCF;
-  --color-accent-merchant: #F8E9E3;
-  --color-accent-komunitas: #E3F0EA;
-  --color-accent-warga: #E3EAF8;
+  --color-accent-merchant: var(--ui-primary-tint);
+  --color-accent-komunitas: var(--ui-success-tint);
+  --color-accent-warga: var(--ui-info-tint);
+
+  --shadow-card: var(--ui-shadow);
+  --shadow-hero: 0 20px 40px -20px rgb(194 55 95 / 0.75);
+
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-pop: pop 0.55s var(--ease-spring) both;
+  --animate-sheet: sheet-up 0.45s var(--ease-spring) both;
+  --animate-toast: toast-in 0.5s var(--ease-spring) both;
+  @keyframes sheet-up {
+    from {
+      transform: translateY(100%);
+    }
+  }
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(-120%);
+    }
+  }
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.98);
+    }
+  }
 }
 
+/* Tema terang (bawaan) */
 :root {
+  --ui-bg: #FFF7EF;
+  --ui-surface: #FFFFFF;
+  --ui-surface-2: #FFF1E6;
+  --ui-track: #F4E3D3;
+  --ui-line: #F1E2D3;
+  --ui-line-strong: #D9C3B0;
+  --ui-glass: rgb(255 250 245 / 0.7);
+  --ui-glass-line: rgb(255 255 255 / 0.8);
+  --ui-fg: #2A1A14;
+  --ui-fg-label: #45322A;
+  --ui-fg-soft: #6E5A4E;
+  --ui-fg-muted: #8A7466;
+  --ui-primary-tint: #FFE7D8;
+  --ui-link: #C2501F;
+  --ui-points: #B06A00;
+  --ui-sun-tint: #FFF0C2;
+  --ui-gold-from: #FFF0C2;
+  --ui-gold-to: #FFC85C;
+  --ui-on-gold: #3A2400;
+  --ui-berry: #C2375F;
+  --ui-berry-tint: #FCE4EC;
+  --ui-success: #2B8A63;
+  --ui-success-tint: #E2F3EA;
+  --ui-warn: #8A5A00;
+  --ui-warn-tint: #FFF0C2;
+  --ui-info: #1F6A94;
+  --ui-info-tint: #E2EFF7;
+  --ui-danger: #B42318;
+  --ui-danger-tint: #FDE8E5;
+  --ui-shadow: 0 10px 28px -14px rgb(140 70 30 / 0.35);
   color-scheme: light;
-  /* Ukuran huruf dasar besar supaya mudah dibaca semua umur. */
-  font-size: 18px;
+}
+
+/* Tema gelap: espresso hangat. Dipakai saat dipilih, atau saat HP gelap dan belum memilih. */
+/* Nilai di bawah sengaja sama dengan blok @media setelahnya; ubah keduanya bersamaan. */
+:root[data-theme="dark"] {
+  --ui-bg: #17100C;
+  --ui-surface: #241912;
+  --ui-surface-2: #2E2018;
+  --ui-track: #3A2A20;
+  --ui-line: #3A2A20;
+  --ui-line-strong: #5A4436;
+  --ui-glass: rgb(36 25 18 / 0.68);
+  --ui-glass-line: rgb(255 255 255 / 0.08);
+  --ui-fg: #FFF3E8;
+  --ui-fg-label: #F0DDCD;
+  --ui-fg-soft: #CDB6A4;
+  --ui-fg-muted: #A8907E;
+  --ui-primary-tint: #3B2417;
+  --ui-link: #FF9A6B;
+  --ui-points: #FFC85C;
+  --ui-sun-tint: #3D2E10;
+  --ui-gold-from: #4D3611;
+  --ui-gold-to: #8A5B10;
+  --ui-on-gold: #FFF3E8;
+  --ui-berry: #FF7AA2;
+  --ui-berry-tint: #3D1A26;
+  --ui-success: #4CC08E;
+  --ui-success-tint: #1C3328;
+  --ui-warn: #FFC85C;
+  --ui-warn-tint: #3D2E10;
+  --ui-info: #7CC4EE;
+  --ui-info-tint: #16293A;
+  --ui-danger: #FF8A80;
+  --ui-danger-tint: #3D1715;
+  --ui-shadow: 0 12px 30px -14px rgb(0 0 0 / 0.8);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --ui-bg: #17100C;
+    --ui-surface: #241912;
+    --ui-surface-2: #2E2018;
+    --ui-track: #3A2A20;
+    --ui-line: #3A2A20;
+    --ui-line-strong: #5A4436;
+    --ui-glass: rgb(36 25 18 / 0.68);
+    --ui-glass-line: rgb(255 255 255 / 0.08);
+    --ui-fg: #FFF3E8;
+    --ui-fg-label: #F0DDCD;
+    --ui-fg-soft: #CDB6A4;
+    --ui-fg-muted: #A8907E;
+    --ui-primary-tint: #3B2417;
+    --ui-link: #FF9A6B;
+    --ui-points: #FFC85C;
+    --ui-sun-tint: #3D2E10;
+  --ui-gold-from: #4D3611;
+  --ui-gold-to: #8A5B10;
+  --ui-on-gold: #FFF3E8;
+    --ui-berry: #FF7AA2;
+    --ui-berry-tint: #3D1A26;
+    --ui-success: #4CC08E;
+    --ui-success-tint: #1C3328;
+    --ui-warn: #FFC85C;
+    --ui-warn-tint: #3D2E10;
+    --ui-info: #7CC4EE;
+    --ui-info-tint: #16293A;
+    --ui-danger: #FF8A80;
+    --ui-danger-tint: #3D1715;
+    --ui-shadow: 0 12px 30px -14px rgb(0 0 0 / 0.8);
+    color-scheme: dark;
+  }
 }
 
 body {
-  background: var(--color-bg);
-  color: var(--color-fg);
+  background: var(--ui-bg);
+  color: var(--ui-fg);
   font-family: var(--font-sans);
-  line-height: 1.55;
+  line-height: 1.5;
+}
+
+/* Tombol 3D: turun saat ditekan, memantul kembali (gaya pegas). */
+.btn-3d {
+  box-shadow: 0 4px 0 var(--btn-edge, var(--color-primary-press));
+  transition:
+    transform 0.35s var(--ease-spring),
+    box-shadow 0.2s ease,
+    border-radius 0.35s var(--ease-spring),
+    background-color 0.2s ease;
+}
+.btn-3d:active:not(:disabled) {
+  transform: translateY(3px) scale(0.98);
+  box-shadow: 0 1px 0 var(--btn-edge, var(--color-primary-press));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }

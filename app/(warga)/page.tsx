@@ -1,5 +1,6 @@
 import { Suspense } from "react";
-import { HomeView, type DailyMission } from "./home-view";
+import type { DailyMission } from "./daily-missions";
+import { HomeView } from "./home-view";
 import { BottomNav, CITIZEN_NAV } from "@/components/bottom-nav";
 import { listMyActivities, listPublicActivities, type ActivityCard } from "@/lib/data/activities";
 import { listMyCommunityIds } from "@/lib/data/communities";
@@ -7,6 +8,7 @@ import { getCitizenDashboard } from "@/lib/data/dashboards";
 import { getLeaderboard, listMyPrizes, listTopPrizes } from "@/lib/data/global-events";
 import { getUserLeaderboard } from "@/lib/data/leaderboard";
 import { getCitizenMissions } from "@/lib/data/missions";
+import { VERIFICATION_HOW } from "@/lib/missions";
 import { getWallet, listMyVouchers } from "@/lib/data/rewards";
 import { getCurrentUser, getUnreadCount } from "@/lib/data/user";
 import { greetingFor } from "@/lib/format";
@@ -17,7 +19,7 @@ export default function BerandaPage() {
   return (
     <>
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-[22px] px-5 pb-32 pt-6">
-        <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
+        <Suspense fallback={<p className="text-[15px] text-fg-muted">Memuat…</p>}>
           <CitizenHome />
         </Suspense>
       </main>
@@ -58,7 +60,10 @@ async function CitizenHome() {
     Promise.all(running.map(({ card }) => getCitizenMissions(card.id))),
     getUserLeaderboard(user.homeVillageId ? "village" : "city"),
   ]);
-  const dailyMissions = running.flatMap(({ card }, i) => openMissions(card, missionLists[i])).slice(0, 4);
+  const dailyMissions = running
+    .flatMap(({ card }, i) => openMissions(card, missionLists[i]))
+    .sort((a, b) => (a.deadline ?? "9999").localeCompare(b.deadline ?? "9999"))
+    .slice(0, 4);
   const globalScores = Object.fromEntries(myGlobal.map((id, i) => [id, { rank: boards[i]?.me?.rank ?? null, score: boards[i]?.me?.score ?? 0 }]));
   const pendingPrizes = myPrizes.filter((p) => p.status === "pending_claim" && isFuture(p.claim_deadline));
   const recommended = recommend(publicActivities, {
@@ -95,9 +100,34 @@ function openMissions(card: ActivityCard, list: Awaited<ReturnType<typeof getCit
   if (!list?.can_work) return [];
   return list.missions.flatMap((m) =>
     m.open && m.can_work && (m.my_status === null || m.my_status === "rejected")
-      ? [{ id: m.id, title: m.title, activityId: card.id, activityTitle: card.title, reward: card.reach === "global" ? `+${m.score_reward} skor` : `+${m.xp_reward} XP` }]
+      ? [
+          {
+            id: m.id,
+            title: m.title,
+            description: m.description,
+            activityId: card.id,
+            activityTitle: card.title,
+            partnerName: m.partner_name,
+            checkpointName: m.checkpoint_name,
+            verification: m.verification,
+            howTo: VERIFICATION_HOW[m.verification],
+            reward: card.reach === "global" ? `+${m.score_reward} skor` : `+${m.xp_reward} XP`,
+            deadline: m.available_until ?? card.ends_at,
+            timeLeft: timeLeftLabel(m.available_until ?? card.ends_at),
+          },
+        ]
       : [],
   );
+}
+
+// "45 menit lagi", "5 jam lagi", atau "3 hari lagi" sampai batas waktu.
+function timeLeftLabel(until: string | null): string | null {
+  if (!until) return null;
+  const minutes = Math.floor((new Date(until).getTime() - Date.now()) / 60000);
+  if (minutes <= 0) return null;
+  if (minutes < 60) return `${minutes} menit lagi`;
+  if (minutes < 48 * 60) return `${Math.floor(minutes / 60)} jam lagi`;
+  return `${Math.floor(minutes / (24 * 60))} hari lagi`;
 }
 
 // Dipisah dari render supaya aturan "komponen harus murni" terpenuhi.

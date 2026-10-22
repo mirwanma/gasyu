@@ -16,7 +16,7 @@ export default function GrupPage() {
   return (
     <>
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-[18px] px-5 pb-32 pt-6">
-        <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
+        <Suspense fallback={<p className="text-[15px] text-fg-muted">Memuat…</p>}>
           <Groups />
         </Suspense>
       </main>
@@ -49,8 +49,8 @@ async function Groups() {
           Kembali
         </Link>
         <div className="flex flex-1 flex-col gap-0.5">
-          <h1 className="font-display text-[30px] font-bold">Grup</h1>
-          <span className="text-[16px] text-fg-soft">
+          <h1 className="font-display text-[28px] font-bold">Grup</h1>
+          <span className="text-[15px] text-fg-soft">
             {groups.length} dari maksimal {maxGroups} grup
           </span>
         </div>
@@ -58,14 +58,14 @@ async function Groups() {
 
       {invites.map((inv) => (
         <section key={inv.participation_id} className="flex flex-col gap-3 rounded-[20px] border border-primary/40 bg-primary-tint p-4 text-fg">
-          <span className="text-[13px] font-bold tracking-[0.05em] text-link">UNDANGAN IKUT AKTIVITAS</span>
-          <span className="text-[18px] leading-[1.45]">
+          <span className="text-[12px] font-bold tracking-[0.05em] text-link">UNDANGAN IKUT AKTIVITAS</span>
+          <span className="text-[16px] leading-[1.45]">
             <b>{inv.leader_nickname}</b> mendaftarkan {inv.group_name} ke{" "}
             <Link href={`/aktivitas/${inv.activity_id}`} className="font-bold text-fg underline">
               {inv.title}
             </Link>
           </span>
-          <span className="text-[14px] text-fg-soft">Jawab sebelum {inv.starts_at ? formatDateTime(inv.starts_at) : "aktivitas mulai"}, kursimu dilepas kalau tidak dijawab</span>
+          <span className="text-[13px] text-fg-soft">Jawab sebelum {inv.starts_at ? formatDateTime(inv.starts_at) : "aktivitas mulai"}, kursimu dilepas kalau tidak dijawab</span>
           <InviteResponse participationId={inv.participation_id} activityId={inv.activity_id} />
         </section>
       ))}
@@ -78,8 +78,8 @@ async function Groups() {
           <section key={g.id} className={`${cardClass} flex flex-col gap-3.5 p-4`}>
             <div className="flex items-start justify-between">
               <div className="flex flex-col gap-[3px]">
-                <span className="font-display text-[24px] font-semibold">{g.name}</span>
-                <span className="text-[14px] text-fg-soft">
+                <span className="font-display text-[22px] font-semibold">{g.name}</span>
+                <span className="text-[13px] text-fg-soft">
                   {g.members.length} dari {maxSize} anggota · ketua {g.members.find((m) => m.role === "leader")?.nickname ?? "-"}
                 </span>
               </div>
@@ -91,11 +91,11 @@ async function Groups() {
                   <UserAvatar nickname={m.nickname} size={40} />
                 </span>
               ))}
-              {g.members.length > 8 && <span className="ml-3 self-center text-[14px] text-fg-soft">+{g.members.length - 8}</span>}
+              {g.members.length > 8 && <span className="ml-3 self-center text-[13px] text-fg-soft">+{g.members.length - 8}</span>}
             </div>
             {rows.map((p) => (
               <Link key={p.activity_id} href={`/aktivitas/${p.activity_id}`} className="flex flex-col gap-2 rounded-[14px] bg-bg p-3 text-fg">
-                <div className="flex justify-between text-[16px]">
+                <div className="flex justify-between text-[15px]">
                   <span className="font-semibold">{titleOf.get(p.activity_id)?.title ?? "Challenge"} · target grup</span>
                   <span className="font-semibold text-xp">
                     {p.progress}/{p.target_count}
@@ -104,27 +104,27 @@ async function Groups() {
                 <div className="h-2 overflow-hidden rounded-lg bg-track">
                   <div className="h-full bg-xp" style={{ width: `${Math.min(100, Math.round((p.progress / p.target_count) * 100))}%` }} />
                 </div>
-                <span className="text-[14px] text-fg-muted">
+                <span className="text-[13px] text-fg-muted">
                   {p.contributors} anggota sudah berkontribusi · peringkat grup #{p.rank}
                 </span>
               </Link>
             ))}
             <div className="flex items-center gap-2.5">
-              <span className="flex h-11 flex-1 items-center justify-center rounded-xl border border-dashed border-line-strong font-display text-[20px] font-semibold tracking-[0.2em]">{g.invite_code}</span>
+              <span className="flex h-11 flex-1 items-center justify-center rounded-xl border border-dashed border-line-strong font-display text-[18px] font-semibold tracking-[0.2em]">{g.invite_code}</span>
               <ShareCode code={g.invite_code} groupName={g.name} />
             </div>
             <details className="group">
-              <summary className="cursor-pointer list-none text-[16px] font-semibold text-link">Kelola grup…</summary>
+              <summary className="cursor-pointer list-none text-[15px] font-semibold text-link">Kelola grup…</summary>
               <div className="mt-3 flex flex-col gap-2">
                 {g.members.map((m) => (
-                  <div key={m.user_id} className="flex items-center gap-2.5 text-[16px]">
+                  <div key={m.user_id} className="flex items-center gap-2.5 text-[15px]">
                     <UserAvatar nickname={m.nickname} size={28} />
                     <span className="flex flex-1 flex-col">
                       <span className="font-semibold">
                         {m.nickname}
                         {m.user_id === user.id ? " (kamu)" : ""}
                       </span>
-                      <span className="text-[13px] text-fg-soft">
+                      <span className="text-[12px] text-fg-soft">
                         {m.role === "leader" ? "Ketua" : "Anggota"} · {m.village_name ?? "Luar Cimahi"}
                       </span>
                     </span>
@@ -133,12 +133,12 @@ async function Groups() {
                         <form action={transferGroupLeader}>
                           <input type="hidden" name="group_id" value={g.id} />
                           <input type="hidden" name="user_id" value={m.user_id} />
-                          <button type="submit" className="text-[14px] font-semibold text-link">Jadikan ketua</button>
+                          <button type="submit" className="text-[13px] font-semibold text-link">Jadikan ketua</button>
                         </form>
                         <form action={removeGroupMember}>
                           <input type="hidden" name="group_id" value={g.id} />
                           <input type="hidden" name="user_id" value={m.user_id} />
-                          <button type="submit" className="text-[14px] font-semibold text-danger">Keluarkan</button>
+                          <button type="submit" className="text-[13px] font-semibold text-danger">Keluarkan</button>
                         </form>
                       </>
                     )}
@@ -162,7 +162,7 @@ async function Groups() {
         );
       })}
 
-      <p className="text-[14px] leading-[1.55] text-fg-muted">
+      <p className="text-[13px] leading-[1.55] text-fg-muted">
         Bonus grup +{setting("xp.group_bonus_pct", 20)}% XP saat minimal {setting("xp.group_bonus_min_members", 3)} anggota check-in di aktivitas yang sama di hari yang sama.
         Grup bisa mendaftar ke aktivitas bermode grup lewat halaman aktivitasnya; hanya ketua yang mendaftarkan.
       </p>

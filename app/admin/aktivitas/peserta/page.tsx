@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 export default function AdminPesertaPage({ searchParams }: PageProps<"/admin/aktivitas/peserta">) {
   return (
     <div className="flex max-w-xl flex-col gap-[18px]">
-      <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
+      <Suspense fallback={<p className="text-[15px] text-fg-muted">Memuat…</p>}>
         <Loader searchParams={searchParams} />
       </Suspense>
     </div>

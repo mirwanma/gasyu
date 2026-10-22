@@ -19,12 +19,12 @@ export default function ModerasiPage({ searchParams }: PageProps<"/admin/moderas
   return (
     <>
       <div className="flex flex-col gap-1">
-        <h1 className="font-display text-[32px] font-bold">Moderasi & anti-curang</h1>
-        <Suspense fallback={<span className="text-[17px] text-fg-soft">Memuat…</span>}>
+        <h1 className="font-display text-[30px] font-bold">Moderasi & anti-curang</h1>
+        <Suspense fallback={<span className="text-[15px] text-fg-soft">Memuat…</span>}>
           <Summary />
         </Suspense>
       </div>
-      <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
+      <Suspense fallback={<p className="text-[15px] text-fg-muted">Memuat…</p>}>
         <Board searchParams={searchParams} />
       </Suspense>
     </>
@@ -35,7 +35,7 @@ async function Summary() {
   const o = await getAdminOverview();
   const total = (o?.flagged_checkins ?? 0) + (o?.open_pattern_flags ?? 0);
   return (
-    <span className="text-[17px] text-fg-soft">
+    <span className="text-[15px] text-fg-soft">
       {total} terbuka · {o?.flagged_checkins ?? 0} di luar radius · {o?.open_pattern_flags ?? 0} pola mencurigakan
     </span>
   );
@@ -105,8 +105,8 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
 
   return (
     <>
-      {hasil && notices[hasil] && <p className="rounded-2xl bg-success-tint px-4 py-3 text-[16px] font-semibold text-success">{notices[hasil]}</p>}
-      {errorMsg && <p className="rounded-2xl bg-danger-tint px-4 py-3 text-[16px] font-semibold text-danger">{errorMsg}</p>}
+      {hasil && notices[hasil] && <p className="rounded-2xl bg-success-tint px-4 py-3 text-[15px] font-semibold text-success">{notices[hasil]}</p>}
+      {errorMsg && <p className="rounded-2xl bg-danger-tint px-4 py-3 text-[15px] font-semibold text-danger">{errorMsg}</p>}
       <div className="flex gap-2">
         <a href="/admin/moderasi" className={`${chipClass.base} ${mode === "open" ? chipClass.selected : chipClass.idle}`}>
           Terbuka
@@ -125,22 +125,22 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
               <section key={f.id} className={`flex flex-col gap-3 rounded-[20px] border p-5 ${meta.tone.includes("hot") ? "border-hot/30 bg-hot-tint/40" : meta.tone.includes("warn") ? "border-warn/30 bg-warn-tint/40" : "border-line bg-surface"}`}>
                 <div className="flex items-center justify-between gap-3">
                   <span className={`${tagClass.base} ${meta.tone}`}>{meta.label}</span>
-                  <span className="text-[14px] text-fg-soft">{formatDateTime(f.created_at)}</span>
+                  <span className="text-[13px] text-fg-soft">{formatDateTime(f.created_at)}</span>
                 </div>
-                <span className="text-[18px] font-semibold leading-[1.35]">{text.title}</span>
-                <span className="text-[16px] leading-[1.5] text-fg-soft">
+                <span className="text-[16px] font-semibold leading-[1.35]">{text.title}</span>
+                <span className="text-[15px] leading-[1.5] text-fg-soft">
                   <b className="text-fg">@{f.nickname}</b> · {f.village_name ?? "Luar Cimahi"}
                   {text.detail ? ` · ${text.detail}` : ""}
                   {f.suspended_at ? " · akun sedang beku" : ""}
                 </span>
                 {f.kind === "reviewer_burst" && f.organizer_name && (
-                  <a href={`/admin/pengguna?tab=penyelenggara&q=${encodeURIComponent(f.organizer_name)}`} className="text-[16px] font-semibold text-link">
+                  <a href={`/admin/pengguna?tab=penyelenggara&q=${encodeURIComponent(f.organizer_name)}`} className="text-[15px] font-semibold text-link">
                     Lihat penyelenggara (bisa dibekukan di sana) →
                   </a>
                 )}
                 {(burstApprovals.get(f.id)?.length ?? 0) > 0 && (
                   <details className="rounded-2xl border border-line bg-surface px-3 py-2">
-                    <summary className="cursor-pointer text-[16px] font-semibold">Periksa {burstApprovals.get(f.id)!.length} persetujuan</summary>
+                    <summary className="cursor-pointer text-[15px] font-semibold">Periksa {burstApprovals.get(f.id)!.length} persetujuan</summary>
                     <div className="mt-2 flex flex-col gap-2">
                       {burstApprovals.get(f.id)!.map((m) => (
                         <ReverseMissionRow key={m.completion_id} m={m} defaultNote="Bukti foto tidak sesuai kriteria" />
@@ -151,7 +151,7 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
                 {mode === "open" ? (
                   <form action={reviewFlag} className="flex flex-wrap items-center gap-2">
                     <input type="hidden" name="flag_id" value={f.id} />
-                    <input name="note" placeholder="Catatan (opsional)" className={`${inputClass} h-10 flex-[1_1_180px] text-[16px]`} />
+                    <input name="note" placeholder="Catatan (opsional)" className={`${inputClass} h-10 flex-[1_1_180px] text-[15px]`} />
                     <SubmitButton size="small" variant="outline" name="flag_action" value="dismiss" pendingText="…">
                       Abaikan
                     </SubmitButton>
@@ -165,7 +165,7 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
                     )}
                   </form>
                 ) : (
-                  <span className="text-[14px] font-semibold text-fg-label">
+                  <span className="text-[13px] font-semibold text-fg-label">
                     {f.status === "dismissed" ? "Diabaikan" : f.detail.admin_action === "suspend" ? "Akun dibekukan" : "Peringatan dikirim"}
                     {f.reviewed_at ? ` · ${formatDateTime(f.reviewed_at)}` : ""}
                   </span>
@@ -179,8 +179,8 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
       {flaggedMissions.length > 0 && (
         <section className={`${cardClass} flex flex-col gap-2 p-5`}>
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="font-display text-[20px] font-semibold">Misi QR di luar radius</h2>
-            <span className="text-[14px] text-fg-soft">XP sudah diberikan · batalkan = XP atau skor dibalik</span>
+            <h2 className="font-display text-[18px] font-semibold">Misi QR di luar radius</h2>
+            <span className="text-[13px] text-fg-soft">XP sudah diberikan · batalkan = XP atau skor dibalik</span>
           </div>
           {flaggedMissions.map((m) => (
             <ReverseMissionRow key={m.completion_id} m={m} defaultNote="Di luar radius checkpoint" />
@@ -190,16 +190,16 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
 
       <section className={`${cardClass} overflow-hidden`}>
         <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line px-5 py-4">
-          <h2 className="font-display text-[20px] font-semibold">Check-in ditandai</h2>
-          <span className="text-[14px] text-fg-soft">XP sudah diberikan · tolak = XP dan poin dibalik</span>
+          <h2 className="font-display text-[18px] font-semibold">Check-in ditandai</h2>
+          <span className="text-[13px] text-fg-soft">XP sudah diberikan · tolak = XP dan poin dibalik</span>
         </div>
         {checkins.length === 0 ? (
-          <p className="p-5 text-[16px] text-fg-soft">{mode === "open" ? "Tidak ada check-in yang menunggu keputusan." : "Belum ada riwayat keputusan."}</p>
+          <p className="p-5 text-[15px] text-fg-soft">{mode === "open" ? "Tidak ada check-in yang menunggu keputusan." : "Belum ada riwayat keputusan."}</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px] text-[16px]">
+            <table className="w-full min-w-[720px] text-[15px]">
               <thead>
-                <tr className="text-left text-[13px] font-bold uppercase tracking-[0.06em] text-fg-soft">
+                <tr className="text-left text-[12px] font-bold uppercase tracking-[0.06em] text-fg-soft">
                   <th className="px-5 py-3 font-bold">Warga</th>
                   <th className="px-3 py-3 font-bold">Aktivitas · checkpoint</th>
                   <th className="px-3 py-3 font-bold">Jarak</th>
@@ -214,20 +214,20 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
                     <td className="px-5 py-3">
                       <div className="flex flex-col">
                         <b>{c.nickname}</b>
-                        <span className="text-[14px] text-fg-soft">{c.village_name ?? "Luar Cimahi"}</span>
+                        <span className="text-[13px] text-fg-soft">{c.village_name ?? "Luar Cimahi"}</span>
                       </div>
                     </td>
                     <td className="px-3 py-3">
                       <div className="flex flex-col">
                         <span className="font-semibold">{c.activity_title}</span>
-                        <span className="text-[14px] text-fg-soft">
+                        <span className="text-[13px] text-fg-soft">
                           {c.partner_name} · {c.checkpoint_name}
                         </span>
                       </div>
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap">
                       {c.distance_m === null ? <span className="text-fg-soft">tanpa lokasi</span> : c.distance_m >= 1000 ? `${(c.distance_m / 1000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} km` : `${c.distance_m} m`}
-                      <span className="block text-[13px] text-fg-muted">radius {c.radius_m} m</span>
+                      <span className="block text-[12px] text-fg-muted">radius {c.radius_m} m</span>
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap">{formatDateTime(c.checked_in_at)}</td>
                     <td className="px-3 py-3 whitespace-nowrap">{formatNumber(c.xp_awarded)}</td>
@@ -258,7 +258,7 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
                               <input type="hidden" name="user_id" value={c.user_id} />
                               <input type="hidden" name="suspend" value="1" />
                               <input type="hidden" name="kembali" value="/admin/moderasi?tab=riwayat" />
-                              <button type="submit" className={`${smallButton.outline} h-8 px-3 text-[14px]`}>
+                              <button type="submit" className={`${smallButton.outline} h-8 px-3 text-[13px]`}>
                                 Bekukan akun
                               </button>
                             </form>
@@ -281,11 +281,11 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
 function ReverseMissionRow({ m, defaultNote }: { m: ReversibleMission; defaultNote: string }) {
   return (
     <div className="flex flex-col gap-2 border-t border-line pt-2 first:border-t-0 first:pt-0 sm:flex-row sm:items-center">
-      <span className="flex flex-1 flex-col text-[16px]">
+      <span className="flex flex-1 flex-col text-[15px]">
         <span>
           <b>@{m.nickname}</b> · {m.mission_title} · {m.reward}
         </span>
-        <span className="text-[14px] text-fg-soft">
+        <span className="text-[13px] text-fg-soft">
           {[m.activity_title, formatDateTime(m.at), m.distance_m !== null && m.flag_id ? `${formatNumber(m.distance_m)} m dari checkpoint` : null].filter(Boolean).join(" · ")}
         </span>
       </span>
@@ -301,7 +301,7 @@ function ReverseMissionRow({ m, defaultNote }: { m: ReversibleMission; defaultNo
         )}
         <form action={reverseMission} className="flex items-center gap-2">
           <input type="hidden" name="completion_id" value={m.completion_id} />
-          <input name="note" required defaultValue={defaultNote} aria-label="Alasan pembatalan" className={`${inputClass} h-9 w-44 text-[14px]`} />
+          <input name="note" required defaultValue={defaultNote} aria-label="Alasan pembatalan" className={`${inputClass} h-9 w-44 text-[13px]`} />
           <SubmitButton size="small" variant="danger" pendingText="…">
             Batalkan misi
           </SubmitButton>

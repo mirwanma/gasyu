@@ -12,10 +12,10 @@ export default function AuditPage() {
   return (
     <>
       <div className="flex flex-col gap-1">
-        <h1 className="font-display text-[32px] font-bold">Audit</h1>
-        <span className="text-[17px] text-fg-soft">Riwayat tindakan admin, 100 terakhir.</span>
+        <h1 className="font-display text-[30px] font-bold">Audit</h1>
+        <span className="text-[15px] text-fg-soft">Riwayat tindakan admin, 100 terakhir.</span>
       </div>
-      <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
+      <Suspense fallback={<p className="text-[15px] text-fg-muted">Memuat…</p>}>
         <AuditList />
       </Suspense>
     </>
@@ -39,15 +39,15 @@ async function AuditList() {
 
   return (
     <section className={`${cardClass} overflow-hidden`}>
-      {rows.length === 0 && <p className="p-5 text-[16px] text-fg-soft">Belum ada tindakan tercatat.</p>}
+      {rows.length === 0 && <p className="p-5 text-[15px] text-fg-soft">Belum ada tindakan tercatat.</p>}
       {rows.map((row, i) => {
         const admin = (Array.isArray(row.admin) ? row.admin[0] : row.admin) as { nickname: string } | null;
         return (
           <div key={row.id} className={`flex flex-wrap items-center gap-3 px-4 py-3 ${i > 0 ? "border-t border-line" : ""}`}>
-            <span className="min-w-[150px] text-[14px] text-fg-soft">{formatDateTime(row.created_at)}</span>
-            <span className="min-w-[100px] text-[16px] font-semibold">{admin?.nickname ?? "-"}</span>
-            <span className="flex-1 text-[16px]">{ACTION_LABELS[row.action] ?? row.action}</span>
-            {row.note && <span className="text-[14px] text-fg-soft">{row.note}</span>}
+            <span className="min-w-[150px] text-[13px] text-fg-soft">{formatDateTime(row.created_at)}</span>
+            <span className="min-w-[100px] text-[15px] font-semibold">{admin?.nickname ?? "-"}</span>
+            <span className="flex-1 text-[15px]">{ACTION_LABELS[row.action] ?? row.action}</span>
+            {row.note && <span className="text-[13px] text-fg-soft">{row.note}</span>}
           </div>
         );
       })}

@@ -3,7 +3,7 @@ import { AktivitasBaruPage } from "@/components/organizer/activity-pages";
 
 export default function Page({ params }: PageProps<"/merchant/[id]/aktivitas/baru">) {
   return (
-    <Suspense fallback={<p className="px-5 pt-6 text-[16px] text-fg-muted">Memuat…</p>}>
+    <Suspense fallback={<p className="px-5 pt-6 text-[15px] text-fg-muted">Memuat…</p>}>
       <Loader params={params} />
     </Suspense>
   );

@@ -42,7 +42,7 @@ export function ActivityCard({ card, href, footer, topPrize }: { card: Card; hre
     <a href={href} className="flex flex-col overflow-hidden rounded-[22px] border border-line bg-surface text-fg">
       <div className="relative h-[120px]" style={coverStyle(card)}>
         <div className="absolute inset-x-3 top-3 flex items-center justify-between">
-          <span className="rounded-full bg-scrim px-3 py-1 text-[13px] font-bold text-cream">
+          <span className="rounded-full bg-scrim px-3 py-1 text-[12px] font-bold text-cream">
             {isGlobal ? LOCATION_MODE_LABELS[card.location_mode] : typeLabel(card.type)}
             {card.join_mode !== "individual" ? " · grup" : ""}
           </span>
@@ -51,13 +51,13 @@ export function ActivityCard({ card, href, footer, topPrize }: { card: Card; hre
       </div>
       <div className="flex flex-col gap-2.5 p-3.5">
         <div className="flex flex-col gap-0.5">
-          <span className="font-display text-[20px] font-semibold leading-tight">{card.title}</span>
-          <span className="text-[14px] text-fg-soft">{card.host_name}</span>
-          <span className="text-[14px] text-fg-soft">
+          <span className="font-display text-[18px] font-semibold leading-tight">{card.title}</span>
+          <span className="text-[13px] text-fg-soft">{card.host_name}</span>
+          <span className="text-[13px] text-fg-soft">
             {formatSchedule(card.starts_at, card.ends_at)} · {isGlobal ? "terbuka untuk semua kota" : card.join_mode === "individual" ? "individu" : card.join_mode === "both" ? "individu / grup" : `grup ${card.group_min}–${card.group_max} orang`}
           </span>
         </div>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[14px] font-bold">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] font-bold">
           {isGlobal ? (
             <span className="min-w-0 truncate text-hot">{topPrize ? `Hadiah: ${topPrize}` : "Skor & hadiah per peringkat"}</span>
           ) : (
@@ -73,12 +73,12 @@ export function ActivityCard({ card, href, footer, topPrize }: { card: Card; hre
             <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-track">
               <div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(quota, 2)}%` }} />
             </div>
-            <span className="text-[13px] text-fg-soft tabular-nums">
+            <span className="text-[12px] text-fg-soft tabular-nums">
               {card.seats_taken}/{card.quota.toLocaleString("id-ID")}
             </span>
           </div>
         ) : (
-          <span className="text-[13px] text-fg-soft">{card.seats_taken} peserta · tanpa kuota</span>
+          <span className="text-[12px] text-fg-soft">{card.seats_taken} peserta · tanpa kuota</span>
         )}
         {footer}
       </div>
@@ -95,8 +95,8 @@ export function ActivityRow({ card, href, selected }: { card: Card; href: string
     >
       <span className="size-12 shrink-0 rounded-xl" style={coverStyle(card)} aria-hidden="true" />
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="truncate text-[18px] font-semibold">{card.title}</span>
-        <span className="text-[14px] text-fg-soft">
+        <span className="truncate text-[16px] font-semibold">{card.title}</span>
+        <span className="text-[13px] text-fg-soft">
           {card.reach === "global" ? "Event Global" : typeLabel(card.type)} · {formatSchedule(card.starts_at, card.ends_at)} · {card.seats_taken} peserta
         </span>
       </span>

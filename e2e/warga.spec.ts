@@ -9,9 +9,9 @@ test.describe("warga", () => {
 
   test("beranda menampilkan XP, dompet, dan aktivitasku", async ({ page }) => {
     await open(page, "/");
-    await expect(page.getByLabel("Profil warga")).toBeVisible();
+    await expect(page.getByLabel("Level dan XP")).toBeVisible();
     await expect(page.getByRole("progressbar", { name: "Progres ke level berikutnya" })).toBeVisible();
-    await expect(page.getByLabel("Ringkasan skor").getByText("Poin", { exact: true })).toBeVisible();
+    await expect(page.getByLabel("Ringkasan skor").getByText("Poin kamu")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Aktivitasku" })).toBeVisible();
   });
 

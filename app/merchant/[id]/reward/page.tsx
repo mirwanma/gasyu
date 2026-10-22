@@ -14,7 +14,7 @@ import { createClient } from "@/lib/supabase/server";
 // Reward & budget poin merchant: daftar voucher, tambah/ubah, voucher yang ditukar.
 export default function Page({ params, searchParams }: PageProps<"/merchant/[id]/reward">) {
   return (
-    <Suspense fallback={<p className="px-5 pt-6 text-[16px] text-fg-muted">Memuat…</p>}>
+    <Suspense fallback={<p className="px-5 pt-6 text-[15px] text-fg-muted">Memuat…</p>}>
       <Loader params={params} searchParams={searchParams} />
     </Suspense>
   );
@@ -51,7 +51,7 @@ async function Body({ id, edit, approved, isLeader }: { id: string; edit?: strin
 
   return (
     <>
-      <Link href={`${base}/lainnya`} className="flex items-center gap-1.5 text-[16px] font-semibold text-link">
+      <Link href={`${base}/lainnya`} className="flex items-center gap-1.5 text-[15px] font-semibold text-link">
         <Icon name="back" size={16} stroke={2} />
         Lainnya
       </Link>
@@ -63,17 +63,17 @@ async function Body({ id, edit, approved, isLeader }: { id: string; edit?: strin
           [`${summary.vouchersUsed}/${summary.redeemed}`, "voucher dipakai/ditukar"],
         ].map(([v, k]) => (
           <div key={k} className={`${cardClass} flex flex-col gap-1 p-3`}>
-            <span className="font-display text-[24px] font-semibold">{v}</span>
-            <span className="text-[13px] text-fg-soft">{k}</span>
+            <span className="font-display text-[22px] font-semibold">{v}</span>
+            <span className="text-[12px] text-fg-soft">{k}</span>
           </div>
         ))}
       </div>
-      <p className="text-[14px] leading-[1.5] text-fg-soft">Budget poin diisi per aktivitas di halaman kelola aktivitas. Poin hanya diberikan ke warga selama budget masih cukup.</p>
+      <p className="text-[13px] leading-[1.5] text-fg-soft">Budget poin diisi per aktivitas di halaman kelola aktivitas. Poin hanya diberikan ke warga selama budget masih cukup.</p>
 
       {!approved ? (
-        <p className="rounded-2xl bg-warn-tint px-4 py-3 text-[16px] text-warn">Reward bisa dibuat setelah merchant terverifikasi.</p>
+        <p className="rounded-2xl bg-warn-tint px-4 py-3 text-[15px] text-warn">Reward bisa dibuat setelah merchant terverifikasi.</p>
       ) : !isLeader ? (
-        <p className="rounded-2xl bg-info-tint px-4 py-3 text-[16px] text-info">Hanya pemilik yang bisa mengatur reward dan budget poin.</p>
+        <p className="rounded-2xl bg-info-tint px-4 py-3 text-[15px] text-info">Hanya pemilik yang bisa mengatur reward dan budget poin.</p>
       ) : (
         <RewardForm
           key={editing?.id ?? "baru"}
@@ -84,18 +84,18 @@ async function Body({ id, edit, approved, isLeader }: { id: string; edit?: strin
       )}
 
       <section className="flex flex-col gap-2.5">
-        <h2 className="font-display text-[20px] font-semibold">Reward</h2>
-        {rewards.length === 0 && <p className={`${cardClass} p-4 text-[16px] text-fg-soft`}>Belum ada reward. Tambahkan voucher pertama, misalnya gratis satu menu.</p>}
+        <h2 className="font-display text-[18px] font-semibold">Reward</h2>
+        {rewards.length === 0 && <p className={`${cardClass} p-4 text-[15px] text-fg-soft`}>Belum ada reward. Tambahkan voucher pertama, misalnya gratis satu menu.</p>}
         {rewards.map((r) => (
           <div key={r.id} className={`${cardClass} flex flex-col gap-2 p-4 ${r.status === "inactive" ? "opacity-70" : ""}`}>
             <div className="flex items-start justify-between gap-2">
               <span className="flex flex-col">
-                <span className="text-[18px] font-semibold">{r.title}</span>
-                <span className="text-[14px] text-fg-soft">
+                <span className="text-[16px] font-semibold">{r.title}</span>
+                <span className="text-[13px] text-fg-soft">
                   {r.price_points} poin · stok {r.stock} · berlaku {r.valid_days} hari
                   {r.available_until ? ` · s.d. ${formatDate(r.available_until)}` : ""}
                 </span>
-                <span className="text-[14px] text-fg-soft">{!r.outlet_names ? "Berlaku di semua outlet" : `Berlaku di: ${r.outlet_names.join(", ") || "outlet nonaktif"}`}</span>
+                <span className="text-[13px] text-fg-soft">{!r.outlet_names ? "Berlaku di semua outlet" : `Berlaku di: ${r.outlet_names.join(", ") || "outlet nonaktif"}`}</span>
               </span>
               <span className={`${tagClass.base} ${r.status === "active" ? tagClass.success : tagClass.neutral}`}>{r.status === "active" ? "Aktif" : "Nonaktif"}</span>
             </div>
@@ -119,20 +119,20 @@ async function Body({ id, edit, approved, isLeader }: { id: string; edit?: strin
       </section>
 
       <section className="flex flex-col gap-2.5">
-        <h2 className="font-display text-[20px] font-semibold">Voucher ditukar</h2>
+        <h2 className="font-display text-[18px] font-semibold">Voucher ditukar</h2>
         {isLeader && redemptions.some((rd) => rd.status === "active") && (
-          <p className="text-[14px] text-fg-soft">Refund hanya untuk reward yang sudah dinonaktifkan, misalnya karena stok habis.</p>
+          <p className="text-[13px] text-fg-soft">Refund hanya untuk reward yang sudah dinonaktifkan, misalnya karena stok habis.</p>
         )}
-        {redemptions.length === 0 && <p className={`${cardClass} p-4 text-[16px] text-fg-soft`}>Belum ada warga yang menukar poin.</p>}
+        {redemptions.length === 0 && <p className={`${cardClass} p-4 text-[15px] text-fg-soft`}>Belum ada warga yang menukar poin.</p>}
         {redemptions.length > 0 && (
           <div className={`${cardClass} overflow-hidden`}>
             {redemptions.slice(0, 30).map((rd) => (
               <div key={rd.id} className="flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0">
                 <span className="flex flex-1 flex-col">
-                  <span className="text-[17px] font-semibold">
+                  <span className="text-[15px] font-semibold">
                     {rd.nickname} · {rd.title}
                   </span>
-                  <span className="text-[14px] text-fg-soft">
+                  <span className="text-[13px] text-fg-soft">
                     {rd.code ? `${rd.code} · ` : ""}{rd.status === "used" && rd.used_at ? `dipakai ${formatDateTime(rd.used_at)}${rd.outlet_name ? ` di ${rd.outlet_name}` : ""}` : rd.status === "active" ? `berlaku s.d. ${formatDate(rd.expires_at)}` : rd.status}
                   </span>
                 </span>
@@ -140,7 +140,7 @@ async function Body({ id, edit, approved, isLeader }: { id: string; edit?: strin
                   <form action={refundRedemption}>
                     <input type="hidden" name="organizer_id" value={id} />
                     <input type="hidden" name="redemption_id" value={rd.id} />
-                    <button type="submit" className="text-[14px] font-semibold text-danger">Refund</button>
+                    <button type="submit" className="text-[13px] font-semibold text-danger">Refund</button>
                   </form>
                 )}
               </div>

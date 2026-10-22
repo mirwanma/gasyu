@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 export default function AdminMisiPage({ searchParams }: PageProps<"/admin/aktivitas/misi">) {
   return (
     <div className="flex max-w-md flex-col gap-[18px]">
-      <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
+      <Suspense fallback={<p className="text-[15px] text-fg-muted">Memuat…</p>}>
         <Loader searchParams={searchParams} />
       </Suspense>
     </div>

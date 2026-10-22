@@ -14,9 +14,9 @@ export default function DaftarPage({ searchParams }: PageProps<"/daftar">) {
             <Icon name="back" stroke={2} />
             Kembali
           </a>
-          <h1 className="font-display text-[24px] font-semibold">Daftarkan penyelenggara</h1>
+          <h1 className="font-display text-[22px] font-semibold">Daftarkan penyelenggara</h1>
         </div>
-        <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
+        <Suspense fallback={<p className="text-[15px] text-fg-muted">Memuat…</p>}>
           <FormLoader searchParams={searchParams} />
         </Suspense>
       </main>

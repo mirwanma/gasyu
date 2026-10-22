@@ -26,22 +26,22 @@ export function AdminSidebar({ pendingOrganizers, pendingActivities, openFlags, 
       <div className="flex items-center gap-2.5 px-2 pb-4">
         <LogoMark size={40} />
         <span className="flex flex-col">
-          <span className="text-[26px] font-extrabold leading-[1.1] tracking-[-0.03em]">
-            gasyu <span className="text-[16px] font-semibold tracking-normal text-fg-soft">admin</span>
+          <span className="text-[24px] font-extrabold leading-[1.1] tracking-[-0.03em]">
+            gasyu <span className="text-[15px] font-semibold tracking-normal text-fg-soft">admin</span>
           </span>
-          <span className="text-[14px] text-fg-soft">Pilot Kota Cimahi</span>
+          <span className="text-[13px] text-fg-soft">Pilot Kota Cimahi</span>
         </span>
       </div>
       <nav aria-label="Menu admin" className="flex flex-row flex-wrap gap-1 md:flex-col">
         {items.map((item) => {
           const active = item.href && (pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href)));
-          const base = "flex h-11 items-center gap-3 rounded-xl px-3 text-[17px] font-semibold";
+          const base = "flex h-11 items-center gap-3 rounded-xl px-3 text-[15px] font-semibold";
           const content = (
             <>
               <Icon name={item.icon} />
               <span className="flex-1">{item.label}</span>
               {item.count ? (
-                <span className="flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-hot px-1.5 text-[13px] font-bold text-white">
+                <span className="flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-hot px-1.5 text-[12px] font-bold text-white">
                   {item.count}
                 </span>
               ) : null}
@@ -58,7 +58,7 @@ export function AdminSidebar({ pendingOrganizers, pendingActivities, openFlags, 
           );
         })}
       </nav>
-      <div className="mt-auto flex items-center justify-between px-2 pt-4 text-[14px] text-fg-soft">
+      <div className="mt-auto flex items-center justify-between px-2 pt-4 text-[13px] text-fg-soft">
         <span>Masuk sebagai {nickname}</span>
         <Link href="/" className="font-semibold text-link">
           Ke PWA

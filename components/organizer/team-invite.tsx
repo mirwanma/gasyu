@@ -23,18 +23,18 @@ export function TeamInvite({ organizerId, type, roleName }: { organizerId: strin
 
   return (
     <section className={`${cardClass} flex flex-col gap-3 p-4`}>
-      <span className="text-[17px] font-bold">Undang {roleName}</span>
-      <span className="text-[14px] leading-[1.5] text-fg-soft">
+      <span className="text-[15px] font-bold">Undang {roleName}</span>
+      <span className="text-[13px] leading-[1.5] text-fg-soft">
         Tautan berlaku 7 hari dan hanya bisa dipakai sekali. Kirim lewat WhatsApp ke calon {roleName}.
       </span>
       {state.inviteUrl ? (
         <div className="flex flex-col gap-2">
-          <code className="break-all rounded-[12px] bg-track px-3 py-2 text-[14px]">{state.inviteUrl}</code>
+          <code className="break-all rounded-[12px] bg-track px-3 py-2 text-[13px]">{state.inviteUrl}</code>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={copy}
-              className="flex h-10 items-center justify-center rounded-xl border border-line-strong bg-surface text-[16px] font-semibold text-fg"
+              className="flex h-10 items-center justify-center rounded-xl border border-line-strong bg-surface text-[15px] font-semibold text-fg"
             >
               {copied ? "Tersalin" : "Salin tautan"}
             </button>
@@ -42,7 +42,7 @@ export function TeamInvite({ organizerId, type, roleName }: { organizerId: strin
               href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
               target="_blank"
               rel="noreferrer"
-              className="flex h-10 items-center justify-center rounded-xl bg-fg text-[16px] font-semibold text-bg"
+              className="flex h-10 items-center justify-center rounded-xl bg-fg text-[15px] font-semibold text-bg"
             >
               Kirim via WhatsApp
             </a>
@@ -60,7 +60,7 @@ export function TeamInvite({ organizerId, type, roleName }: { organizerId: strin
         <input type="hidden" name="type" value={type} />
         <input type="hidden" name="origin" value="" />
         <ErrorMessage message={state.error} />
-        <SubmitButton pendingText="Membuat tautan…" className="mt-2 h-12 rounded-[14px] text-[17px]">
+        <SubmitButton pendingText="Membuat tautan…" className="mt-2 h-12 rounded-[14px] text-[15px]">
           {state.inviteUrl ? "Buat tautan baru" : "Buat tautan undangan"}
         </SubmitButton>
       </form>

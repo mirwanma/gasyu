@@ -17,14 +17,14 @@ export default function MasterMisiPage({ searchParams }: PageProps<"/admin/misi"
     <>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <h1 className="font-display text-[32px] font-bold">Master misi</h1>
-          <span className="text-[17px] text-fg-soft">Template misi siap pakai untuk penyelenggara. Isinya disalin saat dipakai dan tetap bisa diubah penyelenggara.</span>
+          <h1 className="font-display text-[30px] font-bold">Master misi</h1>
+          <span className="text-[15px] text-fg-soft">Template misi siap pakai untuk penyelenggara. Isinya disalin saat dipakai dan tetap bisa diubah penyelenggara.</span>
         </div>
-        <Link href="/admin/misi?tambah=1" className="flex h-11 items-center rounded-xl bg-fg px-4 text-[17px] font-semibold text-bg">
+        <Link href="/admin/misi?tambah=1" className="flex h-11 items-center rounded-xl bg-fg px-4 text-[15px] font-semibold text-bg">
           + Template baru
         </Link>
       </div>
-      <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
+      <Suspense fallback={<p className="text-[15px] text-fg-muted">Memuat…</p>}>
         <Body searchParams={searchParams} />
       </Suspense>
     </>
@@ -67,22 +67,22 @@ async function Body({ searchParams }: Pick<PageProps<"/admin/misi">, "searchPara
   return (
     <>
       {str(sp.hasil) && RESULT[str(sp.hasil)!] && (
-        <p role="status" className="rounded-[14px] bg-success-tint px-4 py-3 text-[16px] font-semibold text-success">{RESULT[str(sp.hasil)!]}</p>
+        <p role="status" className="rounded-[14px] bg-success-tint px-4 py-3 text-[15px] font-semibold text-success">{RESULT[str(sp.hasil)!]}</p>
       )}
-      {str(sp.error) && <p role="alert" className="rounded-[14px] bg-danger-tint px-4 py-3 text-[16px] text-danger">{str(sp.error)}</p>}
+      {str(sp.error) && <p role="alert" className="rounded-[14px] bg-danger-tint px-4 py-3 text-[15px] text-danger">{str(sp.error)}</p>}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <div className={`${cardClass} flex flex-col gap-1 p-4`}>
-          <span className="font-display text-[30px] font-semibold">{active.length}</span>
-          <span className="text-[14px] text-fg-soft">template aktif</span>
+          <span className="font-display text-[28px] font-semibold">{active.length}</span>
+          <span className="text-[13px] text-fg-soft">template aktif</span>
         </div>
         <div className={`${cardClass} flex flex-col gap-1 p-4`}>
-          <span className="font-display text-[30px] font-semibold">{used}</span>
-          <span className="text-[14px] text-fg-soft">template sudah dipakai penyelenggara</span>
+          <span className="font-display text-[28px] font-semibold">{used}</span>
+          <span className="text-[13px] text-fg-soft">template sudah dipakai penyelenggara</span>
         </div>
         <div className={`${cardClass} flex flex-col gap-1 p-4`}>
-          <span className="font-display text-[30px] font-semibold">{totalMissions}</span>
-          <span className="text-[14px] text-fg-soft">misi dibuat dari master misi</span>
+          <span className="font-display text-[28px] font-semibold">{totalMissions}</span>
+          <span className="text-[13px] text-fg-soft">misi dibuat dari master misi</span>
         </div>
       </div>
 
@@ -99,7 +99,7 @@ async function Body({ searchParams }: Pick<PageProps<"/admin/misi">, "searchPara
       </nav>
 
       {shown.length === 0 ? (
-        <p className={`${cardClass} p-5 text-[16px] text-fg-soft`}>Tidak ada template di filter ini.</p>
+        <p className={`${cardClass} p-5 text-[15px] text-fg-soft`}>Tidak ada template di filter ini.</p>
       ) : (
         <section className={`${cardClass} overflow-hidden`}>
           {shown.map((t) => {
@@ -108,22 +108,22 @@ async function Body({ searchParams }: Pick<PageProps<"/admin/misi">, "searchPara
               <div key={t.id} className="flex flex-wrap items-start gap-4 border-b border-line px-5 py-4 last:border-b-0">
                 <span className="flex min-w-[260px] flex-1 flex-col gap-1">
                   <span className="flex flex-wrap items-center gap-1.5">
-                    <span className="text-[18px] font-semibold">{t.title}</span>
+                    <span className="text-[16px] font-semibold">{t.title}</span>
                     <span className={`${tagClass.base} ${tagClass.primary}`}>{CATEGORY_LABELS[t.category]}</span>
                     <span className={`${tagClass.base} ${tagClass.neutral}`}>{VERIFICATION_LABELS[t.verification]}</span>
                     <span className={`${tagClass.base} ${t.is_required ? tagClass.warn : tagClass.info}`}>{t.is_required ? "Wajib" : "Bonus"}</span>
                   </span>
-                  {t.description && <span className="text-[16px] leading-[1.5] text-fg-label">{t.description}</span>}
-                  {t.organizer_tips && <span className="text-[14px] leading-[1.5] text-fg-soft">Tips: {t.organizer_tips}</span>}
-                  <span className="text-[14px] text-fg-muted">{audienceLabel(t)} · {t.xp_reward} XP</span>
+                  {t.description && <span className="text-[15px] leading-[1.5] text-fg-label">{t.description}</span>}
+                  {t.organizer_tips && <span className="text-[13px] leading-[1.5] text-fg-soft">Tips: {t.organizer_tips}</span>}
+                  <span className="text-[13px] text-fg-muted">{audienceLabel(t)} · {t.xp_reward} XP</span>
                 </span>
-                <span className="flex min-w-[170px] flex-col gap-0.5 text-[14px] text-fg-soft">
+                <span className="flex min-w-[170px] flex-col gap-0.5 text-[13px] text-fg-soft">
                   <span><b className="text-fg">{t.stats.activities}</b> aktivitas · <b className="text-fg">{t.stats.missions}</b> misi</span>
                   <span>{rate === null ? "Belum ada peserta" : `${rate}% peserta menyelesaikan`}</span>
                   {t.stats.last_used_at && <span>terakhir dipakai {timeAgo(t.stats.last_used_at)}</span>}
                 </span>
                 <span className="flex gap-2">
-                  <Link href={`/admin/misi?ubah=${t.id}`} className="flex h-10 items-center rounded-xl border border-line-strong bg-surface px-4 text-[16px] font-semibold text-fg">
+                  <Link href={`/admin/misi?ubah=${t.id}`} className="flex h-10 items-center rounded-xl border border-line-strong bg-surface px-4 text-[15px] font-semibold text-fg">
                     Ubah
                   </Link>
                   <form action={toggleMissionTemplate}>

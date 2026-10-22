@@ -1,19 +1,21 @@
 import type { Metadata, Viewport } from "next";
-import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
+import { Bricolage_Grotesque, Figtree } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegister } from "@/components/sw-register";
 
-const jakarta = Plus_Jakarta_Sans({
+// Teks: Figtree (jelas di layar kecil). Judul dan angka: Bricolage Grotesque (lihat docs/BRAND.md bagian 3).
+const figtree = Figtree({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-jakarta",
+  variable: "--font-figtree",
 });
 
-const outfit = Outfit({
+const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-outfit",
+  variable: "--font-bricolage",
 });
+
+// Dipasang di <head> sebelum halaman tampil supaya tema pilihan warga tidak berkedip.
+const THEME_SCRIPT = `try{var m=document.cookie.match(/(?:^|; )gasyu-theme=(light|dark)/);if(m)document.documentElement.dataset.theme=m[1]}catch(e){}`;
 
 export const metadata: Metadata = {
   title: "Gasyu",
@@ -23,13 +25,19 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#F3F3F1",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FFF7EF" },
+    { media: "(prefers-color-scheme: dark)", color: "#17100C" },
+  ],
   viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="id" className={`${jakarta.variable} ${outfit.variable} h-full antialiased`}>
+    <html lang="id" className={`${figtree.variable} ${bricolage.variable} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col">
         {children}
         <ServiceWorkerRegister />

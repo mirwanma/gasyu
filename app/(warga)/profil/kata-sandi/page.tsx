@@ -15,9 +15,9 @@ export default function KataSandiPage({ searchParams }: PageProps<"/profil/kata-
             <Icon name="back" stroke={2} />
             Kembali
           </a>
-          <h1 className="font-display text-[28px] font-bold">Kata sandi</h1>
+          <h1 className="font-display text-[26px] font-bold">Kata sandi</h1>
         </div>
-        <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
+        <Suspense fallback={<p className="text-[15px] text-fg-muted">Memuat…</p>}>
           <Content searchParams={searchParams} />
         </Suspense>
       </main>
@@ -34,7 +34,7 @@ async function Content({ searchParams }: Pick<PageProps<"/profil/kata-sandi">, "
 
   return (
     <>
-      <p className="text-[17px] leading-[1.55] text-fg-soft">
+      <p className="text-[15px] leading-[1.55] text-fg-soft">
         {params.baru === "1"
           ? "Kamu sudah masuk. Buat kata sandi baru supaya lain kali bisa masuk tanpa menunggu kode."
           : "Buat kata sandi kalau selama ini kamu masuk pakai kode email atau Google, atau ganti kata sandi lama."}

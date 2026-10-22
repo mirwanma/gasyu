@@ -169,9 +169,9 @@ export default function NotifikasiPage() {
             <Icon name="back" stroke={2} />
             Kembali
           </Link>
-          <h1 className="font-display text-[26px] font-bold">Notifikasi</h1>
+          <h1 className="font-display text-[24px] font-bold">Notifikasi</h1>
         </div>
-        <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
+        <Suspense fallback={<p className="text-[15px] text-fg-muted">Memuat…</p>}>
           <NotificationList />
         </Suspense>
       </main>
@@ -194,14 +194,14 @@ async function NotificationList() {
   const unread = items.filter((n) => !n.read_at).length;
 
   if (items.length === 0) {
-    return <p className={`${cardClass} p-4 text-[16px] text-fg-soft`}>Belum ada notifikasi.</p>;
+    return <p className={`${cardClass} p-4 text-[15px] text-fg-soft`}>Belum ada notifikasi.</p>;
   }
 
   return (
     <>
       {unread > 0 && (
         <form action={markNotificationsRead} className="flex justify-end">
-          <button type="submit" className="min-h-11 text-[16px] font-semibold text-link">
+          <button type="submit" className="min-h-11 text-[15px] font-semibold text-link">
             Tandai semua dibaca
           </button>
         </form>
@@ -213,9 +213,9 @@ async function NotificationList() {
             <li key={n.id} className={`${cardClass} flex gap-3 p-4 ${n.read_at ? "opacity-70" : ""}`}>
               <span className={`mt-1.5 size-2 shrink-0 rounded-full ${n.read_at ? "bg-transparent" : "bg-hot"}`} />
               <div className="flex flex-1 flex-col gap-1">
-                <span className="text-[17px] font-semibold">{href ? <a href={href} className="text-fg">{title}</a> : title}</span>
-                {body && <span className="text-[16px] leading-[1.5] text-fg-soft">{body}</span>}
-                <span className="text-[13px] text-fg-muted">{timeAgo(n.created_at)}</span>
+                <span className="text-[15px] font-semibold">{href ? <a href={href} className="text-fg">{title}</a> : title}</span>
+                {body && <span className="text-[15px] leading-[1.5] text-fg-soft">{body}</span>}
+                <span className="text-[12px] text-fg-muted">{timeAgo(n.created_at)}</span>
               </div>
             </li>
           );
