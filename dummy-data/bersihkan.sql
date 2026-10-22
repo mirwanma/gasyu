@@ -73,4 +73,5 @@ end $$;
 delete from auth.users where id in (select id from dm_users);
 
 set session_replication_role = default;
-select 'Data dummy dihapus' as hasil;
+-- sisa_akun_dummy harus 0. Jika tidak, skrip dijalankan di project lain atau bukan sebagai peran postgres.
+select 'Data dummy dihapus' as hasil, (select count(*) from auth.users where email like '%@dummy.ramein.id') as sisa_akun_dummy;
