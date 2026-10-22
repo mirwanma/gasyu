@@ -23,7 +23,7 @@ export function Logo() {
   return (
     <div className="flex items-center gap-2.5" role="img" aria-label="gasyu">
       <LogoMark />
-      <span className="text-[30px] font-extrabold tracking-[-0.03em] text-cream">gasyu</span>
+      <span className="text-[32px] font-extrabold tracking-[-0.03em] text-fg">gasyu</span>
     </div>
   );
 }
@@ -71,7 +71,7 @@ export function ErrorMessage({ message }: { message?: string }) {
   return (
     <p
       role="alert"
-      className="rounded-[14px] border border-danger/30 bg-danger-tint px-4 py-3 text-[13px] leading-[18px] text-danger"
+      className="rounded-[14px] border border-danger/30 bg-danger-tint px-4 py-3 text-[16px] leading-[1.5] text-danger"
     >
       {message}
     </p>
@@ -83,7 +83,7 @@ export function SuccessMessage({ message }: { message?: string }) {
   return (
     <p
       role="status"
-      className="rounded-[14px] border border-success/30 bg-success-tint px-4 py-3 text-[13px] leading-[18px] text-success"
+      className="rounded-[14px] border border-success/30 bg-success-tint px-4 py-3 text-[16px] leading-[1.5] text-success"
     >
       {message}
     </p>

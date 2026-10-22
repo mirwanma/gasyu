@@ -3,7 +3,7 @@ import { AvatarForm } from "./avatar-form";
 import { ProfileForm, VillageForm } from "./forms";
 import { BottomNav, CITIZEN_NAV } from "@/components/bottom-nav";
 import { Icon } from "@/components/icons";
-import { cardClass } from "@/components/styles";
+import { cardClass, backLinkClass } from "@/components/styles";
 import { getVillageOptions } from "@/lib/data/organizers";
 import { getCurrentUser } from "@/lib/data/user";
 import { formatDate } from "@/lib/format";
@@ -15,12 +15,13 @@ export default function UbahProfilPage() {
     <>
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-[18px] px-5 pb-32 pt-6">
         <div className="flex items-center gap-3">
-          <a href="/profil" aria-label="Kembali" className="flex size-11 items-center justify-center rounded-full border border-line bg-surface text-fg">
+          <a href="/profil" className={backLinkClass}>
             <Icon name="back" stroke={2} />
+            Kembali
           </a>
-          <h1 className="font-display text-[24px] font-bold">Ubah profil</h1>
+          <h1 className="font-display text-[28px] font-bold">Ubah profil</h1>
         </div>
-        <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>
+        <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
           <Content />
         </Suspense>
       </main>
@@ -48,7 +49,7 @@ async function Content() {
       <AvatarForm nickname={user.nickname} avatarUrl={user.avatarUrl} />
       <ProfileForm nickname={user.nickname} fullName={user.fullName ?? ""} />
       <VillageForm current={user.homeVillageId ?? "luar"} districts={districts} lockedUntil={lockedUntil} days={days} />
-      <a href="/profil/hapus" className={`${cardClass} flex items-center justify-between p-4 text-[14px] font-semibold text-danger`}>
+      <a href="/profil/hapus" className={`${cardClass} flex items-center justify-between p-4 text-[17px] font-semibold text-danger`}>
         Hapus akun
         <Icon name="chevron" size={16} stroke={2} />
       </a>

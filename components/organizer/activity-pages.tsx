@@ -28,7 +28,7 @@ const basePath = (type: Kind, id: string) => `/${type === "merchant" ? "merchant
 
 function BackLink({ href, label }: { href: string; label: string }) {
   return (
-    <Link href={href} className="flex items-center gap-1.5 text-[13px] font-semibold text-link">
+    <Link href={href} className="flex items-center gap-1.5 text-[16px] font-semibold text-link">
       <Icon name="back" size={16} stroke={2} />
       {label}
     </Link>
@@ -69,16 +69,16 @@ async function AktivitasList({ id, base, tab, approved }: { id: string; base: st
       {tab === "partner" ? (
         partnerships.length === 0 ? (
           <div className={`${cardClass} flex flex-col gap-1 p-4`}>
-            <span className="text-[15px] font-semibold">Belum jadi partner</span>
-            <span className="text-[13px] leading-[1.5] text-fg-soft">Undangan dan open call ada di menu Lainnya → Kolaborasi.</span>
+            <span className="text-[18px] font-semibold">Belum jadi partner</span>
+            <span className="text-[16px] leading-[1.5] text-fg-soft">Undangan dan open call ada di menu Lainnya → Kolaborasi.</span>
           </div>
         ) : (
           <div className={`${cardClass} overflow-hidden`}>
             {partnerships.map((p) => (
               <a key={p.id} href={`${base}/aktivitas/${p.activity_id}`} className="flex items-center gap-3 border-b border-line px-4 py-3.5 text-fg last:border-b-0">
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span className="truncate text-[15px] font-semibold">{p.activity_title}</span>
-                  <span className="text-[12px] text-fg-soft">host {p.host_name} · {p.role} · {formatSchedule(p.starts_at, p.ends_at)}</span>
+                  <span className="truncate text-[18px] font-semibold">{p.activity_title}</span>
+                  <span className="text-[14px] text-fg-soft">host {p.host_name} · {p.role} · {formatSchedule(p.starts_at, p.ends_at)}</span>
                 </span>
                 <StatusTag status={p.activity_status} />
               </a>
@@ -87,8 +87,8 @@ async function AktivitasList({ id, base, tab, approved }: { id: string; base: st
         )
       ) : items.length === 0 ? (
         <div className={`${cardClass} flex flex-col gap-1 p-4`}>
-          <span className="text-[15px] font-semibold">{tab ? "Belum ada yang selesai" : "Belum ada aktivitas"}</span>
-          <span className="text-[13px] leading-[1.5] text-fg-soft">
+          <span className="text-[18px] font-semibold">{tab ? "Belum ada yang selesai" : "Belum ada aktivitas"}</span>
+          <span className="text-[16px] leading-[1.5] text-fg-soft">
             {approved ? "Buat event pertamamu: isi dasar, waktu, checkpoint, lalu ajukan ke tim Gasyu." : "Kamu bisa menyiapkan draft sekarang dan mengajukannya setelah terverifikasi."}
           </span>
         </div>
@@ -99,7 +99,7 @@ async function AktivitasList({ id, base, tab, approved }: { id: string; base: st
           ))}
         </div>
       )}
-      <Link href={`${base}/aktivitas/baru`} className="fixed bottom-[104px] right-5 z-10 flex h-[52px] items-center gap-2 rounded-full bg-primary px-[18px] text-[15px] font-semibold text-on-primary shadow-[0_8px_20px_rgba(75,79,224,0.3)]">
+      <Link href={`${base}/aktivitas/baru`} className="fixed bottom-[104px] right-5 z-10 flex h-[52px] items-center gap-2 rounded-full bg-primary px-[18px] text-[18px] font-semibold text-on-primary shadow-lg shadow-primary/30 hover:bg-primary-hover">
         + Buat aktivitas
       </Link>
     </>
@@ -115,7 +115,7 @@ export function AktivitasBaruPage({ id, type }: { id: string; type: Kind }) {
       {(ctx) => (
         <>
           <BackLink href={`${base}/aktivitas`} label="Aktivitas" />
-          <h1 className="font-display text-[24px] font-bold">Buat aktivitas</h1>
+          <h1 className="font-display text-[28px] font-bold">Buat aktivitas</h1>
           <FormLoader id={id} type={type} canSetPrice={ctx.org.role === "owner" || ctx.org.role === "chair"} />
         </>
       )}
@@ -172,7 +172,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
     return (
       <>
         <BackLink href={self} label={card.title} />
-        <h1 className="font-display text-[24px] font-bold">Ubah draft</h1>
+        <h1 className="font-display text-[28px] font-bold">Ubah draft</h1>
         <FormLoader id={id} type={type} initial={{ id: aid, type: card.type, difficulty: card.difficulty, target_scope: card.target_scope, target_kind: card.target_kind, target_count: card.target_count, join_mode: card.join_mode, group_min: card.group_min, group_max: card.group_max, goal: card.goal as ActivityFormValues["goal"], title: card.title, description: card.description ?? "", scope_region_id: card.scope_region_id, starts_at: card.starts_at, ends_at: card.ends_at, quota: card.quota, residency_rule: card.residency_rule, audience: card.audience, is_paid: card.is_paid, price_idr: card.price_idr, payment_instructions: raw?.payment_instructions ?? null, payment_window_hours: raw?.payment_window_hours ?? null }} canSetPrice={isLeader} />
       </>
     );
@@ -192,31 +192,31 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
   return (
     <>
       <BackLink href={`${base}/aktivitas`} label="Aktivitas" />
-      {hasil && RESULT_TEXT[hasil] && <p className="rounded-2xl bg-success-tint px-4 py-3 text-[13px] font-semibold text-success">{RESULT_TEXT[hasil]}</p>}
-      {error && <p className="rounded-2xl bg-danger-tint px-4 py-3 text-[13px] font-semibold text-danger">{error}</p>}
+      {hasil && RESULT_TEXT[hasil] && <p className="rounded-2xl bg-success-tint px-4 py-3 text-[16px] font-semibold text-success">{RESULT_TEXT[hasil]}</p>}
+      {error && <p className="rounded-2xl bg-danger-tint px-4 py-3 text-[16px] font-semibold text-danger">{error}</p>}
 
       <div className="flex flex-col overflow-hidden rounded-[22px] border border-line bg-surface">
         <div className="h-[120px]" style={coverStyle(card)} />
         <div className="flex flex-col gap-2 p-4">
           <div className="flex items-start justify-between gap-3">
-            <h1 className="font-display text-[22px] font-bold leading-tight">{card.title}</h1>
+            <h1 className="font-display text-[26px] font-bold leading-tight">{card.title}</h1>
             <StatusTag status={card.status} />
           </div>
-          <span className="text-[13px] text-fg-soft">
+          <span className="text-[16px] text-fg-soft">
             {typeLabel(card.type)} · {formatSchedule(card.starts_at, card.ends_at)} · {formatPrice(card.price_idr, card.is_paid)} · {card.audience === "members_only" ? "khusus member" : "publik"}
             {card.quota ? ` · kuota ${card.quota.toLocaleString("id-ID")}` : ""}
           </span>
           {card.scope_region_name && (
-            <span className="text-[12px] text-fg-soft">
+            <span className="text-[14px] text-fg-soft">
               Cakupan {card.scope_region_name}{card.residency_rule === "residents_only" ? " · khusus warga" : ""}
             </span>
           )}
-          <span className="text-[12px] text-fg-soft">
+          <span className="text-[14px] text-fg-soft">
             Pendaftaran: {JOIN_MODE_LABELS[card.join_mode]}{card.join_mode !== "individual" ? ` (${card.group_min}–${card.group_max} orang)` : ""}
             {card.type === "challenge" ? ` · ${DIFFICULTY_LABELS[card.difficulty ?? "easy"]} · target ${targetLabel(card.target_kind, card.target_count, card.target_scope)}` : ""}
           </span>
           {isHost && card.status === "draft" && raw?.review_note && (
-            <p className="rounded-xl bg-danger-tint px-3 py-2 text-[12px] text-danger">Catatan tim Gasyu: {raw.review_note}</p>
+            <p className="rounded-xl bg-danger-tint px-3 py-2 text-[14px] text-danger">Catatan tim Gasyu: {raw.review_note}</p>
           )}
           <div className="flex flex-wrap gap-2 pt-1">
             {editable && (
@@ -248,8 +248,8 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
           [`+${card.xp_base}`, "XP dasar"],
         ].map(([v, k]) => (
           <div key={k} className={`${cardClass} flex flex-col gap-1 p-3`}>
-            <span className="font-display text-[22px] font-semibold">{v}</span>
-            <span className="text-[11px] text-fg-soft">{k}</span>
+            <span className="font-display text-[26px] font-semibold">{v}</span>
+            <span className="text-[13px] text-fg-soft">{k}</span>
           </div>
         ))}
       </div>
@@ -257,8 +257,8 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
       {stats && (
         <section className={`${cardClass} flex flex-col gap-3 p-4`}>
           <div className="flex items-baseline justify-between">
-            <h2 className="font-display text-[18px] font-semibold">Statistik</h2>
-            <span className="text-[12px] text-fg-soft">{stats.checkins_today} check-in hari ini</span>
+            <h2 className="font-display text-[20px] font-semibold">Statistik</h2>
+            <span className="text-[14px] text-fg-soft">{stats.checkins_today} check-in hari ini</span>
           </div>
           <div className="grid grid-cols-4 gap-2 text-center">
             {[
@@ -268,16 +268,16 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
               [stats.returning_citizens, "kembali"],
             ].map(([v, k]) => (
               <div key={k} className="flex flex-col gap-0.5 rounded-xl bg-bg px-2 py-2.5">
-                <span className="font-display text-[20px] font-semibold">{v}</span>
-                <span className="text-[11px] text-fg-soft">{k}</span>
+                <span className="font-display text-[24px] font-semibold">{v}</span>
+                <span className="text-[13px] text-fg-soft">{k}</span>
               </div>
             ))}
           </div>
-          {stats.checkins_flagged > 0 && <span className="text-[12px] text-warn">{stats.checkins_flagged} check-in di luar radius menunggu tinjauan tim Gasyu.</span>}
+          {stats.checkins_flagged > 0 && <span className="text-[14px] text-warn">{stats.checkins_flagged} check-in di luar radius menunggu tinjauan tim Gasyu.</span>}
           {partnerStats.length > 1 && (
             <div className="flex flex-col gap-1.5 border-t border-line pt-3">
               {partnerStats.map((p) => (
-                <div key={p.organizer_id} className="flex items-center justify-between text-[12px]">
+                <div key={p.organizer_id} className="flex items-center justify-between text-[14px]">
                   <span className="font-semibold">
                     {p.organizer_name} <span className="font-normal text-fg-soft">· {p.role}</span>
                   </span>
@@ -293,18 +293,18 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
 
       <section className="flex flex-col gap-2.5">
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-[18px] font-semibold">Checkpoint</h2>
-          <span className="text-[12px] text-fg-soft">radius standar 150 m</span>
+          <h2 className="font-display text-[20px] font-semibold">Checkpoint</h2>
+          <span className="text-[14px] text-fg-soft">radius standar 150 m</span>
         </div>
-        {checkpoints.length === 0 && <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>Belum ada checkpoint. Minimal satu checkpoint aktif sebelum mengajukan.</p>}
+        {checkpoints.length === 0 && <p className={`${cardClass} p-4 text-[16px] text-fg-soft`}>Belum ada checkpoint. Minimal satu checkpoint aktif sebelum mengajukan.</p>}
         {checkpoints.map((c) => (
           <div key={c.id} className={`${cardClass} flex items-center gap-3 p-3 ${c.is_active ? "" : "opacity-60"}`}>
             <span className="flex size-10 items-center justify-center rounded-xl bg-primary-tint text-link">
               <Icon name="pin" size={18} stroke={2} />
             </span>
             <span className="flex flex-1 flex-col">
-              <span className="text-[14px] font-semibold">{c.name}</span>
-              <span className="text-[12px] text-fg-soft">{c.address ?? `${c.lat}, ${c.lng}`} · radius {c.radius_m} m{c.is_active ? "" : " · nonaktif"}</span>
+              <span className="text-[17px] font-semibold">{c.name}</span>
+              <span className="text-[14px] text-fg-soft">{c.address ?? `${c.lat}, ${c.lng}`} · radius {c.radius_m} m{c.is_active ? "" : " · nonaktif"}</span>
             </span>
             {!["ended", "settled", "cancelled"].includes(card.status) && (
               <form action={toggleCheckpoint}>
@@ -325,15 +325,15 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
 
       <section className="flex flex-col gap-2.5">
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-[18px] font-semibold">Partner</h2>
-          <span className="text-[12px] text-fg-soft">{partners.filter((p) => p.status === "accepted").length} terlibat</span>
+          <h2 className="font-display text-[20px] font-semibold">Partner</h2>
+          <span className="text-[14px] text-fg-soft">{partners.filter((p) => p.status === "accepted").length} terlibat</span>
         </div>
         {partners.filter((p) => p.status !== "removed" && p.status !== "declined").map((p) => (
           <div key={p.id} className={`${cardClass} flex items-center gap-3 p-3`}>
             <OrganizerAvatar name={p.organizer_name} type={p.organizer_type} logoUrl={p.organizer_logo_url} size={40} />
             <span className="flex flex-1 flex-col">
-              <span className="text-[14px] font-semibold">{p.organizer_name}{p.organizer_id === id ? " (kamu)" : ""}</span>
-              <span className="text-[12px] text-fg-soft">
+              <span className="text-[17px] font-semibold">{p.organizer_name}{p.organizer_id === id ? " (kamu)" : ""}</span>
+              <span className="text-[14px] text-fg-soft">
                 {p.role === "host" ? "Host" : p.role === "cohost" ? "Cohost" : "Sponsor"}
                 {p.status === "invited" ? " · menunggu jawaban" : ""}
                 {p.points_budget > 0 ? ` · budget ${p.points_budget} poin` : ""}
@@ -345,48 +345,48 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
                 <input type="hidden" name="partner_id" value={p.id} />
                 <input type="hidden" name="organizer_id" value={id} />
                 <input type="hidden" name="type_org" value={type} />
-                <button type="submit" className="text-[12px] font-semibold text-danger">Batalkan</button>
+                <button type="submit" className="text-[14px] font-semibold text-danger">Batalkan</button>
               </form>
             )}
           </div>
         ))}
         {organizers.length > 0 && (
           <details className={`${cardClass} p-4`}>
-            <summary className="cursor-pointer list-none text-[14px] font-bold">Undang partner…</summary>
+            <summary className="cursor-pointer list-none text-[17px] font-bold">Undang partner…</summary>
             <div className="pt-3">
               <InvitePartnerForm activityId={aid} organizers={organizers} ctx={{ organizerId: id, typeOrg: type }} />
             </div>
-            <p className="pt-2 text-[11px] text-fg-muted">Undangan yang belum dijawab menahan pengajuan di status &ldquo;Menunggu partner&rdquo;. Atau cari partner lewat open call di menu Kolaborasi.</p>
+            <p className="pt-2 text-[13px] text-fg-muted">Undangan yang belum dijawab menahan pengajuan di status &ldquo;Menunggu partner&rdquo;. Atau cari partner lewat open call di menu Kolaborasi.</p>
           </details>
         )}
       </section>
 
       {!isHost ? (
         <section className={`${cardClass} flex flex-col gap-1 p-4`}>
-          <h2 className="font-display text-[18px] font-semibold">Peranmu: {myPartner?.role === "cohost" ? "cohost" : "sponsor"}</h2>
-          <p className="text-[13px] leading-[1.5] text-fg-soft">Kamu bisa menambah checkpoint milikmu, menampilkan QR-nya, dan melihat peserta yang check-in di sana. Budget poin diatur di menu Kolaborasi.</p>
+          <h2 className="font-display text-[20px] font-semibold">Peranmu: {myPartner?.role === "cohost" ? "cohost" : "sponsor"}</h2>
+          <p className="text-[16px] leading-[1.5] text-fg-soft">Kamu bisa menambah checkpoint milikmu, menampilkan QR-nya, dan melihat peserta yang check-in di sana. Budget poin diatur di menu Kolaborasi.</p>
         </section>
       ) : type === "merchant" && hostPartner ? (
         <section className={`${cardClass} flex flex-col gap-3 p-4`}>
           <div className="flex items-baseline justify-between">
-            <h2 className="font-display text-[18px] font-semibold">Poin dari {ctx.org.name}</h2>
-            {budget && <span className="text-[12px] font-semibold text-fg-soft">terpakai {budget.used} · sisa {budget.remaining}</span>}
+            <h2 className="font-display text-[20px] font-semibold">Poin dari {ctx.org.name}</h2>
+            {budget && <span className="text-[14px] font-semibold text-fg-soft">terpakai {budget.used} · sisa {budget.remaining}</span>}
           </div>
           <form action={saveActivityPoints} className="flex flex-col gap-3">
             <input type="hidden" name="organizer_id" value={id} />
             <input type="hidden" name="activity_id" value={aid} />
             <input type="hidden" name="partner_id" value={hostPartner.id as string} />
             <div className="grid grid-cols-2 gap-2">
-              <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-fg-label">
+              <label className="flex flex-col gap-1.5 text-[16px] font-semibold text-fg-label">
                 Per penyelesaian
-                <input name="points_per_completion" type="number" min={0} max={10000} inputMode="numeric" defaultValue={card.points_per_completion} disabled={!pointsEditable || !isLeader} className="h-[52px] w-full rounded-[14px] border border-line-strong bg-surface px-4 text-[15px] text-fg disabled:opacity-60" />
+                <input name="points_per_completion" type="number" min={0} max={10000} inputMode="numeric" defaultValue={card.points_per_completion} disabled={!pointsEditable || !isLeader} className="h-[52px] w-full rounded-[14px] border border-line-strong bg-surface px-4 text-[18px] text-fg disabled:opacity-60" />
               </label>
-              <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-fg-label">
+              <label className="flex flex-col gap-1.5 text-[16px] font-semibold text-fg-label">
                 Budget poin
-                <input name="points_budget" type="number" min={0} max={1000000} inputMode="numeric" defaultValue={budget?.budget ?? 0} disabled={!["draft", "awaiting_partners", "in_review", "published"].includes(card.status) || !isLeader} className="h-[52px] w-full rounded-[14px] border border-line-strong bg-surface px-4 text-[15px] text-fg disabled:opacity-60" />
+                <input name="points_budget" type="number" min={0} max={1000000} inputMode="numeric" defaultValue={budget?.budget ?? 0} disabled={!["draft", "awaiting_partners", "in_review", "published"].includes(card.status) || !isLeader} className="h-[52px] w-full rounded-[14px] border border-line-strong bg-surface px-4 text-[18px] text-fg disabled:opacity-60" />
               </label>
             </div>
-            <span className="text-[12px] text-fg-soft">
+            <span className="text-[14px] text-fg-soft">
               {card.points_per_completion > 0 && (budget?.budget ?? 0) > 0
                 ? `Cukup untuk ${Math.floor((budget?.remaining ?? 0) / card.points_per_completion)} peserta lagi yang menyelesaikan.`
                 : "Poin diberikan ke warga yang menyelesaikan aktivitas, dipotong dari budget. Tanpa budget, warga tetap dapat XP."}
@@ -401,21 +401,21 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
         </section>
       ) : (
         <section className={`${cardClass} flex flex-col gap-1 p-4`}>
-          <h2 className="font-display text-[18px] font-semibold">Poin</h2>
-          <p className="text-[13px] leading-[1.5] text-fg-soft">Komunitas tidak punya budget poin. Poin untuk peserta hanya ada jika ada merchant sponsor; undang lewat menu Kolaborasi.</p>
+          <h2 className="font-display text-[20px] font-semibold">Poin</h2>
+          <p className="text-[16px] leading-[1.5] text-fg-soft">Komunitas tidak punya budget poin. Poin untuk peserta hanya ada jika ada merchant sponsor; undang lewat menu Kolaborasi.</p>
         </section>
       )}
 
       {isHost && (
         <section className={`${cardClass} flex flex-col gap-2 p-4`}>
           <div className="flex items-baseline justify-between">
-            <h2 className="font-display text-[18px] font-semibold">Harga</h2>
-            <span className="text-[12px] font-semibold text-fg-soft">{formatPrice(card.price_idr, card.is_paid)}{card.is_paid ? " / orang" : ""}</span>
+            <h2 className="font-display text-[20px] font-semibold">Harga</h2>
+            <span className="text-[14px] font-semibold text-fg-soft">{formatPrice(card.price_idr, card.is_paid)}{card.is_paid ? " / orang" : ""}</span>
           </div>
           {card.is_paid ? (
             <>
-              <p className="text-[13px] leading-[1.5] text-fg-label whitespace-pre-line">{raw?.payment_instructions}</p>
-              <span className="text-[12px] text-fg-soft">Batas bayar {raw?.payment_window_hours ?? 24} jam setelah daftar. Uang tidak lewat Gasyu; tandai lunas di halaman Peserta.</span>
+              <p className="text-[16px] leading-[1.5] text-fg-label whitespace-pre-line">{raw?.payment_instructions}</p>
+              <span className="text-[14px] text-fg-soft">Batas bayar {raw?.payment_window_hours ?? 24} jam setelah daftar. Uang tidak lewat Gasyu; tandai lunas di halaman Peserta.</span>
               {payStats && (
                 <div className="grid grid-cols-4 gap-2 text-center">
                   {[
@@ -425,8 +425,8 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
                     [payStats.refund_due, "perlu refund", payStats.refund_due > 0 ? "text-danger" : "text-fg-soft"],
                   ].map(([v, k, tone]) => (
                     <div key={String(k)} className="flex flex-col gap-0.5 rounded-xl bg-track/60 py-2">
-                      <span className={`font-display text-[18px] font-semibold ${tone}`}>{v}</span>
-                      <span className="text-[10px] text-fg-soft">{k}</span>
+                      <span className={`font-display text-[20px] font-semibold ${tone}`}>{v}</span>
+                      <span className="text-[12px] text-fg-soft">{k}</span>
                     </div>
                   ))}
                 </div>
@@ -436,7 +436,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
               </Link>
             </>
           ) : (
-            <p className="text-[13px] leading-[1.5] text-fg-soft">Aktivitas gratis. Harga bisa diatur pemilik/ketua di langkah &ldquo;Harga&rdquo; saat masih draft.</p>
+            <p className="text-[16px] leading-[1.5] text-fg-soft">Aktivitas gratis. Harga bisa diatur pemilik/ketua di langkah &ldquo;Harga&rdquo; saat masih draft.</p>
           )}
         </section>
       )}
@@ -444,8 +444,8 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
       {liteEditable && <ActivityLiteForm organizerId={id} type={type} activityId={aid} description={card.description ?? ""} />}
 
       {isHost && <section className={`${cardClass} flex flex-col gap-3 p-4`}>
-        <h2 className="text-[15px] font-bold">Status</h2>
-        <p className="text-[13px] leading-[1.5] text-fg-soft">
+        <h2 className="text-[18px] font-bold">Status</h2>
+        <p className="text-[16px] leading-[1.5] text-fg-soft">
           {card.status === "draft" && "Draft hanya terlihat oleh tim kamu. Ajukan supaya ditinjau tim Gasyu lalu terbit di Jelajah."}
           {card.status === "in_review" && "Sedang ditinjau tim Gasyu. Kamu masih bisa menarik pengajuan untuk mengubah draft."}
           {card.status === "published" && `Terbit ${card.published_at ? formatDateTime(card.published_at) : ""}. Warga sudah bisa mendaftar.`}
@@ -460,7 +460,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
             <input type="hidden" name="activity_id" value={aid} />
             <input type="hidden" name="action" value="submit" />
             <SubmitButton pendingText="Mengajukan…">Ajukan ke tim Gasyu</SubmitButton>
-            {ctx.org.status !== "approved" && <span className="text-[12px] text-warn">Penyelenggara harus terverifikasi dulu sebelum mengajukan.</span>}
+            {ctx.org.status !== "approved" && <span className="text-[14px] text-warn">Penyelenggara harus terverifikasi dulu sebelum mengajukan.</span>}
           </form>
         )}
         {card.status === "in_review" && (
@@ -474,7 +474,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
         )}
         {isLeader && ["draft", "in_review", "published"].includes(card.status) && (
           <details className="group">
-            <summary className="cursor-pointer list-none text-[13px] font-semibold text-danger">Batalkan aktivitas…</summary>
+            <summary className="cursor-pointer list-none text-[16px] font-semibold text-danger">Batalkan aktivitas…</summary>
             <form action={changeActivityStatus} className="mt-3 flex flex-col gap-2">
               <input type="hidden" name="organizer_id" value={id} />
               <input type="hidden" name="type_org" value={type} />
@@ -485,7 +485,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
             </form>
           </details>
         )}
-        <span className="text-[11px] text-fg-muted">Dibuat {raw?.created_at ? timeAgo(raw.created_at) : "-"}</span>
+        <span className="text-[13px] text-fg-muted">Dibuat {raw?.created_at ? timeAgo(raw.created_at) : "-"}</span>
       </section>}
     </>
   );

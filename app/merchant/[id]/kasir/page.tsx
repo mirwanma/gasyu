@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export default function Page({ params }: PageProps<"/merchant/[id]/kasir">) {
   return (
-    <Suspense fallback={<p className="px-5 pt-6 text-[13px] text-fg-muted">Memuat…</p>}>
+    <Suspense fallback={<p className="px-5 pt-6 text-[16px] text-fg-muted">Memuat…</p>}>
       <Loader params={params} />
     </Suspense>
   );
@@ -31,16 +31,16 @@ async function Body({ id }: { id: string }) {
   const time = new Intl.DateTimeFormat("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit" });
 
   if (!outlets?.length) {
-    return <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>Tambahkan outlet aktif dulu di menu Lainnya → Outlet untuk memakai mode kasir.</p>;
+    return <p className={`${cardClass} p-4 text-[16px] text-fg-soft`}>Tambahkan outlet aktif dulu di menu Lainnya → Outlet untuk memakai mode kasir.</p>;
   }
   return (
     <>
       <KasirForm organizerId={id} outlets={outlets as { id: string; name: string }[]} />
       <section className="flex flex-col gap-2">
-        <h2 className="text-[15px] font-bold">Dipakai hari ini · {used.length}</h2>
-        {used.length === 0 && <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>Belum ada voucher dipakai hari ini.</p>}
+        <h2 className="text-[18px] font-bold">Dipakai hari ini · {used.length}</h2>
+        {used.length === 0 && <p className={`${cardClass} p-4 text-[16px] text-fg-soft`}>Belum ada voucher dipakai hari ini.</p>}
         {used.map((u) => (
-          <div key={u.id} className={`${cardClass} flex h-[52px] items-center justify-between px-3.5 text-[13px]`}>
+          <div key={u.id} className={`${cardClass} flex h-[52px] items-center justify-between px-3.5 text-[16px]`}>
             <span>
               <b>{u.nickname}</b> · {u.title}
             </span>

@@ -8,7 +8,7 @@ import { PaymentSection } from "./payment";
 import { coverStyle, cardTag } from "@/components/activity-card";
 import { OrganizerAvatar } from "@/components/avatar";
 import { Icon } from "@/components/icons";
-import { cardClass, tagClass } from "@/components/styles";
+import { cardClass, tagClass, backLinkClass } from "@/components/styles";
 import { DIFFICULTY_LABELS, LOCATION_MODE_LABELS, formatPrice, formatSchedule, targetLabel, typeLabel } from "@/lib/activities";
 import { getActivityCard, getCheckpoints, getMyParticipation, getPartners } from "@/lib/data/activities";
 import { listGroupProgress, listMyGroups } from "@/lib/data/groups";
@@ -21,7 +21,7 @@ import { getCurrentUser } from "@/lib/data/user";
 export default function AktivitasPage({ params }: PageProps<"/aktivitas/[id]">) {
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col pb-36">
-      <Suspense fallback={<p className="px-5 pt-6 text-[13px] text-fg-muted">Memuat…</p>}>
+      <Suspense fallback={<p className="px-5 pt-6 text-[16px] text-fg-muted">Memuat…</p>}>
         <Detail params={params} />
       </Suspense>
     </main>
@@ -72,55 +72,56 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
   return (
     <>
       <div className="relative h-[220px]" style={coverStyle(card)}>
-        <Link href={isGlobal ? "/jelajah?filter=global" : "/jelajah"} aria-label="Kembali" className="absolute left-5 top-5 flex size-11 items-center justify-center rounded-full bg-[#0D1024]/70 text-cream">
+        <Link href={isGlobal ? "/jelajah?filter=global" : "/jelajah"} className={`${backLinkClass} border-transparent bg-scrim text-cream hover:bg-scrim absolute left-5 top-5`}>
           <Icon name="back" stroke={2} />
+          Kembali
         </Link>
         <div className="absolute bottom-4 left-5 flex gap-2">
           {tag && <span className={`${tagClass.base} ${tagClass[tag.tone]}`}>{tag.label}</span>}
-          <span className="rounded-full bg-[#0D1024]/70 px-2.5 py-1 text-[11px] font-bold text-cream">{isGlobal ? LOCATION_MODE_LABELS[card.location_mode] : typeLabel(card.type)}</span>
+          <span className="rounded-full bg-scrim px-3 py-1 text-[13px] font-bold text-cream">{isGlobal ? LOCATION_MODE_LABELS[card.location_mode] : typeLabel(card.type)}</span>
         </div>
       </div>
 
       <div className="flex flex-col gap-5 px-5 pt-5">
         <div className="flex flex-col gap-1.5">
-          <h1 className="font-display text-[26px] font-bold leading-tight">{card.title}</h1>
-          <Link href={`/${card.host_type === "merchant" ? "m" : "k"}/${card.host_slug}`} className="text-[14px] font-semibold text-link">
+          <h1 className="font-display text-[30px] font-bold leading-tight">{card.title}</h1>
+          <Link href={`/${card.host_type === "merchant" ? "m" : "k"}/${card.host_slug}`} className="text-[17px] font-semibold text-link">
             {card.host_name}
           </Link>
-          {card.description && <p className="text-[14px] leading-[1.6] text-fg-label whitespace-pre-line">{card.description}</p>}
+          {card.description && <p className="text-[17px] leading-[1.6] text-fg-label whitespace-pre-line">{card.description}</p>}
         </div>
 
         <dl className="grid grid-cols-2 gap-2.5">
           {facts.map(([k, v]) => (
             <div key={k} className={`${cardClass} flex flex-col gap-0.5 p-3`}>
-              <dt className="text-[11px] text-fg-soft">{k}</dt>
-              <dd className="text-[14px] font-semibold">{v}</dd>
+              <dt className="text-[13px] text-fg-soft">{k}</dt>
+              <dd className="text-[17px] font-semibold">{v}</dd>
             </div>
           ))}
         </dl>
 
         {isGlobal && (
-          <p className="rounded-2xl bg-hot-tint px-4 py-3 text-[13px] leading-[1.5] text-hot">
+          <p className="rounded-2xl bg-hot-tint px-4 py-3 text-[16px] leading-[1.5] text-hot">
             Event Global terbuka untuk pengguna dari kota mana pun. Check-in dan misi menambah skor event untuk papan peringkat ini, bukan XP atau poin.
           </p>
         )}
 
         {(card.audience === "members_only" || card.residency_rule === "residents_only") && (
-          <p className="rounded-2xl bg-warn-tint px-4 py-3 text-[13px] text-warn">
+          <p className="rounded-2xl bg-warn-tint px-4 py-3 text-[16px] text-warn">
             {card.audience === "members_only" ? `Khusus member ${card.host_name}. ` : ""}
             {card.residency_rule === "residents_only" ? `Khusus warga ${card.scope_region_name ?? "wilayah cakupan"}.` : ""}
           </p>
         )}
 
         <section className="flex flex-col gap-2.5">
-          <h2 className="font-display text-[18px] font-semibold">Didukung oleh</h2>
+          <h2 className="font-display text-[20px] font-semibold">Didukung oleh</h2>
           <div className="flex flex-col gap-2">
             {partners.map((p) => (
               <div key={p.id} className={`${cardClass} flex items-center gap-3 p-3`}>
                 <OrganizerAvatar name={p.organizer.name} type={p.organizer.type} logoUrl={p.organizer.logo_url} size={40} />
                 <span className="flex flex-1 flex-col">
-                  <span className="text-[14px] font-semibold">{p.organizer.name}</span>
-                  <span className="text-[12px] text-fg-soft">{ROLE_LABELS[p.role]}</span>
+                  <span className="text-[17px] font-semibold">{p.organizer.name}</span>
+                  <span className="text-[14px] text-fg-soft">{ROLE_LABELS[p.role]}</span>
                 </span>
               </div>
             ))}
@@ -129,7 +130,7 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
 
         {checkpoints.length > 0 && (
           <section className="flex flex-col gap-2.5">
-            <h2 className="font-display text-[18px] font-semibold">Checkpoint</h2>
+            <h2 className="font-display text-[20px] font-semibold">Checkpoint</h2>
             <div className="flex flex-col gap-2">
               {checkpoints.filter((c) => c.is_active).map((c) => (
                 <a key={c.id} href={`https://maps.google.com/?q=${c.lat},${c.lng}`} target="_blank" rel="noreferrer" className={`${cardClass} flex items-center gap-3 p-3 text-fg`}>
@@ -137,8 +138,8 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
                     <Icon name="pin" size={18} stroke={2} />
                   </span>
                   <span className="flex flex-1 flex-col">
-                    <span className="text-[14px] font-semibold">{c.name}</span>
-                    <span className="text-[12px] text-fg-soft">{c.address ?? `${c.lat}, ${c.lng}`} · radius {c.radius_m} m</span>
+                    <span className="text-[17px] font-semibold">{c.name}</span>
+                    <span className="text-[14px] text-fg-soft">{c.address ?? `${c.lat}, ${c.lng}`} · radius {c.radius_m} m</span>
                   </span>
                 </a>
               ))}
@@ -149,15 +150,15 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
         {card.type === "challenge" && participation && !["cancelled", "invited"].includes(participation.status) && (
           <section className={`${cardClass} flex flex-col gap-2 p-4`}>
             <div className="flex items-baseline justify-between">
-              <h2 className="font-display text-[18px] font-semibold">Progress {card.target_scope === "group" ? "grup" : "kamu"}</h2>
-              <span className="text-[14px] font-bold text-xp">
+              <h2 className="font-display text-[20px] font-semibold">Progress {card.target_scope === "group" ? "grup" : "kamu"}</h2>
+              <span className="text-[17px] font-bold text-xp">
                 {card.target_scope === "group" ? (myGroupRow?.progress ?? 0) : participation.progress}/{card.target_count ?? 1}
               </span>
             </div>
             <div className="h-2 overflow-hidden rounded-lg bg-track">
               <div className="h-full bg-xp" style={{ width: `${Math.min(100, Math.round((((card.target_scope === "group" ? (myGroupRow?.progress ?? 0) : participation.progress) / (card.target_count ?? 1)) * 100)))}%` }} />
             </div>
-            <span className="text-[12px] text-fg-soft">
+            <span className="text-[14px] text-fg-soft">
               {card.target_scope === "group"
                 ? `${myGroupRow?.group_name ?? "Grupmu"} · ${myGroupRow?.contributors ?? 0} anggota berkontribusi · peringkat #${myGroupRow?.rank ?? "-"}`
                 : "Satu check-in per hari dihitung. Check-in lagi besok."}
@@ -167,16 +168,16 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
 
         {card.target_scope === "group" && groupProgress.length > 0 && (
           <section className="flex flex-col gap-2.5">
-            <h2 className="font-display text-[18px] font-semibold">Peringkat grup</h2>
+            <h2 className="font-display text-[20px] font-semibold">Peringkat grup</h2>
             <div className={`${cardClass} overflow-hidden`}>
               {groupProgress.slice(0, 10).map((g) => (
                 <div key={g.group_id} className={`flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0 ${g.group_id === participation?.group_id ? "bg-primary-tint/40" : ""}`}>
-                  <span className="w-7 font-display text-[16px] font-bold text-fg-soft">#{g.rank}</span>
+                  <span className="w-7 font-display text-[18px] font-bold text-fg-soft">#{g.rank}</span>
                   <span className="flex flex-1 flex-col">
-                    <span className="text-[14px] font-semibold">{g.group_name}</span>
-                    <span className="text-[12px] text-fg-soft">{g.contributors} dari {g.members} anggota berkontribusi</span>
+                    <span className="text-[17px] font-semibold">{g.group_name}</span>
+                    <span className="text-[14px] text-fg-soft">{g.contributors} dari {g.members} anggota berkontribusi</span>
                   </span>
-                  <span className="text-[14px] font-bold text-xp">
+                  <span className="text-[17px] font-bold text-xp">
                     {g.progress}/{g.target_count}
                   </span>
                 </div>
@@ -213,13 +214,13 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
         <MissionSection list={missions} activityId={id} activityType={card.type} targetKind={card.target_kind} />
 
         {participation && ["registered", "in_progress"].includes(participation.status) && card.status === "running" && ["not_required", "paid"].includes(participation.payment_status) && !(isGlobal && card.location_mode === "online") && (
-          <Link href="/scan" className="flex h-[54px] items-center justify-center gap-2 rounded-2xl bg-hot text-[16px] font-semibold text-bg">
+          <Link href="/scan" className="flex h-[54px] items-center justify-center gap-2 rounded-2xl bg-hot text-[18px] font-semibold text-bg">
             <Icon name="scan" size={22} stroke={2.2} />
             Check-in: scan QR staf
           </Link>
         )}
         {participation?.status === "completed" && (
-          <p className="rounded-2xl bg-success-tint px-4 py-3 text-[13px] text-success">
+          <p className="rounded-2xl bg-success-tint px-4 py-3 text-[16px] text-success">
             Kamu sudah check-in dan menyelesaikan aktivitas ini.
             {missions?.missions.some((m) => m.open && m.can_work) ? " Misi bonus masih bisa dikerjakan untuk tambahan XP." : ""}
           </p>

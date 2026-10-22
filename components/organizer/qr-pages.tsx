@@ -27,9 +27,9 @@ async function QrBody({ base, id, selected }: { base: string; id: string; select
   if (!current) {
     return (
       <div className={`${cardClass} flex flex-col gap-1 p-4`}>
-        <span className="text-[15px] font-semibold">Belum ada checkpoint aktif</span>
-        <span className="text-[13px] leading-[1.5] text-fg-soft">QR muncul untuk checkpoint di aktivitas yang sudah terbit atau sedang berjalan.</span>
-        <Link href={`${base}/aktivitas`} className="pt-2 text-[13px] font-semibold text-link">
+        <span className="text-[18px] font-semibold">Belum ada checkpoint aktif</span>
+        <span className="text-[16px] leading-[1.5] text-fg-soft">QR muncul untuk checkpoint di aktivitas yang sudah terbit atau sedang berjalan.</span>
+        <Link href={`${base}/aktivitas`} className="pt-2 text-[16px] font-semibold text-link">
           Lihat aktivitas
         </Link>
       </div>
@@ -42,8 +42,8 @@ async function QrBody({ base, id, selected }: { base: string; id: string; select
     <>
       {checkpoints.length > 1 ? (
         <form className="flex flex-col gap-1.5">
-          <label htmlFor="cp" className="text-[12px] font-semibold text-fg-soft">Checkpoint</label>
-          <select id="cp" name="cp" defaultValue={current.id} className="h-[52px] w-full rounded-2xl border border-line bg-surface px-3.5 text-[14px] font-bold text-fg">
+          <label htmlFor="cp" className="text-[14px] font-semibold text-fg-soft">Checkpoint</label>
+          <select id="cp" name="cp" defaultValue={current.id} className="h-[52px] w-full rounded-2xl border border-line bg-surface px-3.5 text-[17px] font-bold text-fg">
             {checkpoints.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name} · {c.activity.title}
@@ -51,7 +51,7 @@ async function QrBody({ base, id, selected }: { base: string; id: string; select
             ))}
           </select>
           <noscript>
-            <button type="submit" className="text-[13px] font-semibold text-link">Pilih</button>
+            <button type="submit" className="text-[16px] font-semibold text-link">Pilih</button>
           </noscript>
           <SelectAutoSubmit />
         </form>
@@ -61,16 +61,16 @@ async function QrBody({ base, id, selected }: { base: string; id: string; select
           <Icon name="pin" size={18} stroke={2} />
         </span>
         <span className="flex flex-1 flex-col">
-          <span className="text-[14px] font-bold">{current.name}</span>
-          <span className="text-[12px] text-fg-soft">
+          <span className="text-[17px] font-bold">{current.name}</span>
+          <span className="text-[14px] text-fg-soft">
             {current.activity.title} · {formatSchedule(current.activity.starts_at, current.activity.ends_at)} · radius {current.radius_m} m
           </span>
         </span>
-        <span className={`text-[11px] font-bold ${running ? "text-success" : "text-warn"}`}>{running ? "Berjalan" : "Belum mulai"}</span>
+        <span className={`text-[13px] font-bold ${running ? "text-success" : "text-warn"}`}>{running ? "Berjalan" : "Belum mulai"}</span>
       </div>
 
       {!running && (
-        <p className="rounded-2xl bg-warn-tint px-4 py-3 text-[12px] leading-[1.5] text-warn">
+        <p className="rounded-2xl bg-warn-tint px-4 py-3 text-[14px] leading-[1.5] text-warn">
           QR sudah bisa ditampilkan, tetapi check-in warga baru diterima setelah jam mulai aktivitas.
         </p>
       )}
@@ -79,12 +79,12 @@ async function QrBody({ base, id, selected }: { base: string; id: string; select
 
       <section className={`${cardClass} flex flex-col gap-2.5 p-3.5`}>
         <div className="flex items-baseline justify-between">
-          <span className="text-[14px] font-bold">Check-in hari ini</span>
-          <span className="font-display text-[22px] font-semibold">{feed.length}</span>
+          <span className="text-[17px] font-bold">Check-in hari ini</span>
+          <span className="font-display text-[26px] font-semibold">{feed.length}</span>
         </div>
-        {feed.length === 0 && <span className="text-[13px] text-fg-soft">Belum ada yang check-in.</span>}
+        {feed.length === 0 && <span className="text-[16px] text-fg-soft">Belum ada yang check-in.</span>}
         {feed.slice(0, 10).map((row) => (
-          <div key={row.id} className="flex justify-between text-[13px]">
+          <div key={row.id} className="flex justify-between text-[16px]">
             <span>
               <b>{row.nickname}</b> <span className="text-fg-soft">{timeAgo(row.checked_in_at)}</span>
             </span>
@@ -94,7 +94,7 @@ async function QrBody({ base, id, selected }: { base: string; id: string; select
           </div>
         ))}
       </section>
-      <span className="text-center text-[12px] text-fg-soft">Layar tetap menyala selama halaman ini terbuka. Muat ulang untuk memperbarui daftar.</span>
+      <span className="text-center text-[14px] text-fg-soft">Layar tetap menyala selama halaman ini terbuka. Muat ulang untuk memperbarui daftar.</span>
     </>
   );
 }

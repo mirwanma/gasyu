@@ -47,7 +47,7 @@ export function OtpInput({ name, length = 6 }: { name: string; length?: number }
             event.preventDefault();
             fillFrom(index, event.clipboardData.getData("text"));
           }}
-          className="h-[52px] w-full rounded-xl border-[1.5px] border-line bg-bg text-center font-display text-[22px] font-semibold text-fg outline-none focus:border-primary-soft"
+          className="h-[52px] w-full rounded-xl border-[1.5px] border-line bg-bg text-center font-display text-[26px] font-semibold text-fg outline-none focus:border-primary-soft"
         />
       ))}
       <input type="hidden" name={name} value={digits.join("")} />

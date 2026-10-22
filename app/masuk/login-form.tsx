@@ -38,7 +38,7 @@ export function PasswordLoginForm({ next }: { next: string }) {
           <label htmlFor="password" className={labelClass}>
             Kata sandi
           </label>
-          <a href="/masuk/lupa" className="text-[13px] font-semibold text-link">
+          <a href="/masuk/lupa" className="text-[16px] font-semibold text-link">
             Lupa kata sandi?
           </a>
         </div>
@@ -46,13 +46,13 @@ export function PasswordLoginForm({ next }: { next: string }) {
       </div>
       <ErrorMessage message={state.error} />
       {state.unconfirmed && (
-        <a href={confirmHref} className="text-[14px] font-semibold text-link">
+        <a href={confirmHref} className="text-[17px] font-semibold text-link">
           Konfirmasi email sekarang
         </a>
       )}
       <div className="mt-auto flex flex-col gap-4">
         <SubmitButton pendingText="Mengecek…">Masuk</SubmitButton>
-        <p className="text-center text-[14px] text-fg-soft">
+        <p className="text-center text-[17px] text-fg-soft">
           Belum punya akun?{" "}
           <a href={`/masuk/daftar?next=${encodeURIComponent(next)}`} className="font-semibold text-link">
             Daftar
@@ -60,7 +60,7 @@ export function PasswordLoginForm({ next }: { next: string }) {
         </p>
         <a
           href={`/masuk?cara=kode&next=${encodeURIComponent(next)}`}
-          className="text-center text-[13px] font-semibold text-fg-soft underline underline-offset-4"
+          className="text-center text-[16px] font-semibold text-fg-soft underline underline-offset-4"
         >
           Masuk pakai kode email
         </a>
@@ -108,13 +108,13 @@ export function CodeLoginForm({ next, mode }: { next: string; mode?: "reset" }) 
           <button type="submit" name="intent" value="verify" tabIndex={-1} aria-hidden className="sr-only" />
           <div className={`${cardClass} flex flex-col gap-3.5 p-[18px]`}>
             <div className="flex flex-col gap-1">
-              <span className="text-[15px] font-semibold">Masukkan kode 6 digit</span>
-              <span className="text-[13px] text-fg-soft">
+              <span className="text-[18px] font-semibold">Masukkan kode 6 digit</span>
+              <span className="text-[16px] text-fg-soft">
                 Dikirim ke {state.email} · berlaku 10 menit
               </span>
             </div>
             <OtpInput key={state.sentAt} name="token" />
-            <div className="flex items-center justify-between text-[13px]">
+            <div className="flex items-center justify-between text-[16px]">
               <ResendCode key={state.sentAt} intent="send" />
               <button
                 type="button"

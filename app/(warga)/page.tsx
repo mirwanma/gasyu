@@ -1,21 +1,23 @@
 import { Suspense } from "react";
-import { HomeView } from "./home-view";
+import { HomeView, type DailyMission } from "./home-view";
 import { BottomNav, CITIZEN_NAV } from "@/components/bottom-nav";
 import { listMyActivities, listPublicActivities, type ActivityCard } from "@/lib/data/activities";
 import { listMyCommunityIds } from "@/lib/data/communities";
 import { getCitizenDashboard } from "@/lib/data/dashboards";
 import { getLeaderboard, listMyPrizes, listTopPrizes } from "@/lib/data/global-events";
+import { getUserLeaderboard } from "@/lib/data/leaderboard";
+import { getCitizenMissions } from "@/lib/data/missions";
 import { getWallet, listMyVouchers } from "@/lib/data/rewards";
 import { getCurrentUser, getUnreadCount } from "@/lib/data/user";
 import { greetingFor } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 
-// Beranda warga: level & XP, dompet, badge, aktivitasku, dan rekomendasi.
+// Beranda warga: profil & level, kartu skor, misi hari ini, 3 besar peringkat, aktivitasku, dan rekomendasi.
 export default function BerandaPage() {
   return (
     <>
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-[22px] px-5 pb-32 pt-6">
-        <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>
+        <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
           <CitizenHome />
         </Suspense>
       </main>
@@ -46,7 +48,17 @@ async function CitizenHome() {
   const joinedIds = new Set(myActivities.map((row) => row.card.id));
   const myGlobal = myActivities.filter((row) => row.card.reach === "global").map((row) => row.card.id);
   const openGlobal = globalActivities.filter((card) => !joinedIds.has(card.id)).slice(0, 2);
-  const [boards, topPrizes] = await Promise.all([Promise.all(myGlobal.map((id) => getLeaderboard(id, 1))), listTopPrizes(openGlobal.map((c) => c.id))]);
+  // Misi hari ini: dari maksimal 3 aktivitas yang sedang berjalan dan sudah lunas.
+  const running = myActivities
+    .filter(({ card, participation }) => card.status === "running" && ["registered", "in_progress", "completed"].includes(participation.status) && participation.payment_status !== "unpaid" && participation.payment_status !== "awaiting_confirmation")
+    .slice(0, 3);
+  const [boards, topPrizes, missionLists, leaderboard] = await Promise.all([
+    Promise.all(myGlobal.map((id) => getLeaderboard(id, 1))),
+    listTopPrizes(openGlobal.map((c) => c.id)),
+    Promise.all(running.map(({ card }) => getCitizenMissions(card.id))),
+    getUserLeaderboard(user.homeVillageId ? "village" : "city"),
+  ]);
+  const dailyMissions = running.flatMap(({ card }, i) => openMissions(card, missionLists[i])).slice(0, 4);
   const globalScores = Object.fromEntries(myGlobal.map((id, i) => [id, { rank: boards[i]?.me?.rank ?? null, score: boards[i]?.me?.score ?? 0 }]));
   const pendingPrizes = myPrizes.filter((p) => p.status === "pending_claim" && isFuture(p.claim_deadline));
   const recommended = recommend(publicActivities, {
@@ -71,8 +83,20 @@ async function CitizenHome() {
       badges={dashboard ? { recent: dashboard.badges.slice(0, 3), earned: dashboard.badges.length, total: dashboard.badge_total } : undefined}
       globalScores={globalScores}
       openGlobal={openGlobal.map((card) => ({ card, topPrize: topPrizes.get(card.id) ?? null }))}
+      dailyMissions={dailyMissions}
+      topCitizens={(leaderboard?.rows ?? []).slice(0, 3)}
       prizeAlert={pendingPrizes.length ? { count: pendingPrizes.length, deadline: pendingPrizes.map((p) => p.claim_deadline).sort()[0] } : undefined}
     />
+  );
+}
+
+// Misi yang masih bisa dikerjakan (belum dikirim atau ditolak). Hadiah ditulis server setelah misi diverifikasi.
+function openMissions(card: ActivityCard, list: Awaited<ReturnType<typeof getCitizenMissions>>): DailyMission[] {
+  if (!list?.can_work) return [];
+  return list.missions.flatMap((m) =>
+    m.open && m.can_work && (m.my_status === null || m.my_status === "rejected")
+      ? [{ id: m.id, title: m.title, activityId: card.id, activityTitle: card.title, reward: card.reach === "global" ? `+${m.score_reward} skor` : `+${m.xp_reward} XP` }]
+      : [],
   );
 }
 

@@ -14,7 +14,7 @@ import { listSponsoredPrizes } from "@/lib/data/global-events";
 // Angka dari v_community_dashboard dan v_community_member_stats.
 export default function KomunitasDashboardPage({ params }: PageProps<"/komunitas/[id]">) {
   return (
-    <Suspense fallback={<p className="px-5 pt-6 text-[13px] text-fg-muted">Memuat…</p>}>
+    <Suspense fallback={<p className="px-5 pt-6 text-[16px] text-fg-muted">Memuat…</p>}>
       <Dashboard params={params} />
     </Suspense>
   );
@@ -67,25 +67,25 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string } 
 
       <a href={`${base}/member`} className={`${cardClass} flex flex-col gap-3 p-4 text-fg`}>
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-[18px] font-semibold">Member</h2>
-          <span className="text-[13px] font-semibold text-link">Kelola</span>
+          <h2 className="font-display text-[20px] font-semibold">Member</h2>
+          <span className="text-[16px] font-semibold text-link">Kelola</span>
         </div>
         <div className="flex items-end gap-[18px]">
           <div className="flex flex-col gap-0.5">
-            <span className="font-display text-[32px] font-bold leading-none">{active}</span>
-            <span className="text-[12px] text-fg-soft">member aktif</span>
+            <span className="font-display text-[34px] font-bold leading-none">{active}</span>
+            <span className="text-[14px] text-fg-soft">member aktif</span>
           </div>
           <div className="flex flex-col gap-0.5">
-            <span className="font-display text-[20px] font-semibold leading-none text-success">+{Number(s.new_members_month ?? 0)}</span>
-            <span className="text-[12px] text-fg-soft">bulan ini</span>
+            <span className="font-display text-[24px] font-semibold leading-none text-success">+{Number(s.new_members_month ?? 0)}</span>
+            <span className="text-[14px] text-fg-soft">bulan ini</span>
           </div>
           <div className="flex flex-col gap-0.5">
-            <span className="font-display text-[20px] font-semibold leading-none text-warn">{pending}</span>
-            <span className="text-[12px] text-fg-soft">menunggu</span>
+            <span className="font-display text-[24px] font-semibold leading-none text-warn">{pending}</span>
+            <span className="text-[14px] text-fg-soft">menunggu</span>
           </div>
         </div>
         <div className="flex flex-col gap-1.5">
-          <div className="flex justify-between text-[12px]">
+          <div className="flex justify-between text-[14px]">
             <span className="text-fg-soft">Member hadir 30 hari terakhir</span>
             <span className="font-semibold">{attendPct}%</span>
           </div>
@@ -96,9 +96,9 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string } 
       </a>
 
       <section className="flex flex-col gap-2.5">
-        <h2 className="font-display text-[18px] font-semibold">Perlu tindakan</h2>
+        <h2 className="font-display text-[20px] font-semibold">Perlu tindakan</h2>
         {todos.length === 0 ? (
-          <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>Tidak ada yang perlu ditindak. Mantap.</p>
+          <p className={`${cardClass} p-4 text-[16px] text-fg-soft`}>Tidak ada yang perlu ditindak. Mantap.</p>
         ) : (
           todos.map((t) => <TodoItem key={t.title} n={t.n} title={t.title} sub={t.sub} href={t.href} tone={t.tone} />)
         )}
@@ -106,25 +106,25 @@ async function DashboardBody({ id, org }: { id: string; org: { status: string } 
 
       <section className="flex flex-col gap-2.5">
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-[18px] font-semibold">Aktivitas</h2>
-          <a href={`${base}/aktivitas`} className="text-[13px] font-semibold text-link">
+          <h2 className="font-display text-[20px] font-semibold">Aktivitas</h2>
+          <a href={`${base}/aktivitas`} className="text-[16px] font-semibold text-link">
             Kelola
           </a>
         </div>
         {activities.length === 0 ? (
-          <a href={`${base}/aktivitas/baru`} className={`${cardClass} block p-4 text-[13px] text-fg-soft`}>
+          <a href={`${base}/aktivitas/baru`} className={`${cardClass} block p-4 text-[16px] text-fg-soft`}>
             Belum ada aktivitas. Buat event pertama untuk member dan warga.
           </a>
         ) : upcoming.length === 0 ? (
-          <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>Semua aktivitas sudah selesai. {activities.length} total.</p>
+          <p className={`${cardClass} p-4 text-[16px] text-fg-soft`}>Semua aktivitas sudah selesai. {activities.length} total.</p>
         ) : (
           upcoming.map((a) => (
             <a key={a.id} href={`${base}/aktivitas/${a.id}`} className={`${cardClass} flex flex-col gap-1 p-3.5 text-fg`}>
               <div className="flex items-start justify-between gap-2">
-                <span className="text-[14px] font-semibold leading-[1.3]">{a.title}</span>
-                {a.audience === "members_only" ? <span className="inline-flex items-center rounded-[10px] bg-hot-tint px-2 py-[3px] text-[11px] font-bold text-hot">Khusus member</span> : <StatusTag status={a.status} />}
+                <span className="text-[17px] font-semibold leading-[1.3]">{a.title}</span>
+                {a.audience === "members_only" ? <span className="inline-flex items-center rounded-[10px] bg-hot-tint px-2 py-[3px] text-[13px] font-bold text-hot">Khusus member</span> : <StatusTag status={a.status} />}
               </div>
-              <span className="text-[12px] text-fg-soft">
+              <span className="text-[14px] text-fg-soft">
                 {formatSchedule(a.starts_at, a.ends_at)} · {a.seats_taken} {a.status === "running" ? "peserta" : "terdaftar"}
                 {a.partner_count > 0 ? ` · ${a.partner_count} partner` : ""}
                 {a.is_paid ? "" : " · gratis"}

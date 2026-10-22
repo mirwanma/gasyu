@@ -78,8 +78,8 @@ export function DaftarForm({ districts, initialType }: { districts: District[]; 
             <Icon name="upload" size={22} />
           </span>
           <span className="flex flex-col gap-1">
-            <span className="text-[13px] text-fg-soft">{kind === "merchant" ? "Logo usaha" : "Logo komunitas"}, persegi, maks. 2 MB</span>
-            <ImageFileInput name="logo" accept="image/png,image/jpeg,image/webp" className="text-[12px] text-fg-label" maxMb={2} />
+            <span className="text-[16px] text-fg-soft">{kind === "merchant" ? "Logo usaha" : "Logo komunitas"}, persegi, maks. 2 MB</span>
+            <ImageFileInput name="logo" accept="image/png,image/jpeg,image/webp" className="text-[14px] text-fg-label" maxMb={2} />
           </span>
         </label>
 
@@ -88,7 +88,7 @@ export function DaftarForm({ districts, initialType }: { districts: District[]; 
         {kind === "merchant" && <Field id="nib" label="NIB (opsional)" placeholder="Nomor Induk Berusaha" />}
 
         <div className="flex flex-col gap-2">
-          <span className="text-[13px] font-semibold">{kind === "merchant" ? "Kategori usaha" : "Kategori minat"}</span>
+          <span className="text-[16px] font-semibold">{kind === "merchant" ? "Kategori usaha" : "Kategori minat"}</span>
           <div className="flex flex-wrap gap-2">
             {categories.map(([value, label]) => (
               <button
@@ -114,14 +114,14 @@ export function DaftarForm({ districts, initialType }: { districts: District[]; 
 
       {kind === "merchant" ? (
         <section className={`${cardClass} flex flex-col gap-3 p-4`}>
-          <h2 className="text-[15px] font-bold">Outlet 1</h2>
-          <span className="text-[12px] text-fg-soft">Outlet lain bisa ditambah dari dashboard setelah mendaftar.</span>
+          <h2 className="text-[18px] font-bold">Outlet 1</h2>
+          <span className="text-[14px] text-fg-soft">Outlet lain bisa ditambah dari dashboard setelah mendaftar.</span>
           <Field id="outlet_name" label="Nama outlet" placeholder="contoh: Cabang Baros" maxLength={80} />
           <Field id="outlet_address" label="Alamat" required maxLength={300} />
           <VillageSelect id="outlet_village" districts={districts} />
 
           <div className="flex flex-col gap-2">
-            <span className="text-[13px] font-semibold">Titik lokasi</span>
+            <span className="text-[16px] font-semibold">Titik lokasi</span>
             <div className="grid grid-cols-2 gap-2">
               <input
                 name="outlet_lat"
@@ -147,16 +147,16 @@ export function DaftarForm({ districts, initialType }: { districts: District[]; 
             <button
               type="button"
               onClick={useMyLocation}
-              className="flex h-10 items-center justify-center gap-2 self-start rounded-full border border-line-strong bg-surface px-3.5 text-[13px] font-semibold text-fg"
+              className="flex h-10 items-center justify-center gap-2 self-start rounded-full border border-line-strong bg-surface px-3.5 text-[16px] font-semibold text-fg"
             >
               <Icon name="pin" size={16} stroke={2} />
               Pakai lokasi saat ini
             </button>
-            {geoMessage && <span className="text-[12px] text-fg-soft">{geoMessage}</span>}
+            {geoMessage && <span className="text-[14px] text-fg-soft">{geoMessage}</span>}
           </div>
 
           <div className="flex flex-col gap-2">
-            <span className="text-[13px] font-semibold">Jam buka</span>
+            <span className="text-[16px] font-semibold">Jam buka</span>
             <div className="flex flex-wrap gap-1.5">
               {DAYS.map(([key, label]) => {
                 const on = days.includes(key);
@@ -166,7 +166,7 @@ export function DaftarForm({ districts, initialType }: { districts: District[]; 
                     type="button"
                     aria-pressed={on}
                     onClick={() => setDays(on ? days.filter((d) => d !== key) : [...days, key])}
-                    className={`flex h-9 w-11 items-center justify-center rounded-full border text-[12px] font-semibold ${on ? chipClass.selected : chipClass.idle}`}
+                    className={`flex h-9 w-11 items-center justify-center rounded-full border text-[14px] font-semibold ${on ? chipClass.selected : chipClass.idle}`}
                   >
                     {label}
                   </button>
@@ -182,19 +182,19 @@ export function DaftarForm({ districts, initialType }: { districts: District[]; 
         </section>
       ) : (
         <section className={`${cardClass} flex flex-col gap-3 p-4`}>
-          <h2 className="text-[15px] font-bold">Tentang komunitas</h2>
+          <h2 className="text-[18px] font-bold">Tentang komunitas</h2>
           <VillageSelect id="area_village" districts={districts} label="Area kegiatan (kelurahan)" />
           <Field id="instagram" label="Instagram (opsional)" placeholder="nama akun tanpa @" />
           <Field id="tiktok" label="TikTok (opsional)" placeholder="nama akun tanpa @" />
           <Field id="est_members" label="Perkiraan jumlah anggota" type="number" min={0} />
           <Field id="basecamp_address" label="Basecamp (opsional)" placeholder="alamat tempat kumpul" />
           <div className="flex flex-col gap-2">
-            <span className="text-[13px] font-semibold">Cara warga bergabung jadi member</span>
-            <label className="flex items-center gap-3 text-[14px]">
+            <span className="text-[16px] font-semibold">Cara warga bergabung jadi member</span>
+            <label className="flex items-center gap-3 text-[17px]">
               <input type="radio" name="join_policy" value="approval" defaultChecked className="size-4 accent-primary" />
               Perlu persetujuan pengurus
             </label>
-            <label className="flex items-center gap-3 text-[14px]">
+            <label className="flex items-center gap-3 text-[17px]">
               <input type="radio" name="join_policy" value="open" className="size-4 accent-primary" />
               Terbuka, langsung aktif
             </label>
@@ -203,17 +203,17 @@ export function DaftarForm({ districts, initialType }: { districts: District[]; 
       )}
 
       <section className={`${cardClass} flex flex-col gap-2 p-4`}>
-        <span className="text-[14px] font-semibold">{kind === "merchant" ? "Foto tempat usaha" : "Bukti kegiatan"}</span>
-        <span className="text-[12px] text-fg-soft">
+        <span className="text-[17px] font-semibold">{kind === "merchant" ? "Foto tempat usaha" : "Bukti kegiatan"}</span>
+        <span className="text-[14px] text-fg-soft">
           {kind === "merchant"
             ? "Foto tampak depan dengan papan nama, untuk verifikasi tim Gasyu."
             : "Foto kegiatan komunitas, untuk verifikasi tim Gasyu."}
         </span>
-        <ImageFileInput name="proof" accept="image/png,image/jpeg,image/webp" required className="text-[12px] text-fg-label" maxMb={3} />
+        <ImageFileInput name="proof" accept="image/png,image/jpeg,image/webp" required className="text-[14px] text-fg-label" maxMb={3} />
       </section>
 
       <ErrorMessage message={state.error} />
-      <span className="text-[12px] leading-[1.5] text-fg-soft">
+      <span className="text-[14px] leading-[1.5] text-fg-soft">
         Selama menunggu verifikasi (1–2 hari kerja) kamu sudah bisa menyiapkan draft aktivitas. Tombol ajukan terbuka setelah
         disetujui.
       </span>
@@ -233,8 +233,8 @@ function KindOption({ selected, onSelect, title, hint }: { selected: boolean; on
         selected ? "border-2 border-primary bg-primary-tint" : "border border-line bg-surface"
       }`}
     >
-      <span className="text-[15px] font-bold text-fg">{title}</span>
-      <span className="text-[12px] text-fg-soft">{hint}</span>
+      <span className="text-[18px] font-bold text-fg">{title}</span>
+      <span className="text-[14px] text-fg-soft">{hint}</span>
     </button>
   );
 }

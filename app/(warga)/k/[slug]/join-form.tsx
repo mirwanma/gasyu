@@ -23,12 +23,12 @@ export function JoinForm({
       <input type="hidden" name="community_id" value={communityId} />
       <input type="hidden" name="slug" value={slug} />
       <div className="flex items-center justify-between">
-        <span className="text-[15px] font-semibold">Gabung jadi member</span>
+        <span className="text-[18px] font-semibold">Gabung jadi member</span>
         <span className={`${tagClass.base} ${policy === "open" ? tagClass.success : tagClass.warn}`}>
           {policy === "open" ? "Langsung aktif" : "Perlu persetujuan"}
         </span>
       </div>
-      <span className="text-[13px] leading-[1.5] text-fg-soft">
+      <span className="text-[16px] leading-[1.5] text-fg-soft">
         Member bisa ikut aktivitas khusus member dan dapat kabar aktivitas baru.
       </span>
       {policy === "approval" && (
@@ -48,7 +48,7 @@ export function JoinForm({
         </>
       )}
       <ErrorMessage message={state.error} />
-      <SubmitButton pendingText="Mengirim…" className="h-[50px] rounded-[14px] text-[15px]">
+      <SubmitButton pendingText="Mengirim…" className="h-[50px] rounded-[14px] text-[18px]">
         {policy === "open" ? "Gabung sekarang" : "Minta bergabung"}
       </SubmitButton>
     </form>

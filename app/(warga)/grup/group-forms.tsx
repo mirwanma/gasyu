@@ -23,7 +23,7 @@ export function GroupEntryForms({ canCreate }: { canCreate: boolean }) {
         <form action={joinAction} className="flex flex-col gap-2.5">
           <ErrorMessage message={joinState.error} />
           <SuccessMessage message={joinState.success} />
-          <input name="code" required minLength={6} maxLength={6} placeholder="Kode undangan, contoh KRG7Q2" autoCapitalize="characters" className={`${inputClass} font-display text-[18px] font-semibold uppercase tracking-[0.2em]`} aria-label="Kode undangan" />
+          <input name="code" required minLength={6} maxLength={6} placeholder="Kode undangan, contoh KRG7Q2" autoCapitalize="characters" className={`${inputClass} font-display text-[20px] font-semibold uppercase tracking-[0.2em]`} aria-label="Kode undangan" />
           <SubmitButton pendingText="Bergabung…">Gabung</SubmitButton>
         </form>
       ) : (
@@ -31,7 +31,7 @@ export function GroupEntryForms({ canCreate }: { canCreate: boolean }) {
           <ErrorMessage message={createState.error} />
           <SuccessMessage message={createState.success} />
           <input name="name" required minLength={3} maxLength={30} placeholder="Nama grup, contoh Geng Karangmekar" className={inputClass} aria-label="Nama grup" disabled={!canCreate} />
-          {canCreate ? <SubmitButton pendingText="Membuat…">Buat grup</SubmitButton> : <span className="text-[12px] text-warn">Kamu sudah ada di 3 grup. Keluar dari salah satu untuk membuat grup baru.</span>}
+          {canCreate ? <SubmitButton pendingText="Membuat…">Buat grup</SubmitButton> : <span className="text-[14px] text-warn">Kamu sudah ada di 3 grup. Keluar dari salah satu untuk membuat grup baru.</span>}
         </form>
       )}
     </section>
@@ -74,7 +74,7 @@ export function ShareCode({ code, groupName }: { code: string; groupName: string
     }
   };
   return (
-    <button type="button" onClick={share} className="flex h-11 items-center justify-center rounded-xl border border-line-strong bg-surface-deep px-4 text-[13px] font-semibold text-fg">
+    <button type="button" onClick={share} className="flex h-11 items-center justify-center rounded-xl border border-line-strong bg-surface-deep px-4 text-[16px] font-semibold text-fg">
       {done ? "Tersalin" : "Bagikan"}
     </button>
   );

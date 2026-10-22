@@ -24,8 +24,8 @@ export function KasirForm({ organizerId, outlets }: { organizerId: string; outle
   return (
     <>
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-[24px] font-bold">Kasir</h1>
-        <label className="flex h-10 items-center gap-1.5 rounded-full border border-line bg-surface px-3 text-[13px] font-semibold">
+        <h1 className="font-display text-[28px] font-bold">Kasir</h1>
+        <label className="flex h-10 items-center gap-1.5 rounded-full border border-line bg-surface px-3 text-[16px] font-semibold">
           Outlet:
           <select value={outletId} onChange={(e) => setOutletId(e.target.value)} className="bg-transparent font-semibold outline-none" aria-label="Outlet">
             {outlets.map((o) => (
@@ -37,8 +37,8 @@ export function KasirForm({ organizerId, outlets }: { organizerId: string; outle
 
       <form action={lookupAction} className={`${cardClass} flex flex-col gap-3 p-4`}>
         <input type="hidden" name="organizer_id" value={organizerId} />
-        <label htmlFor="kode" className="text-[13px] font-semibold">Kode voucher dari warga</label>
-        <input id="kode" name="code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} required minLength={8} maxLength={9} autoCapitalize="characters" autoComplete="off" placeholder="K7MP X4RD" className={`${inputClass} h-[60px] border-primary text-center font-display text-[26px] font-semibold tracking-[0.16em]`} />
+        <label htmlFor="kode" className="text-[16px] font-semibold">Kode voucher dari warga</label>
+        <input id="kode" name="code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} required minLength={8} maxLength={9} autoCapitalize="characters" autoComplete="off" placeholder="K7MP X4RD" className={`${inputClass} h-[60px] border-primary text-center font-display text-[30px] font-semibold tracking-[0.16em]`} />
         <ErrorMessage message={lookupState.error} />
         <SubmitButton pendingText="Mengecek…" variant="ghost">
           <Icon name="search" size={18} stroke={2} />
@@ -54,17 +54,17 @@ export function KasirForm({ organizerId, outlets }: { organizerId: string; outle
             <span className={`flex size-9 items-center justify-center rounded-full text-white ${usable ? "bg-success" : "bg-danger"}`}>
               <Icon name={usable ? "check" : "close"} size={20} stroke={2.6} />
             </span>
-            <span className={`text-[15px] font-bold ${usable ? "text-success" : "text-danger"}`}>
+            <span className={`text-[18px] font-bold ${usable ? "text-success" : "text-danger"}`}>
               {usable ? "Voucher valid" : !voucher.valid ? (voucher.status === "used" ? "Sudah dipakai" : voucher.status === "refunded" ? "Sudah di-refund" : "Kedaluwarsa") : "Tidak berlaku di outlet ini"}
             </span>
           </div>
-          <span className="font-display text-[20px] font-semibold text-fg">{voucher.title}</span>
-          <span className="text-[13px] text-fg-label">
+          <span className="font-display text-[24px] font-semibold text-fg">{voucher.title}</span>
+          <span className="text-[16px] text-fg-label">
             Milik <b>{voucher.nickname}</b> · berlaku s.d. {new Intl.DateTimeFormat("id-ID", { timeZone: "Asia/Jakarta", day: "numeric", month: "short" }).format(new Date(voucher.expires_at))}
             {voucher.description ? ` · ${voucher.description}` : ""}
           </span>
           {voucher.valid_outlet_ids && (
-            <span className="text-[13px] text-fg-label">Berlaku di: {validNames.length > 0 ? validNames.join(", ") : "outlet lain"}</span>
+            <span className="text-[16px] text-fg-label">Berlaku di: {validNames.length > 0 ? validNames.join(", ") : "outlet lain"}</span>
           )}
           {usable && (
             <form action={useAction} className="flex flex-col gap-2">

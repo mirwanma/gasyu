@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StatusTag } from "@/components/activity-card";
 import { Icon } from "@/components/icons";
-import { cardClass, smallButton, tagClass } from "@/components/styles";
+import { cardClass, smallButton, tagClass, backLinkClass } from "@/components/styles";
 import { SubmitButton } from "@/components/ui";
 import { removePrize } from "@/lib/actions/global-events";
 import { getActivityCard } from "@/lib/data/activities";
@@ -18,7 +18,7 @@ import { PrizeForm } from "./prize-form";
 export default function AdminHadiahPage({ searchParams }: PageProps<"/admin/aktivitas/hadiah">) {
   return (
     <div className="flex max-w-3xl flex-col gap-[18px]">
-      <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>
+      <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
         <Body searchParams={searchParams} />
       </Suspense>
     </div>
@@ -46,20 +46,21 @@ async function Body({ searchParams }: Pick<PageProps<"/admin/aktivitas/hadiah">,
   return (
     <>
       <div className="flex items-center gap-3">
-        <Link href={`/admin/aktivitas?tab=semua&pilih=${aid}`} aria-label="Kembali" className="flex size-11 items-center justify-center rounded-full border border-line bg-surface text-fg">
+        <Link href={`/admin/aktivitas?tab=semua&pilih=${aid}`} className={backLinkClass}>
           <Icon name="back" size={20} stroke={2} />
+          Kembali
         </Link>
         <div className="flex flex-1 flex-col gap-0.5">
-          <span className="text-[12px] font-bold uppercase tracking-wide text-fg-soft">Hadiah Event Global</span>
-          <h1 className="font-display text-[24px] font-semibold leading-tight">{card.title}</h1>
+          <span className="text-[14px] font-bold uppercase tracking-wide text-fg-soft">Hadiah Event Global</span>
+          <h1 className="font-display text-[28px] font-semibold leading-tight">{card.title}</h1>
         </div>
         <StatusTag status={card.status} />
       </div>
 
-      {str(sp.hasil) && notices[str(sp.hasil)!] && <p className="rounded-2xl bg-success-tint px-4 py-3 text-[13px] font-semibold text-success">{notices[str(sp.hasil)!]}</p>}
-      {str(sp.error) && <p className="rounded-2xl bg-danger-tint px-4 py-3 text-[13px] font-semibold text-danger">{str(sp.error)}</p>}
+      {str(sp.hasil) && notices[str(sp.hasil)!] && <p className="rounded-2xl bg-success-tint px-4 py-3 text-[16px] font-semibold text-success">{notices[str(sp.hasil)!]}</p>}
+      {str(sp.error) && <p className="rounded-2xl bg-danger-tint px-4 py-3 text-[16px] font-semibold text-danger">{str(sp.error)}</p>}
 
-      <p className="rounded-2xl bg-info-tint px-4 py-3 text-[12px] leading-[1.5] text-info">
+      <p className="rounded-2xl bg-info-tint px-4 py-3 text-[14px] leading-[1.5] text-info">
         Pemenang ditetapkan otomatis saat event selesai (48 jam setelah berakhir), dari skor tertinggi. Setiap peringkat satu pemenang dan setiap peserta maksimal satu hadiah.
         Hadiah yang tidak diklaim dalam batas waktu menjadi hangus dan tidak dialihkan.
       </p>
@@ -77,7 +78,7 @@ async function Body({ searchParams }: Pick<PageProps<"/admin/aktivitas/hadiah">,
         />
       )}
 
-      {prizes.length === 0 && !adding && <p className={`${cardClass} p-5 text-[13px] text-fg-soft`}>Belum ada hadiah. Event Global wajib punya minimal satu hadiah sebelum terbit.</p>}
+      {prizes.length === 0 && !adding && <p className={`${cardClass} p-5 text-[16px] text-fg-soft`}>Belum ada hadiah. Event Global wajib punya minimal satu hadiah sebelum terbit.</p>}
       {prizes.map((p) => (
         <section key={p.id} className={`${cardClass} flex gap-4 p-4`}>
           {safeImageUrl(p.image_url) ? (
@@ -94,9 +95,9 @@ async function Body({ searchParams }: Pick<PageProps<"/admin/aktivitas/hadiah">,
               <span className={`${tagClass.base} ${tagClass.neutral}`}>{PRIZE_KIND_LABELS[p.kind]}</span>
               <span className={`${tagClass.base} ${tagClass.neutral}`}>{FULFILLMENT_LABELS[p.fulfillment]}</span>
             </div>
-            <span className="text-[15px] font-semibold">{p.title}</span>
-            {p.description && <span className="text-[13px] leading-[1.5] text-fg-label whitespace-pre-line">{p.description}</span>}
-            <span className="text-[12px] text-fg-soft">
+            <span className="text-[18px] font-semibold">{p.title}</span>
+            {p.description && <span className="text-[16px] leading-[1.5] text-fg-label whitespace-pre-line">{p.description}</span>}
+            <span className="text-[14px] text-fg-soft">
               Skor minimal {formatNumber(p.min_score)} · Hadiah dari {p.sponsor_name ?? "Gasyu"}
               {p.badge_name ? ` · Badge: ${p.badge_name}` : ""}
               {p.pickup_note ? ` · Ambil: ${p.pickup_note}` : ""}
@@ -120,7 +121,7 @@ async function Body({ searchParams }: Pick<PageProps<"/admin/aktivitas/hadiah">,
       ))}
 
       {!closed && !adding && !editing && (
-        <a href={`${self}&tambah=1`} className="flex h-[52px] items-center justify-center gap-2 rounded-2xl bg-primary text-[15px] font-semibold text-on-primary">
+        <a href={`${self}&tambah=1`} className="flex h-[52px] items-center justify-center gap-2 rounded-2xl bg-primary text-[18px] font-semibold text-on-primary">
           <Icon name="plus" size={20} stroke={2.2} />
           Tambah hadiah
         </a>

@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { markNotificationsRead } from "../actions";
 import { BottomNav, CITIZEN_NAV } from "@/components/bottom-nav";
 import { Icon } from "@/components/icons";
-import { cardClass } from "@/components/styles";
+import { cardClass, backLinkClass } from "@/components/styles";
 import { getCurrentUser } from "@/lib/data/user";
 import { formatDate, timeAgo } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
@@ -165,12 +165,13 @@ export default function NotifikasiPage() {
     <>
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-5 pb-32 pt-6">
         <div className="flex items-center gap-3">
-          <Link href="/" aria-label="Kembali" className="flex size-11 items-center justify-center rounded-full border border-line bg-surface text-fg">
+          <Link href="/" className={backLinkClass}>
             <Icon name="back" stroke={2} />
+            Kembali
           </Link>
-          <h1 className="font-display text-[22px] font-bold">Notifikasi</h1>
+          <h1 className="font-display text-[26px] font-bold">Notifikasi</h1>
         </div>
-        <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>
+        <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
           <NotificationList />
         </Suspense>
       </main>
@@ -193,14 +194,14 @@ async function NotificationList() {
   const unread = items.filter((n) => !n.read_at).length;
 
   if (items.length === 0) {
-    return <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>Belum ada notifikasi.</p>;
+    return <p className={`${cardClass} p-4 text-[16px] text-fg-soft`}>Belum ada notifikasi.</p>;
   }
 
   return (
     <>
       {unread > 0 && (
         <form action={markNotificationsRead} className="flex justify-end">
-          <button type="submit" className="min-h-11 text-[13px] font-semibold text-link">
+          <button type="submit" className="min-h-11 text-[16px] font-semibold text-link">
             Tandai semua dibaca
           </button>
         </form>
@@ -212,9 +213,9 @@ async function NotificationList() {
             <li key={n.id} className={`${cardClass} flex gap-3 p-4 ${n.read_at ? "opacity-70" : ""}`}>
               <span className={`mt-1.5 size-2 shrink-0 rounded-full ${n.read_at ? "bg-transparent" : "bg-hot"}`} />
               <div className="flex flex-1 flex-col gap-1">
-                <span className="text-[14px] font-semibold">{href ? <a href={href} className="text-fg">{title}</a> : title}</span>
-                {body && <span className="text-[13px] leading-[1.5] text-fg-soft">{body}</span>}
-                <span className="text-[11px] text-fg-muted">{timeAgo(n.created_at)}</span>
+                <span className="text-[17px] font-semibold">{href ? <a href={href} className="text-fg">{title}</a> : title}</span>
+                {body && <span className="text-[16px] leading-[1.5] text-fg-soft">{body}</span>}
+                <span className="text-[13px] text-fg-muted">{timeAgo(n.created_at)}</span>
               </div>
             </li>
           );

@@ -22,8 +22,8 @@ export function TemplateForm({ initial, xpMin, xpMax }: { initial?: MissionTempl
       <input type="hidden" name="verification" value={verification} />
       <input type="hidden" name="is_required" value={required ? "on" : ""} />
       <div className="flex items-baseline justify-between">
-        <h2 className="font-display text-[19px] font-semibold">{initial ? "Ubah template" : "Template baru"}</h2>
-        <Link href="/admin/misi" className="text-[13px] font-semibold text-link">
+        <h2 className="font-display text-[24px] font-semibold">{initial ? "Ubah template" : "Template baru"}</h2>
+        <Link href="/admin/misi" className="text-[16px] font-semibold text-link">
           Batal
         </Link>
       </div>
@@ -62,8 +62,8 @@ export function TemplateForm({ initial, xpMin, xpMax }: { initial?: MissionTempl
             </button>
           ))}
         </div>
-        {verification === "secret_code" && <span className="text-[12px] text-fg-soft">Kode rahasianya diisi penyelenggara sendiri saat memakai template.</span>}
-        {verification === "qr_scan" && <span className="text-[12px] text-fg-soft">Penyelenggara memilih checkpoint saat memakai template.</span>}
+        {verification === "secret_code" && <span className="text-[14px] text-fg-soft">Kode rahasianya diisi penyelenggara sendiri saat memakai template.</span>}
+        {verification === "qr_scan" && <span className="text-[14px] text-fg-soft">Penyelenggara memilih checkpoint saat memakai template.</span>}
       </fieldset>
 
       <div className="grid gap-4 md:grid-cols-4">

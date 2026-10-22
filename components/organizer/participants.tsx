@@ -113,25 +113,25 @@ export async function PesertaBody({
           <Icon name="back" size={20} stroke={2} />
         </Link>
         <div className="flex flex-1 flex-col gap-0.5">
-          <h1 className="font-display text-[19px] font-semibold leading-tight">{card.is_paid ? "Peserta dan pembayaran" : "Peserta"}</h1>
-          <span className="flex items-center gap-2 text-[12px] text-fg-soft">
+          <h1 className="font-display text-[24px] font-semibold leading-tight">{card.is_paid ? "Peserta dan pembayaran" : "Peserta"}</h1>
+          <span className="flex items-center gap-2 text-[14px] text-fg-soft">
             <StatusTag status={card.status} /> {card.title} · {formatPrice(card.price_idr, card.is_paid)}{card.is_paid ? " / orang" : ""}
           </span>
         </div>
       </div>
-      {query.hasil && notices[query.hasil] && <p className="rounded-2xl bg-success-tint px-4 py-3 text-[13px] font-semibold text-success">{notices[query.hasil]}</p>}
-      {query.error && <p className="rounded-2xl bg-danger-tint px-4 py-3 text-[13px] font-semibold text-danger">{query.error}</p>}
+      {query.hasil && notices[query.hasil] && <p className="rounded-2xl bg-success-tint px-4 py-3 text-[16px] font-semibold text-success">{notices[query.hasil]}</p>}
+      {query.error && <p className="rounded-2xl bg-danger-tint px-4 py-3 text-[16px] font-semibold text-danger">{query.error}</p>}
 
       <div className={`grid gap-2.5 ${summary.length === 4 ? "grid-cols-4" : "grid-cols-3"}`}>
         {summary.map(([k, v, tone]) => (
           <div key={k} className={`${cardClass} flex flex-col gap-1 p-3`}>
-            <span className={`font-display text-[22px] font-semibold ${tone}`}>{v}</span>
-            <span className="text-[11px] text-fg-soft">{k}</span>
+            <span className={`font-display text-[26px] font-semibold ${tone}`}>{v}</span>
+            <span className="text-[13px] text-fg-soft">{k}</span>
           </div>
         ))}
       </div>
       {card.is_paid && payStats && (
-        <p className="text-[12px] text-fg-soft">
+        <p className="text-[14px] text-fg-soft">
           Perkiraan diterima Rp{payStats.expected_idr.toLocaleString("id-ID")} dari {payStats.paid} peserta lunas (informasi saja, dana tidak lewat Gasyu).
         </p>
       )}
@@ -150,7 +150,7 @@ export async function PesertaBody({
       )}
 
       {shown.length === 0 ? (
-        <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>{rows.length === 0 ? "Belum ada peserta." : "Tidak ada peserta di tab ini."}</p>
+        <p className={`${cardClass} p-4 text-[16px] text-fg-soft`}>{rows.length === 0 ? "Belum ada peserta." : "Tidak ada peserta di tab ini."}</p>
       ) : (
         <div className={`${cardClass} overflow-hidden`}>
           {shown.map((r) => {
@@ -160,16 +160,16 @@ export async function PesertaBody({
             return (
               <div key={r.id} className="flex flex-col gap-2.5 border-b border-line px-4 py-3 last:border-b-0">
                 <div className="flex items-center gap-3">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-tint text-[13px] font-bold uppercase text-link">{r.nickname.slice(0, 2)}</span>
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-tint text-[16px] font-bold uppercase text-link">{r.nickname.slice(0, 2)}</span>
                   <span className="flex flex-1 flex-col">
-                    <span className="text-[14px] font-semibold">{r.nickname}</span>
-                    <span className="text-[12px] text-fg-soft">
+                    <span className="text-[17px] font-semibold">{r.nickname}</span>
+                    <span className="text-[14px] text-fg-soft">
                       {r.village_name ?? "Luar Cimahi"} · {r.group_id ? "grup" : "pribadi"} · {timeAgo(r.created_at)}
                       {showPay && r.payment_status === "unpaid" && r.payment_due_at && r.status !== "cancelled" ? ` · batas ${formatDateTime(r.payment_due_at)}` : ""}
                       {showPay && r.payment_status === "paid" && r.payment_confirmed_at ? ` · lunas ${formatDateTime(r.payment_confirmed_at)}` : ""}
                       {r.payment_status === "refunded" && r.refunded_at ? ` · refund ${formatDateTime(r.refunded_at)}` : ""}
                     </span>
-                    {showPay && r.payment_note && <span className="text-[11px] text-fg-muted">Catatan: {r.payment_note}</span>}
+                    {showPay && r.payment_note && <span className="text-[13px] text-fg-muted">Catatan: {r.payment_note}</span>}
                   </span>
                   <span className="flex flex-col items-end gap-1">
                     <span className={`${tagClass.base} ${r.status === "completed" ? tagClass.success : r.status === "cancelled" || r.status === "not_completed" ? tagClass.neutral : tagClass.info}`}>
@@ -185,7 +185,7 @@ export async function PesertaBody({
                       {proof ? (
                         <a href={proof} target="_blank" rel="noreferrer" className={smallButton.outline}>Lihat bukti</a>
                       ) : (
-                        <span className="text-[12px] text-fg-soft">Bukti belum bisa dibuka.</span>
+                        <span className="text-[14px] text-fg-soft">Bukti belum bisa dibuka.</span>
                       )}
                       <form action={decidePayment} className="ml-auto">
                         <input type="hidden" name="participation_id" value={r.id} />
@@ -198,7 +198,7 @@ export async function PesertaBody({
                       <input type="hidden" name="participation_id" value={r.id} />
                       <input type="hidden" name="decision" value="reject" />
                       <input type="hidden" name="back" value={link(tab)} />
-                      <input name="note" required maxLength={200} placeholder="Alasan menolak (dikirim ke peserta)" aria-label="Alasan menolak" className={`${inputClass} h-10 flex-1 text-[13px]`} />
+                      <input name="note" required maxLength={200} placeholder="Alasan menolak (dikirim ke peserta)" aria-label="Alasan menolak" className={`${inputClass} h-10 flex-1 text-[16px]`} />
                       <SubmitButton size="small" variant="danger" pendingText="…">Tolak</SubmitButton>
                     </form>
                   </div>
@@ -217,7 +217,7 @@ export async function PesertaBody({
                     <input type="hidden" name="participation_id" value={r.id} />
                     <input type="hidden" name="decision" value="refund" />
                     <input type="hidden" name="back" value={link(tab)} />
-                    <input name="note" maxLength={200} placeholder="Catatan (opsional), mis. transfer kembali 12 Okt" aria-label="Catatan refund" className={`${inputClass} h-10 flex-1 text-[13px]`} />
+                    <input name="note" maxLength={200} placeholder="Catatan (opsional), mis. transfer kembali 12 Okt" aria-label="Catatan refund" className={`${inputClass} h-10 flex-1 text-[16px]`} />
                     <SubmitButton size="small" variant="dark" pendingText="…">Tandai refund</SubmitButton>
                   </form>
                 )}
@@ -226,7 +226,7 @@ export async function PesertaBody({
           })}
         </div>
       )}
-      {card.is_paid && <p className="text-[12px] text-fg-soft">Peserta yang belum bayar lewat batas waktu dibatalkan otomatis dan kursinya kembali. Peserta lunas yang membatalkan perlu kamu refund di luar aplikasi, lalu tandai di sini.</p>}
+      {card.is_paid && <p className="text-[14px] text-fg-soft">Peserta yang belum bayar lewat batas waktu dibatalkan otomatis dan kursinya kembali. Peserta lunas yang membatalkan perlu kamu refund di luar aplikasi, lalu tandai di sini.</p>}
     </>
   );
 }

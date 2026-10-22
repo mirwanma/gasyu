@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 // Dashboard admin: web, desktop-first, tema terang. Hanya akun is_admin.
 export default function AdminLayout({ children }: LayoutProps<"/admin">) {
   return (
-    <div className="theme-light flex min-h-screen flex-1 flex-col md:flex-row">
+    <div className="flex min-h-screen flex-1 flex-col md:flex-row">
       <Suspense fallback={<aside className="w-full border-b border-line bg-surface p-6 md:w-[260px] md:border-b-0 md:border-r" />}>
         <AdminGuard />
       </Suspense>

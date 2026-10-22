@@ -51,7 +51,7 @@ export function JoinPanel({
 
         {active && participation?.status === "invited" ? (
           <div className="flex flex-col gap-2">
-            <span className="text-[13px] text-fg-label">Ketua grupmu mendaftarkan kamu. Ikut?</span>
+            <span className="text-[16px] text-fg-label">Ketua grupmu mendaftarkan kamu. Ikut?</span>
             <InviteResponse participationId={participation.id} activityId={activityId} compact />
           </div>
         ) : active && participation ? (
@@ -59,16 +59,16 @@ export function JoinPanel({
             <input type="hidden" name="activity_id" value={activityId} />
             <input type="hidden" name="participation_id" value={participation.id} />
             <span className="flex flex-1 flex-col">
-              <span className="text-[12px] text-fg-soft">{unpaid ? "Per orang" : "Status kamu"}</span>
+              <span className="text-[14px] text-fg-soft">{unpaid ? "Per orang" : "Status kamu"}</span>
               {unpaid ? (
                 <span className="flex items-center gap-2">
-                  <span className="text-[17px] font-bold">{priceLabel}</span>
-                  <a href="#bayar" className={`text-[12px] font-bold ${participation.paymentStatus === "unpaid" ? "text-warn" : "text-info"}`}>
+                  <span className="text-[20px] font-bold">{priceLabel}</span>
+                  <a href="#bayar" className={`text-[14px] font-bold ${participation.paymentStatus === "unpaid" ? "text-warn" : "text-info"}`}>
                     {PAYMENT_LABELS[participation.paymentStatus!]} · Lihat status bayar
                   </a>
                 </span>
               ) : (
-                <span className="text-[15px] font-bold text-success">{PARTICIPATION_LABELS[participation.status]}</span>
+                <span className="text-[18px] font-bold text-success">{PARTICIPATION_LABELS[participation.status]}</span>
               )}
             </span>
             {participation.status === "registered" && (
@@ -80,10 +80,10 @@ export function JoinPanel({
         ) : !canJoin ? (
           <div className="flex items-center gap-3">
             <span className="flex flex-1 flex-col">
-              <span className="text-[12px] text-fg-soft">Per orang</span>
-              <span className="text-[17px] font-bold">{priceLabel}</span>
+              <span className="text-[14px] text-fg-soft">Per orang</span>
+              <span className="text-[20px] font-bold">{priceLabel}</span>
             </span>
-            <span className="max-w-[55%] text-right text-[12px] text-fg-soft">{blockedReason ?? "Belum bisa diikuti"}</span>
+            <span className="max-w-[55%] text-right text-[14px] text-fg-soft">{blockedReason ?? "Belum bisa diikuti"}</span>
           </div>
         ) : (
           <>
@@ -100,15 +100,15 @@ export function JoinPanel({
               <form action={joinAction} className="flex items-center gap-3">
                 <input type="hidden" name="activity_id" value={activityId} />
                 <span className="flex flex-1 flex-col">
-                  <span className="text-[12px] text-fg-soft">Per orang</span>
-                  <span className="text-[17px] font-bold">{priceLabel}</span>
+                  <span className="text-[14px] text-fg-soft">Per orang</span>
+                  <span className="text-[20px] font-bold">{priceLabel}</span>
                 </span>
-                <SubmitButton size="small" variant="dark" pendingText="Mendaftar…" className="!h-12 !px-6 !text-[15px]">
+                <SubmitButton size="small" variant="dark" pendingText="Mendaftar…" className="!h-12 !px-6 !text-[18px]">
                   Ikut
                 </SubmitButton>
               </form>
             ) : leaderGroups.length === 0 ? (
-              <div className="flex flex-col gap-1 text-[13px] text-fg-label">
+              <div className="flex flex-col gap-1 text-[16px] text-fg-label">
                 <span>
                   Aktivitas ini diikuti lewat grup ({groupMin}–{groupMax} orang). Hanya ketua grup yang bisa mendaftarkan.
                 </span>
@@ -120,7 +120,7 @@ export function JoinPanel({
               <form action={groupAction} className="flex flex-col gap-2.5">
                 <input type="hidden" name="activity_id" value={activityId} />
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="group_id" className="text-[12px] font-semibold text-fg-soft">
+                  <label htmlFor="group_id" className="text-[14px] font-semibold text-fg-soft">
                     Daftarkan grup ({groupMin}–{groupMax} orang)
                   </label>
                   <select id="group_id" name="group_id" value={groupId} onChange={(e) => setGroupId(e.target.value)} className={inputClass}>
@@ -133,7 +133,7 @@ export function JoinPanel({
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {group?.members.map((m) => (
-                    <label key={m.user_id} className="flex h-9 items-center gap-2 rounded-full border border-line-strong bg-surface px-3 text-[13px] font-semibold has-checked:border-primary has-checked:bg-primary-tint">
+                    <label key={m.user_id} className="flex h-9 items-center gap-2 rounded-full border border-line-strong bg-surface px-3 text-[16px] font-semibold has-checked:border-primary has-checked:bg-primary-tint">
                       <input type="checkbox" name="member_ids" value={m.user_id} defaultChecked className="accent-primary" />
                       {m.nickname}
                       {m.user_id === userId ? " (kamu)" : ""}
@@ -142,14 +142,14 @@ export function JoinPanel({
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="flex flex-1 flex-col">
-                    <span className="text-[12px] text-fg-soft">Per orang</span>
-                    <span className="text-[17px] font-bold">{priceLabel}</span>
+                    <span className="text-[14px] text-fg-soft">Per orang</span>
+                    <span className="text-[20px] font-bold">{priceLabel}</span>
                   </span>
-                  <SubmitButton size="small" variant="dark" pendingText="Mendaftarkan…" className="!h-12 !px-5 !text-[15px]">
+                  <SubmitButton size="small" variant="dark" pendingText="Mendaftarkan…" className="!h-12 !px-5 !text-[18px]">
                     Daftarkan grup
                   </SubmitButton>
                 </div>
-                <span className="text-[11px] text-fg-muted">Anggota yang dipilih mendapat undangan dan harus mengonfirmasi sebelum aktivitas mulai.</span>
+                <span className="text-[13px] text-fg-muted">Anggota yang dipilih mendapat undangan dan harus mengonfirmasi sebelum aktivitas mulai.</span>
               </form>
             )}
           </>

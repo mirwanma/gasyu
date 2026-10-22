@@ -3,7 +3,7 @@ import { LainnyaPage } from "@/components/organizer/pages";
 
 export default function Page(props: PageProps<"/komunitas/[id]/lainnya">) {
   return (
-    <Suspense fallback={<p className="px-5 pt-6 text-[13px] text-fg-muted">Memuat…</p>}>
+    <Suspense fallback={<p className="px-5 pt-6 text-[16px] text-fg-muted">Memuat…</p>}>
       <Loader {...props} />
     </Suspense>
   );

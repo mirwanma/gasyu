@@ -37,27 +37,35 @@ export function BottomNav({ items, active }: { items: NavItem[]; active: string 
       aria-label="Navigasi utama"
       className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-surface-deep pb-[env(safe-area-inset-bottom)]"
     >
-      <ul className="mx-auto flex h-[76px] max-w-md items-start justify-around px-1.5 pt-2">
+      <ul className="mx-auto flex h-[84px] max-w-md items-start justify-around px-1.5 pt-2">
         {items.map((item) => {
           const isActive = item.label === active;
           if (item.emphasis) {
-            const emphasisClass =
-              "-mt-6 flex size-[60px] items-center justify-center rounded-full border-4 border-bg bg-hot text-bg";
+            // Tombol Scan menonjol, tetap dengan ikon + teks.
+            const circle = "-mt-6 flex size-[60px] items-center justify-center rounded-full border-4 border-bg bg-hot text-on-primary";
+            const content = (
+              <>
+                <span className={circle}>
+                  <Icon name={item.icon} size={26} stroke={2.2} />
+                </span>
+                <span className="text-[13px] font-semibold text-fg">{item.label}</span>
+              </>
+            );
             return (
               <li key={item.label}>
                 {item.href ? (
-                  <a href={item.href} aria-label={item.label} className={emphasisClass}>
-                    <Icon name={item.icon} size={26} stroke={2.2} />
+                  <a href={item.href} className="flex flex-col items-center gap-0.5">
+                    {content}
                   </a>
                 ) : (
-                  <span aria-label={`${item.label} (segera hadir)`} className={`${emphasisClass} opacity-60`}>
-                    <Icon name={item.icon} size={26} stroke={2.2} />
+                  <span title="Segera hadir" className="flex flex-col items-center gap-0.5 opacity-60">
+                    {content}
                   </span>
                 )}
               </li>
             );
           }
-          const base = "flex min-h-12 w-16 flex-col items-center gap-1 text-[11px] font-semibold";
+          const base = "flex min-h-12 w-[72px] flex-col items-center gap-1 text-[13px] font-semibold";
           const content = (
             <>
               <Icon name={item.icon} size={22} />
@@ -70,7 +78,7 @@ export function BottomNav({ items, active }: { items: NavItem[]; active: string 
                 <a
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
-                  className={`${base} ${isActive ? "text-link" : "text-fg-muted"}`}
+                  className={`${base} ${isActive ? "text-primary" : "text-fg-soft"}`}
                 >
                   {content}
                 </a>

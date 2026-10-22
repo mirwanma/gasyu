@@ -1,4 +1,4 @@
 // Mode komunitas memakai tema terang (lihat UI Mockup, halaman "Merchant & Komunitas").
 export default function KomunitasLayout({ children }: LayoutProps<"/komunitas/[id]">) {
-  return <div className="theme-light flex flex-1 flex-col">{children}</div>;
+  return <div className="flex flex-1 flex-col">{children}</div>;
 }
