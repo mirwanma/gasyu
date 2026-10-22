@@ -71,6 +71,8 @@ export function ActivityForm({
   const [targetScope, setTargetScope] = useState<TargetScope>(initial?.target_scope ?? "individual");
   const [joinMode, setJoinMode] = useState<JoinMode>(initial?.join_mode ?? "individual");
   const [paid, setPaid] = useState(initial?.is_paid ?? false);
+  // Peringatan (bukan larangan) jika jam mulai < 24 jam lagi: aktivitas penyelenggara perlu ditinjau admin dulu.
+  const [startsSoon, setStartsSoon] = useState(false);
   const [reach, setReach] = useState<ActivityReach>(initial?.reach ?? "regional");
   const [locationMode, setLocationMode] = useState<LocationMode>(initial?.location_mode ?? "onsite");
   // Event Global selalu event, publik, terbuka untuk semua, dan daftar pribadi.
@@ -195,7 +197,23 @@ export function ActivityForm({
         <div className="grid grid-cols-1 gap-3">
           <div className="flex flex-col gap-1.5">
             <label htmlFor="starts_at" className={labelClass}>Mulai (WIB)</label>
-            <input id="starts_at" name="starts_at" type="datetime-local" required defaultValue={toLocalInput(initial?.starts_at)} className={inputClass} />
+            <input
+              id="starts_at"
+              name="starts_at"
+              type="datetime-local"
+              required
+              defaultValue={toLocalInput(initial?.starts_at)}
+              onChange={(e) => {
+                const start = new Date(`${e.target.value}:00+07:00`).getTime();
+                setStartsSoon(!allowGlobal && Number.isFinite(start) && start - Date.now() < 24 * 3600_000);
+              }}
+              className={inputClass}
+            />
+            {startsSoon && (
+              <span className="rounded-xl bg-warn-tint px-3 py-2 text-[12px] leading-[1.5] text-warn">
+                Jam mulai kurang dari 24 jam lagi. Tim Gasyu perlu waktu meninjau (biasanya 1–2 hari kerja), jadi aktivitas bisa belum tampil di Jelajah saat dimulai. Beri jeda lebih panjang jika bisa.
+              </span>
+            )}
           </div>
           <div className="flex flex-col gap-1.5">
             <label htmlFor="ends_at" className={labelClass}>Selesai (WIB)</label>

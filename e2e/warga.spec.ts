@@ -14,9 +14,10 @@ test.describe("warga", () => {
     await expect(page.getByRole("heading", { name: "Aktivitasku" })).toBeVisible();
   });
 
+  // Tanggal data dummy relatif terhadap waktu pemasangan, jadi uji tidak bergantung pada satu event tertentu.
   test("jelajah menampilkan aktivitas yang terbit", async ({ page }) => {
     await open(page, "/jelajah");
-    await expect(page.getByRole("link", { name: /Cimahi Night Run 5K/ }).first()).toBeVisible();
+    await expect(page.locator('main a[href^="/aktivitas/"]').first()).toBeVisible();
   });
 
   test("jelajah: kota warga terpilih otomatis dan bisa diganti ke semua kota", async ({ page }) => {
@@ -25,7 +26,7 @@ test.describe("warga", () => {
     await page.getByRole("navigation", { name: "Pilih kota" }).getByRole("link", { name: "Semua kota" }).click();
     await expect(page).toHaveURL(/kota=semua/);
     await expect(page.locator("summary", { hasText: "Semua kota" })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Cimahi Night Run 5K/ }).first()).toBeVisible();
+    await expect(page.locator('main a[href^="/aktivitas/"]').first()).toBeVisible();
     // Pilihan kota ikut terbawa saat pindah filter
     await page.getByRole("link", { name: "Event", exact: true }).click();
     await expect(page).toHaveURL(/filter=event.*kota=semua|kota=semua.*filter=event/);

@@ -21,7 +21,10 @@ type Phase =
 // Halaman Scan QR warga, mengikuti artboard "Warga · Scan QR" dan "Warga · Check-in berhasil".
 export function Scanner({ initial, levels }: { initial: QrPayload | null; levels: LevelRow[] }) {
   const [phase, setPhase] = useState<Phase>(initial ? { kind: "confirm", payload: initial } : { kind: "scan" });
-  const [geo, setGeo] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
+  // Lokasi disimpan di ref, bukan state: jika submit bergantung pada state lokasi, kamera
+  // ikut dinyalakan ulang setiap GPS memperbarui posisi (kamera berkedip, pemindaian tersendat).
+  const geoRef = useRef<{ lat: number; lng: number } | null>(null);
+  const [hasGeo, setHasGeo] = useState(false);
   const [geoMessage, setGeoMessage] = useState("Mengaktifkan lokasi…");
   const [cameraMessage, setCameraMessage] = useState<string>();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -36,7 +39,8 @@ export function Scanner({ initial, levels }: { initial: QrPayload | null; levels
     }
     const id = navigator.geolocation.watchPosition(
       (pos) => {
-        setGeo({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
+        geoRef.current = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setHasGeo(true);
         setGeoMessage(`Lokasi aktif · akurasi ${Math.round(pos.coords.accuracy)} m`);
       },
       () => setGeoMessage("Lokasi tidak aktif · check-in akan ditandai untuk ditinjau"),
@@ -50,6 +54,7 @@ export function Scanner({ initial, levels }: { initial: QrPayload | null; levels
       if (submittingRef.current) return;
       submittingRef.current = true;
       setPhase({ kind: "sending" });
+      const geo = geoRef.current;
       if (payload.kind === "mission") {
         const res = await completeMissionQr(payload.missionId, payload.token, geo?.lat ?? null, geo?.lng ?? null);
         submittingRef.current = false;
@@ -60,7 +65,7 @@ export function Scanner({ initial, levels }: { initial: QrPayload | null; levels
       submittingRef.current = false;
       setPhase(res.ok ? { kind: "done", result: res.result } : { kind: "error", message: res.error });
     },
-    [geo],
+    [],
   );
 
   // Kamera + pembacaan QR (jsQR) selama fase scan.
@@ -110,7 +115,10 @@ export function Scanner({ initial, levels }: { initial: QrPayload | null; levels
       .then(() => {
         raf = requestAnimationFrame(tick);
       })
-      .catch(() => setCameraMessage("Kamera tidak bisa dibuka. Izinkan akses kamera, atau buka QR lewat kamera bawaan HP."));
+      .catch(() => {
+        // Kamera yang sengaja dihentikan (pindah fase) bukan kegagalan.
+        if (!stopped) setCameraMessage("Kamera tidak bisa dibuka. Izinkan akses kamera, atau buka QR lewat kamera bawaan HP.");
+      });
 
     return () => {
       stopped = true;
@@ -171,15 +179,15 @@ export function Scanner({ initial, levels }: { initial: QrPayload | null; levels
         </>
       )}
 
-      <div className={`flex h-9 items-center gap-2 rounded-full px-3.5 text-[13px] font-semibold ${geo ? "bg-[#123A33]/90 text-[#6EE7B7]" : "bg-warn-tint text-warn"}`}>
+      <div className={`flex h-9 items-center gap-2 rounded-full px-3.5 text-[13px] font-semibold ${hasGeo ? "bg-[#123A33]/90 text-[#6EE7B7]" : "bg-warn-tint text-warn"}`}>
         <Icon name="pin" size={16} stroke={2} />
         {geoMessage}
       </div>
 
       <div className="mt-auto flex w-full flex-col gap-2.5">
-        <Link href="/" className="flex h-[52px] items-center justify-center gap-2 rounded-2xl border border-line-strong bg-surface/95 text-[15px] font-semibold text-fg">
+        <Link href="/#aktivitasku" className="flex h-[52px] items-center justify-center gap-2 rounded-2xl border border-line-strong bg-surface/95 text-[15px] font-semibold text-fg">
           <Icon name="keyboard" size={18} stroke={2} />
-          Ketik kode misi di halaman aktivitas
+          Ketik kode misi: buka aktivitasmu
         </Link>
         <span className="text-center text-[12px] text-fg-muted">QR check-in dan QR misi berganti tiap 60 detik. Foto QR yang disebar tidak akan berlaku.</span>
       </div>
@@ -246,6 +254,8 @@ function Reward({ result, levels }: { result: CheckinResult; levels: LevelRow[] 
     ["Bonus grup 20%", result.xp_group],
   ];
   const isChallenge = result.activity_type === "challenge";
+  // XP sebelum dipotong batas harian; jika total lebih kecil, batas harian tercapai.
+  const planned = rows.reduce((sum, [, v]) => sum + v, 0);
   const shown = result.target_scope === "group" ? (result.group_progress ?? result.progress) : result.progress;
   return (
     <div className="flex min-h-screen flex-col items-center gap-[18px] px-5 pb-7 pt-12" style={{ background: "radial-gradient(circle at 50% 18%, #3B2F8F 0%, #0D1024 60%)" }}>
@@ -268,8 +278,7 @@ function Reward({ result, levels }: { result: CheckinResult; levels: LevelRow[] 
           <span className="text-[12px] text-fg-soft">XP</span>
         </div>
         <div className="flex flex-1 flex-col items-center gap-1 rounded-[20px] border border-line bg-surface p-4">
-          <span className="font-display text-[32px] font-bold text-points">+{result.points}</span>
-          <span className="text-[12px] text-fg-soft">{result.points > 0 ? `poin dari ${result.partner_name}` : result.completed ? "poin · budget habis" : "poin · setelah selesai"}</span>
+          <PointsBox points={result.points} promised={result.points_promised ?? 0} completed={result.completed} from={result.partner_name} />
         </div>
       </div>
       <div className="flex w-full flex-col gap-2.5 rounded-[20px] border border-line bg-surface p-4">
@@ -279,7 +288,8 @@ function Reward({ result, levels }: { result: CheckinResult; levels: LevelRow[] 
             <span className="font-semibold">+{v}</span>
           </div>
         ))}
-        {result.xp_total === 0 && <span className="text-[13px] text-fg-soft">Batas XP harian (1.000) sudah tercapai. Check-in tetap tercatat.</span>}
+        {planned === 0 && isChallenge && !result.completed && <span className="text-[13px] text-fg-soft">XP challenge masuk saat challenge selesai. Check-in ini tercatat sebagai progres.</span>}
+        {result.xp_total < planned && <span className="text-[13px] text-fg-soft">Batas XP harian sudah tercapai, jadi XP check-in ini dipotong. Check-in tetap tercatat.</span>}
         <div className="h-px bg-track" />
         <div className="flex flex-col gap-1.5">
           <div className="flex justify-between text-[12px] text-fg-soft">
@@ -338,8 +348,7 @@ function MissionReward({ result, levels }: { result: MissionResult; levels: Leve
           <span className="text-[12px] text-fg-soft">XP{result.xp ? " · termasuk bonus selesai" : ""}</span>
         </div>
         <div className="flex flex-1 flex-col items-center gap-1 rounded-[20px] border border-line bg-surface p-4">
-          <span className="font-display text-[32px] font-bold text-points">+{result.points ?? 0}</span>
-          <span className="text-[12px] text-fg-soft">{(result.points ?? 0) > 0 ? "poin" : result.completed ? "poin · budget habis" : "poin · setelah selesai"}</span>
+          <PointsBox points={result.points ?? 0} promised={result.points_promised ?? 0} completed={Boolean(result.completed)} />
         </div>
       </div>
       <div className="flex w-full flex-col gap-1.5 rounded-[20px] border border-line bg-surface p-4">
@@ -370,5 +379,21 @@ function MissionReward({ result, levels }: { result: MissionResult; levels: Leve
         </Link>
       </div>
     </div>
+  );
+}
+
+// Kotak poin di layar hasil scan: poin yang baru masuk, atau janji poin saat aktivitas selesai.
+function PointsBox({ points, promised, completed, from }: { points: number; promised: number; completed: boolean; from?: string }) {
+  const [value, label] =
+    points > 0
+      ? [points, from ? `poin dari ${from}` : "poin"]
+      : !completed && promised > 0
+        ? [promised, "poin · masuk setelah selesai"]
+        : [0, promised > 0 ? "poin · budget habis" : "aktivitas tanpa poin"];
+  return (
+    <>
+      <span className="font-display text-[32px] font-bold text-points">+{value}</span>
+      <span className="text-center text-[12px] text-fg-soft">{label}</span>
+    </>
   );
 }

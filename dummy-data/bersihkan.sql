@@ -45,6 +45,7 @@ delete from public.rewards where organizer_id in (select id from dm_orgs);
 delete from public.checkins where activity_id in (select id from dm_acts) or user_id in (select id from dm_users);
 delete from public.participations where activity_id in (select id from dm_acts) or user_id in (select id from dm_users);
 delete from public.group_members where group_id in (select id from dm_groups) or user_id in (select id from dm_users);
+delete from public.group_join_attempts where user_id in (select id from dm_users);
 delete from public.groups where id in (select id from dm_groups);
 delete from public.challenge_targets where activity_id in (select id from dm_acts);
 delete from public.activity_checkpoints where activity_id in (select id from dm_acts);

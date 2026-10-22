@@ -11,7 +11,8 @@ import { listActivityPartners, listApprovedOrganizers } from "@/lib/data/collab"
 import Link from "next/link";
 import { LOCATION_MODE_LABELS, formatPrice, formatSchedule, typeLabel } from "@/lib/activities";
 import { getActivityCard, getCheckpoints, type ActivityCard } from "@/lib/data/activities";
-import { formatDateTime, timeAgo } from "@/lib/format";
+import { formatDateTime, formatNumber, timeAgo } from "@/lib/format";
+import { VERIFICATION_LABELS, type MissionVerification } from "@/lib/missions";
 import { createClient } from "@/lib/supabase/server";
 
 // Admin: review aktivitas penyelenggara dan daftar semua aktivitas.
@@ -82,9 +83,15 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/aktivitas">, "sear
 
 async function Detail({ id, tab }: { id: string; tab: string }) {
   const supabase = await createClient();
-  const [card, checkpoints, { data: raw }, { count: participants }] = await Promise.all([
+  const [card, checkpoints, { data: missions }, { data: raw }, { count: participants }] = await Promise.all([
     getActivityCard(id),
     getCheckpoints(id),
+    supabase
+      .from("activity_missions")
+      .select("id, title, description, verification, xp_reward, score_reward, is_required, is_active")
+      .eq("activity_id", id)
+      .order("sort_order")
+      .order("created_at"),
     supabase.from("activities").select("review_note, created_at, creator:profiles!activities_created_by_fkey(nickname)").eq("id", id).maybeSingle(),
     supabase.from("participations").select("id", { count: "exact", head: true }).eq("activity_id", id).in("status", ["invited", "registered", "in_progress", "completed"]),
   ]);
@@ -215,7 +222,7 @@ async function Detail({ id, tab }: { id: string; tab: string }) {
                   <details key={p.id} className="rounded-[20px] border border-line p-4">
                     <summary className="cursor-pointer list-none text-[14px] font-bold">Checkpoint atas nama {p.organizer_name}…</summary>
                     <div className="pt-3">
-                      <CheckpointForm organizerId={card.host_organizer_id} type="admin" activityId={id} outlets={partnerOutlets.filter((o) => o.organizer_id === p.organizer_id) as { id: string; name: string; address: string }[]} partnerOrganizerId={p.organizer_id} />
+                      <CheckpointForm organizerId={card.host_organizer_id} type="admin" activityId={id} outlets={partnerOutlets.filter((o) => o.organizer_id === p.organizer_id && !checkpoints.some((c) => c.outlet_id === o.id)) as { id: string; name: string; address: string }[]} partnerOrganizerId={p.organizer_id} />
                     </div>
                   </details>
                 ))}
@@ -223,6 +230,22 @@ async function Detail({ id, tab }: { id: string; tab: string }) {
             )}
           </div>
         )}
+
+        {/* Misi ikut terbit bersama aktivitas, jadi ditinjau di sini juga. */}
+        <div className="flex flex-col gap-2">
+          <h3 className="text-[15px] font-bold">Misi · {(missions ?? []).filter((m) => m.is_active).length}</h3>
+          {(missions ?? []).length === 0 && <p className="text-[13px] text-fg-soft">Tidak ada misi.</p>}
+          {(missions ?? []).map((m) => (
+            <div key={m.id} className={`flex flex-col gap-1 rounded-2xl border border-line p-3 ${m.is_active ? "" : "opacity-60"}`}>
+              <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-fg-soft">
+                {m.is_required ? "Wajib" : "Bonus"} · {VERIFICATION_LABELS[m.verification as MissionVerification]} · {m.score_reward > 0 ? `${formatNumber(m.score_reward)} skor` : `${m.xp_reward} XP`}
+                {m.is_active ? "" : " · nonaktif"}
+              </span>
+              <span className="text-[14px] font-semibold">{m.title}</span>
+              {m.description && <span className="text-[13px] leading-[1.5] text-fg-soft">{m.description}</span>}
+            </div>
+          ))}
+        </div>
 
         {raw?.review_note && card.status !== "in_review" && <p className="rounded-xl bg-track px-3 py-2 text-[12px] text-fg-label">Catatan terakhir: {raw.review_note}</p>}
 

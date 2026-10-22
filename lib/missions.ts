@@ -68,6 +68,7 @@ export type MissionResult = {
   reach?: "regional" | "global";
   xp?: number;
   points?: number;
+  points_promised?: number; // poin per penyelesaian aktivitas (ditambahkan server action)
   completed?: boolean;
   newly_completed?: boolean;
   flagged?: boolean;

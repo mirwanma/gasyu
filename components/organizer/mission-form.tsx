@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { saveMission, type MissionActionState } from "@/lib/actions/missions";
 import { REVEAL_OPTIONS, VERIFICATION_LABELS, type MissionReveal, type MissionVerification } from "@/lib/missions";
-import { cardClass, chipClass, inputClass, labelClass, textareaClass } from "@/components/styles";
+import { cardClass, chipClass, inputClass, labelClass, smallButton, textareaClass } from "@/components/styles";
 import { ErrorMessage, SubmitButton, SuccessMessage } from "@/components/ui";
 
 export type MissionFormValues = {
@@ -69,6 +69,18 @@ export function MissionForm({
   const unit = global ? "skor" : "XP";
   const prereqOptions = otherMissions.filter((m) => m.id !== initial?.id && (!required || m.is_required));
 
+  // Setelah tersimpan, formulir diganti ringkasan supaya misi tidak tersimpan dua kali.
+  if (state.success) {
+    return (
+      <div className={`${cardClass} flex flex-col gap-3 p-4`}>
+        <SuccessMessage message={state.success} />
+        <a href={onCancelHref} className={`${smallButton.outline} self-start`}>
+          Lihat daftar misi
+        </a>
+      </div>
+    );
+  }
+
   return (
     <form action={formAction} className={`${cardClass} flex flex-col gap-3.5 p-4`}>
       <input type="hidden" name="organizer_id" value={organizerId} />
@@ -84,7 +96,6 @@ export function MissionForm({
         </a>
       </div>
       <ErrorMessage message={state.error} />
-      <SuccessMessage message={state.success} />
       {locked && <p className="rounded-xl bg-warn-tint px-3 py-2 text-[12px] text-warn">Sudah ada yang menyelesaikan misi ini: {unit}, cara verifikasi, dan status wajib terkunci. Teks masih bisa diubah.</p>}
 
       <div className="flex flex-col gap-1.5">

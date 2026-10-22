@@ -232,7 +232,8 @@ export async function reviewActivity(formData: FormData) {
   const supabase = await createClient();
   const { error } = await supabase.rpc("review_activity", { p_activity_id: activityId, p_approve: approve, p_note: note || null });
   revalidatePath("/admin", "layout");
-  redirect(`/admin/aktivitas?hasil=${error ? "gagal" : "ok"}`);
+  if (error) redirect(`/admin/aktivitas?pilih=${activityId}&error=${encodeURIComponent(msg(error.message, "Keputusan belum tersimpan. Coba lagi."))}`);
+  redirect("/admin/aktivitas?hasil=ok");
 }
 
 export async function adminCancelActivity(formData: FormData) {
