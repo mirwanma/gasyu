@@ -35,10 +35,12 @@ export function OnboardingForm({
   next,
   districts,
   profileXp,
+  defaultFullName,
 }: {
   next: string;
   districts: DistrictOption[];
   profileXp: number;
+  defaultFullName: string; // dari form daftar atau akun Google; tetap bisa diubah
 }) {
   const [state, formAction] = useActionState<OnboardingState, FormData>(completeOnboarding, INITIAL);
   // Langkah pilihan warga berlaku sampai server mengembalikan hasil baru;
@@ -51,7 +53,7 @@ export function OnboardingForm({
   };
 
   const [nickname, setNickname] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [fullName, setFullName] = useState(defaultFullName);
   const [village, setVillage] = useState("");
   const [query, setQuery] = useState("");
   const [localError, setLocalError] = useState<string>();

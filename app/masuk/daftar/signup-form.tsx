@@ -9,7 +9,8 @@ import { cardClass, inputClass, labelClass } from "@/components/styles";
 import { ErrorMessage, SubmitButton } from "@/components/ui";
 import { PASSWORD_MIN } from "@/lib/password";
 
-// Daftar akun: isi email + kata sandi, lalu masukkan kode 6 angka dari email.
+// Daftar akun: isi nama lengkap, email, dan kata sandi, lalu masukkan kode 6 angka dari email.
+// Kata sandi cukup sekali; tombol Lihat di kolomnya untuk mengecek ketikan.
 // `confirmEmail` diisi jika warga datang dari halaman masuk dengan akun yang belum dikonfirmasi.
 export function SignupForm({ next, confirmEmail }: { next: string; confirmEmail?: string }) {
   const [state, formAction] = useActionState<SignupState, FormData>(
@@ -21,6 +22,20 @@ export function SignupForm({ next, confirmEmail }: { next: string; confirmEmail?
     return (
       <form action={formAction} className="flex flex-1 flex-col gap-5">
         <input type="hidden" name="next" value={next} />
+        <div className="flex flex-col gap-2.5">
+          <label htmlFor="full_name" className={labelClass}>
+            Nama lengkap
+          </label>
+          <input
+            id="full_name"
+            name="full_name"
+            autoComplete="name"
+            defaultValue={state.fullName}
+            maxLength={100}
+            required
+            className={inputClass}
+          />
+        </div>
         <div className="flex flex-col gap-2.5">
           <label htmlFor="email" className={labelClass}>
             Email
@@ -47,12 +62,6 @@ export function SignupForm({ next, confirmEmail }: { next: string; confirmEmail?
             minLength={PASSWORD_MIN}
             placeholder={`Minimal ${PASSWORD_MIN} karakter`}
           />
-        </div>
-        <div className="flex flex-col gap-2.5">
-          <label htmlFor="password_confirm" className={labelClass}>
-            Ulangi kata sandi
-          </label>
-          <PasswordInput id="password_confirm" name="password_confirm" autoComplete="new-password" minLength={PASSWORD_MIN} />
         </div>
         <ErrorMessage message={state.error} />
         <div className="mt-auto flex flex-col gap-4">

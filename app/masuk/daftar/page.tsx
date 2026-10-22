@@ -3,7 +3,7 @@ import { SignupForm } from "./signup-form";
 import { Logo } from "@/components/ui";
 import { safeNext } from "@/lib/safe-next";
 
-// Daftar akun warga dengan email + kata sandi.
+// Daftar akun warga dengan nama lengkap, email, dan kata sandi.
 export default function DaftarPage({ searchParams }: PageProps<"/masuk/daftar">) {
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-7 px-6 pb-8 pt-14">
@@ -11,7 +11,7 @@ export default function DaftarPage({ searchParams }: PageProps<"/masuk/daftar">)
         <Logo />
         <h1 className="font-display text-[32px] font-bold leading-[1.15]">Buat akun Gasyu</h1>
         <p className="text-[16px] leading-[1.55] text-fg-soft">
-          Daftar dengan email dan kata sandi. Kami kirim kode 6 angka untuk memastikan emailnya milikmu.
+          Cukup nama, email, dan kata sandi. Kami kirim kode 6 angka untuk memastikan emailnya milikmu.
         </p>
       </div>
       <Suspense fallback={<p className="text-[15px] text-fg-muted">Memuat…</p>}>

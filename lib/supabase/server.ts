@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { connection } from "next/server";
+import { sessionCookieOptions } from "./cookies";
 import type { AppDatabase as Database } from "./types";
 
 // Client Supabase untuk Server Component, Server Action, dan Route Handler.
@@ -14,6 +15,7 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
+      cookieOptions: sessionCookieOptions,
       cookies: {
         getAll() {
           return cookieStore.getAll();

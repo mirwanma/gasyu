@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { safeNext } from "@/lib/safe-next";
+import { sessionCookieOptions } from "./cookies";
 import type { AppDatabase as Database } from "./types";
 
 // Halaman yang boleh dibuka tanpa login.
@@ -22,6 +23,7 @@ export async function updateSession(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
+      cookieOptions: sessionCookieOptions,
       cookies: {
         getAll() {
           return request.cookies.getAll();
