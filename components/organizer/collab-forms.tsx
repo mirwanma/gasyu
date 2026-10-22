@@ -19,7 +19,7 @@ export function RespondInviteForm({ partnerId, isMerchant, ctx }: { partnerId: s
       <input type="hidden" name="type_org" value={ctx.typeOrg} />
       <ErrorMessage message={state.error} />
       {isMerchant && (
-        <label className="flex flex-col gap-1.5 text-[12px] font-semibold text-fg-soft">
+        <label className="flex flex-col gap-1.5 text-[14px] font-semibold text-fg-soft">
           Budget poin yang kamu sumbangkan (opsional)
           <input name="budget" type="number" min={0} max={1000000} inputMode="numeric" placeholder="0" className={inputClass} />
         </label>
@@ -39,12 +39,12 @@ export function PartnerBudgetForm({ partnerId, budget, ctx }: { partnerId: strin
       <input type="hidden" name="partner_id" value={partnerId} />
       <input type="hidden" name="organizer_id" value={ctx.organizerId} />
       <input type="hidden" name="type_org" value={ctx.typeOrg} />
-      <label className="flex flex-1 flex-col gap-1 text-[12px] font-semibold text-fg-soft">
+      <label className="flex flex-1 flex-col gap-1 text-[14px] font-semibold text-fg-soft">
         Budget poin
         <input name="budget" type="number" min={0} max={1000000} inputMode="numeric" defaultValue={budget} className={inputClass} />
       </label>
       <SubmitButton size="small" variant="dark" pendingText="…">Simpan</SubmitButton>
-      {(state.error || state.success) && <span className={`text-[11px] ${state.error ? "text-danger" : "text-success"}`}>{state.error ?? state.success}</span>}
+      {(state.error || state.success) && <span className={`text-[13px] ${state.error ? "text-danger" : "text-success"}`}>{state.error ?? state.success}</span>}
     </form>
   );
 }
@@ -128,7 +128,7 @@ export function NewPostForm({ ctx, activities, districts }: { ctx: Ctx; activiti
       <input type="hidden" name="organizer_id" value={ctx.organizerId} />
       <input type="hidden" name="type_org" value={ctx.typeOrg} />
       <input type="hidden" name="kind" value={kind} />
-      <h2 className="text-[15px] font-bold">Buka open call</h2>
+      <h2 className="text-[18px] font-bold">Buka open call</h2>
       <ErrorMessage message={state.error} />
       <SuccessMessage message={state.success} />
       <div className="flex gap-2">
@@ -174,7 +174,7 @@ export function ApplyForm({ postId, isMerchant, ctx }: { postId: string; isMerch
   if (state.success) return <SuccessMessage message={state.success} />;
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className="flex h-10 items-center justify-center self-start rounded-full border border-line-strong bg-surface px-4 text-[13px] font-semibold text-fg">
+      <button type="button" onClick={() => setOpen(true)} className="flex h-10 items-center justify-center self-start rounded-full border border-line-strong bg-surface px-4 text-[16px] font-semibold text-fg">
         Ajukan diri
       </button>
     );
@@ -197,7 +197,7 @@ export function ApplyForm({ postId, isMerchant, ctx }: { postId: string; isMerch
       <input name="contribution" maxLength={500} placeholder="Kontribusi: tenaga, tempat, voucher, publikasi…" className={inputClass} aria-label="Kontribusi" />
       <textarea name="message" rows={2} maxLength={500} placeholder="Pesan untuk pembuat open call" className={textareaClass} aria-label="Pesan" />
       <div className="flex justify-end gap-2">
-        <button type="button" onClick={() => setOpen(false)} className="h-10 rounded-xl px-3 text-[13px] font-semibold text-fg-soft">Batal</button>
+        <button type="button" onClick={() => setOpen(false)} className="h-10 rounded-xl px-3 text-[16px] font-semibold text-fg-soft">Batal</button>
         <SubmitButton size="small" variant="dark" pendingText="Mengirim…">Kirim pengajuan</SubmitButton>
       </div>
     </form>

@@ -12,7 +12,7 @@ const DAY_LABELS: Record<string, string> = { mon: "Sen", tue: "Sel", wed: "Rab",
 
 export default function Page({ params }: PageProps<"/merchant/[id]/outlet">) {
   return (
-    <Suspense fallback={<p className="px-5 pt-6 text-[13px] text-fg-muted">Memuat…</p>}>
+    <Suspense fallback={<p className="px-5 pt-6 text-[16px] text-fg-muted">Memuat…</p>}>
       <Loader params={params} />
     </Suspense>
   );
@@ -55,22 +55,22 @@ async function OutletBody({ id }: { id: string }) {
           return (
             <div key={outlet.id} className={`${cardClass} flex flex-col gap-2 p-4`}>
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[14px] font-semibold">{outlet.name}</span>
+                <span className="text-[17px] font-semibold">{outlet.name}</span>
                 <span className={`${tagClass.base} ${outlet.is_active ? tagClass.success : tagClass.neutral}`}>
                   {outlet.is_active ? "Aktif" : "Nonaktif"}
                 </span>
               </div>
-              <span className="text-[13px] text-fg-soft">
+              <span className="text-[16px] text-fg-soft">
                 {outlet.address}
                 {village ? ` · Kel. ${village.name}` : ""}
               </span>
-              <span className="text-[13px] text-fg-soft">{describeHours(outlet.opening_hours as Record<string, [string, string]> | null)}</span>
+              <span className="text-[16px] text-fg-soft">{describeHours(outlet.opening_hours as Record<string, [string, string]> | null)}</span>
               <div className="flex items-center justify-between">
                 <a
                   href={`https://www.openstreetmap.org/?mlat=${outlet.lat}&mlon=${outlet.lng}#map=17/${outlet.lat}/${outlet.lng}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-1 text-[12px] font-semibold text-link"
+                  className="flex items-center gap-1 text-[14px] font-semibold text-link"
                 >
                   <Icon name="pin" size={14} stroke={2} />
                   Cek titik di peta

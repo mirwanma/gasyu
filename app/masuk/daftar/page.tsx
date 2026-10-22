@@ -9,12 +9,12 @@ export default function DaftarPage({ searchParams }: PageProps<"/masuk/daftar">)
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-7 px-6 pb-8 pt-14">
       <div className="flex flex-col gap-[18px]">
         <Logo />
-        <h1 className="font-display text-[32px] font-bold leading-[1.15]">Buat akun Gasyu</h1>
-        <p className="text-[15px] leading-[1.55] text-fg-soft">
+        <h1 className="font-display text-[34px] font-bold leading-[1.15]">Buat akun Gasyu</h1>
+        <p className="text-[18px] leading-[1.55] text-fg-soft">
           Daftar dengan email dan kata sandi. Kami kirim kode 6 angka untuk memastikan emailnya milikmu.
         </p>
       </div>
-      <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>
+      <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
         <Form searchParams={searchParams} />
       </Suspense>
     </main>

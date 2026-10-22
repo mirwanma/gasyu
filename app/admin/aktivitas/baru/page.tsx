@@ -10,10 +10,10 @@ export default function AdminAktivitasBaruPage({ searchParams }: PageProps<"/adm
   return (
     <>
       <div className="flex flex-col gap-1">
-        <h1 className="font-display text-[30px] font-bold">Event Gasyu</h1>
-        <span className="text-[14px] text-fg-soft">Dibuat atas nama Gasyu, langsung terbit saat diterbitkan tanpa antrean review. Pilih jangkauan Event Global jika terbuka untuk pengguna dari kota mana pun. Tambahkan partner, checkpoint, misi, dan hadiah setelah draft tersimpan.</span>
+        <h1 className="font-display text-[32px] font-bold">Event Gasyu</h1>
+        <span className="text-[17px] text-fg-soft">Dibuat atas nama Gasyu, langsung terbit saat diterbitkan tanpa antrean review. Pilih jangkauan Event Global jika terbuka untuk pengguna dari kota mana pun. Tambahkan partner, checkpoint, misi, dan hadiah setelah draft tersimpan.</span>
       </div>
-      <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>
+      <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
         <FormLoader searchParams={searchParams} />
       </Suspense>
     </>

@@ -28,7 +28,7 @@ export function LainnyaPage({ id, type, akses }: { id: string; type: Kind; akses
         return (
         <>
           {akses === "peran" && (
-            <p role="alert" className="rounded-[14px] bg-warn-tint px-4 py-3 text-[13px] text-warn">
+            <p role="alert" className="rounded-[14px] bg-warn-tint px-4 py-3 text-[16px] text-warn">
               Menu itu hanya untuk {type === "merchant" ? "pemilik" : "ketua"}.
             </p>
           )}
@@ -44,7 +44,7 @@ export function LainnyaPage({ id, type, akses }: { id: string; type: Kind; akses
               { label: newSuggestions > 0 ? `Saran warga · ${newSuggestions} baru` : "Saran warga", href: `${base}/saran` },
             ]}
           />
-          <Link href="/" className="flex h-12 items-center justify-center rounded-2xl border border-line-strong text-[14px] font-semibold text-fg">
+          <Link href="/" className="flex h-12 items-center justify-center rounded-2xl border border-line-strong text-[17px] font-semibold text-fg">
             Kembali ke mode warga
           </Link>
         </>
@@ -79,17 +79,17 @@ async function TeamBody({ ctx, id, type, error, hasil }: { ctx: OrganizerContext
   return (
     <>
       {hasil === "peran" && (
-        <p role="status" className="rounded-[14px] bg-success-tint px-4 py-3 text-[13px] font-semibold text-success">
+        <p role="status" className="rounded-[14px] bg-success-tint px-4 py-3 text-[16px] font-semibold text-success">
           Peran anggota tim sudah diubah.
         </p>
       )}
       {error === "gagal" && (
-        <p role="alert" className="rounded-[14px] bg-danger-tint px-4 py-3 text-[13px] text-danger">
+        <p role="alert" className="rounded-[14px] bg-danger-tint px-4 py-3 text-[16px] text-danger">
           Tindakan gagal. Coba lagi.
         </p>
       )}
       {error === "terakhir" && (
-        <p role="alert" className="rounded-[14px] bg-danger-tint px-4 py-3 text-[13px] text-danger">
+        <p role="alert" className="rounded-[14px] bg-danger-tint px-4 py-3 text-[16px] text-danger">
           Harus tersisa minimal satu {type === "merchant" ? "pemilik" : "ketua"}.
         </p>
       )}
@@ -98,12 +98,12 @@ async function TeamBody({ ctx, id, type, error, hasil }: { ctx: OrganizerContext
           <div key={m.user_id} className={`flex min-h-14 items-center gap-3 px-3.5 py-2 ${i > 0 ? "border-t border-line" : ""}`}>
             <UserAvatar nickname={m.nickname} avatarUrl={m.avatar_url} size={36} />
             <span className="flex flex-1 flex-col gap-0.5">
-              <span className="text-[14px] font-semibold">
+              <span className="text-[17px] font-semibold">
                 {m.nickname}{" "}
-                <span className="text-[11px] font-bold uppercase text-hot">{ROLE_LABELS[m.role]}</span>
-                {m.user_id === ctx.user.id && <span className="text-[11px] text-fg-muted"> · kamu</span>}
+                <span className="text-[13px] font-bold uppercase text-hot">{ROLE_LABELS[m.role]}</span>
+                {m.user_id === ctx.user.id && <span className="text-[13px] text-fg-muted"> · kamu</span>}
               </span>
-              <span className="text-[12px] text-fg-soft">bergabung {formatDate(m.created_at)}</span>
+              <span className="text-[14px] text-fg-soft">bergabung {formatDate(m.created_at)}</span>
             </span>
             {isLeader && (m.user_id !== ctx.user.id || leaderCount > 1) && (
               <form action={setTeamRole}>
@@ -133,7 +133,7 @@ async function TeamBody({ ctx, id, type, error, hasil }: { ctx: OrganizerContext
       {isLeader ? (
         <TeamInvite organizerId={id} type={type} roleName={roleName} />
       ) : (
-        <p className="text-[12px] leading-[1.5] text-fg-soft">
+        <p className="text-[14px] leading-[1.5] text-fg-soft">
           Hanya {type === "merchant" ? "pemilik" : "ketua"} yang bisa mengundang {roleName} baru.
         </p>
       )}
@@ -182,7 +182,7 @@ async function ProfilBody({ ctx, id, type, uploadFailed }: { ctx: OrganizerConte
   return (
     <>
       {uploadFailed && (
-        <p role="alert" className="rounded-[14px] bg-warn-tint px-4 py-3 text-[13px] text-warn">
+        <p role="alert" className="rounded-[14px] bg-warn-tint px-4 py-3 text-[16px] text-warn">
           Pendaftaran tersimpan, tetapi berkas gambar belum terunggah. Unggah lagi di bawah.
         </p>
       )}
@@ -190,12 +190,12 @@ async function ProfilBody({ ctx, id, type, uploadFailed }: { ctx: OrganizerConte
         <div className="flex items-center gap-3">
           <OrganizerAvatar name={org.name} type={type} logoUrl={org.logo_url} size={56} radius={16} />
           <div className="flex flex-1 flex-col gap-1">
-            <span className="text-[15px] font-bold">{org.name}</span>
+            <span className="text-[18px] font-bold">{org.name}</span>
             <span className={`${tagClass.base} ${tone} self-start`}>{STATUS_LABELS[status]}</span>
           </div>
         </div>
         {status === "rejected" && (
-          <div className="flex flex-col gap-2 rounded-[14px] bg-danger-tint p-3 text-[13px] text-danger">
+          <div className="flex flex-col gap-2 rounded-[14px] bg-danger-tint p-3 text-[16px] text-danger">
             <span className="font-semibold">Catatan tim Gasyu</span>
             <span className="leading-[1.5]">{org.review_note}</span>
             {isLeader && (
@@ -210,7 +210,7 @@ async function ProfilBody({ ctx, id, type, uploadFailed }: { ctx: OrganizerConte
           </div>
         )}
         {status === "pending" && (
-          <p className="text-[12px] leading-[1.5] text-fg-soft">
+          <p className="text-[14px] leading-[1.5] text-fg-soft">
             Tim Gasyu memeriksa data dan foto bukti, biasanya 1–2 hari kerja.
           </p>
         )}

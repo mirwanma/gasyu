@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { BottomNav, CITIZEN_NAV } from "@/components/bottom-nav";
 import { Icon } from "@/components/icons";
-import { cardClass } from "@/components/styles";
+import { cardClass, backLinkClass } from "@/components/styles";
 import { whatsappUrl } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 
@@ -12,12 +12,13 @@ export default function BantuanPage() {
     <>
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-[18px] px-5 pb-32 pt-6">
         <div className="flex items-center gap-3">
-          <a href="/profil" aria-label="Kembali" className="flex size-11 items-center justify-center rounded-full border border-line bg-surface text-fg">
+          <a href="/profil" className={backLinkClass}>
             <Icon name="back" stroke={2} />
+            Kembali
           </a>
-          <h1 className="font-display text-[24px] font-bold">Bantuan</h1>
+          <h1 className="font-display text-[28px] font-bold">Bantuan</h1>
         </div>
-        <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>
+        <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
           <Content />
         </Suspense>
       </main>
@@ -54,37 +55,37 @@ async function Content() {
   return (
     <>
       <section className="flex flex-col gap-2">
-        <h2 className="font-display text-[19px] font-semibold">Pertanyaan umum</h2>
+        <h2 className="font-display text-[24px] font-semibold">Pertanyaan umum</h2>
         <div className={`${cardClass} flex flex-col overflow-hidden`}>
           {faqs.map(([q, a], i) => (
             <details key={q} className={`group px-4 py-3 ${i > 0 ? "border-t border-line" : ""}`}>
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[14px] font-semibold">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[17px] font-semibold">
                 {q}
                 <Icon name="chevronDown" size={16} stroke={2} className="shrink-0 text-fg-muted group-open:hidden" />
               </summary>
-              <p className="pt-2 text-[13px] leading-[1.55] text-fg-soft">{a}</p>
+              <p className="pt-2 text-[16px] leading-[1.55] text-fg-soft">{a}</p>
             </details>
           ))}
         </div>
       </section>
 
       <section className={`${cardClass} flex flex-col gap-3 p-4`}>
-        <span className="text-[15px] font-semibold">Hubungi tim Gasyu</span>
+        <span className="text-[18px] font-semibold">Hubungi tim Gasyu</span>
         {wa || email ? (
           <div className="flex flex-col gap-2">
             {wa && (
-              <a href={wa} target="_blank" rel="noreferrer" className="flex h-12 items-center justify-center rounded-[14px] bg-success text-[14px] font-bold text-bg">
+              <a href={wa} target="_blank" rel="noreferrer" className="flex h-12 items-center justify-center rounded-[14px] bg-success text-[17px] font-bold text-bg">
                 Chat WhatsApp
               </a>
             )}
             {email && (
-              <a href={`mailto:${email}`} className="flex h-12 items-center justify-center rounded-[14px] border border-line-strong text-[14px] font-semibold text-fg">
+              <a href={`mailto:${email}`} className="flex h-12 items-center justify-center rounded-[14px] border border-line-strong text-[17px] font-semibold text-fg">
                 Kirim email ke {email}
               </a>
             )}
           </div>
         ) : (
-          <span className="text-[13px] leading-[1.5] text-fg-soft">Kontak tim Gasyu belum tersedia. Sementara, sampaikan kendalamu lewat penyelenggara aktivitas.</span>
+          <span className="text-[16px] leading-[1.5] text-fg-soft">Kontak tim Gasyu belum tersedia. Sementara, sampaikan kendalamu lewat penyelenggara aktivitas.</span>
         )}
       </section>
     </>

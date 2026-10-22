@@ -34,7 +34,7 @@ export function CheckpointForm({ organizerId, type, activityId, outlets, partner
       <input type="hidden" name="type_org" value={type} />
       <input type="hidden" name="activity_id" value={activityId} />
       {partnerOrganizerId && <input type="hidden" name="partner_organizer_id" value={partnerOrganizerId} />}
-      <h2 className="text-[15px] font-bold">Tambah checkpoint{partnerOrganizerId ? " milikmu" : ""}</h2>
+      <h2 className="text-[18px] font-bold">Tambah checkpoint{partnerOrganizerId ? " milikmu" : ""}</h2>
       <ErrorMessage message={state.error} />
       <SuccessMessage message={state.success} />
       {outlets.length > 0 && (
@@ -69,11 +69,11 @@ export function CheckpointForm({ organizerId, type, activityId, outlets, partner
             <input name="lat" value={coords.lat} onChange={(e) => setCoords({ ...coords, lat: e.target.value })} inputMode="decimal" placeholder="Lintang" required className={inputClass} aria-label="Lintang" />
             <input name="lng" value={coords.lng} onChange={(e) => setCoords({ ...coords, lng: e.target.value })} inputMode="decimal" placeholder="Bujur" required className={inputClass} aria-label="Bujur" />
           </div>
-          <button type="button" onClick={useMyLocation} className="flex h-10 items-center justify-center gap-2 self-start rounded-full border border-line-strong bg-surface px-3.5 text-[13px] font-semibold text-fg">
+          <button type="button" onClick={useMyLocation} className="flex h-10 items-center justify-center gap-2 self-start rounded-full border border-line-strong bg-surface px-3.5 text-[16px] font-semibold text-fg">
             <Icon name="pin" size={16} stroke={2} />
             Pakai lokasi saat ini
           </button>
-          {geoMessage && <span className="text-[12px] text-fg-soft">{geoMessage}</span>}
+          {geoMessage && <span className="text-[14px] text-fg-soft">{geoMessage}</span>}
         </>
       )}
       <div className="flex flex-col gap-1.5">

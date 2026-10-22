@@ -25,8 +25,8 @@ export function PaymentProofForm({ participationId, activityId, retry, replace }
       <input type="hidden" name="participation_id" value={participationId} />
       <input type="hidden" name="activity_id" value={activityId} />
       <ErrorMessage message={pick?.error ?? state.error} />
-      {replace && <span className="text-[12px] text-fg-soft">Bukti baru menggantikan bukti yang sudah kamu kirim.</span>}
-      <label className="flex h-11 cursor-pointer items-center justify-center rounded-xl border border-dashed border-line-strong px-3 text-[13px] font-semibold text-fg">
+      {replace && <span className="text-[14px] text-fg-soft">Bukti baru menggantikan bukti yang sudah kamu kirim.</span>}
+      <label className="flex h-11 cursor-pointer items-center justify-center rounded-xl border border-dashed border-line-strong px-3 text-[16px] font-semibold text-fg">
         {pick?.busy ? "Menyiapkan foto…" : (pick?.name ?? "Pilih foto atau tangkapan layar")}
         <ImageFileInput name="proof" accept="image/*" required className="hidden" maxMb={3} onPick={setPick} />
       </label>

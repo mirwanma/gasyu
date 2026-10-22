@@ -22,7 +22,7 @@ type MemberRow = {
 
 export default function Page(props: PageProps<"/komunitas/[id]/member">) {
   return (
-    <Suspense fallback={<p className="px-5 pt-6 text-[13px] text-fg-muted">Memuat…</p>}>
+    <Suspense fallback={<p className="px-5 pt-6 text-[16px] text-fg-muted">Memuat…</p>}>
       <Loader {...props} />
     </Suspense>
   );
@@ -56,15 +56,15 @@ async function MemberBody({ ctx, id, tab, error }: { ctx: OrganizerContext; id: 
   return (
     <>
       {error === "tim" && (
-        <p role="alert" className="rounded-[14px] bg-danger-tint px-4 py-3 text-[13px] text-danger">
+        <p role="alert" className="rounded-[14px] bg-danger-tint px-4 py-3 text-[16px] text-danger">
           Ketua dan pengurus lain tidak bisa dikeluarkan dari sini. Atur lewat halaman Tim.
         </p>
       )}
 
       <section className={`${cardClass} flex flex-col gap-2.5 p-3.5`}>
         <div className="flex items-center justify-between">
-          <span className="text-[14px] font-bold">Cara bergabung</span>
-          <span className="text-[11px] text-fg-soft">Hanya ketua yang bisa mengubah</span>
+          <span className="text-[17px] font-bold">Cara bergabung</span>
+          <span className="text-[13px] text-fg-soft">Hanya ketua yang bisa mengubah</span>
         </div>
         <form action={setJoinPolicy} role="radiogroup" aria-label="Kebijakan bergabung" className="grid grid-cols-2 gap-1.5 rounded-xl bg-bg p-1">
           <input type="hidden" name="community_id" value={id} />
@@ -79,8 +79,8 @@ async function MemberBody({ ctx, id, tab, error }: { ctx: OrganizerContext; id: 
                 role="radio"
                 aria-checked={selected}
                 disabled={!isChair}
-                className={`h-10 rounded-[9px] text-[13px] font-semibold ${
-                  selected ? "bg-surface text-fg shadow-[0_1px_3px_rgba(20,22,43,0.12)]" : "text-fg-label"
+                className={`h-10 rounded-[9px] text-[16px] font-semibold ${
+                  selected ? "bg-surface text-fg shadow-sm" : "text-fg-label"
                 } disabled:cursor-not-allowed`}
               >
                 {value === "open" ? "Terbuka" : "Perlu persetujuan"}
@@ -101,7 +101,7 @@ async function MemberBody({ ctx, id, tab, error }: { ctx: OrganizerContext; id: 
             href={`${base}?tab=${key}`}
             role="tab"
             aria-selected={tab === key}
-            className={`flex h-10 items-center justify-center rounded-[10px] text-[13px] font-semibold ${
+            className={`flex h-10 items-center justify-center rounded-[10px] text-[16px] font-semibold ${
               tab === key ? "bg-fg text-bg" : "text-fg-label"
             }`}
           >
@@ -112,21 +112,21 @@ async function MemberBody({ ctx, id, tab, error }: { ctx: OrganizerContext; id: 
 
       {tab === "permintaan" && (
         <>
-          {pending.length === 0 && <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>Tidak ada permintaan baru.</p>}
+          {pending.length === 0 && <p className={`${cardClass} p-4 text-[16px] text-fg-soft`}>Tidak ada permintaan baru.</p>}
           {pending.map((m) => (
             <div key={m.id} className={`${cardClass} flex flex-col gap-2.5 p-3.5`}>
               <div className="flex items-center gap-3">
-                <span className="flex size-10 items-center justify-center rounded-full bg-primary-tint text-[13px] font-bold uppercase text-link">
+                <span className="flex size-10 items-center justify-center rounded-full bg-primary-tint text-[16px] font-bold uppercase text-link">
                   {m.nickname.slice(0, 2)}
                 </span>
                 <span className="flex flex-1 flex-col gap-0.5">
-                  <span className="text-[14px] font-semibold">{m.nickname}</span>
-                  <span className="text-[12px] text-fg-soft">
+                  <span className="text-[17px] font-semibold">{m.nickname}</span>
+                  <span className="text-[14px] text-fg-soft">
                     {m.village_name ?? "Luar Cimahi"} · {timeAgo(m.created_at)}
                   </span>
                 </span>
               </div>
-              <span className="text-[13px] leading-[1.5] text-fg-label">{m.message ? `"${m.message}"` : "Tidak ada pesan"}</span>
+              <span className="text-[16px] leading-[1.5] text-fg-label">{m.message ? `"${m.message}"` : "Tidak ada pesan"}</span>
               <form action={decideMembership} className="grid grid-cols-2 gap-2">
                 <input type="hidden" name="community_id" value={id} />
                 <input type="hidden" name="membership_id" value={m.id} />
@@ -139,7 +139,7 @@ async function MemberBody({ ctx, id, tab, error }: { ctx: OrganizerContext; id: 
               </form>
             </div>
           ))}
-          <span className="text-[12px] leading-[1.5] text-fg-soft">
+          <span className="text-[14px] leading-[1.5] text-fg-soft">
             Kamu hanya melihat nama panggilan, kelurahan, dan keaktifan member. Permintaan yang tidak dijawab 30 hari otomatis
             ditolak.
           </span>
@@ -151,13 +151,13 @@ async function MemberBody({ ctx, id, tab, error }: { ctx: OrganizerContext; id: 
           {active.map((m, i) => (
             <div key={m.id} className={`flex min-h-14 items-center gap-3 px-3.5 py-2 ${i > 0 ? "border-t border-line" : ""}`}>
               <span className="flex flex-1 flex-col gap-0.5">
-                <span className="text-[14px] font-semibold">
+                <span className="text-[17px] font-semibold">
                   {m.nickname}{" "}
                   {m.team_role && (
-                    <span className="text-[11px] font-bold uppercase text-hot">{m.team_role === "chair" ? "Ketua" : "Pengurus"}</span>
+                    <span className="text-[13px] font-bold uppercase text-hot">{m.team_role === "chair" ? "Ketua" : "Pengurus"}</span>
                   )}
                 </span>
-                <span className="text-[12px] text-fg-soft">
+                <span className="text-[14px] text-fg-soft">
                   {m.village_name ?? "Luar Cimahi"} · gabung {m.joined_at ? formatMonthYear(m.joined_at) : "-"}
                 </span>
               </span>
@@ -177,12 +177,12 @@ async function MemberBody({ ctx, id, tab, error }: { ctx: OrganizerContext; id: 
 
       {tab === "riwayat" && (
         <section className={`${cardClass} flex flex-col overflow-hidden`}>
-          {history.length === 0 && <p className="p-4 text-[13px] text-fg-soft">Belum ada riwayat.</p>}
+          {history.length === 0 && <p className="p-4 text-[16px] text-fg-soft">Belum ada riwayat.</p>}
           {history.map((m, i) => (
             <div key={m.id} className={`flex min-h-14 items-center gap-3 px-3.5 py-2 ${i > 0 ? "border-t border-line" : ""}`}>
               <span className="flex flex-1 flex-col gap-0.5">
-                <span className="text-[14px] font-semibold">{m.nickname}</span>
-                <span className="text-[12px] text-fg-soft">
+                <span className="text-[17px] font-semibold">{m.nickname}</span>
+                <span className="text-[14px] text-fg-soft">
                   {m.removed_reason ? `${m.removed_reason} · ` : ""}
                   {timeAgo(m.ended_at ?? m.created_at)}
                 </span>

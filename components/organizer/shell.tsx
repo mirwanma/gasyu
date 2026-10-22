@@ -44,8 +44,8 @@ export async function OrganizerShell({
           >
             <OrganizerAvatar name={ctx.org.name} type={ctx.org.type} logoUrl={ctx.org.logoUrl} />
             <span className="flex flex-1 flex-col">
-              <span className="text-[15px] font-bold">{ctx.org.name}</span>
-              <span className="text-[12px] text-fg-soft">
+              <span className="text-[18px] font-bold">{ctx.org.name}</span>
+              <span className="text-[14px] text-fg-soft">
                 Mode {type === "merchant" ? "merchant" : "komunitas"} · {ROLE_LABELS[ctx.org.role]}
               </span>
             </span>
@@ -60,7 +60,7 @@ export async function OrganizerShell({
             {unread > 0 && <span className="absolute right-3 top-3 size-[9px] rounded-full border-2 border-surface bg-hot" />}
           </a>
         </header>
-        {title && <h1 className="font-display text-[24px] font-bold">{title}</h1>}
+        {title && <h1 className="font-display text-[28px] font-bold">{title}</h1>}
         {children(ctx)}
       </main>
       <BottomNav items={items} active={active} />
@@ -89,8 +89,8 @@ export function StatusBanner({ org, base }: { org: MyOrganizer; base: string }) 
   }[org.status];
   return (
     <a href={`${base}/profil`} className={`flex flex-col gap-1 rounded-2xl px-4 py-3 ${copy.tint}`}>
-      <span className="text-[14px] font-bold">{copy.title}</span>
-      <span className="text-[12px] leading-[1.5] opacity-90">{copy.body}</span>
+      <span className="text-[17px] font-bold">{copy.title}</span>
+      <span className="text-[14px] leading-[1.5] opacity-90">{copy.body}</span>
     </a>
   );
 }
@@ -100,14 +100,14 @@ export function Kpi({ label, value, sub, cols = 2 }: { label: string; value: str
     <div className={`flex flex-col gap-1 rounded-[18px] border border-line bg-surface ${cols === 3 ? "p-3" : "p-3.5"}`}>
       {cols === 3 ? (
         <>
-          <span className="font-display text-[22px] font-semibold">{value}</span>
-          <span className="text-[11px] text-fg-soft">{label}</span>
+          <span className="font-display text-[26px] font-semibold">{value}</span>
+          <span className="text-[13px] text-fg-soft">{label}</span>
         </>
       ) : (
         <>
-          <span className="text-[12px] text-fg-soft">{label}</span>
-          <span className="font-display text-[26px] font-semibold">{value}</span>
-          {sub && <span className="text-[11px] font-semibold text-fg-soft">{sub}</span>}
+          <span className="text-[14px] text-fg-soft">{label}</span>
+          <span className="font-display text-[30px] font-semibold">{value}</span>
+          {sub && <span className="text-[13px] font-semibold text-fg-soft">{sub}</span>}
         </>
       )}
     </div>
@@ -118,10 +118,10 @@ export function TodoItem({ n, title, sub, href, tone = "warn" }: { n: number; ti
   const tones = { warn: "bg-warn-tint text-warn", info: "bg-info-tint text-info", primary: "bg-primary-tint text-link" };
   return (
     <a href={href} className="flex items-center gap-3 rounded-2xl border border-line bg-surface px-3.5 py-3 text-fg">
-      <span className={`flex h-9 min-w-9 items-center justify-center rounded-xl px-1.5 font-display text-[16px] font-bold ${tones[tone]}`}>{n}</span>
+      <span className={`flex h-9 min-w-9 items-center justify-center rounded-xl px-1.5 font-display text-[18px] font-bold ${tones[tone]}`}>{n}</span>
       <span className="flex flex-1 flex-col gap-0.5">
-        <span className="text-[14px] font-semibold">{title}</span>
-        {sub && <span className="text-[12px] text-fg-soft">{sub}</span>}
+        <span className="text-[17px] font-semibold">{title}</span>
+        {sub && <span className="text-[14px] text-fg-soft">{sub}</span>}
       </span>
       <Icon name="chevron" size={16} stroke={2} className="text-fg-muted" />
     </a>
@@ -132,7 +132,7 @@ export function MenuList({ items }: { items: { label: string; href: string | nul
   return (
     <nav className="flex flex-col overflow-hidden rounded-[20px] border border-line bg-surface">
       {items.map((item, i) => {
-        const base = `flex h-[52px] items-center justify-between px-4 text-[14px] font-medium ${i > 0 ? "border-t border-line" : ""}`;
+        const base = `flex h-[52px] items-center justify-between px-4 text-[17px] font-medium ${i > 0 ? "border-t border-line" : ""}`;
         return item.href ? (
           <a key={item.label} href={item.href} className={`${base} text-fg`}>
             {item.label}
@@ -141,7 +141,7 @@ export function MenuList({ items }: { items: { label: string; href: string | nul
         ) : (
           <span key={item.label} className={`${base} text-fg-muted`}>
             {item.label}
-            <span className="text-[11px]">{item.hint ?? "segera hadir"}</span>
+            <span className="text-[13px]">{item.hint ?? "segera hadir"}</span>
           </span>
         );
       })}

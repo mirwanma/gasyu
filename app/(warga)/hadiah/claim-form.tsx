@@ -27,7 +27,7 @@ export function ClaimForm({ winnerId, shipping }: { winnerId: string; shipping: 
             <label htmlFor={`a-${winnerId}`} className={labelClass}>Alamat lengkap</label>
             <textarea id={`a-${winnerId}`} name="ship_address" required minLength={10} maxLength={500} rows={3} autoComplete="street-address" placeholder="Jalan, nomor, RT/RW, kelurahan, kecamatan, kota, kode pos" className={textareaClass} />
           </div>
-          <span className="text-[11px] leading-[1.5] text-fg-muted">Hanya kamu dan panitia Gasyu yang bisa melihat data ini. Dihapus otomatis setelah hadiah terkirim.</span>
+          <span className="text-[13px] leading-[1.5] text-fg-muted">Hanya kamu dan panitia Gasyu yang bisa melihat data ini. Dihapus otomatis setelah hadiah terkirim.</span>
         </>
       )}
       <SubmitButton pendingText="Mengklaim…">Klaim hadiah</SubmitButton>

@@ -99,7 +99,7 @@ export function OnboardingForm({
             <span key={n} className={`h-[5px] rounded ${n <= step ? "bg-primary-soft" : "bg-line"}`} />
           ))}
         </div>
-        <div className="flex items-center justify-between text-[13px] text-fg-soft">
+        <div className="flex items-center justify-between text-[16px] text-fg-soft">
           <span>Langkah {step} dari 3</span>
           {step > 1 && (
             <button type="button" onClick={() => goTo((step - 1) as Step)} className="min-h-11 font-semibold text-link">
@@ -107,8 +107,8 @@ export function OnboardingForm({
             </button>
           )}
         </div>
-        <h1 className="font-display text-[28px] font-bold">{TITLES[step].title}</h1>
-        <p className="text-[14px] leading-[1.55] text-fg-soft">{TITLES[step].intro}</p>
+        <h1 className="font-display text-[30px] font-bold">{TITLES[step].title}</h1>
+        <p className="text-[17px] leading-[1.55] text-fg-soft">{TITLES[step].intro}</p>
       </div>
 
       {/* Langkah 1: nama. Semua langkah tetap ada di halaman supaya isiannya ikut terkirim. */}
@@ -158,14 +158,14 @@ export function OnboardingForm({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Cari kelurahan"
-            className="flex-1 bg-transparent text-[15px] text-fg outline-none placeholder:text-fg-muted"
+            className="flex-1 bg-transparent text-[18px] text-fg outline-none placeholder:text-fg-muted"
           />
         </div>
 
         <div className="flex flex-col gap-4">
           {filtered.map((district) => (
             <div key={district.id} className="flex flex-col gap-2">
-              <span className="text-[12px] font-bold uppercase tracking-[0.06em] text-fg-muted">
+              <span className="text-[14px] font-bold uppercase tracking-[0.06em] text-fg-muted">
                 {district.name}
               </span>
               <div className="flex flex-wrap gap-2">
@@ -178,7 +178,7 @@ export function OnboardingForm({
             </div>
           ))}
           {filtered.length === 0 && (
-            <p className="text-[13px] text-fg-soft">Kelurahan tidak ditemukan.</p>
+            <p className="text-[16px] text-fg-soft">Kelurahan tidak ditemukan.</p>
           )}
           <Chip selected={village === OUTSIDE_CIMAHI} dashed onClick={() => setVillage(OUTSIDE_CIMAHI)}>
             Luar Cimahi
@@ -188,12 +188,12 @@ export function OnboardingForm({
 
       {/* Langkah 3: ringkasan dan persetujuan */}
       <div hidden={step !== 3} className="flex flex-col gap-5">
-        <dl className={`${cardClass} flex flex-col gap-3 p-4 text-[14px]`}>
+        <dl className={`${cardClass} flex flex-col gap-3 p-4 text-[17px]`}>
           <SummaryRow label="Nama panggilan" value={nickname.trim()} />
           <SummaryRow label="Nama lengkap" value={fullName.trim()} />
           <SummaryRow label="Kelurahan" value={villageName ?? "-"} />
         </dl>
-        <label className="flex items-start gap-3 text-[14px] leading-[1.55] text-fg-label">
+        <label className="flex items-start gap-3 text-[17px] leading-[1.55] text-fg-label">
           <input name="terms" type="checkbox" className="mt-0.5 size-5 shrink-0 accent-primary" />
           <span>Saya setuju dengan syarat &amp; ketentuan dan kebijakan privasi Gasyu.</span>
         </label>
@@ -202,8 +202,8 @@ export function OnboardingForm({
       <div className="mt-auto flex flex-col gap-3">
         <ErrorMessage message={error} />
         {profileXp > 0 && (
-          <div className={`flex items-center gap-2.5 rounded-[14px] border border-line bg-surface px-3.5 py-3 text-[13px] text-fg-label`}>
-            <span className="font-display text-[15px] font-bold text-xp">+{profileXp} XP</span>
+          <div className={`flex items-center gap-2.5 rounded-[14px] border border-line bg-surface px-3.5 py-3 text-[16px] text-fg-label`}>
+            <span className="font-display text-[18px] font-bold text-xp">+{profileXp} XP</span>
             setelah profil lengkap
           </div>
         )}
@@ -240,7 +240,7 @@ function Chip({
       type="button"
       aria-pressed={selected}
       onClick={onClick}
-      className={`h-11 self-start rounded-full border px-3.5 text-[14px] font-semibold ${look}`}
+      className={`h-11 self-start rounded-full border px-3.5 text-[17px] font-semibold ${look}`}
     >
       {children}
     </button>

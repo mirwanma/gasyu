@@ -37,7 +37,7 @@ export function OrganizerAvatar({
   return (
     <span
       style={style}
-      className={`flex shrink-0 items-center justify-center font-bold text-[#0D1024] ${ORGANIZER_COLORS[type]}`}
+      className={`flex shrink-0 items-center justify-center font-bold text-fg ${ORGANIZER_COLORS[type]}`}
       aria-hidden="true"
     >
       {initials(name)}
@@ -61,7 +61,7 @@ export function UserAvatar({ nickname, size = 48, avatarUrl }: { nickname: strin
   return (
     <span
       style={{ width: size, height: size, fontSize: Math.round(size / 2.8) }}
-      className="flex shrink-0 items-center justify-center rounded-full border-2 border-avatar-ring bg-avatar font-display font-semibold uppercase text-[#F3F4FA]"
+      className="flex shrink-0 items-center justify-center rounded-full border-2 border-avatar-ring bg-avatar font-display font-semibold uppercase text-link"
       aria-hidden="true"
     >
       {nickname.slice(0, 2)}

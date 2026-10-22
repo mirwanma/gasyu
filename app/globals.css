@@ -1,130 +1,79 @@
 @import "tailwindcss";
 
 /*
-  Token UI Gasyu — lihat docs/BRAND.md. Jangan menambah warna di luar daftar ini.
-  Dua tema mengikuti UI Mockup (lihat docs/BRAND.md):
-  - gelap (bawaan): mode warga
-  - terang (.theme-light): mode merchant, komunitas, dan admin
-  Nilai token dibaca lewat variabel --ui-* supaya bisa diganti per subtree.
+  Token UI Gasyu: palet "Ramah Semua Umur 2026". Lihat docs/BRAND.md bagian 2.
+  Jangan menambah warna di luar daftar ini; pakai nama token, bukan hex langsung.
+  Porsi: 60% latar (bg), 30% kartu (surface), 10% tombol utama (primary).
+  Satu tema terang untuk warga, merchant, komunitas, dan admin.
 */
 @theme inline {
   --font-sans: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-outfit), "Outfit", var(--font-jakarta), sans-serif;
 
-  --color-bg: var(--ui-bg);
-  --color-surface: var(--ui-surface);
-  --color-surface-deep: var(--ui-surface-deep);
-  --color-track: var(--ui-track);
-  --color-line: var(--ui-line);
-  --color-line-strong: var(--ui-line-strong);
+  /* Latar, kartu, garis */
+  --color-bg: #F3F3F1; /* Cloud Dancer */
+  --color-surface: #FFFFFF; /* Pure White */
+  --color-surface-deep: #FFFFFF;
+  --color-track: #E5E5E2;
+  --color-line: #E5E5E2;
+  --color-line-strong: #A3A39E;
+  --color-scrim: rgb(26 26 26 / 0.72); /* lapisan gelap di atas foto sampul */
 
-  --color-fg: var(--ui-fg);
-  --color-fg-label: var(--ui-fg-label);
-  --color-fg-soft: var(--ui-fg-soft);
-  --color-fg-muted: var(--ui-fg-muted);
+  /* Teks */
+  --color-fg: #1A1A1A; /* Ink Black */
+  --color-fg-label: #2E2E2E;
+  --color-fg-soft: #5A5A5A; /* Slate Muted */
+  --color-fg-muted: #6B6B6B;
   --color-cream: #FAF7F2;
 
-  --color-primary: var(--ui-primary);
-  --color-primary-soft: var(--ui-primary-soft);
-  --color-primary-tint: var(--ui-primary-tint);
-  --color-link: var(--ui-link);
+  /* Tombol utama (CTA) */
+  --color-primary: #C15F3C; /* Crail Orange */
+  --color-primary-hover: #A84F2E;
+  --color-primary-soft: #C15F3C;
+  --color-primary-tint: #F8E9E3;
+  --color-link: #A84F2E;
   --color-on-primary: #FFFFFF;
 
-  --color-hero-from: #4B45E0;
-  --color-hero-to: #6D2FD8;
-  --color-on-hero: #E3E1FF;
-  --color-avatar: #2A2F63;
-  --color-avatar-ring: #6D5BF0;
+  /* Kartu level & avatar */
+  --color-hero-from: #FFFFFF;
+  --color-hero-to: #FFFFFF;
+  --color-on-hero: #5A5A5A;
+  --color-avatar: #F8E9E3;
+  --color-avatar-ring: #C15F3C;
 
-  --color-xp: #5CCBF5;
-  --color-points: var(--ui-points);
-  --color-hot: var(--ui-hot);
-  --color-hot-tint: var(--ui-hot-tint);
-  --color-success: var(--ui-success);
-  --color-success-tint: var(--ui-success-tint);
-  --color-warn: var(--ui-warn);
-  --color-warn-tint: var(--ui-warn-tint);
-  --color-info: var(--ui-info);
-  --color-info-tint: var(--ui-info-tint);
-  --color-danger: var(--ui-danger);
-  --color-danger-tint: var(--ui-danger-tint);
+  /* Status */
+  --color-xp: #2B6E57; /* Bio-Mint Moss: progress bar */
+  --color-points: #A84F2E;
+  --color-hot: #C15F3C;
+  --color-hot-tint: #F8E9E3;
+  --color-success: #2B6E57;
+  --color-success-tint: #E3F0EA;
+  --color-warn: #8A5A00;
+  --color-warn-tint: #FBF0D9;
+  --color-info: #1F5F86;
+  --color-info-tint: #E3EEF5;
+  --color-danger: #B42318;
+  --color-danger-tint: #FBEDEB;
+  --color-bronze: #A0643A;
 
   /* Warna tiga pihak (logo, label merchant/komunitas/warga) */
   --color-merchant: #F06A2A;
   --color-komunitas: #0F8B6D;
   --color-warga: #2D4FCF;
-  --color-accent-merchant: #F5B544;
-  --color-accent-komunitas: #F0508A;
-  --color-accent-warga: #8F93FF;
+  --color-accent-merchant: #F8E9E3;
+  --color-accent-komunitas: #E3F0EA;
+  --color-accent-warga: #E3EAF8;
 }
 
-:root,
-.theme-dark {
-  --ui-bg: #0D1024;
-  --ui-surface: #171B33;
-  --ui-surface-deep: #12152C;
-  --ui-track: rgb(13 16 36 / 0.45);
-  --ui-line: #2A3058;
-  --ui-line-strong: #3A4072;
-  --ui-fg: #F3F4FA;
-  --ui-fg-label: #C9CCE4;
-  --ui-fg-soft: #A3A8C7;
-  --ui-fg-muted: #8A8FB4;
-  --ui-primary: #5B5BF0;
-  --ui-primary-soft: #8F93FF;
-  --ui-primary-tint: #20254A;
-  --ui-link: #A9ACFF;
-  --ui-points: #F7A1C2;
-  --ui-hot: #F0508A;
-  --ui-hot-tint: #3A1F33;
-  --ui-success: #6EE7B7;
-  --ui-success-tint: #123A33;
-  --ui-warn: #F5C46B;
-  --ui-warn-tint: #3A2E10;
-  --ui-info: #8FDDFB;
-  --ui-info-tint: #1E3550;
-  --ui-danger: #FF8A8A;
-  --ui-danger-tint: #3A1620;
-  color-scheme: dark;
-}
-
-.theme-light {
-  --ui-bg: #F5F6FB;
-  --ui-surface: #FFFFFF;
-  --ui-surface-deep: #FFFFFF;
-  --ui-track: #EEF0F7;
-  --ui-line: #E4E6F0;
-  --ui-line-strong: #D5D8E8;
-  --ui-fg: #14162B;
-  --ui-fg-label: #3A3F63;
-  --ui-fg-soft: #5D6283;
-  --ui-fg-muted: #6B7090;
-  --ui-primary: #4B4FE0;
-  --ui-primary-soft: #4B4FE0;
-  --ui-primary-tint: #EEEEFD;
-  --ui-link: #3F43C9;
-  --ui-points: #C42E68;
-  --ui-hot: #C42E68;
-  --ui-hot-tint: #FDE8F0;
-  --ui-success: #0F7552;
-  --ui-success-tint: #E3F6EE;
-  --ui-warn: #94570A;
-  --ui-warn-tint: #FFF3DC;
-  --ui-info: #0E6E93;
-  --ui-info-tint: #E2F4FB;
-  --ui-danger: #C42E68;
-  --ui-danger-tint: #FDE8F0;
+:root {
   color-scheme: light;
+  /* Ukuran huruf dasar besar supaya mudah dibaca semua umur. */
+  font-size: 18px;
 }
 
 body {
-  background: var(--ui-bg);
-  color: var(--ui-fg);
+  background: var(--color-bg);
+  color: var(--color-fg);
   font-family: var(--font-sans);
-}
-
-.theme-light,
-.theme-dark {
-  background: var(--ui-bg);
-  color: var(--ui-fg);
+  line-height: 1.55;
 }

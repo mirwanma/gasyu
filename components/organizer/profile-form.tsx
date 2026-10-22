@@ -47,7 +47,7 @@ export function ProfileForm({
       {type === "merchant" && <Field id="nib" label="NIB (opsional)" defaultValue={values.nib} />}
 
       <div className="flex flex-col gap-2">
-        <span className="text-[13px] font-semibold">Kategori</span>
+        <span className="text-[16px] font-semibold">Kategori</span>
         <div className="flex flex-wrap gap-2">
           {categories.map(([value, label]) => (
             <button
@@ -98,18 +98,18 @@ export function ProfileForm({
 
       <div className="flex flex-col gap-1.5">
         <span className={labelClass}>Logo baru (opsional, maks. 2 MB)</span>
-        <ImageFileInput name="logo" accept="image/png,image/jpeg,image/webp" className="text-[12px] text-fg-label" maxMb={2} />
+        <ImageFileInput name="logo" accept="image/png,image/jpeg,image/webp" className="text-[14px] text-fg-label" maxMb={2} />
       </div>
       <div className="flex flex-col gap-1.5">
         <span className={labelClass}>
           {type === "merchant" ? "Foto tempat usaha" : "Foto kegiatan"} {values.hasProof ? "(ganti, opsional)" : "(belum ada, wajib untuk verifikasi)"}
         </span>
-        <ImageFileInput name="proof" accept="image/png,image/jpeg,image/webp" className="text-[12px] text-fg-label" maxMb={3} />
+        <ImageFileInput name="proof" accept="image/png,image/jpeg,image/webp" className="text-[14px] text-fg-label" maxMb={3} />
       </div>
 
       <ErrorMessage message={state.error} />
       <SuccessMessage message={state.success} />
-      <SubmitButton pendingText="Menyimpan…" className="h-12 rounded-[14px] text-[14px]">
+      <SubmitButton pendingText="Menyimpan…" className="h-12 rounded-[14px] text-[17px]">
         Simpan profil
       </SubmitButton>
     </form>

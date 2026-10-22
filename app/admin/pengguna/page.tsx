@@ -12,10 +12,10 @@ export default function PenggunaPage({ searchParams }: PageProps<"/admin/penggun
   return (
     <>
       <div className="flex flex-col gap-1">
-        <h1 className="font-display text-[30px] font-bold">Pengguna</h1>
-        <span className="text-[14px] text-fg-soft">Cari warga dan penyelenggara. Akun beku tidak bisa check-in, menukar poin, atau mengelola dashboard.</span>
+        <h1 className="font-display text-[32px] font-bold">Pengguna</h1>
+        <span className="text-[17px] text-fg-soft">Cari warga dan penyelenggara. Akun beku tidak bisa check-in, menukar poin, atau mengelola dashboard.</span>
       </div>
-      <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>
+      <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
         <Body searchParams={searchParams} />
       </Suspense>
     </>
@@ -39,9 +39,9 @@ async function Body({ searchParams }: Pick<PageProps<"/admin/pengguna">, "search
 
   return (
     <>
-      {hasil === "beku" && <p className="rounded-2xl bg-success-tint px-4 py-3 text-[13px] font-semibold text-success">Akun dibekukan dan pemiliknya diberi tahu.</p>}
-      {hasil === "aktif" && <p className="rounded-2xl bg-success-tint px-4 py-3 text-[13px] font-semibold text-success">Akun aktif kembali.</p>}
-      {errorMsg && <p className="rounded-2xl bg-danger-tint px-4 py-3 text-[13px] font-semibold text-danger">{errorMsg}</p>}
+      {hasil === "beku" && <p className="rounded-2xl bg-success-tint px-4 py-3 text-[16px] font-semibold text-success">Akun dibekukan dan pemiliknya diberi tahu.</p>}
+      {hasil === "aktif" && <p className="rounded-2xl bg-success-tint px-4 py-3 text-[16px] font-semibold text-success">Akun aktif kembali.</p>}
+      {errorMsg && <p className="rounded-2xl bg-danger-tint px-4 py-3 text-[16px] font-semibold text-danger">{errorMsg}</p>}
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex gap-2">
           <a href="/admin/pengguna" className={`${chipClass.base} ${tab === "warga" ? chipClass.selected : chipClass.idle}`}>
@@ -53,8 +53,8 @@ async function Body({ searchParams }: Pick<PageProps<"/admin/pengguna">, "search
         </div>
         <form className="flex flex-[1_1_280px] gap-2">
           <input type="hidden" name="tab" value={tab} />
-          <input name="q" defaultValue={q} placeholder={tab === "warga" ? "Cari nickname atau nama" : "Cari nama penyelenggara"} className={`${inputClass} h-10 text-[13px]`} />
-          <button type="submit" className="h-10 rounded-xl bg-fg px-4 text-[13px] font-semibold text-bg">
+          <input name="q" defaultValue={q} placeholder={tab === "warga" ? "Cari nickname atau nama" : "Cari nama penyelenggara"} className={`${inputClass} h-10 text-[16px]`} />
+          <button type="submit" className="h-10 rounded-xl bg-fg px-4 text-[16px] font-semibold text-bg">
             Cari
           </button>
         </form>
@@ -69,12 +69,12 @@ async function Citizens({ q, base }: { q: string; base: string }) {
   return (
     <section className={`${cardClass} overflow-hidden`}>
       {users.length === 0 ? (
-        <p className="p-5 text-[13px] text-fg-soft">Tidak ada warga yang cocok.</p>
+        <p className="p-5 text-[16px] text-fg-soft">Tidak ada warga yang cocok.</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-[13px]">
+          <table className="w-full min-w-[720px] text-[16px]">
             <thead>
-              <tr className="text-left text-[11px] font-bold uppercase tracking-[0.06em] text-fg-soft">
+              <tr className="text-left text-[13px] font-bold uppercase tracking-[0.06em] text-fg-soft">
                 <th className="px-5 py-3 font-bold">Warga</th>
                 <th className="px-3 py-3 font-bold">Kelurahan</th>
                 <th className="px-3 py-3 font-bold">XP</th>
@@ -90,7 +90,7 @@ async function Citizens({ q, base }: { q: string; base: string }) {
                   <td className="px-5 py-3">
                     <div className="flex flex-col">
                       <b>{u.nickname}</b>
-                      <span className="text-[12px] text-fg-soft">
+                      <span className="text-[14px] text-fg-soft">
                         {u.full_name ?? "—"} · daftar {formatDate(u.created_at)}
                       </span>
                     </div>
@@ -99,7 +99,7 @@ async function Citizens({ q, base }: { q: string; base: string }) {
                   <td className="px-3 py-3">{formatNumber(u.total_xp)}</td>
                   <td className="px-3 py-3">
                     {u.checkins}
-                    {u.last_checkin_at && <span className="block text-[11px] text-fg-muted">terakhir {formatDateTime(u.last_checkin_at)}</span>}
+                    {u.last_checkin_at && <span className="block text-[13px] text-fg-muted">terakhir {formatDateTime(u.last_checkin_at)}</span>}
                   </td>
                   <td className="px-3 py-3">{u.open_flags > 0 ? <span className={`${tagClass.base} ${tagClass.hot}`}>{u.open_flags} terbuka</span> : "—"}</td>
                   <td className="px-3 py-3">
@@ -146,7 +146,7 @@ async function Organizers({ q }: { q: string }) {
   return (
     <section className={`${cardClass} overflow-hidden`}>
       {orgs.length === 0 ? (
-        <p className="p-5 text-[13px] text-fg-soft">Tidak ada penyelenggara yang cocok.</p>
+        <p className="p-5 text-[16px] text-fg-soft">Tidak ada penyelenggara yang cocok.</p>
       ) : (
         orgs.map((o) => {
           const st = ORG_STATUS[o.status] ?? ORG_STATUS.pending;
@@ -154,8 +154,8 @@ async function Organizers({ q }: { q: string }) {
             <div key={o.id} className="flex flex-wrap items-center gap-3.5 border-b border-line px-5 py-3.5 last:border-b-0">
               <OrganizerAvatar name={o.name} type={o.type} logoUrl={o.logo_url} size={40} />
               <div className="flex min-w-0 flex-1 flex-col">
-                <span className="text-[14px] font-semibold">{o.name}</span>
-                <span className="text-[12px] text-fg-soft">
+                <span className="text-[17px] font-semibold">{o.name}</span>
+                <span className="text-[14px] text-fg-soft">
                   {o.type === "merchant" ? "Merchant" : "Komunitas"} · daftar {formatDate(o.created_at)}
                   {o.status === "suspended" && o.review_note ? ` · ${o.review_note}` : ""}
                 </span>
@@ -165,7 +165,7 @@ async function Organizers({ q }: { q: string }) {
                 <form action={suspendOrganizer} className="flex items-center gap-2">
                   <input type="hidden" name="organizer_id" value={o.id} />
                   <input type="hidden" name="suspend" value={o.status === "suspended" ? "0" : "1"} />
-                  {o.status === "approved" && <input name="note" placeholder="Alasan" className={`${inputClass} h-10 w-[160px] text-[13px]`} />}
+                  {o.status === "approved" && <input name="note" placeholder="Alasan" className={`${inputClass} h-10 w-[160px] text-[16px]`} />}
                   <SubmitButton size="small" variant={o.status === "suspended" ? "outline" : "danger"} pendingText="…">
                     {o.status === "suspended" ? "Aktifkan" : "Bekukan"}
                   </SubmitButton>

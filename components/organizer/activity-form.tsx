@@ -102,7 +102,7 @@ export function ActivityForm({
       <input type="hidden" name="is_paid" value={paid ? "true" : "false"} />
 
       <div className="flex flex-col gap-2">
-        <span className="text-[12px] font-semibold text-fg-soft">
+        <span className="text-[14px] font-semibold text-fg-soft">
           Langkah {step + 1} dari {STEPS.length} · {STEPS[step]}
         </span>
         <div className="flex gap-1.5">
@@ -125,8 +125,8 @@ export function ActivityForm({
                 const on = reach === value;
                 return (
                   <button key={value} type="button" aria-pressed={on} onClick={() => setReach(value)} className={`flex flex-col gap-0.5 rounded-2xl border p-3 text-left ${on ? "border-primary bg-primary-tint" : "border-line bg-surface"}`}>
-                    <span className={`text-[14px] font-bold ${on ? "text-link" : "text-fg"}`}>{label}</span>
-                    <span className="text-[11px] leading-[1.4] text-fg-soft">{hint}</span>
+                    <span className={`text-[17px] font-bold ${on ? "text-link" : "text-fg"}`}>{label}</span>
+                    <span className="text-[13px] leading-[1.4] text-fg-soft">{hint}</span>
                   </button>
                 );
               })}
@@ -139,13 +139,13 @@ export function ActivityForm({
                     const on = locationMode === value;
                     return (
                       <button key={value} type="button" aria-pressed={on} onClick={() => setLocationMode(value)} className={`flex flex-col gap-0.5 rounded-2xl border px-3 py-2.5 text-left ${on ? "border-primary bg-primary-tint" : "border-line bg-surface"}`}>
-                        <span className={`text-[14px] font-bold ${on ? "text-link" : "text-fg"}`}>{label}</span>
-                        <span className="text-[11px] leading-[1.4] text-fg-soft">{hint}</span>
+                        <span className={`text-[17px] font-bold ${on ? "text-link" : "text-fg"}`}>{label}</span>
+                        <span className="text-[13px] leading-[1.4] text-fg-soft">{hint}</span>
                       </button>
                     );
                   })}
                 </div>
-                <span className="text-[12px] leading-[1.5] text-fg-soft">Jangkauan dan mode lokasi hanya bisa diubah selama draft, dan jangkauan tidak bisa diganti setelah ada misi.</span>
+                <span className="text-[14px] leading-[1.5] text-fg-soft">Jangkauan dan mode lokasi hanya bisa diubah selama draft, dan jangkauan tidak bisa diganti setelah ada misi.</span>
               </>
             )}
           </div>
@@ -157,8 +157,8 @@ export function ActivityForm({
               const on = kind === value;
               return (
                 <button key={value} type="button" aria-pressed={on} onClick={() => { setKind(value); if (value === "event") { setTargetScope("individual"); } }} className={`flex flex-col gap-0.5 rounded-2xl border p-3 text-left ${on ? "border-primary bg-primary-tint" : "border-line bg-surface"}`}>
-                  <span className={`text-[14px] font-bold ${on ? "text-link" : "text-fg"}`}>{label}</span>
-                  <span className="text-[11px] leading-[1.4] text-fg-soft">{hint}</span>
+                  <span className={`text-[17px] font-bold ${on ? "text-link" : "text-fg"}`}>{label}</span>
+                  <span className="text-[13px] leading-[1.4] text-fg-soft">{hint}</span>
                 </button>
               );
             })}
@@ -179,8 +179,8 @@ export function ActivityForm({
               const on = goal === value;
               return (
                 <button key={value} type="button" aria-pressed={on} onClick={() => setGoal(value)} className={`flex flex-col gap-0.5 rounded-2xl border p-3 text-left ${on ? "border-primary bg-primary-tint" : "border-line bg-surface"}`}>
-                  <span className={`text-[14px] font-bold ${on ? "text-link" : "text-fg"}`}>{label}</span>
-                  <span className="text-[11px] leading-[1.4] text-fg-soft">{hint}</span>
+                  <span className={`text-[17px] font-bold ${on ? "text-link" : "text-fg"}`}>{label}</span>
+                  <span className="text-[13px] leading-[1.4] text-fg-soft">{hint}</span>
                 </button>
               );
             })}
@@ -188,7 +188,7 @@ export function ActivityForm({
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="cover" className={labelClass}>Gambar cover (opsional, maks. 3 MB)</label>
-          <ImageFileInput id="cover" name="cover" accept="image/png,image/jpeg,image/webp" className="text-[13px] text-fg-label file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-surface file:px-3 file:py-1.5 file:text-[12px] file:font-semibold file:text-fg" maxMb={3} />
+          <ImageFileInput id="cover" name="cover" accept="image/png,image/jpeg,image/webp" className="text-[16px] text-fg-label file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-surface file:px-3 file:py-1.5 file:text-[14px] file:font-semibold file:text-fg" maxMb={3} />
         </div>
       </section>
 
@@ -210,7 +210,7 @@ export function ActivityForm({
               className={inputClass}
             />
             {startsSoon && (
-              <span className="rounded-xl bg-warn-tint px-3 py-2 text-[12px] leading-[1.5] text-warn">
+              <span className="rounded-xl bg-warn-tint px-3 py-2 text-[14px] leading-[1.5] text-warn">
                 Jam mulai kurang dari 24 jam lagi. Tim Gasyu perlu waktu meninjau (biasanya 1–2 hari kerja), jadi aktivitas bisa belum tampil di Jelajah saat dimulai. Beri jeda lebih panjang jika bisa.
               </span>
             )}
@@ -234,7 +234,7 @@ export function ActivityForm({
               </optgroup>
             ))}
           </select>
-          <span className="text-[12px] text-fg-soft">Dipakai untuk aturan khusus warga dan rekomendasi di Jelajah.</span>
+          <span className="text-[14px] text-fg-soft">Dipakai untuk aturan khusus warga dan rekomendasi di Jelajah.</span>
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="quota" className={labelClass}>Kuota peserta (kosongkan jika tanpa batas)</label>
@@ -245,7 +245,7 @@ export function ActivityForm({
       {/* Langkah 3: aturan ikut */}
       <section className={`${cardClass} flex flex-col gap-4 p-4 ${step === 2 ? "" : "hidden"}`}>
         {isGlobal ? (
-          <p className="rounded-2xl bg-info-tint px-4 py-3 text-[12px] leading-[1.5] text-info">
+          <p className="rounded-2xl bg-info-tint px-4 py-3 text-[14px] leading-[1.5] text-info">
             Event Global terbuka untuk pengguna dari kota mana pun dan didaftar pribadi. Hasilnya skor event, bukan XP atau poin.
             Setelah draft tersimpan, susun misi (skor 10–1.000 per misi, total maks. 5.000) dan hadiah per peringkat, lalu terbitkan.
           </p>
@@ -274,7 +274,7 @@ export function ActivityForm({
                   </div>
                   <div className="flex items-center gap-2">
                     <input name="target_count" type="number" min={1} max={100} inputMode="numeric" defaultValue={initial?.target_count ?? 3} aria-label="Jumlah target" className={`${inputClass} w-24`} />
-                    <span className="text-[12px] text-fg-soft">{targetKind === "total_checkins" ? "kali check-in (maks. 1 per hari)" : "checkpoint berbeda"}</span>
+                    <span className="text-[14px] text-fg-soft">{targetKind === "total_checkins" ? "kali check-in (maks. 1 per hari)" : "checkpoint berbeda"}</span>
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
@@ -302,7 +302,7 @@ export function ActivityForm({
                 })}
               </div>
               {joinMode !== "individual" && (
-                <div className="flex items-center gap-2 text-[13px] text-fg-label">
+                <div className="flex items-center gap-2 text-[16px] text-fg-label">
                   Grup
                   <input name="group_min" type="number" min={2} max={10} inputMode="numeric" defaultValue={initial?.group_min ?? 2} aria-label="Anggota minimal" className={`${inputClass} w-20`} />
                   sampai
@@ -320,7 +320,7 @@ export function ActivityForm({
                   </button>
                 ))}
               </div>
-              {residency === "residents_only" && !scope && <span className="text-[12px] text-warn">Pilih wilayah cakupan di langkah sebelumnya.</span>}
+              {residency === "residents_only" && !scope && <span className="text-[14px] text-warn">Pilih wilayah cakupan di langkah sebelumnya.</span>}
             </div>
             {type === "community" && (
               <div className="flex flex-col gap-2">
@@ -334,7 +334,7 @@ export function ActivityForm({
                 </div>
               </div>
             )}
-            <p className="rounded-2xl bg-info-tint px-4 py-3 text-[12px] leading-[1.5] text-info">
+            <p className="rounded-2xl bg-info-tint px-4 py-3 text-[14px] leading-[1.5] text-info">
               XP dasar mengikuti pengaturan Gasyu (event 100 XP; challenge sesuai kesulitan). Poin diatur di halaman aktivitas, misi di halaman Misi.
               Setelah tersimpan sebagai draft, tambahkan checkpoint lalu ajukan ke tim Gasyu.
             </p>
@@ -351,20 +351,20 @@ export function ActivityForm({
               const on = paid === value;
               return (
                 <button key={label} type="button" aria-pressed={on} disabled={canSetPrice === false} onClick={() => setPaid(value)} className={`flex flex-col gap-0.5 rounded-2xl border p-3 text-left disabled:opacity-60 ${on ? "border-primary bg-primary-tint" : "border-line bg-surface"}`}>
-                  <span className={`text-[14px] font-bold ${on ? "text-link" : "text-fg"}`}>{label}</span>
-                  <span className="text-[11px] leading-[1.4] text-fg-soft">{hint}</span>
+                  <span className={`text-[17px] font-bold ${on ? "text-link" : "text-fg"}`}>{label}</span>
+                  <span className="text-[13px] leading-[1.4] text-fg-soft">{hint}</span>
                 </button>
               );
             })}
           </div>
-          {canSetPrice === false && <span className="text-[12px] text-fg-soft">Hanya pemilik/ketua yang bisa mengatur harga.</span>}
+          {canSetPrice === false && <span className="text-[14px] text-fg-soft">Hanya pemilik/ketua yang bisa mengatur harga.</span>}
         </div>
         {paid && (
           <>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="price_idr" className={labelClass}>Harga per orang (Rp)</label>
               <input id="price_idr" name="price_idr" type="number" min={1000} step={500} inputMode="numeric" required={paid} defaultValue={initial?.price_idr ?? ""} placeholder="contoh: 75000" className={inputClass} />
-              <span className="text-[11px] text-fg-muted">Minimal Rp1.000. Satu harga untuk pendaftar pribadi maupun grup.</span>
+              <span className="text-[13px] text-fg-muted">Minimal Rp1.000. Satu harga untuk pendaftar pribadi maupun grup.</span>
             </div>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="payment_instructions" className={labelClass}>Cara bayar</label>
@@ -373,9 +373,9 @@ export function ActivityForm({
             <div className="flex flex-col gap-1.5">
               <label htmlFor="payment_window_hours" className={labelClass}>Batas waktu bayar setelah daftar (jam)</label>
               <input id="payment_window_hours" name="payment_window_hours" type="number" min={1} max={720} inputMode="numeric" defaultValue={initial?.payment_window_hours ?? 24} className={`${inputClass} w-28`} />
-              <span className="text-[11px] text-fg-muted">Lewat batas ini pendaftar yang belum bayar dibatalkan otomatis dan kursinya kembali. Dipotong ke waktu mulai jika lebih dekat.</span>
+              <span className="text-[13px] text-fg-muted">Lewat batas ini pendaftar yang belum bayar dibatalkan otomatis dan kursinya kembali. Dipotong ke waktu mulai jika lebih dekat.</span>
             </div>
-            <p className="rounded-2xl bg-warn-tint px-4 py-3 text-[12px] leading-[1.5] text-warn">
+            <p className="rounded-2xl bg-warn-tint px-4 py-3 text-[14px] leading-[1.5] text-warn">
               Uang tidak lewat Gasyu: warga membayar langsung ke kamu, lalu tim kamu menandai lunas di halaman Peserta. Harga terkunci setelah terbit.
             </p>
           </>
@@ -384,7 +384,7 @@ export function ActivityForm({
 
       <div className="flex gap-2.5">
         {step > 0 && (
-          <button type="button" onClick={() => setStep(step - 1)} className="flex h-[54px] flex-1 items-center justify-center rounded-2xl border border-line-strong bg-surface text-[15px] font-semibold text-fg">
+          <button type="button" onClick={() => setStep(step - 1)} className="flex h-[54px] flex-1 items-center justify-center rounded-2xl border border-line-strong bg-surface text-[18px] font-semibold text-fg">
             Kembali
           </button>
         )}
@@ -393,7 +393,7 @@ export function ActivityForm({
             {initial ? "Simpan perubahan" : "Simpan draft"}
           </SubmitButton>
         ) : (
-          <button type="button" onClick={() => setStep(step + 1)} className="flex h-[54px] flex-1 items-center justify-center rounded-2xl bg-primary text-[15px] font-semibold text-on-primary">
+          <button type="button" onClick={() => setStep(step + 1)} className="flex h-[54px] flex-1 items-center justify-center rounded-2xl bg-primary text-[18px] font-semibold text-on-primary">
             Lanjut
           </button>
         )}
@@ -410,11 +410,11 @@ export function ActivityLiteForm({ organizerId, type, activityId, description }:
       <input type="hidden" name="organizer_id" value={organizerId} />
       <input type="hidden" name="type_org" value={type} />
       <input type="hidden" name="activity_id" value={activityId} />
-      <h2 className="text-[15px] font-bold">Ubah deskripsi dan cover</h2>
+      <h2 className="text-[18px] font-bold">Ubah deskripsi dan cover</h2>
       <ErrorMessage message={state.error} />
       <SuccessMessage message={state.success} />
       <textarea name="description" rows={4} maxLength={2000} defaultValue={description} className={textareaClass} aria-label="Deskripsi" />
-      <ImageFileInput name="cover" accept="image/png,image/jpeg,image/webp" aria-label="Cover" className="text-[13px] text-fg-label file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-surface file:px-3 file:py-1.5 file:text-[12px] file:font-semibold file:text-fg" maxMb={3} />
+      <ImageFileInput name="cover" accept="image/png,image/jpeg,image/webp" aria-label="Cover" className="text-[16px] text-fg-label file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-surface file:px-3 file:py-1.5 file:text-[14px] file:font-semibold file:text-fg" maxMb={3} />
       <SubmitButton size="small" variant="dark" pendingText="Menyimpan…" className="self-end">
         Simpan
       </SubmitButton>

@@ -48,35 +48,35 @@ export function PaymentSection({
         </span>
         <span className="flex flex-1 flex-col gap-0.5">
           <span className="flex items-center gap-2">
-            <span className="font-display text-[17px] font-semibold">Pembayaran</span>
+            <span className="font-display text-[20px] font-semibold">Pembayaran</span>
             <span className={`${tagClass.base} ${tagClass[tone[paymentStatus]]}`}>{PAYMENT_LABELS[paymentStatus]}</span>
           </span>
-          <span className="text-[13px] text-fg-label">{headline}</span>
+          <span className="text-[16px] text-fg-label">{headline}</span>
         </span>
-        <span className="text-[15px] font-bold">{formatPrice(priceIdr, true)}</span>
+        <span className="text-[18px] font-bold">{formatPrice(priceIdr, true)}</span>
       </div>
       {paymentStatus === "unpaid" && !cancelled && (
         <>
           {instructions && (
             <div className="flex flex-col gap-1 rounded-2xl bg-track/60 p-3">
-              <span className="text-[11px] font-bold uppercase tracking-wide text-fg-soft">Cara bayar</span>
-              <p className="text-[13px] leading-[1.6] whitespace-pre-line">{instructions}</p>
+              <span className="text-[13px] font-bold uppercase tracking-wide text-fg-soft">Cara bayar</span>
+              <p className="text-[16px] leading-[1.6] whitespace-pre-line">{instructions}</p>
             </div>
           )}
-          {dueAt && <span className="text-[12px] text-warn">Bayar sebelum {formatDateTime(dueAt)}, kalau tidak pendaftaran dibatalkan otomatis.</span>}
-          {note && <span className="rounded-xl bg-danger-tint px-3 py-2 text-[12px] text-danger">Bukti sebelumnya ditolak: {note}</span>}
-          <span className="text-[12px] leading-[1.5] text-fg-soft">Sudah transfer? Kirim bukti supaya panitia cepat mengonfirmasi. Bayar tunai di lokasi? Panitia yang menandai lunas.</span>
+          {dueAt && <span className="text-[14px] text-warn">Bayar sebelum {formatDateTime(dueAt)}, kalau tidak pendaftaran dibatalkan otomatis.</span>}
+          {note && <span className="rounded-xl bg-danger-tint px-3 py-2 text-[14px] text-danger">Bukti sebelumnya ditolak: {note}</span>}
+          <span className="text-[14px] leading-[1.5] text-fg-soft">Sudah transfer? Kirim bukti supaya panitia cepat mengonfirmasi. Bayar tunai di lokasi? Panitia yang menandai lunas.</span>
           <PaymentProofForm participationId={participationId} activityId={activityId} retry={!!note} />
         </>
       )}
       {paymentStatus === "awaiting_confirmation" && !cancelled && (
         <>
-          <span className="text-[12px] text-fg-soft">Kamu akan dapat notifikasi saat panitia mengonfirmasi. Uang tidak lewat Gasyu. Salah kirim foto? Ganti buktinya selama belum dikonfirmasi.</span>
+          <span className="text-[14px] text-fg-soft">Kamu akan dapat notifikasi saat panitia mengonfirmasi. Uang tidak lewat Gasyu. Salah kirim foto? Ganti buktinya selama belum dikonfirmasi.</span>
           <PaymentProofForm participationId={participationId} activityId={activityId} replace />
         </>
       )}
       {chatUrl && (
-        <a href={chatUrl} target="_blank" rel="noreferrer" className="flex h-10 items-center justify-center gap-2 rounded-xl border border-line-strong bg-surface px-4 text-[13px] font-semibold text-fg">
+        <a href={chatUrl} target="_blank" rel="noreferrer" className="flex h-10 items-center justify-center gap-2 rounded-xl border border-line-strong bg-surface px-4 text-[16px] font-semibold text-fg">
           <Icon name="chat" size={16} />
           Chat panitia di WhatsApp
         </a>

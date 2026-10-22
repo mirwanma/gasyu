@@ -1,8 +1,10 @@
-# Gasyu — Brand Identity v1.2
+# Gasyu — Brand Identity v1.3
 
 Panduan brand untuk desain dan pengembangan aplikasi. `CLAUDE.md` merujuk ke file ini:
 
 > Brand dan UI: ikuti `docs/BRAND.md` (warna, tipografi, logo, gaya bahasa). Jangan membuat warna atau font di luar token di sana.
+
+Perubahan 1.3 (22 Oktober 2026): UI aplikasi pindah ke palet terang **Ramah Semua Umur 2026** (Cloud Dancer, Crail Orange, Bio-Mint Moss) untuk warga, merchant, komunitas, dan admin. Tema gelap dan gradien kartu level dihapus. Huruf dasar 18 px, judul 24 px, tombol wajib ikon + teks.
 
 Perubahan 1.2 (16 Oktober 2026): nama aplikasi berganti dari **Ramein** menjadi **Gasyu**. Simbol tiga lingkaran dan semua warna tetap; wordmark menjadi **gasyu**. Berkas logo yang memuat tulisan lama perlu dibuat ulang.
 
@@ -34,7 +36,7 @@ Posisi dan warna lingkaran tidak boleh ditukar.
 | `png/apple-touch-icon-180.png` | Ikon iOS |
 | `favicon.ico` · `svg/gasyu-favicon.svg` | Favicon (versi tanpa titik tengah, tetap jelas di 16–32 px) |
 
-Wordmark di semua file sudah berupa outline, jadi tampil sama walau font belum terpasang. Di aplikasi, logo dipakai lewat komponen `Logo` (`components/ui.tsx`): simbol 48 px + wordmark krem `#FAF7F2`.
+Wordmark di semua file sudah berupa outline, jadi tampil sama walau font belum terpasang. Di aplikasi, logo dipakai lewat komponen `Logo` (`components/ui.tsx`): simbol 48 px + wordmark tinta `#1A1A1A`.
 
 **Aturan**
 
@@ -43,37 +45,35 @@ Wordmark di semua file sudah berupa outline, jadi tampil sama walau font belum t
 - Jangan memutar, menggepengkan, mengganti warna, menukar posisi lingkaran, mengganti huruf wordmark, atau menambah bayangan dan gradien.
 - Wordmark selalu huruf kecil: **gasyu**. Dalam kalimat, tulis nama sebagai "Gasyu".
 
-## 2. Warna UI aplikasi (tema gelap)
+## 2. Warna UI aplikasi (Ramah Semua Umur 2026)
 
-Sumber: artifact "Ramein UI Mockup" (judul lama artifact; isinya tetap acuan UI Gasyu). Token didefinisikan di `app/globals.css`; pakai nama token, jangan hex langsung.
+Satu tema terang untuk seluruh aplikasi. Token didefinisikan di `app/globals.css`; pakai nama token, jangan hex langsung. Porsi: 60% latar, 30% kartu, 10% tombol utama.
 
 | Token | Hex | Pakai untuk |
 | --- | --- | --- |
-| `bg` | `#0D1024` | Latar halaman |
-| `surface` | `#171B33` | Kartu, input, chip |
-| `surface-deep` | `#12152C` | Navigasi bawah |
-| `line` | `#2A3058` | Garis dan border |
-| `line-strong` | `#3A4072` | Border putus-putus (pilihan khusus, mis. "Luar Cimahi") |
-| `fg` | `#F3F4FA` | Teks utama; latar tombol terang (Google) |
-| `fg-label` | `#C9CCE4` | Label formulir, teks chip |
-| `fg-soft` | `#A3A8C7` | Teks sekunder |
-| `fg-muted` | `#8A8FB4` | Teks redup, ikon nonaktif, judul grup |
-| `cream` | `#FAF7F2` | Wordmark |
-| `primary` | `#5B5BF0` | Tombol utama, chip terpilih |
-| `primary-soft` | `#8F93FF` | Fokus input, progres langkah |
-| `link` | `#A9ACFF` | Tautan dan tombol teks |
-| `hero-from` → `hero-to` | `#4B45E0` → `#6D2FD8` | Gradien kartu level (135°), satu-satunya gradien di UI |
-| `on-hero` | `#E3E1FF` | Teks sekunder di atas kartu level |
-| `avatar` / `avatar-ring` | `#2A2F63` / `#6D5BF0` | Lingkaran inisial pengguna |
-| `xp` | `#5CCBF5` | XP, bar progres level |
-| `points` | `#F7A1C2` | Poin |
-| `hot` | `#F0508A` | Tombol Scan, titik notifikasi |
-| `success` | `#34D399` | Sukses, siap check-in, badge |
-| `warn` | `#F5B544` | Menunggu, peringkat |
-| `danger` / `danger-tint` | `#FF8A8A` / `#3A1620` | Pesan error |
+| `bg` | `#F3F3F1` | Latar halaman (Cloud Dancer, 60%) |
+| `surface` / `surface-deep` | `#FFFFFF` | Kartu, input, navigasi bawah (Pure White, 30%) |
+| `line` / `track` | `#E5E5E2` | Garis pembatas, alur progress bar |
+| `line-strong` | `#A3A39E` | Border input dan tombol garis |
+| `scrim` | `#1A1A1A` 72% | Lapisan di atas foto sampul (teks `cream`) |
+| `fg` | `#1A1A1A` | Teks utama (Ink Black) |
+| `fg-label` | `#2E2E2E` | Label formulir |
+| `fg-soft` | `#5A5A5A` | Teks sekunder (Slate Muted) |
+| `fg-muted` | `#6B6B6B` | Teks redup, placeholder |
+| `primary` | `#C15F3C` | Tombol utama / CTA, teks putih (Crail Orange, 10%) |
+| `primary-hover` / `link` / `points` | `#A84F2E` | Hover tombol utama, tautan, angka poin |
+| `primary-tint` / `avatar` / `hot-tint` | `#F8E9E3` | Latar lembut oranye, lingkaran inisial |
+| `hot` | `#C15F3C` | Tombol Scan, titik notifikasi |
+| `xp` / `success` | `#2B6E57` | Progress bar, sukses (Bio-Mint Moss) |
+| `success-tint` | `#E3F0EA` | Latar pesan sukses |
+| `warn` / `warn-tint` | `#8A5A00` / `#FBF0D9` | Menunggu, kedaluwarsa |
+| `info` / `info-tint` | `#1F5F86` / `#E3EEF5` | Informasi |
+| `danger` / `danger-tint` | `#B42318` / `#FBEDEB` | Pesan error |
+| `bronze` | `#A0643A` | Peringkat 3 |
 | `merchant` / `komunitas` / `warga` | `#F06A2A` / `#0F8B6D` / `#2D4FCF` | Warna tiga pihak di logo dan label pihak |
 
 Warna irisan (`#7E7A2C`, `#9A4E80`, `#1A6AA6`) hanya untuk logo dan ilustrasi, bukan UI.
+Kontras: teks putih di atas `primary` cukup untuk teks besar (18 px tebal), jadi teks tombol utama minimal 16 px semibold.
 
 ### 2b. Warna materi cetak dan presentasi (latar terang, v1.0)
 
@@ -86,30 +86,32 @@ Dua keluarga dari Google Fonts:
 - **Outfit** (500, 600, 700) untuk judul dan angka besar: kelas Tailwind `font-display`.
 - **Plus Jakarta Sans** (400–800) untuk teks lain: bawaan `font-sans`.
 
+Ukuran dibuat besar supaya terbaca jelas oleh anak-anak sampai lansia. Ukuran dasar `html` 18 px.
+
 | Gaya | Font | Ukuran | Bobot | Catatan |
 | --- | --- | --- | --- | --- |
-| hero | Outfit | 32 / 1.15 | 700 | judul layar masuk |
-| title | Outfit | 28 | 700 | judul layar |
-| section | Outfit | 19 | 600 | judul bagian ("Aktivitasku") |
-| number | Outfit | 34 (XP), 22–24 | 700 | `tabular-nums` untuk XP, poin, peringkat |
-| body | Jakarta | 15 / 1.55 | 400 | |
-| body-sm | Jakarta | 14 / 1.55 | 400 | intro layar |
-| caption | Jakarta | 13 | 500 | warna `fg-soft` |
-| label | Jakarta | 13 | 600 | label formulir, warna `fg-label` |
-| group | Jakarta | 12 | 700 | huruf kapital, letter-spacing 0.06em, warna `fg-muted` |
-| nav | Jakarta | 11 | 600 | navigasi bawah |
+| hero | Outfit | 34 / 1.15 | 700 | judul layar masuk |
+| title | Outfit | 28–30 | 700 | judul layar |
+| section | Outfit | 24 | 600–700 | judul bagian ("Misi Hari Ini") |
+| number | Outfit | 26–44 | 700 | `tabular-nums` untuk XP, poin, peringkat |
+| body | Jakarta | 18 / 1.55 | 400 | isi |
+| body-sm | Jakarta | 16–17 / 1.5 | 400 | keterangan |
+| label | Jakarta | 17 | 600 | label formulir, warna `fg-label` |
+| caption | Jakarta | 14 | 500 | batas terkecil untuk teks penting |
+| nav | Jakarta | 13 | 600 | navigasi bawah |
 
-## 4. Elemen UI
+## 4. Elemen UI (ramah semua umur)
 
-- **Tombol utama**: tinggi 54 px, sudut 16 px, latar `primary`, teks putih 16 px semibold. **Tombol terang** (Google): latar `fg`, teks `bg`. Kelas siap pakai: `buttonStyles` di `components/styles.ts`.
-- **Input**: tinggi 52 px, sudut 14 px, latar `surface`, border `line`, fokus `primary-soft`.
-- **Kartu**: sudut 18–20 px, latar `surface`, border `line`, tanpa bayangan. Kartu level: sudut 24 px dengan gradien `hero`.
-- **Chip pilihan**: tinggi 44 px, sudut penuh, latar `surface`; terpilih: latar dan border `primary`, teks putih.
-- **Kode OTP**: 6 kotak 52 px, sudut 12 px, latar `bg`, angka Outfit 22 px.
-- **Progres langkah**: 3 bar 5 px; selesai `primary-soft`, belum `line`.
-- **Navigasi bawah**: Beranda, Jelajah, Scan (tombol bulat 60 px `hot` yang menonjol ke atas), Dompet, Profil.
-- **Ikon**: garis 1.8–2 px, ujung membulat (gaya Lucide).
-- **Target sentuh** minimal 44 × 44 px.
+- **Tombol wajib ikon + teks** (mis. "🔥 5 Minggu Aktif", "🎁 Tukar Hadiah", "← Kembali"). Jangan pakai ikon saja, termasuk tombol Kembali, Tutup, Notifikasi, dan Scan.
+- **Tombol utama**: tinggi minimal 58 px, sudut 16 px, latar `primary`, hover `primary-hover`, teks putih 18 px semibold. Kelas siap pakai: `buttonStyles` di `components/styles.ts`.
+- **Tombol kecil**: tinggi minimal 48 px (`smallButton`). **Kembali**: `backLinkClass`.
+- **Input**: tinggi 56 px, sudut 14 px, latar `surface`, border `line-strong`, fokus `primary` dengan cincin.
+- **Kartu**: sudut 20 px, latar `surface`, border `line`, tanpa bayangan dan tanpa gradien.
+- **Progress bar**: tinggi 16 px, alur `track`, isi `xp` (hijau).
+- **Chip pilihan**: tinggi minimal 44 px, sudut penuh; terpilih: latar `primary`, teks putih.
+- **Navigasi bawah**: Beranda, Jelajah, Scan (tombol bulat 60 px `hot` dengan label di bawahnya), Dompet, Profil.
+- **Ikon**: garis 1.8–2 px, ujung membulat (gaya Lucide). Emoji boleh untuk kartu skor dan medali peringkat.
+- **Jarak longgar**: target sentuh minimal 48 × 48 px, jarak antar tombol minimal 12 px.
 
 ## 5. Gaya bahasa
 
@@ -128,7 +130,7 @@ Tagline: **Bikin kota makin rame, bareng-bareng.**
 
 - Token warna dan font: `app/globals.css` (`@theme`).
 - Font: `app/layout.tsx` (`Plus_Jakarta_Sans` → `--font-jakarta`, `Outfit` → `--font-outfit`).
-- PWA: `app/manifest.ts` dengan `background_color` dan `theme_color` `#0D1024`.
-- Komponen dasar: `components/ui.tsx` (Logo, SubmitButton, ErrorMessage, GoogleIcon), `components/styles.ts` (kelas tombol, input, kartu), `components/otp-input.tsx`, `components/bottom-nav.tsx`.
+- PWA: `app/manifest.ts` dengan `background_color` dan `theme_color` `#F3F3F1`.
+- Komponen dasar: `components/ui.tsx` (Logo, SubmitButton, ErrorMessage, GoogleIcon), `components/styles.ts` (kelas tombol, input, kartu, tombol Kembali), `components/otp-input.tsx`, `components/bottom-nav.tsx`.
 
 Taruh `favicon.ico` di `app/`, `apple-touch-icon-180.png` sebagai `app/apple-icon.png`, ikon PNG di `public/icons/`, dan SVG logo di `public/brand/`.

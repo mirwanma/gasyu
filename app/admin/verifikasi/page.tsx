@@ -14,12 +14,12 @@ export default function VerifikasiPage({ searchParams }: PageProps<"/admin/verif
   return (
     <>
       <div className="flex flex-col gap-1">
-        <h1 className="font-display text-[30px] font-bold">Verifikasi penyelenggara</h1>
-        <Suspense fallback={<span className="text-[14px] text-fg-soft">Memuat…</span>}>
+        <h1 className="font-display text-[32px] font-bold">Verifikasi penyelenggara</h1>
+        <Suspense fallback={<span className="text-[17px] text-fg-soft">Memuat…</span>}>
           <QueueSummary />
         </Suspense>
       </div>
-      <Suspense fallback={<p className="text-[13px] text-fg-muted">Memuat…</p>}>
+      <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
         <Queue searchParams={searchParams} />
       </Suspense>
     </>
@@ -29,7 +29,7 @@ export default function VerifikasiPage({ searchParams }: PageProps<"/admin/verif
 async function QueueSummary() {
   const supabase = await createClient();
   const { count } = await supabase.from("organizers").select("id", { count: "exact", head: true }).eq("status", "pending");
-  return <span className="text-[14px] text-fg-soft">{count ?? 0} menunggu verifikasi</span>;
+  return <span className="text-[17px] text-fg-soft">{count ?? 0} menunggu verifikasi</span>;
 }
 
 type QueueRow = {
@@ -57,9 +57,9 @@ async function Queue({ searchParams }: Pick<PageProps<"/admin/verifikasi">, "sea
     <div className="flex flex-wrap items-start gap-5">
       <section className={`${cardClass} min-w-0 flex-[1_1_360px] overflow-hidden`}>
         {hasil === "ok" && (
-          <p className="border-b border-line bg-success-tint px-4 py-3 text-[13px] font-semibold text-success">Keputusan tersimpan dan tim penyelenggara diberi tahu.</p>
+          <p className="border-b border-line bg-success-tint px-4 py-3 text-[16px] font-semibold text-success">Keputusan tersimpan dan tim penyelenggara diberi tahu.</p>
         )}
-        {queue.length === 0 && <p className="p-5 text-[13px] text-fg-soft">Antrean kosong. Semua pendaftar sudah diperiksa.</p>}
+        {queue.length === 0 && <p className="p-5 text-[16px] text-fg-soft">Antrean kosong. Semua pendaftar sudah diperiksa.</p>}
         {queue.map((q) => {
           const village = (Array.isArray(q.village) ? q.village[0] : q.village) as { name: string } | null;
           const selected = q.id === selectedId;
@@ -71,8 +71,8 @@ async function Queue({ searchParams }: Pick<PageProps<"/admin/verifikasi">, "sea
             >
               <OrganizerAvatar name={q.name} type={q.type} logoUrl={q.logo_url} size={44} />
               <span className="flex flex-1 flex-col gap-0.5">
-                <span className="text-[15px] font-semibold">{q.name}</span>
-                <span className="text-[12px] text-fg-soft">
+                <span className="text-[18px] font-semibold">{q.name}</span>
+                <span className="text-[14px] text-fg-soft">
                   {village?.name ?? "-"} · {timeAgo(q.created_at)}
                 </span>
               </span>
@@ -85,7 +85,7 @@ async function Queue({ searchParams }: Pick<PageProps<"/admin/verifikasi">, "sea
       </section>
 
       {selectedId && (
-        <Suspense fallback={<section className={`${cardClass} flex-[1.4_1_420px] p-6 text-[13px] text-fg-muted`}>Memuat…</section>}>
+        <Suspense fallback={<section className={`${cardClass} flex-[1.4_1_420px] p-6 text-[16px] text-fg-muted`}>Memuat…</section>}>
           <Detail id={selectedId} />
         </Suspense>
       )}
@@ -144,22 +144,22 @@ async function Detail({ id }: { id: string }) {
       <div className="flex items-center gap-3.5">
         <OrganizerAvatar name={org.name} type={type} logoUrl={org.logo_url} size={56} radius={16} />
         <div className="flex flex-1 flex-col gap-0.5">
-          <span className="font-display text-[22px] font-semibold">{org.name}</span>
-          <span className="text-[13px] text-fg-soft">
+          <span className="font-display text-[26px] font-semibold">{org.name}</span>
+          <span className="text-[16px] text-fg-soft">
             {type === "merchant" ? "Merchant" : "Komunitas"} · didaftarkan oleh {creator?.nickname ?? "-"} · {formatDateTime(org.created_at)}
           </span>
         </div>
       </div>
-      {org.description && <p className="text-[14px] leading-[1.55] text-fg-label">{org.description}</p>}
+      {org.description && <p className="text-[17px] leading-[1.55] text-fg-label">{org.description}</p>}
       {org.review_note && (
-        <p className="rounded-[14px] bg-warn-tint px-3.5 py-3 text-[13px] text-warn">Pengajuan ulang. Catatan sebelumnya: {org.review_note}</p>
+        <p className="rounded-[14px] bg-warn-tint px-3.5 py-3 text-[16px] text-warn">Pengajuan ulang. Catatan sebelumnya: {org.review_note}</p>
       )}
 
       <div className="grid gap-3 sm:grid-cols-2">
         {facts.map(([k, v]) => (
           <div key={k} className="flex flex-col gap-0.5 rounded-[14px] bg-bg px-3.5 py-3">
-            <span className="text-[12px] text-fg-soft">{k}</span>
-            <span className="text-[14px] font-semibold">{v}</span>
+            <span className="text-[14px] text-fg-soft">{k}</span>
+            <span className="text-[17px] font-semibold">{v}</span>
           </div>
         ))}
       </div>
@@ -169,7 +169,7 @@ async function Detail({ id }: { id: string }) {
         const days = Object.keys(DAY_LABELS).filter((d) => o.opening_hours?.[d]);
         const hours = days.length > 0 ? `${days.map((d) => DAY_LABELS[d] ?? d).join(", ")} · ${o.opening_hours![days[0]][0]}–${o.opening_hours![days[0]][1]}` : "-";
         return (
-          <div key={i} className="flex flex-col gap-1 rounded-[14px] border border-line p-3.5 text-[13px]">
+          <div key={i} className="flex flex-col gap-1 rounded-[14px] border border-line p-3.5 text-[16px]">
             <span className="font-semibold">{o.name}</span>
             <span className="text-fg-soft">
               {o.address}
@@ -189,26 +189,26 @@ async function Detail({ id }: { id: string }) {
       })}
 
       <div className="flex flex-col gap-2">
-        <span className="text-[13px] font-semibold">{type === "merchant" ? "Foto tempat usaha" : "Bukti kegiatan"}</span>
+        <span className="text-[16px] font-semibold">{type === "merchant" ? "Foto tempat usaha" : "Bukti kegiatan"}</span>
         {proofUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={proofUrl} alt="Foto bukti" className="max-h-[320px] w-full rounded-[14px] border border-line object-contain" />
         ) : (
-          <span className="rounded-[14px] bg-danger-tint px-3.5 py-3 text-[13px] text-danger">Belum ada foto bukti.</span>
+          <span className="rounded-[14px] bg-danger-tint px-3.5 py-3 text-[16px] text-danger">Belum ada foto bukti.</span>
         )}
       </div>
 
       <form action={reviewOrganizer} className="flex flex-col gap-3">
         <input type="hidden" name="organizer_id" value={org.id} />
-        <label htmlFor="note" className="text-[13px] font-semibold">
+        <label htmlFor="note" className="text-[16px] font-semibold">
           Catatan untuk pendaftar (wajib jika ditolak)
         </label>
         <textarea id="note" name="note" rows={3} placeholder="Contoh: foto tempat usaha belum menampilkan papan nama" className={textareaClass} />
         <div className="flex flex-wrap justify-end gap-3">
-          <SubmitButton name="decision" value="reject" variant="danger" pendingText="Menyimpan…" className="h-[46px] w-auto rounded-[14px] px-5 text-[14px]">
+          <SubmitButton name="decision" value="reject" variant="danger" pendingText="Menyimpan…" className="h-[46px] w-auto rounded-[14px] px-5 text-[17px]">
             Tolak
           </SubmitButton>
-          <SubmitButton name="decision" value="approve" pendingText="Menyimpan…" className="h-[46px] w-auto rounded-[14px] bg-success px-6 text-[14px] text-white">
+          <SubmitButton name="decision" value="approve" pendingText="Menyimpan…" className="h-[46px] w-auto rounded-[14px] bg-success px-6 text-[17px] text-white">
             Setujui
           </SubmitButton>
         </div>

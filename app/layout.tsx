@@ -19,11 +19,11 @@ export const metadata: Metadata = {
   title: "Gasyu",
   description: "Bikin kota makin rame, bareng-bareng.",
   applicationName: "Gasyu",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Gasyu" },
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "Gasyu" },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0D1024",
+  themeColor: "#F3F3F1",
   viewportFit: "cover",
 };
 

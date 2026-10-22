@@ -43,16 +43,16 @@ async function SaranBody({ id, type, query }: { id: string; type: Kind; query: S
 
   return (
     <>
-      <p className="text-[13px] leading-[1.5] text-fg-soft">
+      <p className="text-[16px] leading-[1.5] text-fg-soft">
         Saran dari warga lewat profil publik kamu. Balasanmu terlihat oleh pengirimnya saja. Saran tanpa nama tidak menampilkan identitas pengirim.
       </p>
       {query.hasil && RESULT[query.hasil] && (
-        <p role="status" className="rounded-[14px] bg-success-tint px-4 py-3 text-[13px] font-semibold text-success">
+        <p role="status" className="rounded-[14px] bg-success-tint px-4 py-3 text-[16px] font-semibold text-success">
           {RESULT[query.hasil]}
         </p>
       )}
       {query.error && (
-        <p role="alert" className="rounded-[14px] bg-danger-tint px-4 py-3 text-[13px] text-danger">
+        <p role="alert" className="rounded-[14px] bg-danger-tint px-4 py-3 text-[16px] text-danger">
           {query.error}
         </p>
       )}
@@ -65,7 +65,7 @@ async function SaranBody({ id, type, query }: { id: string; type: Kind; query: S
         ))}
       </nav>
       {shown.length === 0 ? (
-        <p className={`${cardClass} p-4 text-[13px] leading-[1.5] text-fg-soft`}>
+        <p className={`${cardClass} p-4 text-[16px] leading-[1.5] text-fg-soft`}>
           {rows.length === 0 ? "Belum ada saran. Warga bisa mengirim saran dari halaman profil publik kamu." : "Tidak ada saran di tab ini."}
         </p>
       ) : (
@@ -84,19 +84,19 @@ function SuggestionCard({ s, back }: { s: TeamSuggestion; back: string }) {
     <li className={`${cardClass} flex flex-col gap-2.5 p-4`}>
       <div className="flex items-start gap-2">
         <span className="flex flex-1 flex-col gap-0.5">
-          <span className="text-[14px] font-semibold">
+          <span className="text-[17px] font-semibold">
             {s.is_anonymous ? "Tanpa nama" : s.nickname}
             {s.village_name ? <span className="font-normal text-fg-soft"> · {s.village_name}</span> : null}
           </span>
-          <span className="text-[11px] text-fg-muted">
+          <span className="text-[13px] text-fg-muted">
             {CATEGORY_LABELS[s.category]} · {timeAgo(s.created_at)}
           </span>
         </span>
         <span className={`${tagClass.base} ${tagClass[SUGGESTION_STATUS_TONE[s.status]]}`}>{SUGGESTION_STATUS_LABELS[s.status]}</span>
       </div>
-      <p className="whitespace-pre-line text-[14px] leading-[1.55]">{s.body}</p>
+      <p className="whitespace-pre-line text-[17px] leading-[1.55]">{s.body}</p>
       {s.reply && (
-        <p className="rounded-xl bg-primary-tint px-3 py-2 text-[12px] leading-[1.5] text-fg-label">
+        <p className="rounded-xl bg-primary-tint px-3 py-2 text-[14px] leading-[1.5] text-fg-label">
           <b>Balasan{s.replied_by_nickname ? ` ${s.replied_by_nickname}` : ""}:</b> {s.reply}
         </p>
       )}
@@ -113,7 +113,7 @@ function SuggestionCard({ s, back }: { s: TeamSuggestion; back: string }) {
           maxLength={1000}
           defaultValue={s.reply ?? ""}
           placeholder="Tulis balasan untuk pengirim (opsional)"
-          className={`${textareaClass} resize-none text-[13px]`}
+          className={`${textareaClass} resize-none text-[16px]`}
         />
         <div className="flex flex-wrap gap-2">
           {s.status !== "in_progress" && s.status !== "done" && (

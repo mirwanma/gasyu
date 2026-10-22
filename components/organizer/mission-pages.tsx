@@ -101,21 +101,21 @@ export async function MisiBody({
           <Icon name="back" size={20} stroke={2} />
         </Link>
         <div className="flex flex-1 flex-col gap-0.5">
-          <h1 className="font-display text-[19px] font-semibold leading-tight">{card.title}</h1>
-          <span className="flex items-center gap-2 text-[12px] text-fg-soft">
+          <h1 className="font-display text-[24px] font-semibold leading-tight">{card.title}</h1>
+          <span className="flex items-center gap-2 text-[14px] text-fg-soft">
             <StatusTag status={card.status} /> {card.seats_taken} peserta
           </span>
         </div>
       </div>
 
-      {query.hasil && notices[query.hasil] && <p className="rounded-2xl bg-success-tint px-4 py-3 text-[13px] font-semibold text-success">{notices[query.hasil]}</p>}
-      {query.error && <p className="rounded-2xl bg-danger-tint px-4 py-3 text-[13px] font-semibold text-danger">{query.error}</p>}
+      {query.hasil && notices[query.hasil] && <p className="rounded-2xl bg-success-tint px-4 py-3 text-[16px] font-semibold text-success">{notices[query.hasil]}</p>}
+      {query.error && <p className="rounded-2xl bg-danger-tint px-4 py-3 text-[16px] font-semibold text-danger">{query.error}</p>}
 
       <div role="tablist" className="grid grid-cols-2 gap-1.5 rounded-2xl border border-line bg-surface p-1">
-        <a role="tab" aria-selected={tab === "misi"} href={selfHref} className={`flex h-10 items-center justify-center rounded-xl text-[13px] font-semibold ${tab === "misi" ? "bg-fg text-bg" : "text-fg-label"}`}>
+        <a role="tab" aria-selected={tab === "misi"} href={selfHref} className={`flex h-10 items-center justify-center rounded-xl text-[16px] font-semibold ${tab === "misi" ? "bg-fg text-bg" : "text-fg-label"}`}>
           Misi · {missions.filter((m) => m.is_active).length}
         </a>
-        <a role="tab" aria-selected={tab === "tinjau"} href={link("tab=tinjau")} className={`flex h-10 items-center justify-center rounded-xl text-[13px] font-semibold ${tab === "tinjau" ? "bg-fg text-bg" : "text-fg-label"}`}>
+        <a role="tab" aria-selected={tab === "tinjau"} href={link("tab=tinjau")} className={`flex h-10 items-center justify-center rounded-xl text-[16px] font-semibold ${tab === "tinjau" ? "bg-fg text-bg" : "text-fg-label"}`}>
           Tinjau foto{pendingCount ? ` · ${pendingCount}` : ""}
         </a>
       </div>
@@ -147,13 +147,13 @@ export async function MisiBody({
             />
           )}
           {isGlobal && (
-            <p className={`${cardClass} flex items-center justify-between gap-2 p-3.5 text-[13px]`}>
+            <p className={`${cardClass} flex items-center justify-between gap-2 p-3.5 text-[16px]`}>
               <span className="text-fg-label">Total skor misi aktif</span>
               <span className={`font-display font-semibold ${totalScore > 5000 ? "text-danger" : "text-info"}`}>{totalScore.toLocaleString("id-ID")} / 5.000</span>
             </p>
           )}
           {missions.length === 0 && !showForm && (
-            <p className={`${cardClass} p-4 text-[13px] leading-[1.5] text-fg-soft`}>
+            <p className={`${cardClass} p-4 text-[16px] leading-[1.5] text-fg-soft`}>
               {isGlobal
                 ? "Belum ada misi. Di Event Global setiap misi memberi skor event (10–1.000) untuk papan peringkat; peserta tetap bisa menambah skor sampai acara berakhir."
                 : "Belum ada misi. Misi adalah tugas di dalam aktivitas: scan QR booth, kode rahasia, foto, atau ditandai panitia. Warga dapat XP tiap misi, dan misi wajib ikut menentukan status selesai."}
@@ -167,17 +167,17 @@ export async function MisiBody({
               <section key={m.id} className={`${cardClass} flex flex-col gap-2.5 p-3.5 ${m.is_active ? "" : "opacity-60"}`}>
                 <div className="flex flex-wrap items-center gap-1.5">
                   {!isGlobal && <span className={`${tagClass.base} ${m.is_required ? tagClass.hot : tagClass.info}`}>{m.is_required ? "WAJIB" : "BONUS"}</span>}
-                  <span className="text-[11px] font-semibold text-fg-soft">
+                  <span className="text-[13px] font-semibold text-fg-soft">
                     {VERIFICATION_LABELS[m.verification]}
                     {m.partner_organizer_id !== card.host_organizer_id ? ` · dibuat ${m.partner_name}` : ""}
                   </span>
                   <span className={`${tagClass.base} ${tagClass[st.tone]} ml-auto`}>{st.label}</span>
                 </div>
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-[15px] font-semibold">{m.title}</span>
-                  <span className="whitespace-nowrap font-display text-[14px] font-semibold text-info">{reward(m)}</span>
+                  <span className="text-[18px] font-semibold">{m.title}</span>
+                  <span className="whitespace-nowrap font-display text-[17px] font-semibold text-info">{reward(m)}</span>
                 </div>
-                <span className="text-[12px] text-fg-soft">{statNote(m)}</span>
+                <span className="text-[14px] text-fg-soft">{statNote(m)}</span>
                 {m.is_active && mine(m) && (
                   <div className="flex flex-wrap gap-2">
                     {m.verification === "qr_scan" && (
@@ -213,7 +213,7 @@ export async function MisiBody({
                     <input type="hidden" name="type_org" value={type} />
                     <input type="hidden" name="activity_id" value={aid} />
                     <input type="hidden" name="active" value={m.is_active ? "false" : "true"} />
-                    <button type="submit" className={`text-[12px] font-semibold ${m.is_active ? "text-danger" : "text-link"}`}>
+                    <button type="submit" className={`text-[14px] font-semibold ${m.is_active ? "text-danger" : "text-link"}`}>
                       {m.is_active ? "Nonaktifkan misi" : "Aktifkan lagi"}
                     </button>
                   </form>
@@ -221,7 +221,7 @@ export async function MisiBody({
                 {showQr && (
                   <div className="flex flex-col items-center gap-2 border-t border-line pt-3">
                     <QrDisplay missionId={m.id} />
-                    <span className="text-center text-[12px] text-fg-soft">QR misi berbeda dengan QR check-in. Warga memindainya lewat menu Scan.</span>
+                    <span className="text-center text-[14px] text-fg-soft">QR misi berbeda dengan QR check-in. Warga memindainya lewat menu Scan.</span>
                   </div>
                 )}
                 {marking && <ManualMarker missionId={m.id} organizerId={organizerId} type={type} aid={aid} />}
@@ -229,7 +229,7 @@ export async function MisiBody({
             );
           })}
           {canEdit && !showForm && (
-            <a href={link("tambah=1")} className="flex h-[52px] items-center justify-center gap-2 rounded-2xl bg-primary text-[15px] font-semibold text-on-primary">
+            <a href={link("tambah=1")} className="flex h-[52px] items-center justify-center gap-2 rounded-2xl bg-primary text-[18px] font-semibold text-on-primary">
               <Icon name="plus" size={20} stroke={2.2} />
               Tambah misi
             </a>
@@ -289,11 +289,11 @@ function TemplatePicker({
     return (
       <section className="flex flex-col gap-1.5 rounded-[18px] border border-primary/30 bg-primary-tint p-3.5">
         <span className="flex items-center justify-between gap-2">
-          <span className="text-[13px] font-bold text-link">Dari master misi: {chosen.title}</span>
-          <a href={clearHref} className="text-[12px] font-semibold text-link">Ganti</a>
+          <span className="text-[16px] font-bold text-link">Dari master misi: {chosen.title}</span>
+          <a href={clearHref} className="text-[14px] font-semibold text-link">Ganti</a>
         </span>
-        <span className="text-[12px] leading-[1.5] text-fg-label">Isi form sudah terisi dari template. Sesuaikan judul, instruksi, dan XP dengan aktivitasmu.</span>
-        {chosen.organizer_tips && <span className="text-[12px] leading-[1.5] text-fg-label">Tips: {chosen.organizer_tips}</span>}
+        <span className="text-[14px] leading-[1.5] text-fg-label">Isi form sudah terisi dari template. Sesuaikan judul, instruksi, dan XP dengan aktivitasmu.</span>
+        {chosen.organizer_tips && <span className="text-[14px] leading-[1.5] text-fg-label">Tips: {chosen.organizer_tips}</span>}
       </section>
     );
   }
@@ -301,8 +301,8 @@ function TemplatePicker({
     <details className={`${cardClass} group overflow-hidden`} open>
       <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3">
         <span className="flex flex-col">
-          <span className="text-[14px] font-bold">Mulai dari master misi</span>
-          <span className="text-[12px] text-fg-soft">{templates.length} template siap pakai dari tim Gasyu, atau isi form di bawah dari nol.</span>
+          <span className="text-[17px] font-bold">Mulai dari master misi</span>
+          <span className="text-[14px] text-fg-soft">{templates.length} template siap pakai dari tim Gasyu, atau isi form di bawah dari nol.</span>
         </span>
         <Icon name="chevronDown" size={16} stroke={2} className="shrink-0 text-fg-muted group-open:hidden" />
       </summary>
@@ -310,8 +310,8 @@ function TemplatePicker({
         {templates.map((t) => (
           <li key={t.id} className="flex items-center gap-3 border-b border-line px-4 py-2.5 last:border-b-0">
             <span className="flex flex-1 flex-col gap-0.5">
-              <span className="text-[13px] font-semibold">{t.title}</span>
-              <span className="text-[11px] text-fg-soft">
+              <span className="text-[16px] font-semibold">{t.title}</span>
+              <span className="text-[13px] text-fg-soft">
                 {CATEGORY_LABELS[t.category]} · {VERIFICATION_LABELS[t.verification]} · {t.xp_reward} XP · {t.is_required ? "wajib" : "bonus"}
               </span>
             </span>
@@ -353,24 +353,24 @@ async function ManualMarker({ missionId, organizerId, type, aid }: { missionId: 
       <input type="hidden" name="organizer_id" value={organizerId} />
       <input type="hidden" name="type_org" value={type} />
       <input type="hidden" name="activity_id" value={aid} />
-      <span className="text-[13px] font-semibold">Tandai peserta yang berhasil · {candidates.length - todo.length} sudah</span>
+      <span className="text-[16px] font-semibold">Tandai peserta yang berhasil · {candidates.length - todo.length} sudah</span>
       {todo.length === 0 ? (
-        <span className="text-[12px] text-fg-soft">Semua peserta yang memenuhi syarat sudah ditandai.</span>
+        <span className="text-[14px] text-fg-soft">Semua peserta yang memenuhi syarat sudah ditandai.</span>
       ) : (
         <div className="flex max-h-72 flex-col gap-1 overflow-y-auto">
           {todo.map((c) => (
-            <label key={c.user_id} className={`flex items-center gap-2.5 rounded-xl px-2 py-1.5 text-[13px] ${c.eligible ? "hover:bg-bg" : "opacity-60"}`}>
+            <label key={c.user_id} className={`flex items-center gap-2.5 rounded-xl px-2 py-1.5 text-[16px] ${c.eligible ? "hover:bg-bg" : "opacity-60"}`}>
               <input type="checkbox" name="user_id" value={c.user_id} disabled={!c.eligible} />
               <span className="flex-1">
                 <b>{c.nickname}</b> <span className="text-fg-soft">· {c.village_name ?? "Luar Cimahi"}</span>
               </span>
-              {!c.eligible && <span className="text-[11px] text-fg-soft">{c.self ? "kamu sendiri" : "belum check-in"}</span>}
+              {!c.eligible && <span className="text-[13px] text-fg-soft">{c.self ? "kamu sendiri" : "belum check-in"}</span>}
             </label>
           ))}
         </div>
       )}
       {todo.some((c) => !c.eligible) && (
-        <span className="text-[11px] text-fg-soft">Peserta yang belum check-in tidak bisa ditandai. Misi akunmu sendiri ditandai anggota tim lain.</span>
+        <span className="text-[13px] text-fg-soft">Peserta yang belum check-in tidak bisa ditandai. Misi akunmu sendiri ditandai anggota tim lain.</span>
       )}
       {todo.some((c) => c.eligible) && (
         <SubmitButton size="small" variant="dark" pendingText="Menandai…" className="self-start">
@@ -391,16 +391,16 @@ async function ReviewTab({ aid, organizerId, type, rewardOf }: { aid: string; or
       {first ? (
         <section className={`${cardClass} flex flex-col gap-3 p-3.5`}>
           <div className="flex items-baseline justify-between">
-            <h2 className="text-[15px] font-bold">Tinjau bukti foto</h2>
-            <span className="text-[12px] text-fg-soft">1 dari {pending.length}</span>
+            <h2 className="text-[18px] font-bold">Tinjau bukti foto</h2>
+            <span className="text-[14px] text-fg-soft">1 dari {pending.length}</span>
           </div>
           {url ? (
             // eslint-disable-next-line @next/next/no-img-element -- URL bertanda tangan sementara dari bucket privat
             <img src={url} alt={`Bukti foto ${first.nickname}`} className="max-h-[320px] w-full rounded-[14px] object-contain bg-track" />
           ) : (
-            <div className="flex h-40 items-center justify-center rounded-[14px] bg-track text-[12px] text-fg-soft">Foto tidak bisa dimuat</div>
+            <div className="flex h-40 items-center justify-center rounded-[14px] bg-track text-[14px] text-fg-soft">Foto tidak bisa dimuat</div>
           )}
-          <span className="text-[13px]">
+          <span className="text-[16px]">
             <b>{first.nickname}</b> · {first.mission_title} · {formatDateTime(first.submitted_at)} · {rewardOf(first.mission_id) || `+${first.xp_reward} XP`}
           </span>
           <form action={reviewCompletion} className="flex flex-col gap-2">
@@ -420,12 +420,12 @@ async function ReviewTab({ aid, organizerId, type, rewardOf }: { aid: string; or
           </form>
         </section>
       ) : (
-        <p className={`${cardClass} p-4 text-[13px] text-fg-soft`}>Tidak ada bukti foto yang menunggu tinjauan.</p>
+        <p className={`${cardClass} p-4 text-[16px] text-fg-soft`}>Tidak ada bukti foto yang menunggu tinjauan.</p>
       )}
       {pending.length > 1 && (
         <div className={`${cardClass} overflow-hidden`}>
           {pending.slice(1).map((p) => (
-            <div key={p.id} className="flex items-center justify-between border-b border-line px-4 py-2.5 text-[13px] last:border-b-0">
+            <div key={p.id} className="flex items-center justify-between border-b border-line px-4 py-2.5 text-[16px] last:border-b-0">
               <span>
                 <b>{p.nickname}</b> · {p.mission_title}
               </span>
@@ -435,7 +435,7 @@ async function ReviewTab({ aid, organizerId, type, rewardOf }: { aid: string; or
         </div>
       )}
       {history.length > 0 && (
-        <details className="text-[13px]">
+        <details className="text-[16px]">
           <summary className="cursor-pointer font-semibold text-fg-label">Riwayat tinjauan · {history.length}</summary>
           <div className={`${cardClass} mt-2 overflow-hidden`}>
             {history.map((p) => (
@@ -444,7 +444,7 @@ async function ReviewTab({ aid, organizerId, type, rewardOf }: { aid: string; or
                   <span>
                     <b>{p.nickname}</b> · {p.mission_title}
                   </span>
-                  {p.review_note && <span className="text-[12px] text-fg-soft">{p.review_note}</span>}
+                  {p.review_note && <span className="text-[14px] text-fg-soft">{p.review_note}</span>}
                 </span>
                 <span className={`${tagClass.base} ${p.status === "approved" ? tagClass.success : tagClass.hot}`}>{p.status === "approved" ? "Disetujui" : "Ditolak"}</span>
               </div>

@@ -15,9 +15,9 @@ export function SuggestionForm({ organizerId, organizerName, path }: { organizer
   if (state.success) {
     return (
       <section className={`${cardClass} flex flex-col gap-2 p-4`}>
-        <span className="text-[15px] font-semibold">Saran terkirim</span>
-        <span className="text-[13px] leading-[1.5] text-fg-soft">{state.success} Balasan dan statusnya muncul di menu Saran saya.</span>
-        <a href="/saran" className="text-[13px] font-semibold text-link">
+        <span className="text-[18px] font-semibold">Saran terkirim</span>
+        <span className="text-[16px] leading-[1.5] text-fg-soft">{state.success} Balasan dan statusnya muncul di menu Saran saya.</span>
+        <a href="/saran" className="text-[16px] font-semibold text-link">
           Lihat saran saya
         </a>
       </section>
@@ -30,8 +30,8 @@ export function SuggestionForm({ organizerId, organizerName, path }: { organizer
       <input type="hidden" name="path" value={path} />
       <input type="hidden" name="category" value={category} />
       <div className="flex flex-col gap-1">
-        <span className="text-[15px] font-semibold">Kasih saran</span>
-        <span className="text-[13px] leading-[1.5] text-fg-soft">Ide aktivitas, menu, pelayanan, atau tempat. Saranmu dibaca langsung oleh tim {organizerName}.</span>
+        <span className="text-[18px] font-semibold">Kasih saran</span>
+        <span className="text-[16px] leading-[1.5] text-fg-soft">Ide aktivitas, menu, pelayanan, atau tempat. Saranmu dibaca langsung oleh tim {organizerName}.</span>
       </div>
       <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Jenis saran">
         {SUGGESTION_CATEGORIES.map(([key, label]) => (
@@ -61,13 +61,13 @@ export function SuggestionForm({ organizerId, organizerName, path }: { organizer
         placeholder="Contoh: Bikin kelas latte art buat pemula di akhir pekan."
         className={`${textareaClass} resize-none`}
       />
-      <span className="-mt-1 text-right text-[11px] text-fg-muted">{length}/1000</span>
-      <label className="flex items-start gap-2.5 text-[13px] leading-[1.5] text-fg-label">
+      <span className="-mt-1 text-right text-[13px] text-fg-muted">{length}/1000</span>
+      <label className="flex items-start gap-2.5 text-[16px] leading-[1.5] text-fg-label">
         <input type="checkbox" name="anonymous" className="mt-0.5 size-5 shrink-0 accent-primary" />
         <span>Kirim tanpa nama. Tim penyelenggara tidak melihat nama panggilanmu.</span>
       </label>
       <ErrorMessage message={state.error} />
-      <SubmitButton pendingText="Mengirim…" className="h-[50px] rounded-[14px] text-[15px]">
+      <SubmitButton pendingText="Mengirim…" className="h-[50px] rounded-[14px] text-[18px]">
         Kirim saran
       </SubmitButton>
     </form>
