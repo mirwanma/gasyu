@@ -1341,6 +1341,24 @@ export type Database = {
         }
         Relationships: []
       }
+      auth_login_failures: {
+        Row: {
+          email_hash: string
+          failed_at: string
+          id: number
+        }
+        Insert: {
+          email_hash: string
+          failed_at?: string
+          id?: never
+        }
+        Update: {
+          email_hash?: string
+          failed_at?: string
+          id?: never
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           code: string
@@ -7218,6 +7236,10 @@ export type Database = {
         Args: { p_checkin_id: string; p_note?: string }
         Returns: undefined
       }
+      auth_email_hash: { Args: { p_email: string }; Returns: string }
+      auth_login_failed: { Args: { p_email: string }; Returns: number }
+      auth_login_succeeded: { Args: never; Returns: undefined }
+      auth_login_wait_seconds: { Args: { p_email: string }; Returns: number }
       award_activity_score: {
         Args: {
           p_activity_id: string
@@ -7315,6 +7337,7 @@ export type Database = {
         Args: { p_shipping?: Json; p_winner_id: string }
         Returns: undefined
       }
+      cleanup_auth_login_failures: { Args: never; Returns: number }
       close_collab_post: { Args: { p_post_id: string }; Returns: undefined }
       close_expired_collab_posts: { Args: never; Returns: number }
       community_public_stats: {
