@@ -46,28 +46,28 @@ export function PrizeForm({
       <input type="hidden" name="kind" value={kind} />
       <input type="hidden" name="fulfillment" value={effectiveFulfillment} />
       <div className="flex items-baseline justify-between">
-        <h2 className="font-display text-[24px] font-semibold">{initial ? "Ubah hadiah" : "Hadiah baru"}</h2>
-        <Link href={cancelHref} className="text-[16px] font-semibold text-link">
+        <h2 className="font-display text-[22px] font-semibold">{initial ? "Ubah hadiah" : "Hadiah baru"}</h2>
+        <Link href={cancelHref} className="text-[15px] font-semibold text-link">
           Batal
         </Link>
       </div>
       <ErrorMessage message={state.error} />
-      {locked && <p className="rounded-xl bg-warn-tint px-3 py-2 text-[14px] text-warn">Event sudah terbit: peringkat, jenis, cara serah, penyedia, dan skor minimal terkunci. Deskripsi dan gambar masih bisa diubah.</p>}
+      {locked && <p className="rounded-xl bg-warn-tint px-3 py-2 text-[13px] text-warn">Event sudah terbit: peringkat, jenis, cara serah, penyedia, dan skor minimal terkunci. Deskripsi dan gambar masih bisa diubah.</p>}
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <span className={labelClass}>Peringkat</span>
-          <div className="flex items-center gap-2 text-[16px] text-fg-label">
+          <div className="flex items-center gap-2 text-[15px] text-fg-label">
             <input name="rank_from" type="number" min={1} max={100} required disabled={locked} defaultValue={initial?.rank_from ?? nextRank} inputMode="numeric" aria-label="Dari peringkat" className={`${inputClass} w-24`} />
             sampai
             <input name="rank_to" type="number" min={1} max={100} disabled={locked} defaultValue={initial?.rank_to ?? nextRank} inputMode="numeric" aria-label="Sampai peringkat" className={`${inputClass} w-24`} />
           </div>
-          <span className="text-[14px] text-fg-soft">Satu pemenang per peringkat. Contoh: 1 sampai 1 untuk Juara 1, 4 sampai 20 untuk hadiah hiburan.</span>
+          <span className="text-[13px] text-fg-soft">Satu pemenang per peringkat. Contoh: 1 sampai 1 untuk Juara 1, 4 sampai 20 untuk hadiah hiburan.</span>
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="p_min" className={labelClass}>Skor minimal</label>
           <input id="p_min" name="min_score" type="number" min={1} disabled={locked} defaultValue={initial?.min_score ?? 100} inputMode="numeric" className={`${inputClass} w-36`} />
-          <span className="text-[14px] text-fg-soft">Peserta di bawah skor ini tidak berhak, walaupun peringkatnya masuk.</span>
+          <span className="text-[13px] text-fg-soft">Peserta di bawah skor ini tidak berhak, walaupun peringkatnya masuk.</span>
         </div>
       </div>
 
@@ -89,7 +89,7 @@ export function PrizeForm({
             </button>
           ))}
         </div>
-        {kind === "voucher" && <span className="text-[14px] text-fg-soft">Voucher atau tiket dari sponsor diserahkan di luar sistem voucher Gasyu.</span>}
+        {kind === "voucher" && <span className="text-[13px] text-fg-soft">Voucher atau tiket dari sponsor diserahkan di luar sistem voucher Gasyu.</span>}
       </fieldset>
 
       {kind === "badge" ? (
@@ -107,7 +107,7 @@ export function PrizeForm({
               <input name="badge_description" required minLength={3} maxLength={200} placeholder="Deskripsi singkat badge" aria-label="Deskripsi badge" className={inputClass} />
             </div>
           )}
-          <span className="text-[14px] text-fg-soft">Badge langsung masuk ke profil pemenang saat event selesai, tanpa perlu diklaim.</span>
+          <span className="text-[13px] text-fg-soft">Badge langsung masuk ke profil pemenang saat event selesai, tanpa perlu diklaim.</span>
         </div>
       ) : (
         <fieldset className="flex flex-col gap-2">
@@ -122,7 +122,7 @@ export function PrizeForm({
           {fulfillment === "pickup" && (
             <textarea name="pickup_note" rows={2} required maxLength={500} disabled={locked} defaultValue={initial?.pickup_note ?? ""} placeholder="Lokasi dan cara ambil, contoh: Kantor Gasyu, Jl. ..., Senin–Jumat 09.00–16.00, tunjukkan halaman Hadiah" aria-label="Lokasi dan cara ambil" className={textareaClass} />
           )}
-          {fulfillment === "shipping" && <span className="text-[14px] text-fg-soft">Pemenang mengisi nama, nomor HP, dan alamat saat klaim. Hanya admin yang bisa melihatnya.</span>}
+          {fulfillment === "shipping" && <span className="text-[13px] text-fg-soft">Pemenang mengisi nama, nomor HP, dan alamat saat klaim. Hanya admin yang bisa melihatnya.</span>}
         </fieldset>
       )}
 
@@ -135,11 +135,11 @@ export function PrizeForm({
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>
-          <span className="text-[14px] text-fg-soft">Partner yang sudah bergabung di event ini. Tampil &quot;Hadiah dari …&quot;; pengiriman tetap oleh panitia Gasyu.</span>
+          <span className="text-[13px] text-fg-soft">Partner yang sudah bergabung di event ini. Tampil &quot;Hadiah dari …&quot;; pengiriman tetap oleh panitia Gasyu.</span>
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="p_image" className={labelClass}>Gambar (opsional, maks. 3 MB)</label>
-          <ImageFileInput id="p_image" name="image" accept="image/png,image/jpeg,image/webp" className="text-[16px] text-fg-label file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-surface file:px-3 file:py-1.5 file:text-[14px] file:font-semibold file:text-fg" maxMb={3} />
+          <ImageFileInput id="p_image" name="image" accept="image/png,image/jpeg,image/webp" className="text-[15px] text-fg-label file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-surface file:px-3 file:py-1.5 file:text-[13px] file:font-semibold file:text-fg" maxMb={3} />
         </div>
       </div>
 

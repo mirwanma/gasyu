@@ -19,9 +19,9 @@ export default function UbahProfilPage() {
             <Icon name="back" stroke={2} />
             Kembali
           </a>
-          <h1 className="font-display text-[28px] font-bold">Ubah profil</h1>
+          <h1 className="font-display text-[26px] font-bold">Ubah profil</h1>
         </div>
-        <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
+        <Suspense fallback={<p className="text-[15px] text-fg-muted">Memuat…</p>}>
           <Content />
         </Suspense>
       </main>
@@ -49,7 +49,7 @@ async function Content() {
       <AvatarForm nickname={user.nickname} avatarUrl={user.avatarUrl} />
       <ProfileForm nickname={user.nickname} fullName={user.fullName ?? ""} />
       <VillageForm current={user.homeVillageId ?? "luar"} districts={districts} lockedUntil={lockedUntil} days={days} />
-      <a href="/profil/hapus" className={`${cardClass} flex items-center justify-between p-4 text-[17px] font-semibold text-danger`}>
+      <a href="/profil/hapus" className={`${cardClass} flex items-center justify-between p-4 text-[15px] font-semibold text-danger`}>
         Hapus akun
         <Icon name="chevron" size={16} stroke={2} />
       </a>

@@ -23,7 +23,7 @@ export default function JelajahPage({ searchParams }: PageProps<"/jelajah">) {
   return (
     <>
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-5 pb-32 pt-6">
-        <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
+        <Suspense fallback={<p className="text-[15px] text-fg-muted">Memuat…</p>}>
           <Explore searchParams={searchParams} />
         </Suspense>
       </main>
@@ -59,7 +59,7 @@ async function Explore({ searchParams }: Pick<PageProps<"/jelajah">, "searchPara
   return (
     <>
       <header className="flex items-center justify-between">
-        <h1 className="font-display text-[28px] font-bold">Jelajah</h1>
+        <h1 className="font-display text-[26px] font-bold">Jelajah</h1>
         {!isGlobal && <CityPicker cities={cities} selected={city} hrefFor={(slug) => hrefFor({ kota: slug })} />}
       </header>
 
@@ -82,19 +82,19 @@ async function Explore({ searchParams }: Pick<PageProps<"/jelajah">, "searchPara
       </nav>
 
       {isGlobal && (
-        <p className="rounded-2xl bg-hot-tint px-4 py-3 text-[14px] leading-[1.5] text-hot">
+        <p className="rounded-2xl bg-hot-tint px-4 py-3 text-[13px] leading-[1.5] text-hot">
           Event Global terbuka untuk pengguna dari kota mana pun. Hasilnya skor event dan papan peringkat khusus event, dengan hadiah untuk peringkat teratas. Skor tidak menambah XP atau poin.
         </p>
       )}
 
       {items.length === 0 ? (
         <div className={`${cardClass} flex flex-col gap-1 p-4`}>
-          <span className="text-[18px] font-semibold">Belum ada aktivitas</span>
-          <span className="text-[16px] leading-[1.5] text-fg-soft">
+          <span className="text-[16px] font-semibold">Belum ada aktivitas</span>
+          <span className="text-[15px] leading-[1.5] text-fg-soft">
             {isGlobal && !q ? "Belum ada Event Global yang dibuka. Pantau terus, tim Gasyu akan mengumumkannya." : q || filter ? "Coba kata kunci atau filter lain." : "Event dan challenge dari UMKM dan komunitas akan tampil di sini."}
           </span>
           {!isGlobal && city && (
-            <a href={hrefFor({ kota: "semua" })} className="mt-1 text-[16px] font-semibold text-link">
+            <a href={hrefFor({ kota: "semua" })} className="mt-1 text-[15px] font-semibold text-link">
               Belum ada di {city.name}. Lihat semua kota →
             </a>
           )}

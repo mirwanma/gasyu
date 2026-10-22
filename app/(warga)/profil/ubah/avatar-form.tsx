@@ -56,14 +56,14 @@ export function AvatarForm({ nickname, avatarUrl }: { nickname: string; avatarUr
   const message = state.success ?? removeState.success;
   return (
     <section className={`${cardClass} flex flex-col gap-3 p-4`}>
-      <span className="text-[18px] font-semibold">Foto profil</span>
+      <span className="text-[16px] font-semibold">Foto profil</span>
       <div className="flex items-center gap-4">
         <UserAvatar nickname={nickname} avatarUrl={preview ?? avatarUrl} size={72} />
-        <span className="text-[14px] leading-[1.5] text-fg-soft">Terlihat di profilmu dan oleh tim penyelenggara tempat kamu bergabung. Foto otomatis dipotong persegi.</span>
+        <span className="text-[13px] leading-[1.5] text-fg-soft">Terlihat di profilmu dan oleh tim penyelenggara tempat kamu bergabung. Foto otomatis dipotong persegi.</span>
       </div>
       <form action={uploadAction} className="flex flex-col gap-2">
         <input ref={hidden} type="file" name="avatar" className="hidden" aria-hidden="true" tabIndex={-1} />
-        <label className="flex h-12 cursor-pointer items-center justify-center rounded-[14px] border border-dashed border-line-strong text-[17px] font-semibold text-fg">
+        <label className="flex h-12 cursor-pointer items-center justify-center rounded-[14px] border border-dashed border-line-strong text-[15px] font-semibold text-fg">
           {busy ? "Menyiapkan foto…" : preview ? "Ganti pilihan foto" : "Pilih foto"}
           <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={onPick} />
         </label>
@@ -83,7 +83,7 @@ export function AvatarForm({ nickname, avatarUrl }: { nickname: string; avatarUr
         </form>
       )}
       {message && (
-        <p role="status" className="rounded-[14px] bg-success-tint px-4 py-3 text-[16px] font-semibold text-success">
+        <p role="status" className="rounded-[14px] bg-success-tint px-4 py-3 text-[15px] font-semibold text-success">
           {message}
         </p>
       )}

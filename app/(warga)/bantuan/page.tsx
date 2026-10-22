@@ -16,9 +16,9 @@ export default function BantuanPage() {
             <Icon name="back" stroke={2} />
             Kembali
           </a>
-          <h1 className="font-display text-[28px] font-bold">Bantuan</h1>
+          <h1 className="font-display text-[26px] font-bold">Bantuan</h1>
         </div>
-        <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
+        <Suspense fallback={<p className="text-[15px] text-fg-muted">Memuat…</p>}>
           <Content />
         </Suspense>
       </main>
@@ -55,37 +55,37 @@ async function Content() {
   return (
     <>
       <section className="flex flex-col gap-2">
-        <h2 className="font-display text-[24px] font-semibold">Pertanyaan umum</h2>
+        <h2 className="font-display text-[22px] font-semibold">Pertanyaan umum</h2>
         <div className={`${cardClass} flex flex-col overflow-hidden`}>
           {faqs.map(([q, a], i) => (
             <details key={q} className={`group px-4 py-3 ${i > 0 ? "border-t border-line" : ""}`}>
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[17px] font-semibold">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[15px] font-semibold">
                 {q}
                 <Icon name="chevronDown" size={16} stroke={2} className="shrink-0 text-fg-muted group-open:hidden" />
               </summary>
-              <p className="pt-2 text-[16px] leading-[1.55] text-fg-soft">{a}</p>
+              <p className="pt-2 text-[15px] leading-[1.55] text-fg-soft">{a}</p>
             </details>
           ))}
         </div>
       </section>
 
       <section className={`${cardClass} flex flex-col gap-3 p-4`}>
-        <span className="text-[18px] font-semibold">Hubungi tim Gasyu</span>
+        <span className="text-[16px] font-semibold">Hubungi tim Gasyu</span>
         {wa || email ? (
           <div className="flex flex-col gap-2">
             {wa && (
-              <a href={wa} target="_blank" rel="noreferrer" className="flex h-12 items-center justify-center rounded-[14px] bg-success text-[17px] font-bold text-bg">
+              <a href={wa} target="_blank" rel="noreferrer" className="flex h-12 items-center justify-center rounded-[14px] bg-success text-[15px] font-bold text-bg">
                 Chat WhatsApp
               </a>
             )}
             {email && (
-              <a href={`mailto:${email}`} className="flex h-12 items-center justify-center rounded-[14px] border border-line-strong text-[17px] font-semibold text-fg">
+              <a href={`mailto:${email}`} className="flex h-12 items-center justify-center rounded-[14px] border border-line-strong text-[15px] font-semibold text-fg">
                 Kirim email ke {email}
               </a>
             )}
           </div>
         ) : (
-          <span className="text-[16px] leading-[1.5] text-fg-soft">Kontak tim Gasyu belum tersedia. Sementara, sampaikan kendalamu lewat penyelenggara aktivitas.</span>
+          <span className="text-[15px] leading-[1.5] text-fg-soft">Kontak tim Gasyu belum tersedia. Sementara, sampaikan kendalamu lewat penyelenggara aktivitas.</span>
         )}
       </section>
     </>

@@ -17,7 +17,7 @@ export default function KomunitasPublikPage({ params, searchParams }: PageProps<
   return (
     <>
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col pb-32">
-        <Suspense fallback={<p className="px-5 pt-6 text-[16px] text-fg-muted">Memuat…</p>}>
+        <Suspense fallback={<p className="px-5 pt-6 text-[15px] text-fg-muted">Memuat…</p>}>
           <CommunityProfile params={params} searchParams={searchParams} />
         </Suspense>
       </main>
@@ -85,19 +85,19 @@ async function CommunityProfile({ params, searchParams }: PageProps<"/k/[slug]">
         </div>
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-2">
-            <h1 className="font-display text-[28px] font-bold">{org.name}</h1>
+            <h1 className="font-display text-[26px] font-bold">{org.name}</h1>
             {org.status === "approved" && (
               <span className="text-xp" role="img" aria-label="Terverifikasi">
                 <Icon name="shield" stroke={2} />
               </span>
             )}
           </div>
-          <span className="text-[16px] text-fg-soft">
+          <span className="text-[15px] text-fg-soft">
             {profile ? categoryLabel(profile.interest_category) : ""}
             {village ? ` · ${village.name}` : ""}
             {profile?.basecamp_address ? ` · basecamp ${profile.basecamp_address}` : ""}
           </span>
-          {org.description && <p className="text-[17px] leading-[1.55] text-fg-label">{org.description}</p>}
+          {org.description && <p className="text-[15px] leading-[1.55] text-fg-label">{org.description}</p>}
         </div>
 
         <div className="grid grid-cols-3 gap-2.5">
@@ -108,27 +108,27 @@ async function CommunityProfile({ params, searchParams }: PageProps<"/k/[slug]">
 
         {myStatus === "active" ? (
           <section className={`${cardClass} flex flex-col gap-2 p-4`}>
-            <span className="text-[18px] font-semibold">Kamu member komunitas ini</span>
-            <span className="text-[16px] text-fg-soft">
+            <span className="text-[16px] font-semibold">Kamu member komunitas ini</span>
+            <span className="text-[15px] text-fg-soft">
               {memberOnly > 0 ? `${memberOnly} aktivitas khusus member sedang terbuka untukmu.` : "Aktivitas khusus member akan muncul di daftar di bawah."}
             </span>
           </section>
         ) : myStatus === "pending" ? (
           <section className={`${cardClass} flex flex-col gap-2 p-4`}>
             <div className="flex items-center justify-between">
-              <span className="text-[18px] font-semibold">Permintaan terkirim</span>
+              <span className="text-[16px] font-semibold">Permintaan terkirim</span>
               <span className={`${tagClass.base} ${tagClass.warn}`}>Menunggu</span>
             </div>
-            <span className="text-[16px] text-fg-soft">Pengurus akan meninjau permintaanmu. Tidak dijawab 30 hari = otomatis ditolak.</span>
+            <span className="text-[15px] text-fg-soft">Pengurus akan meninjau permintaanmu. Tidak dijawab 30 hari = otomatis ditolak.</span>
           </section>
         ) : (
           <JoinForm communityId={org.id} slug={slug} policy={profile?.join_policy ?? "approval"} defaultMessage={typeof pesan === "string" ? pesan : ""} />
         )}
 
         <section className="flex flex-col gap-2.5">
-          <h2 className="font-display text-[24px] font-semibold">Aktivitas</h2>
+          <h2 className="font-display text-[22px] font-semibold">Aktivitas</h2>
           {activities.length === 0 ? (
-            <p className={`${cardClass} p-4 text-[16px] text-fg-soft`}>Belum ada aktivitas yang terbit.</p>
+            <p className={`${cardClass} p-4 text-[15px] text-fg-soft`}>Belum ada aktivitas yang terbit.</p>
           ) : (
             activities.map((card) => <ActivityCard key={card.id} card={card} href={`/aktivitas/${card.id}`} />)
           )}
@@ -143,8 +143,8 @@ async function CommunityProfile({ params, searchParams }: PageProps<"/k/[slug]">
 function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div className={`${cardClass} flex flex-col gap-0.5 rounded-2xl p-3`}>
-      <span className="font-display text-[24px] font-semibold">{value}</span>
-      <span className="text-[13px] text-fg-soft">{label}</span>
+      <span className="font-display text-[22px] font-semibold">{value}</span>
+      <span className="text-[12px] text-fg-soft">{label}</span>
     </div>
   );
 }

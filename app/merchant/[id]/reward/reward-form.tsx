@@ -18,7 +18,7 @@ export function RewardForm({ organizerId, initial, outlets }: { organizerId: str
     <form action={action} className={`${cardClass} flex flex-col gap-3 p-4`}>
       <input type="hidden" name="organizer_id" value={organizerId} />
       {initial && <input type="hidden" name="reward_id" value={initial.id} />}
-      <h2 className="text-[18px] font-bold">{initial ? "Ubah reward" : "Tambah reward"}</h2>
+      <h2 className="text-[16px] font-bold">{initial ? "Ubah reward" : "Tambah reward"}</h2>
       <ErrorMessage message={state.error} />
       <SuccessMessage message={state.success} />
       <div className="flex flex-col gap-1.5">
@@ -51,7 +51,7 @@ export function RewardForm({ organizerId, initial, outlets }: { organizerId: str
         <legend className={`${labelClass} mb-1.5`}>Berlaku di outlet</legend>
         <div className="flex gap-2">
           {(["all", "some"] as const).map((s) => (
-            <label key={s} className={`flex h-10 flex-1 cursor-pointer items-center justify-center rounded-xl border text-[16px] font-semibold ${scope === s ? "border-fg bg-fg text-bg" : "border-line-strong bg-surface text-fg"}`}>
+            <label key={s} className={`flex h-10 flex-1 cursor-pointer items-center justify-center rounded-xl border text-[15px] font-semibold ${scope === s ? "border-fg bg-fg text-bg" : "border-line-strong bg-surface text-fg"}`}>
               <input type="radio" name="outlet_scope" value={s} checked={scope === s} onChange={() => setScope(s)} className="sr-only" />
               {s === "all" ? "Semua outlet" : "Outlet tertentu"}
             </label>
@@ -59,20 +59,20 @@ export function RewardForm({ organizerId, initial, outlets }: { organizerId: str
         </div>
         {scope === "some" && (
           <div className="flex flex-col gap-1.5 rounded-xl bg-track/60 p-3">
-            {outlets.length === 0 && <span className="text-[14px] text-fg-soft">Belum ada outlet aktif. Tambahkan di menu Outlet.</span>}
+            {outlets.length === 0 && <span className="text-[13px] text-fg-soft">Belum ada outlet aktif. Tambahkan di menu Outlet.</span>}
             {outlets.map((o) => (
-              <label key={o.id} className="flex items-center gap-2 text-[16px]">
+              <label key={o.id} className="flex items-center gap-2 text-[15px]">
                 <input type="checkbox" name="outlet_ids" value={o.id} defaultChecked={initial?.valid_outlet_ids?.includes(o.id)} className="size-4 accent-primary" />
                 {o.name}
               </label>
             ))}
-            <span className="text-[13px] text-fg-soft">Kasir di outlet lain akan melihat pesan voucher tidak berlaku.</span>
+            <span className="text-[12px] text-fg-soft">Kasir di outlet lain akan melihat pesan voucher tidak berlaku.</span>
           </div>
         )}
       </fieldset>
       <div className="flex flex-col gap-1.5">
         <label htmlFor={`image-${initial?.id ?? "new"}`} className={labelClass}>Gambar (opsional, maks. 2 MB)</label>
-        <ImageFileInput id={`image-${initial?.id ?? "new"}`} name="image" accept="image/png,image/jpeg,image/webp" className="text-[16px] text-fg-label file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-surface file:px-3 file:py-1.5 file:text-[14px] file:font-semibold file:text-fg" maxMb={2} />
+        <ImageFileInput id={`image-${initial?.id ?? "new"}`} name="image" accept="image/png,image/jpeg,image/webp" className="text-[15px] text-fg-label file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-surface file:px-3 file:py-1.5 file:text-[13px] file:font-semibold file:text-fg" maxMb={2} />
       </div>
       <SubmitButton size="small" variant="dark" pendingText="Menyimpan…" className="self-end">
         {initial ? "Simpan" : "Tambah reward"}

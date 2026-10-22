@@ -90,13 +90,13 @@ export function MissionForm({
       {templateId && !initial?.id && <input type="hidden" name="template_id" value={templateId} />}
       {partnerOrganizerId && <input type="hidden" name="partner_organizer_id" value={partnerOrganizerId} />}
       <div className="flex items-baseline justify-between">
-        <h2 className="text-[18px] font-bold">{initial?.id ? "Ubah misi" : "Tambah misi"}</h2>
-        <a href={onCancelHref} className="text-[16px] font-semibold text-link">
+        <h2 className="text-[16px] font-bold">{initial?.id ? "Ubah misi" : "Tambah misi"}</h2>
+        <a href={onCancelHref} className="text-[15px] font-semibold text-link">
           Batal
         </a>
       </div>
       <ErrorMessage message={state.error} />
-      {locked && <p className="rounded-xl bg-warn-tint px-3 py-2 text-[14px] text-warn">Sudah ada yang menyelesaikan misi ini: {unit}, cara verifikasi, dan status wajib terkunci. Teks masih bisa diubah.</p>}
+      {locked && <p className="rounded-xl bg-warn-tint px-3 py-2 text-[13px] text-warn">Sudah ada yang menyelesaikan misi ini: {unit}, cara verifikasi, dan status wajib terkunci. Teks masih bisa diubah.</p>}
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="m_title" className={labelClass}>Judul misi</label>
@@ -117,7 +117,7 @@ export function MissionForm({
           ))}
         </div>
         <input type="hidden" name="is_required" value={required ? "on" : ""} />
-        <span className="text-[14px] text-fg-soft">Misi wajib ikut menentukan status selesai; misi bonus hanya menambah XP.</span>
+        <span className="text-[13px] text-fg-soft">Misi wajib ikut menentukan status selesai; misi bonus hanya menambah XP.</span>
       </fieldset>
 
       {global ? (
@@ -125,13 +125,13 @@ export function MissionForm({
           <input type="hidden" name="xp_reward" value="0" />
           <label htmlFor="m_score" className={labelClass}>Skor misi (10–1.000)</label>
           <input id="m_score" name="score_reward" type="number" min={10} max={1000} required readOnly={locked} defaultValue={initial?.score_reward || 100} inputMode="numeric" className={inputClass} />
-          <span className="text-[14px] text-fg-soft">Total skor semua misi aktif maksimal 5.000. Skor hanya untuk papan peringkat event ini, tidak menambah XP atau poin.</span>
+          <span className="text-[13px] text-fg-soft">Total skor semua misi aktif maksimal 5.000. Skor hanya untuk papan peringkat event ini, tidak menambah XP atau poin.</span>
         </div>
       ) : (
         <div className="flex flex-col gap-1.5">
           <label htmlFor="m_xp" className={labelClass}>XP misi (10–100)</label>
           <input id="m_xp" name="xp_reward" type="number" min={10} max={100} required readOnly={locked} defaultValue={initial?.xp_reward ?? 30} inputMode="numeric" className={inputClass} />
-          <span className="text-[14px] text-fg-soft">Total XP semua misi aktif maksimal 500 per aktivitas.</span>
+          <span className="text-[13px] text-fg-soft">Total XP semua misi aktif maksimal 500 per aktivitas.</span>
         </div>
       )}
 
@@ -145,14 +145,14 @@ export function MissionForm({
           ))}
         </div>
         <input type="hidden" name="verification" value={verification} />
-        <span className="text-[14px] leading-[1.5] text-fg-soft">{global ? VERIFICATION_HELP[verification].replaceAll("XP", "Skor") : VERIFICATION_HELP[verification]}</span>
+        <span className="text-[13px] leading-[1.5] text-fg-soft">{global ? VERIFICATION_HELP[verification].replaceAll("XP", "Skor") : VERIFICATION_HELP[verification]}</span>
       </fieldset>
 
       {verification === "qr_scan" && (
         <div className="flex flex-col gap-1.5">
           <label htmlFor="m_cp" className={labelClass}>Checkpoint QR misi</label>
           {ownCheckpoints.length === 0 ? (
-            <span className="text-[14px] text-warn">Belum ada checkpoint milikmu di aktivitas ini. Tambahkan dulu di halaman kelola aktivitas.</span>
+            <span className="text-[13px] text-warn">Belum ada checkpoint milikmu di aktivitas ini. Tambahkan dulu di halaman kelola aktivitas.</span>
           ) : (
             <select id="m_cp" name="checkpoint_id" required disabled={locked} defaultValue={initial?.checkpoint_id ?? ownCheckpoints[0]?.id} className={inputClass}>
               {ownCheckpoints.map((c) => (
@@ -167,21 +167,21 @@ export function MissionForm({
         <div className="flex flex-col gap-1.5">
           <label htmlFor="m_code" className={labelClass}>Kode rahasia {initial?.id ? "(kosongkan jika tidak diubah)" : ""}</label>
           <input id="m_code" name="code" minLength={6} maxLength={40} required={!initial?.id} autoComplete="off" placeholder="contoh: MALAM19" className={inputClass} />
-          <span className="text-[14px] text-fg-soft">Disimpan terenkripsi, tidak peka huruf besar/kecil.</span>
+          <span className="text-[13px] text-fg-soft">Disimpan terenkripsi, tidak peka huruf besar/kecil.</span>
         </div>
       )}
 
       <fieldset className="flex flex-col gap-2">
         <legend className={labelClass}>Kapan tampil ke warga?</legend>
         {initial?.revealed ? (
-          <span className="text-[14px] text-success">Misi ini sudah terbuka dan tidak bisa disembunyikan lagi.</span>
+          <span className="text-[13px] text-success">Misi ini sudah terbuka dan tidak bisa disembunyikan lagi.</span>
         ) : (
           REVEAL_OPTIONS.map(([value, label, help]) => (
             <label key={value} className={`flex cursor-pointer items-start gap-2.5 rounded-xl border px-3 py-2.5 ${reveal === value ? "border-primary bg-primary-tint" : "border-line"}`}>
               <input type="radio" name="reveal_mode" value={value} checked={reveal === value} onChange={() => setReveal(value)} className="mt-1" />
               <span className="flex flex-col">
-                <span className="text-[16px] font-semibold">{label}</span>
-                <span className="text-[13px] text-fg-soft">{help}</span>
+                <span className="text-[15px] font-semibold">{label}</span>
+                <span className="text-[12px] text-fg-soft">{help}</span>
               </span>
             </label>
           ))
@@ -196,7 +196,7 @@ export function MissionForm({
           <div className="flex flex-col gap-1.5">
             <label htmlFor="m_prereq" className={labelClass}>Misi prasyarat</label>
             {prereqOptions.length === 0 ? (
-              <span className="text-[14px] text-warn">{required ? "Belum ada misi wajib lain yang bisa jadi prasyarat." : "Belum ada misi lain di aktivitas ini."}</span>
+              <span className="text-[13px] text-warn">{required ? "Belum ada misi wajib lain yang bisa jadi prasyarat." : "Belum ada misi lain di aktivitas ini."}</span>
             ) : (
               <select id="m_prereq" name="prerequisite_mission_id" required defaultValue={initial?.prerequisite_mission_id ?? prereqOptions[0]?.id} className={inputClass}>
                 {prereqOptions.map((m) => (
@@ -207,7 +207,7 @@ export function MissionForm({
           </div>
         )}
         {!initial?.revealed && reveal !== "on_publish" && (
-          <label className="flex items-center gap-2 text-[16px]">
+          <label className="flex items-center gap-2 text-[15px]">
             <input type="checkbox" name="show_teaser" defaultChecked={initial?.show_teaser ?? true} />
             Tampilkan sebagai teaser (kartu terkunci tanpa judul) sebelum terbuka
           </label>
@@ -215,12 +215,12 @@ export function MissionForm({
       </fieldset>
 
       <details className="flex flex-col gap-2">
-        <summary className="cursor-pointer text-[16px] font-semibold text-fg-label">Jendela waktu misi (opsional)</summary>
+        <summary className="cursor-pointer text-[15px] font-semibold text-fg-label">Jendela waktu misi (opsional)</summary>
         <div className="mt-2 grid grid-cols-2 gap-2">
           <input name="available_from" type="datetime-local" defaultValue={initial?.available_from} aria-label="Mulai" className={inputClass} />
           <input name="available_until" type="datetime-local" defaultValue={initial?.available_until} aria-label="Selesai" className={inputClass} />
         </div>
-        <span className="text-[14px] text-fg-soft">Misi hanya bisa dikerjakan di dalam jendela ini (di dalam waktu aktivitas).</span>
+        <span className="text-[13px] text-fg-soft">Misi hanya bisa dikerjakan di dalam jendela ini (di dalam waktu aktivitas).</span>
       </details>
 
       <SubmitButton pendingText="Menyimpan…">{initial?.id ? "Simpan perubahan" : "Simpan misi"}</SubmitButton>

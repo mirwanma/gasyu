@@ -59,7 +59,7 @@ export function SignupForm({ next, confirmEmail }: { next: string; confirmEmail?
           <SubmitButton name="intent" value="signup" pendingText="Mendaftarkan…">
             Daftar
           </SubmitButton>
-          <p className="text-center text-[17px] text-fg-soft">
+          <p className="text-center text-[15px] text-fg-soft">
             Sudah punya akun?{" "}
             <a href={`/masuk?next=${encodeURIComponent(next)}`} className="font-semibold text-link">
               Masuk
@@ -79,8 +79,8 @@ export function SignupForm({ next, confirmEmail }: { next: string; confirmEmail?
       {state.step === "confirm" ? (
         <>
           <div className={`${cardClass} flex flex-col gap-1 p-[18px]`}>
-            <span className="text-[18px] font-semibold">Konfirmasi email</span>
-            <span className="text-[16px] leading-[1.5] text-fg-soft">
+            <span className="text-[16px] font-semibold">Konfirmasi email</span>
+            <span className="text-[15px] leading-[1.5] text-fg-soft">
               Kami kirim kode 6 angka ke {state.email}. Setelah kode dimasukkan, akunmu aktif.
             </span>
           </div>
@@ -97,13 +97,13 @@ export function SignupForm({ next, confirmEmail }: { next: string; confirmEmail?
           <button type="submit" name="intent" value="verify" tabIndex={-1} aria-hidden className="sr-only" />
           <div className={`${cardClass} flex flex-col gap-3.5 p-[18px]`}>
             <div className="flex flex-col gap-1">
-              <span className="text-[18px] font-semibold">Masukkan kode 6 digit</span>
-              <span className="text-[16px] text-fg-soft">
+              <span className="text-[16px] font-semibold">Masukkan kode 6 digit</span>
+              <span className="text-[15px] text-fg-soft">
                 Dikirim ke {state.email} · berlaku 10 menit
               </span>
             </div>
             <OtpInput key={state.sentAt} name="token" />
-            <div className="flex items-center justify-between text-[16px]">
+            <div className="flex items-center justify-between text-[15px]">
               <ResendCode key={state.sentAt} intent="resend" />
               <a href={`/masuk/daftar?next=${encodeURIComponent(next)}`} className="flex min-h-11 items-center font-semibold text-link">
                 Ganti email

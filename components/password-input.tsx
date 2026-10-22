@@ -36,7 +36,7 @@ export function PasswordInput({
         onClick={() => setVisible((value) => !value)}
         aria-controls={id}
         aria-pressed={visible}
-        className="absolute inset-y-0 right-0 min-w-11 px-4 text-[16px] font-semibold text-link"
+        className="absolute inset-y-0 right-0 min-w-11 px-4 text-[15px] font-semibold text-link"
       >
         {visible ? "Sembunyikan" : "Lihat"}
       </button>

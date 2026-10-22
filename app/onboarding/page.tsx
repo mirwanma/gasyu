@@ -6,7 +6,7 @@ import { safeNext } from "@/lib/safe-next";
 export default function OnboardingPage({ searchParams }: PageProps<"/onboarding">) {
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-6 py-7">
-      <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
+      <Suspense fallback={<p className="text-[15px] text-fg-muted">Memuat…</p>}>
         <OnboardingContent searchParams={searchParams} />
       </Suspense>
     </main>

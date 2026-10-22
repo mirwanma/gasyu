@@ -12,14 +12,14 @@ export default function AdminRingkasanPage() {
     <>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <h1 className="font-display text-[32px] font-bold">Ringkasan kota</h1>
-          <span className="text-[17px] text-fg-soft">Cimahi · pilot · 7 hari terakhir</span>
+          <h1 className="font-display text-[30px] font-bold">Ringkasan kota</h1>
+          <span className="text-[15px] text-fg-soft">Cimahi · pilot · 7 hari terakhir</span>
         </div>
-        <Link href="/admin/aktivitas/baru" className="flex h-11 items-center rounded-full bg-primary px-5 text-[17px] font-semibold text-on-primary">
+        <Link href="/admin/aktivitas/baru" className="flex h-11 items-center rounded-full bg-primary px-5 text-[15px] font-semibold text-on-primary">
           Buat event Gasyu
         </Link>
       </div>
-      <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
+      <Suspense fallback={<p className="text-[15px] text-fg-muted">Memuat…</p>}>
         <Overview />
       </Suspense>
     </>
@@ -39,7 +39,7 @@ function short(n: number) {
 
 async function Overview() {
   const [o, weeks, villages, prizesToDeliver] = await Promise.all([getAdminOverview(), listWeeklyActive(), listActiveVillages(5), countPrizesToDeliver()]);
-  if (!o) return <p className="text-[16px] text-fg-soft">Data ringkasan belum tersedia.</p>;
+  if (!o) return <p className="text-[15px] text-fg-soft">Data ringkasan belum tersedia.</p>;
   const delta = o.weekly_active_prev > 0 ? Math.round(((o.weekly_active - o.weekly_active_prev) / o.weekly_active_prev) * 100) : null;
   const maxWeek = Math.max(1, ...weeks.map((w) => w.active_citizens));
   const maxVillage = villages[0]?.avg_xp || 1;
@@ -63,15 +63,15 @@ async function Overview() {
       <div className="flex flex-wrap gap-4">
         <section className={`${cardClass} flex min-w-0 flex-[2_1_420px] flex-col gap-4 p-5`}>
           <div className="flex items-baseline justify-between">
-            <h2 className="font-display text-[20px] font-semibold">Warga aktif per minggu</h2>
-            <span className="text-[14px] text-fg-soft">≥1 check-in · 12 minggu terakhir</span>
+            <h2 className="font-display text-[18px] font-semibold">Warga aktif per minggu</h2>
+            <span className="text-[13px] text-fg-soft">≥1 check-in · 12 minggu terakhir</span>
           </div>
           <div className="flex h-[200px] items-end gap-1.5">
             {weeks.map((w, i) => {
               const last = i === weeks.length - 1;
               return (
                 <div key={w.week_start} className="flex flex-1 flex-col items-center justify-end gap-1 self-stretch">
-                  {last && <span className="text-[13px] font-bold text-link">{formatNumber(w.active_citizens)}</span>}
+                  {last && <span className="text-[12px] font-bold text-link">{formatNumber(w.active_citizens)}</span>}
                   <div
                     title={`${formatDate(w.week_start)}: ${w.active_citizens} warga`}
                     className={`w-full rounded-t-md ${last ? "bg-primary" : "bg-primary-soft/60"}`}
@@ -81,7 +81,7 @@ async function Overview() {
               );
             })}
           </div>
-          <div className="flex justify-between text-[13px] text-fg-soft">
+          <div className="flex justify-between text-[12px] text-fg-soft">
             <span>{weeks[0] ? formatDate(weeks[0].week_start, { year: undefined }) : ""}</span>
             <span>{weeks.at(-1) ? formatDate(weeks.at(-1)!.week_start, { year: undefined }) : ""}</span>
           </div>
@@ -89,13 +89,13 @@ async function Overview() {
 
         <section className={`${cardClass} flex min-w-0 flex-[1_1_300px] flex-col gap-3.5 p-5`}>
           <div className="flex items-baseline justify-between">
-            <h2 className="font-display text-[20px] font-semibold">Kelurahan teraktif</h2>
-            <span className="text-[14px] text-fg-soft">bulan ini</span>
+            <h2 className="font-display text-[18px] font-semibold">Kelurahan teraktif</h2>
+            <span className="text-[13px] text-fg-soft">bulan ini</span>
           </div>
-          {villages.length === 0 && <span className="text-[16px] text-fg-soft">Belum ada check-in bulan ini.</span>}
+          {villages.length === 0 && <span className="text-[15px] text-fg-soft">Belum ada check-in bulan ini.</span>}
           {villages.map((v, i) => (
             <div key={v.village_id} className="flex flex-col gap-1.5">
-              <div className="flex justify-between text-[16px]">
+              <div className="flex justify-between text-[15px]">
                 <span>
                   <b>{i + 1}</b> {v.name}
                 </span>
@@ -108,12 +108,12 @@ async function Overview() {
               </div>
             </div>
           ))}
-          <span className="text-[14px] text-fg-soft">Rata-rata XP per warga aktif bulan ini. Peringkat resmi (min. 10 warga) di fitur leaderboard.</span>
+          <span className="text-[13px] text-fg-soft">Rata-rata XP per warga aktif bulan ini. Peringkat resmi (min. 10 warga) di fitur leaderboard.</span>
         </section>
       </div>
 
       <section className={`${cardClass} flex flex-col gap-3 p-5`}>
-        <h2 className="font-display text-[20px] font-semibold">Antrean</h2>
+        <h2 className="font-display text-[18px] font-semibold">Antrean</h2>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <QueueCard n={o.pending_organizers} title="Penyelenggara menunggu" sub={`${o.pending_merchants} merchant · ${o.pending_organizers - o.pending_merchants} komunitas`} href="/admin/verifikasi" tone="warn" />
           <QueueCard n={o.pending_activities} title="Aktivitas perlu review" sub={o.pending_activities ? `paling lama ${pendingDays} hari` : "tidak ada pengajuan"} href="/admin/aktivitas" tone="primary" />
@@ -129,9 +129,9 @@ async function Overview() {
 function Kpi({ label, value, sub, tone = "neutral" }: { label: string; value: string; sub: string; tone?: "success" | "neutral" }) {
   return (
     <div className={`${cardClass} flex flex-col gap-1.5 p-5`}>
-      <span className="text-[16px] text-fg-soft">{label}</span>
-      <span className="font-display text-[34px] font-bold leading-none">{value}</span>
-      <span className={`text-[14px] font-semibold ${tone === "success" ? "text-success" : "text-fg-soft"}`}>{sub}</span>
+      <span className="text-[15px] text-fg-soft">{label}</span>
+      <span className="font-display text-[32px] font-bold leading-none">{value}</span>
+      <span className={`text-[13px] font-semibold ${tone === "success" ? "text-success" : "text-fg-soft"}`}>{sub}</span>
     </div>
   );
 }
@@ -145,10 +145,10 @@ function QueueCard({ n, title, sub, href, tone }: { n: number; title: string; su
   };
   const inner = (
     <>
-      <span className={`flex size-12 shrink-0 items-center justify-center rounded-[14px] font-display text-[24px] font-bold ${tones[tone]}`}>{n}</span>
+      <span className={`flex size-12 shrink-0 items-center justify-center rounded-[14px] font-display text-[22px] font-bold ${tones[tone]}`}>{n}</span>
       <span className="flex flex-col gap-0.5">
-        <span className="text-[17px] font-semibold">{title}</span>
-        <span className="text-[14px] text-fg-soft">{sub}</span>
+        <span className="text-[15px] font-semibold">{title}</span>
+        <span className="text-[13px] text-fg-soft">{sub}</span>
       </span>
     </>
   );

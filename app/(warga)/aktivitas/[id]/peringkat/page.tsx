@@ -20,7 +20,7 @@ const STATUS_NOTE = {
 export default function PeringkatEventPage({ params }: PageProps<"/aktivitas/[id]/peringkat">) {
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-5 pb-16 pt-6">
-      <Suspense fallback={<p className="text-[16px] text-fg-muted">Memuat…</p>}>
+      <Suspense fallback={<p className="text-[15px] text-fg-muted">Memuat…</p>}>
         <Board params={params} />
       </Suspense>
     </main>
@@ -44,34 +44,34 @@ async function Board({ params }: Pick<PageProps<"/aktivitas/[id]/peringkat">, "p
           Kembali
         </Link>
         <div className="flex min-w-0 flex-1 flex-col">
-          <span className="text-[14px] font-bold uppercase tracking-wide text-hot">Papan peringkat</span>
-          <h1 className="truncate font-display text-[24px] font-bold leading-tight">{card.title}</h1>
+          <span className="text-[13px] font-bold uppercase tracking-wide text-hot">Papan peringkat</span>
+          <h1 className="truncate font-display text-[22px] font-bold leading-tight">{card.title}</h1>
         </div>
         <span className={`${tagClass.base} ${board.status === "live" ? tagClass.hot : board.status === "final" ? tagClass.success : tagClass.neutral}`}>{LEADERBOARD_STATUS_LABELS[board.status]}</span>
       </div>
 
-      <p className="text-[16px] leading-[1.5] text-fg-soft">
+      <p className="text-[15px] leading-[1.5] text-fg-soft">
         {STATUS_NOTE[board.status]} {formatNumber(board.participants)} peserta punya skor. Skor sama: yang lebih dulu mencapainya di atas.
       </p>
 
       {board.me && !meInTop && <MeRow rank={board.me.rank} score={board.me.score} />}
 
       <ol className={`${cardClass} overflow-hidden`}>
-        {board.rows.length === 0 && <li className="p-4 text-[16px] text-fg-soft">Belum ada peserta yang punya skor.</li>}
+        {board.rows.length === 0 && <li className="p-4 text-[15px] text-fg-soft">Belum ada peserta yang punya skor.</li>}
         {board.rows.map((r) => {
           // Sebelum final, tunjukkan hadiah incaran per peringkat; saat final, hadiah yang benar-benar didapat.
           const prize = board.status === "final" ? r.prize_title : prizeFor(r.rank)?.title;
           return (
             <li key={r.rank} className={`flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0 ${r.is_me ? "bg-primary-tint/40" : ""}`}>
-              <span className={`flex size-9 shrink-0 items-center justify-center rounded-xl font-display text-[18px] font-bold ${r.rank <= 3 ? "bg-hot-tint text-hot" : "text-fg-soft"}`}>{r.rank}</span>
+              <span className={`flex size-9 shrink-0 items-center justify-center rounded-xl font-display text-[16px] font-bold ${r.rank <= 3 ? "bg-hot-tint text-hot" : "text-fg-soft"}`}>{r.rank}</span>
               <span className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-[17px] font-semibold">
+                <span className="truncate text-[15px] font-semibold">
                   {r.nickname}
                   {r.is_me ? " (kamu)" : ""}
                 </span>
-                {prize && <span className="truncate text-[13px] text-fg-soft">{prize}</span>}
+                {prize && <span className="truncate text-[12px] text-fg-soft">{prize}</span>}
               </span>
-              <span className="font-display text-[18px] font-semibold text-hot">{formatNumber(r.score)}</span>
+              <span className="font-display text-[16px] font-semibold text-hot">{formatNumber(r.score)}</span>
             </li>
           );
         })}
@@ -79,10 +79,10 @@ async function Board({ params }: Pick<PageProps<"/aktivitas/[id]/peringkat">, "p
 
       {prizes.length > 0 && (
         <section className="flex flex-col gap-2">
-          <h2 className="font-display text-[20px] font-semibold">Hadiah</h2>
+          <h2 className="font-display text-[18px] font-semibold">Hadiah</h2>
           <div className={`${cardClass} overflow-hidden`}>
             {prizes.map((p) => (
-              <div key={p.id} className="flex items-center justify-between gap-3 border-b border-line px-4 py-2.5 text-[16px] last:border-b-0">
+              <div key={p.id} className="flex items-center justify-between gap-3 border-b border-line px-4 py-2.5 text-[15px] last:border-b-0">
                 <span className="font-bold text-hot">{rankLabel(p.rank_from, p.rank_to)}</span>
                 <span className="min-w-0 flex-1 truncate text-right">{p.title}</span>
               </div>
@@ -92,7 +92,7 @@ async function Board({ params }: Pick<PageProps<"/aktivitas/[id]/peringkat">, "p
       )}
 
       {board.status === "final" && (
-        <Link href="/hadiah" className="flex h-[52px] items-center justify-center rounded-2xl bg-primary text-[18px] font-semibold text-on-primary">
+        <Link href="/hadiah" className="flex h-[52px] items-center justify-center rounded-2xl bg-primary text-[16px] font-semibold text-on-primary">
           Buka halaman Hadiah
         </Link>
       )}
@@ -103,9 +103,9 @@ async function Board({ params }: Pick<PageProps<"/aktivitas/[id]/peringkat">, "p
 function MeRow({ rank, score }: { rank: number; score: number }) {
   return (
     <div className={`${cardClass} flex items-center gap-3 border-primary/40 bg-primary-tint/40 px-4 py-3`}>
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl font-display text-[18px] font-bold text-link">{rank}</span>
-      <span className="flex-1 text-[17px] font-semibold">Posisi kamu</span>
-      <span className="font-display text-[18px] font-semibold text-hot">{formatNumber(score)}</span>
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl font-display text-[16px] font-bold text-link">{rank}</span>
+      <span className="flex-1 text-[15px] font-semibold">Posisi kamu</span>
+      <span className="font-display text-[16px] font-semibold text-hot">{formatNumber(score)}</span>
     </div>
   );
 }

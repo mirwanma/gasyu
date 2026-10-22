@@ -29,7 +29,7 @@ export function MissionCodeForm({ missionId, activityId }: { missionId: string; 
           Kirim
         </SubmitButton>
       </div>
-      <span className="text-[13px] text-fg-muted">Maksimal 5 percobaan per 15 menit.</span>
+      <span className="text-[12px] text-fg-muted">Maksimal 5 percobaan per 15 menit.</span>
     </form>
   );
 }
@@ -51,7 +51,7 @@ export function MissionPhotoForm({ missionId, activityId, retry }: { missionId: 
       <input type="hidden" name="mission_id" value={missionId} />
       <input type="hidden" name="activity_id" value={activityId} />
       <ErrorMessage message={pick?.error ?? state.error} />
-      <label className="flex h-11 cursor-pointer items-center justify-center rounded-xl border border-dashed border-line-strong px-3 text-[16px] font-semibold text-fg">
+      <label className="flex h-11 cursor-pointer items-center justify-center rounded-xl border border-dashed border-line-strong px-3 text-[15px] font-semibold text-fg">
         {pick?.busy ? "Menyiapkan foto…" : (pick?.name ?? "Pilih atau ambil foto")}
         <ImageFileInput name="proof" accept="image/*" capture="environment" required className="hidden" maxMb={3} onPick={setPick} />
       </label>

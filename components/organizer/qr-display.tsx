@@ -51,18 +51,18 @@ export function QrDisplay({ checkpointId, missionId }: { checkpointId?: string; 
   }, []);
 
   if (qr && !qr.ok) {
-    return <p role="alert" className="rounded-2xl bg-danger-tint px-4 py-3 text-center text-[16px] text-danger">{qr.error}</p>;
+    return <p role="alert" className="rounded-2xl bg-danger-tint px-4 py-3 text-center text-[15px] text-danger">{qr.error}</p>;
   }
 
   return (
     <div className="flex flex-col items-center gap-4">
       <div role="img" aria-label={missionId ? "QR misi, berganti tiap 60 detik" : "QR check-in, berganti tiap 60 detik"} className="flex size-[300px] items-center justify-center rounded-3xl border border-line bg-white p-[18px]">
         {/* eslint-disable-next-line @next/next/no-img-element -- data URL yang dibuat di browser, bukan aset */}
-        {image ? <img src={image} alt="" className="size-full" /> : <span className="text-[16px] text-fg-muted">Menyiapkan QR…</span>}
+        {image ? <img src={image} alt="" className="size-full" /> : <span className="text-[15px] text-fg-muted">Menyiapkan QR…</span>}
       </div>
       <div className="flex items-center gap-2.5">
         <span className="size-9 rounded-full border-4 border-primary border-l-line" style={{ transform: `rotate(${(1 - left / (qr?.ok ? qr.rotateSeconds : 60)) * 360}deg)` }} />
-        <span className="text-[17px] font-semibold">QR baru dalam {left} detik</span>
+        <span className="text-[15px] font-semibold">QR baru dalam {left} detik</span>
       </div>
     </div>
   );
