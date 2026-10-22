@@ -156,7 +156,7 @@ export function HomeView({
         </a>
       )}
 
-      <section className="flex flex-col gap-3">
+      <section id="aktivitasku" className="flex scroll-mt-4 flex-col gap-3">
         <div className="flex items-baseline justify-between">
           <h2 className="font-display text-[19px] font-semibold">Aktivitasku</h2>
           <a href="/jelajah" className="text-[13px] font-semibold text-link">

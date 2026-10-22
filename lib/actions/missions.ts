@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { fromLocalInput } from "@/lib/activities";
+import { getPointsPerCompletion } from "@/lib/data/activities";
 import type { MissionResult } from "@/lib/missions";
 import { createClient } from "@/lib/supabase/server";
 import type { Json } from "@/lib/supabase/types";
@@ -172,7 +173,8 @@ export async function completeMissionQr(missionId: string, token: string, lat: n
   const { data, error } = await supabase.rpc("complete_mission", { p_mission_id: missionId, p_token: token, p_code: null, p_proof_path: null, p_lat: lat, p_lng: lng });
   if (error) return { ok: false, error: msg(error.message, "Misi belum tercatat. Coba lagi.") };
   revalidatePath("/");
-  return { ok: true, result: data as MissionResult };
+  const result = data as MissionResult;
+  return { ok: true, result: { ...result, points_promised: await getPointsPerCompletion(result.activity_id) } };
 }
 
 export async function submitMissionCode(_prev: MissionActionState, formData: FormData): Promise<MissionActionState> {

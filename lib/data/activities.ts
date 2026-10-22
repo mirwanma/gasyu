@@ -97,6 +97,14 @@ export async function listPublicActivities(opts: { filter?: string; q?: string; 
   return (data ?? []) as ActivityCard[];
 }
 
+// Poin per penyelesaian aktivitas, untuk teks hasil scan "masuk setelah selesai".
+export async function getPointsPerCompletion(activityId: string | undefined): Promise<number> {
+  if (!activityId) return 0;
+  const supabase = await createClient();
+  const { data } = await supabase.from("activities").select("points_per_completion").eq("id", activityId).maybeSingle();
+  return data?.points_per_completion ?? 0;
+}
+
 export type CityOption = { id: string; name: string; slug: string };
 
 // Kota yang aktif di Gasyu, untuk pemilih kota di Jelajah. slug = kode Kemendagri (atau id jika kosong).

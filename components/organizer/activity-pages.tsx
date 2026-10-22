@@ -178,7 +178,9 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
     );
   }
 
-  const outlets = type === "merchant" ? ((await supabase.from("merchant_outlets").select("id, name, address").eq("organizer_id", id).eq("is_active", true).order("name")).data ?? []) : [];
+  // Outlet yang sudah punya checkpoint di aktivitas ini tidak ditawarkan lagi (mencegah checkpoint dobel).
+  const usedOutlets = new Set(checkpoints.map((c) => c.outlet_id).filter(Boolean));
+  const outlets = (type === "merchant" ? ((await supabase.from("merchant_outlets").select("id, name, address").eq("organizer_id", id).eq("is_active", true).order("name")).data ?? []) : []).filter((o) => !usedOutlets.has(o.id));
   const [budget, { data: hostPartner }] = type === "merchant"
     ? await Promise.all([getActivityBudget(aid, id), supabase.from("activity_partners").select("id").eq("activity_id", aid).eq("organizer_id", id).maybeSingle()])
     : [null, { data: null }];
