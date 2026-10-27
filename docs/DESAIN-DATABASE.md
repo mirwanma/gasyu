@@ -1,6 +1,7 @@
 # Gasyu — Desain Database
 
-Versi 0.13 · 19 Oktober 2026 · Supabase (Postgres 15+)
+Versi 0.14 · 27 Oktober 2026 · Supabase (Postgres 15+)
+Perubahan 0.14: migrasi `0027_nationwide_regions` (belum diterapkan) membuka Gasyu untuk seluruh Indonesia. `regions` memuat 514 kota/kabupaten dan 7.285 kecamatan (kolom baru `province_name`, indeks unik `code`); kota baru `is_active = false` sampai dibuka admin (`set_city_active`). Wilayah asal pindah dari kelurahan ke kecamatan: `profiles.home_district_id` dan `home_district_changed_at`, `organizers.district_id`, `merchant_outlets.district_id`, `community_profiles.activity_area_district_id`, `xp_ledger.district_id`; data lama dipindah ke kecamatan induknya dan kelurahan dinonaktifkan. Tabel `cities`, `profiles.home_city_code`, `set_home_city`, dan `change_home_village` dihapus; baru `change_home_district`, `is_valid_district`, `is_open_region`, `region_label`, trigger `check_district_ref`. Peringkat per kota dan kecamatan: `leaderboard_users`, `leaderboard_districts`, `get_leaderboard` (scope `district`, `city`, `districts`), `v_leaderboard_districts_month`, `v_district_active_month`, `monthly_district_winners` (menggantikan `monthly_village_winners`). View tim memakai kolom `district_name` (dulu `village_name`); `v_global_event_stats` menampilkan sebaran kota dan kecamatan; `v_admin_city_stats` untuk halaman admin Wilayah. Kunci `profile.district_change_days`. Badge `district_explorer`.
 Perubahan 0.13: migrasi `0026_activity_city` (sudah diterapkan). Fungsi `region_city(region_id)` mencari kota dari wilayah tingkat apa pun. `v_activity_cards` menambah `city_id` dan `city_name`: kota dari `scope_region_id`, atau dari `organizers.village_id` jika cakupan kosong; NULL berarti berlaku untuk semua kota. Dipakai pemilih kota di Jelajah.
 Perubahan 0.12: migrasi `0025_security_hardening` dari tinjauan keamanan (sudah diterapkan). View tidak lagi bisa ditulis atau dibaca `anon`; partner tidak bisa membaca `checkins.lat/lng`; `partner_is_active` + trigger `partner_inactive` di checkpoint dan misi; `activity_winners` dan `redemptions` hanya untuk pemilik dan admin (sponsor lewat `get_sponsored_prizes`, kode voucher aktif disembunyikan di `v_reward_redemptions`); poin dari check-in `flagged` ditahan (`point_credit_held`, `points_held`, kolom `v_user_points_balance.held`); `reverse_checkin` membalik XP per kelurahan asal; `refund_redemption` untuk pemilik hanya jika reward nonaktif; `review_mission_completion`/`mark_missions_manual` menolak diri sendiri dan peserta yang belum check-in (`manual_mark_eligible`, kolom `v_mission_manual_candidates.eligible`); kode misi minimal 6 karakter dan `flag_kind` `code_bruteforce`; `group_join_attempts` dan batas percobaan `join_group` (kode salah mengembalikan null); `reverse_mission_completion` (admin); constraint URL gambar `https://`; streak dan leaderboard kelurahan hanya menghitung aktivitas `regional`; kunci `app_settings` `mission.code_min_length`, `mission.code_flag_attempts`, `group.join_max_attempts`, `group.join_window_minutes`.
 Perubahan 0.11: Event Global dibangun di migrasi `0022_global_events` (sudah diterapkan); tabel `cities` (514 kota/kabupaten, kode Kemendagri) dan `profiles.home_city_code` + `set_home_city` untuk kota asal warga luar Cimahi; di Event Global partisipasi tidak pernah berstatus `completed` (peringkat dari skor, peserta tetap bisa mengerjakan misi sampai acara berakhir); trigger `xp_ledger_reject_global`/`point_ledger_reject_global` menjamin aktivitas global tidak pernah menulis XP atau poin dari jalur mana pun; `set_activity_reach` (admin, saat draft) untuk memilih jangkauan dan mode lokasi. Migrasi `0023_bonus_missions_after_completion`: warga yang partisipasinya sudah `completed` tetap bisa mengerjakan misi bonus (`complete_mission`, `mark_missions_manual`, `get_activity_missions`), dan notifikasi misi baru dibuka juga sampai ke mereka. Migrasi `0024_activity_cards_reach`: `v_activity_cards` membawa `reach` dan `location_mode` untuk halaman admin Event Global (tahap 2) dan tab Event Global di Jelajah (tahap 3).
@@ -44,7 +45,7 @@ Nama tabel, kolom, dan enum ditulis dalam bahasa Inggris sesuai `CLAUDE.md`. Dia
 | Organizer | `organizers`, `merchant_profiles`, `merchant_outlets`, `community_profiles`, `organizer_members`, `organizer_invites`, `community_memberships` |
 | Aktivitas & kolaborasi | `activities`, `challenge_targets`, `activity_partners`, `activity_checkpoints`, `activity_missions`, `collab_posts`, `collab_applications` |
 | Warga & partisipasi | `groups`, `group_members`, `participations`, `checkins`, `mission_completions` |
-| Ekonomi gamifikasi | `xp_ledger`, `point_ledger`, `point_allocations`, `rewards`, `redemptions`, `levels`, `badges`, `user_badges`, `monthly_village_winners` |
+| Ekonomi gamifikasi | `xp_ledger`, `point_ledger`, `point_allocations`, `rewards`, `redemptions`, `levels`, `badges`, `user_badges`, `monthly_district_winners` |
 | Event Global | `activity_score_ledger`, `activity_prizes`, `activity_winners` |
 | Operasional | `fraud_flags`, `notifications`, `admin_actions`, `app_settings`, `mission_code_attempts` |
 
@@ -73,7 +74,7 @@ ERD dipecah per domain supaya terbaca. Kolom yang ditampilkan adalah kolom kunci
 ```mermaid
 erDiagram
     regions ||--o{ regions : "parent_id"
-    regions ||--o{ profiles : "home_village_id"
+    regions ||--o{ profiles : "home_district_id"
     profiles ||--o{ organizer_members : "user_id"
     organizers ||--o{ organizer_members : "organizer_id"
     organizers ||--o| merchant_profiles : "type merchant"
@@ -82,8 +83,8 @@ erDiagram
     organizers ||--o{ organizer_invites : "organizer_id"
     organizers ||--o{ community_memberships : "type community"
     profiles ||--o{ community_memberships : "user_id"
-    regions ||--o{ organizers : "village_id"
-    regions ||--o{ merchant_outlets : "village_id"
+    regions ||--o{ organizers : "district_id"
+    regions ||--o{ merchant_outlets : "district_id"
 
     regions {
         uuid id PK
@@ -96,7 +97,7 @@ erDiagram
         uuid id PK "auth.users.id"
         citext nickname UK
         text full_name
-        uuid home_village_id FK "null = Luar Cimahi"
+        uuid home_district_id FK "kecamatan; null = akun lama"
         boolean is_admin
         timestamptz onboarded_at
         timestamptz suspended_at
@@ -107,7 +108,7 @@ erDiagram
         organizer_type type
         text name
         text slug UK
-        uuid village_id FK
+        uuid district_id FK
         organizer_status status
         text review_note
     }
@@ -121,7 +122,7 @@ erDiagram
         uuid id PK
         uuid organizer_id FK
         text name
-        uuid village_id FK
+        uuid district_id FK
         numeric lat
         numeric lng
         jsonb opening_hours
@@ -129,7 +130,7 @@ erDiagram
     community_profiles {
         uuid organizer_id PK
         text interest_category
-        uuid activity_area_village_id FK
+        uuid activity_area_district_id FK
         jsonb social_links
         integer est_members
         join_policy join_policy
@@ -337,7 +338,7 @@ erDiagram
         xp_reason reason
         uuid activity_id FK
         uuid checkin_id FK
-        uuid village_id FK "snapshot"
+        uuid district_id FK "snapshot"
         date local_date
     }
     point_ledger {
@@ -508,7 +509,7 @@ Kolom `created_at timestamptz not null default now()` ada di semua tabel dan tid
 
 ### Identitas & wilayah
 
-**regions** — hierarki kota, kecamatan, kelurahan.
+**regions** — hierarki kota/kabupaten, kecamatan, kelurahan (kelurahan hanya riwayat pilot Cimahi).
 
 | Kolom | Tipe | Aturan |
 | --- | --- | --- |
@@ -516,12 +517,11 @@ Kolom `created_at timestamptz not null default now()` ada di semua tabel dan tid
 | parent_id | uuid | FK `regions`, null untuk kota |
 | level | region_level | not null |
 | name | text | not null |
-| code | text | kode Kemendagri, opsional |
-| is_active | boolean | default true; kota yang belum dibuka = false |
+| code | text | kode Kemendagri (unik jika diisi); semua kota dan kecamatan punya kode |
+| province_name | text | nama provinsi, hanya untuk kota |
+| is_active | boolean | kota: dibuka admin (`set_city_active`); kecamatan selalu true; kelurahan false sejak 0027 |
 
-Unik: `(parent_id, name)`. Seed: `seed-wilayah-cimahi.sql` (1 kota, 3 kecamatan, 15 kelurahan).
-
-**cities** — daftar referensi 514 kota/kabupaten Indonesia (kode Kemendagri, sumber paket `idn-area-data` lisensi MIT): `code text` PK (contoh `32.73`), `province_code`, `province_name`, `name`. Hanya dibaca (semua pengguna). Dipakai untuk kota asal warga luar Cimahi, terpisah dari `regions` yang menyaring aktivitas.
+Unik: `(parent_id, name)` dan `code`. Seed: 514 kota/kabupaten dan 7.285 kecamatan se-Indonesia (kode Kemendagri, sumber paket `idn-area-data` 4.0.1, lisensi MIT; migrasi 0022 dan 0027), plus 15 kelurahan Cimahi dari pilot. Hanya Kota Cimahi yang aktif di awal.
 
 **profiles** — satu baris per akun, dibuat trigger saat `auth.users` insert. Edit.
 
@@ -531,9 +531,8 @@ Unik: `(parent_id, name)`. Seed: `seed-wilayah-cimahi.sql` (1 kota, 3 kecamatan,
 | nickname | citext | unik, 3–20 karakter, tampil publik |
 | full_name | text | privat |
 | avatar_url | text | Storage |
-| home_village_id | uuid | FK `regions` level village; null = Luar Cimahi |
-| home_village_changed_at | timestamptz | ganti kelurahan maksimal sekali per 90 hari |
-| home_city_code | text | FK `cities`; kota/kabupaten asal, hanya untuk warga luar Cimahi (`home_village_id` null, dicek constraint); opsional; diisi lewat `set_home_city`, dikosongkan saat pindah ke kelurahan Cimahi atau hapus akun |
+| home_district_id | uuid | FK `regions` level district (kecamatan mana pun di Indonesia); wajib saat onboarding; null hanya untuk akun lama "Luar Cimahi" dan akun terhapus |
+| home_district_changed_at | timestamptz | ganti kota/kecamatan maksimal sekali per 90 hari |
 | is_admin | boolean | default false; hanya bisa diubah lewat SQL oleh pemilik platform |
 | terms_accepted_at | timestamptz | wajib saat onboarding |
 | onboarded_at | timestamptz | null = belum onboarding |
@@ -552,7 +551,7 @@ Unik: `(parent_id, name)`. Seed: `seed-wilayah-cimahi.sql` (1 kota, 3 kecamatan,
 | slug | text | unik, untuk URL |
 | logo_url | text | Storage |
 | description | text | |
-| village_id | uuid | FK `regions`; kelurahan utama (outlet pertama atau area kegiatan) |
+| district_id | uuid | FK `regions` level district (trigger `check_district_ref`); kecamatan utama (outlet pertama atau area kegiatan) |
 | status | organizer_status | default pending |
 | review_note | text | alasan penolakan |
 | verified_by | uuid | FK `profiles` admin |
@@ -577,7 +576,7 @@ Unik: `(parent_id, name)`. Seed: `seed-wilayah-cimahi.sql` (1 kota, 3 kecamatan,
 | organizer_id | uuid | FK `organizers` (harus type merchant) |
 | name | text | contoh "Cabang Baros" |
 | address | text | not null |
-| village_id | uuid | FK `regions` |
+| district_id | uuid | FK `regions` level district (trigger `check_district_ref`) |
 | lat, lng | numeric(9,6) | not null |
 | opening_hours | jsonb | `{"mon":["08:00","21:00"], ...}` |
 | is_active | boolean | default true |
@@ -588,7 +587,7 @@ Unik: `(parent_id, name)`. Seed: `seed-wilayah-cimahi.sql` (1 kota, 3 kecamatan,
 | --- | --- | --- |
 | organizer_id | uuid | PK, FK `organizers` |
 | interest_category | text | olahraga, musik, seni, hobi, sosial, lingkungan, edukasi, keagamaan, lainnya; semua jenis komunitas boleh mendaftar |
-| activity_area_village_id | uuid | FK `regions` |
+| activity_area_district_id | uuid | FK `regions` level district (trigger `check_district_ref`) |
 | social_links | jsonb | `{"instagram":"...","tiktok":"..."}` |
 | est_members | integer | perkiraan saat mendaftar; jumlah nyata dari `v_community_member_stats` |
 | join_policy | join_policy | default approval; ketua bisa mengubah |
@@ -654,7 +653,7 @@ Trigger: chair dan officer di `organizer_members` selalu punya baris `active`; k
 | title | text | not null |
 | description | text | termasuk syarat usia jika ada (teks bebas) |
 | cover_url | text | |
-| scope_region_id | uuid | FK `regions` (kota, kecamatan, atau kelurahan); dipakai untuk penyaringan beranda dan, jika `residents_only`, sebagai syarat domisili. Untuk Event Global boleh null atau diisi lokasi acara (hanya informasi, tidak menyaring) |
+| scope_region_id | uuid | FK `regions` (kota atau kecamatan, di kota yang sudah dibuka: `is_open_region`); dipakai untuk penyaringan beranda dan, jika `residents_only`, sebagai syarat domisili. Untuk Event Global boleh null atau diisi lokasi acara (hanya informasi, tidak menyaring) |
 | starts_at, ends_at | timestamptz | `ends_at > starts_at` |
 | quota | integer | null = tanpa batas |
 | difficulty | difficulty | wajib untuk challenge |
@@ -663,7 +662,7 @@ Trigger: chair dan officer di `organizer_members` selalu punya baris `active`; k
 | join_mode | join_mode | default individual; wajib individual untuk Event Global |
 | group_min, group_max | smallint | 2–10, wajib jika join_mode bukan individual |
 | target_scope | target_scope | default individual; group hanya untuk challenge |
-| residency_rule | residency_rule | default open; `residents_only` = hanya warga yang `home_village_id`-nya berada di dalam `scope_region_id`; wajib open untuk Event Global |
+| residency_rule | residency_rule | default open; `residents_only` = hanya warga yang `home_district_id`-nya berada di dalam `scope_region_id`; wajib open untuk Event Global |
 | audience | activity_audience | default public; members_only hanya jika host bertipe community (dicek trigger) |
 | reach | activity_reach | default regional; `global` hanya untuk host `platform` (admin) dan `type = event` (dicek trigger); tidak bisa diubah setelah published |
 | location_mode | activity_location_mode | default onsite; online dan hybrid hanya untuk `reach = global`; tidak bisa diubah setelah published |
@@ -896,7 +895,7 @@ Unik: `(activity_id, user_id, local_date)`.
 | activity_id | uuid | FK, opsional |
 | checkin_id | uuid | FK, opsional |
 | mission_completion_id | uuid | FK `mission_completions`, untuk reason `mission_complete` |
-| village_id | uuid | snapshot `profiles.home_village_id` saat XP diberikan |
+| district_id | uuid | snapshot `profiles.home_district_id` saat XP diberikan |
 | local_date | date | tanggal WIB, untuk batas 1.000/hari |
 | note | text | |
 
@@ -962,15 +961,15 @@ Unik: `(activity_id, user_id, local_date)`.
 | 4 | Jawara | 4000 |
 | 5 | Legenda Cimahi | 10000 |
 
-**badges** — definisi badge (seed): `id`, `code` unik, `name`, `description`, `icon_url`, `rule jsonb` (contoh `{"type":"distinct_villages","count":5}`). Badge awal ada di `ALUR-SISTEM.md` bagian 17. Badge eksklusif Event Global dibuat admin dengan `rule = {"type":"activity_prize"}`, sehingga tidak pernah diberikan otomatis oleh `award_badges`.
+**badges** — definisi badge (seed): `id`, `code` unik, `name`, `description`, `icon_url`, `rule jsonb` (contoh `{"type":"distinct_districts","count":3}`). Badge awal ada di `ALUR-SISTEM.md` bagian 17. Badge eksklusif Event Global dibuat admin dengan `rule = {"type":"activity_prize"}`, sehingga tidak pernah diberikan otomatis oleh `award_badges`.
 
 **user_badges**: `user_id` + `badge_id` (PK gabungan), `awarded_at`, `activity_id` opsional.
 
-**monthly_village_winners**: `month date` (tanggal 1), `village_id`, `rank smallint`, `avg_xp numeric`, `active_citizens integer`. PK `(month, rank)`.
+**monthly_district_winners**: `month date` (tanggal 1), `city_id`, `district_id`, `rank smallint` (peringkat di dalam kota), `avg_xp numeric`, `active_citizens integer`. PK `(month, district_id)`. Menggantikan `monthly_village_winners` sejak 0027 (riwayat dihitung ulang per kecamatan).
 
 ### Event Global
 
-**activity_score_ledger** — semua perubahan skor di Event Global. Hanya insert (trigger `prevent_ledger_change`). Skor terpisah dari XP dan poin: tidak menambah level, peringkat kota/kelurahan, atau saldo dompet.
+**activity_score_ledger** — semua perubahan skor di Event Global. Hanya insert (trigger `prevent_ledger_change`). Skor terpisah dari XP dan poin: tidak menambah level, peringkat kota/kecamatan, atau saldo dompet.
 
 | Kolom | Tipe | Aturan |
 | --- | --- | --- |
@@ -1062,7 +1061,7 @@ Unik: `(activity_id, rank)` dan `(activity_id, user_id)`.
 | payment.min_price_idr | 1000 |
 | payment.default_window_hours | 24 |
 | suggestion.daily_limit_per_organizer | 3 |
-| profile.village_change_days | 90 |
+| profile.district_change_days | 90 |
 | reminder.expiry_days | 7 (pengingat voucher dan poin hampir kedaluwarsa) |
 | global_event.checkin_score | 100 |
 | global_event.score_min / global_event.score_max | 10 / 1000 (skor per misi) |
@@ -1087,22 +1086,23 @@ Unik: `(activity_id, rank)` dan `(activity_id, user_id)`.
 | `v_activity_budget` | `activity_id`, `organizer_id`, `budget`, `used`, `remaining` per partner merchant | dashboard, `perform_checkin` |
 | `v_activity_stats` | per aktivitas: pendaftar pribadi/grup, hadir, selesai, check-in per hari, warga baru vs kembali | dashboard organizer |
 | `v_activity_partner_stats` | per aktivitas per partner: check-in, voucher ditukar dan dipakai | dashboard kolaborasi |
-| `v_leaderboard_users_month` | `user_id`, `nickname`, `village_id`, `xp_month`, rank kota dan rank kelurahan | peringkat |
-| `v_village_active_month` | `village_id`, `active_citizens` (warga dengan ≥1 check-in bulan ini) | tab Kelurahan Teraktif |
-| `v_leaderboard_villages_month` | `village_id`, `avg_xp`, `active_citizens`, `rank` (hanya `active_citizens >= 10`) | peringkat kelurahan |
+| `v_leaderboard_users_month` | `user_id`, `nickname`, `district_id`, `city_id`, `xp_month`, rank kota dan rank kecamatan; hanya kota yang dibuka; tidak dibuka ke warga (dibaca lewat `get_leaderboard`) | peringkat |
+| `v_district_active_month` | `district_id`, `active_citizens` (warga dengan ≥1 check-in bulan ini) | tab Kecamatan |
+| `v_leaderboard_districts_month` | `district_id`, `city_id`, `avg_xp`, `active_citizens`, `rank` per kota (hanya `active_citizens >= 10`, kota yang dibuka) | peringkat kecamatan |
+| `v_admin_city_stats` | per kota: dibuka atau belum, jumlah warga, penyelenggara, dan yang menunggu verifikasi; hanya admin | halaman admin Wilayah |
 | `v_group_progress` | `activity_id`, `group_id`, `progress`, `contributors`, `rank` (check-in atau misi sesuai `target_kind`) | challenge grup |
 | `v_participation_missions` | `participation_id`, `mission_id`, `is_revealed` (untuk warga ini), status penyelesaian terakhir warga per misi, `required_done`, `required_total` (hanya misi wajib yang sudah terbuka) | daftar misi di halaman aktivitas, `evaluate_completion` |
 | `v_mission_stats` | per misi: diselesaikan, menunggu tinjauan, ditolak, tingkat penyelesaian | dashboard organizer, halaman kelola misi |
 | `v_activity_payment_stats` | per aktivitas berbayar: jumlah `unpaid`, `awaiting_confirmation`, `paid`, `refunded`, dan perkiraan nilai (jumlah × `price_idr`, hanya informasi) | dashboard organizer, admin (pembatalan belum refund) |
 | `v_community_member_stats` | `community_id`, `active_members`, `pending_requests`, `new_members_month`, `attending_members_30d` (member aktif yang check-in di aktivitas komunitas itu 30 hari terakhir) | dashboard komunitas, halaman profil komunitas (hanya `active_members` yang publik) |
 | `v_mission_template_stats` | per template: jumlah misi, aktivitas, penyelesaian disetujui, slot peserta, terakhir dipakai; admin saja | halaman Master misi |
-| `v_organizer_suggestions` | saran untuk satu organizer; `user_id`, `nickname`, `village_name` kosong jika anonim; nickname penanggap; disaring `is_team_member()` atau admin | halaman Saran warga, to-do dashboard |
+| `v_organizer_suggestions` | saran untuk satu organizer; `user_id`, `nickname`, `district_name` kosong jika anonim; nickname penanggap; disaring `is_team_member()` atau admin | halaman Saran warga, to-do dashboard |
 | `v_organizer_reputation` | (tanpa organizer `platform`) `organizer_id`, skor dari hadir, tingkat penyelesaian, jumlah kolaborasi (90 hari terakhir) | papan kolaborasi, peringkat organizer |
 | `v_merchant_dashboard` | per merchant: aktivitas berjalan, peserta, check-in hari ini, warga baru vs kembali, pembayaran menunggu, bukti misi menunggu, budget poin terpakai/sisa, voucher dipakai per outlet | dashboard merchant |
 | `v_community_dashboard` | per komunitas: aktivitas berjalan, peserta, check-in hari ini, pembayaran menunggu, bukti misi menunggu, permintaan member menunggu | dashboard komunitas |
 | `v_admin_overview` | warga aktif mingguan, aktivitas berjalan, organizer aktif, poin beredar vs ditukar, flag terbuka, Event Global berjalan, hadiah belum diklaim dan belum dikirim | dashboard admin |
 | `v_activity_scoreboard` | per Event Global: `activity_id`, `user_id`, `nickname`, `score` (sum `activity_score_ledger`), `last_scored_at` (`max(occurred_at)`), `registered_at`, `rank` (urut skor turun, lalu `last_scored_at` naik, lalu `registered_at` naik); hanya partisipasi registered/in_progress/completed, bayar `not_required`/`paid`, skor > 0, akun tidak dibekukan | `get_activity_leaderboard`, `finalize_activity_winners` |
-| `v_global_event_stats` | per Event Global: pendaftar, peserta aktif (skor > 0), peserta warga Cimahi vs Luar Cimahi, sebaran per kelurahan, misi selesai, skor rata-rata, hadiah per status (`pending_claim`, `claimed`, `delivered`, `forfeited`) | dashboard admin, laporan ke pemkot |
+| `v_global_event_stats` | per Event Global: pendaftar, peserta aktif (skor > 0), peserta yang belum mengisi wilayah, sebaran per kota (dengan provinsi) dan per kecamatan, misi selesai, skor rata-rata, hadiah per status (`pending_claim`, `claimed`, `delivered`, `forfeited`) | dashboard admin, laporan ke pemkot |
 
 View yang memuat data warga lain hanya mengekspos `nickname` dan agregat, tidak pernah `full_name`. View dibuat dengan `security_invoker = true` supaya RLS tabel dasar tetap berlaku; view leaderboard yang harus melihat semua warga dibuat lewat fungsi `security definer` yang hanya mengembalikan kolom publik.
 
@@ -1114,9 +1114,11 @@ Semua fungsi yang mengubah XP, poin, status, atau hak akses berjenis `security d
 
 | Fungsi | Pemanggil | Efek utama |
 | --- | --- | --- |
-| `complete_onboarding(nickname, full_name, village_id)` | warga | isi profil, `onboarded_at`, +50 XP |
+| `complete_onboarding(nickname, full_name, district_id)` | warga | isi profil dan kecamatan (wajib, kota mana pun), `onboarded_at`, +50 XP |
 | `update_my_profile(nickname, full_name)` | warga | ubah nama panggilan (unik) dan nama lengkap |
-| `change_home_village(village_id)` | warga | cek `profile.village_change_days`, perbarui kelurahan (null = Luar Cimahi) |
+| `change_home_district(district_id)` | warga | cek `profile.district_change_days` (dilewati jika belum punya kecamatan), perbarui kecamatan; tidak boleh null |
+| `set_city_active(city_id, active)` | admin | buka/tutup kota; dicatat di `admin_actions` (`open_city`, `close_city`) |
+| `is_valid_district(id)`, `is_open_region(id)`, `region_label(id)` | internal/semua | kecamatan yang bisa dipilih; wilayah di kota yang dibuka (cakupan aktivitas); label "Kecamatan, Kota" |
 | `delete_my_account(confirm)` | warga | soft delete: batalkan pendaftaran belum berjalan, keluar grup/komunitas/tim, hapus notifikasi, kosongkan data pribadi, isi `deleted_at`; tolak jika satu-satunya pemilik/ketua, ada pembayaran aktif, atau admin |
 | `set_my_avatar(url)` | warga | simpan URL foto di folder avatars miliknya; null = hapus foto |
 | `set_team_role(organizer_id, user_id, role)` | owner/chair | ubah peran anggota tim (serah terima pemilik/ketua); minimal satu pemilik/ketua tersisa; notifikasi `team_role_changed` |
@@ -1167,7 +1169,7 @@ Semua fungsi yang mengubah XP, poin, status, atau hak akses berjenis `security d
 | `use_voucher(code, outlet_id)` | owner/staff merchant | cek outlet milik merchant dan termasuk `valid_outlet_ids` (jika diisi), error `outlet_not_valid`; status used |
 | `refund_redemption(redemption_id)` | owner merchant/admin | poin kembali, status refunded |
 | `get_citizen_dashboard()` | warga | satu panggilan untuk beranda warga: level, aktivitasku + misi tertunda, saldo poin, poin akan kedaluwarsa, voucher aktif, posisi peringkat, badge terbaru; posisi di Event Global yang diikuti, hadiah yang perlu diklaim |
-| `is_resident_of(user_id, region_id)` | internal | true jika kelurahan asal warga sama dengan `region_id` atau berada di bawahnya (kecamatan/kota) menurut `regions.parent_id`; warga "Luar Cimahi" selalu false |
+| `is_resident_of(user_id, region_id)` | internal | true jika kecamatan asal warga sama dengan `region_id` atau berada di bawahnya (kota) menurut `regions.parent_id`; warga tanpa kecamatan selalu false |
 | `get_leaderboard(scope, region_id, month)` | publik (login) | baris peringkat dengan nickname saja; tidak memuat skor Event Global |
 | `award_badges(user_id)` | internal, dipanggil `perform_checkin` dan cron | cek aturan `badges.rule`, insert `user_badges` + notifikasi; badge `activity_prize` dilewati |
 | `award_activity_score(user_id, activity_id, amount, reason, checkin_id, mission_completion_id, occurred_at, note)` | internal | satu-satunya jalan menulis skor positif; memastikan aktivitas `reach = global` dan `running` (atau `ended` untuk misi foto yang disetujui di masa tinjau); tanpa batas harian |
@@ -1192,7 +1194,7 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 | Tabel | Warga (diri sendiri) | Warga lain | Tim organizer | Admin |
 | --- | --- | --- | --- | --- |
 | regions | R | R | R | R, I, U |
-| profiles | R, U (kolom aman) | - (publik lewat view/fungsi) | R nickname peserta aktivitasnya; komunitas: R nickname dan kelurahan member-nya | R, U |
+| profiles | R, U (kolom aman) | - (publik lewat view/fungsi) | R nickname peserta aktivitasnya; komunitas: R nickname dan kecamatan member-nya | R, U |
 | organizers | R yang approved | R yang approved | R, U miliknya | R, U |
 | merchant_profiles, community_profiles | R yang approved | R yang approved | R, U miliknya | R, U |
 | merchant_outlets | R yang approved | R | R, I, U miliknya | R |
@@ -1219,7 +1221,7 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 | redemptions | R miliknya; I fn | - | R untuk reward miliknya; U fn | R |
 | levels, badges | R | R | R | R, I, U |
 | user_badges | R | R (publik di profil) | - | R |
-| monthly_village_winners | R | R | R | R |
+| monthly_district_winners | R | R | R | R |
 | activity_score_ledger | R miliknya; I fn | - (peringkat lewat `get_activity_leaderboard`) | - | R |
 | activity_prizes | R jika aktivitas terlihat | R | R jika aktivitas terlihat | R; I/U/D fn |
 | activity_winners | R miliknya, termasuk `ship_*`; U fn | - (daftar pemenang lewat `get_activity_leaderboard`: nickname dan hadiah) | Partner sponsor: R baris hadiah yang ia sponsori tanpa kolom `ship_*` | R, U fn |
@@ -1230,7 +1232,7 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 
 **Catatan privasi antar-partner.** Policy `participations` dan `checkins` untuk tim organizer hanya mengizinkan baris yang `checkins.partner_organizer_id` = organizer mereka. Host melihat semua peserta yang mendaftar, tetapi partner lain hanya melihat peserta yang pernah check-in di checkpoint mereka. Angka total untuk semua partner disajikan lewat `v_activity_stats` yang hanya berisi agregat.
 
-**Kolom yang tidak boleh diubah warga di `profiles`:** `is_admin`, `suspended_at`, `onboarded_at`, `home_village_changed_at`. Diterapkan dengan `revoke update` per kolom, lalu `grant update (nickname, full_name)`. Sejak 0017, `avatar_url` hanya bisa diubah lewat `set_my_avatar`, yang memastikan URL menunjuk ke folder `avatars/<user_id>/` miliknya.
+**Kolom yang tidak boleh diubah warga di `profiles`:** `is_admin`, `suspended_at`, `onboarded_at`, `home_district_id`, `home_district_changed_at`. Diterapkan dengan `revoke update` per kolom, lalu `grant update (nickname, full_name)`. Sejak 0017, `avatar_url` hanya bisa diubah lewat `set_my_avatar`, yang memastikan URL menunjuk ke folder `avatars/<user_id>/` miliknya.
 
 **Foto profil.** Bucket publik `avatars` (maks. 2 MB, gambar). Warga hanya bisa menulis, mengganti, dan menghapus file di folder `avatars/<user_id>/`.
 
@@ -1246,10 +1248,10 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 
 | Tabel | Indeks / constraint | Alasan |
 | --- | --- | --- |
-| regions | unique `(parent_id, name)` | mencegah duplikat kelurahan |
+| regions | unique `(parent_id, name)`, unique `code` | mencegah duplikat wilayah |
 | profiles | unique `lower(nickname)` | nama panggilan unik |
-| organizers | `(status)`, `(type, village_id)` | antrean admin, penyaringan |
-| merchant_outlets | `(organizer_id)`, `(village_id)` | daftar outlet |
+| organizers | `(status)`, `(type, district_id)` | antrean admin, penyaringan |
+| merchant_outlets | `(organizer_id)`, `(district_id)` | daftar outlet |
 | community_memberships | unique `(community_id, user_id) where status in ('pending','active')`; `(community_id, status)`; `(user_id) where status = 'active'` | satu keanggotaan berjalan, daftar member, komunitas saya |
 | activities | `(status, starts_at)`, `(scope_region_id, status)`, `(host_organizer_id)`, `(reach, status) where reach = 'global'` | beranda warga, cron, tab Event Global |
 | activity_partners | unique `(activity_id, organizer_id)`; unique `(activity_id) where role = 'host'` | satu host |
@@ -1262,7 +1264,7 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 | group_members | `(user_id) where status = 'active'` | cek batas 3 grup |
 | participations | unique `(activity_id, user_id)`; `(activity_id, status)`; `(group_id)`; `(payment_due_at) where payment_status = 'unpaid'`; `(activity_id) where payment_status = 'awaiting_confirmation'` | kuota, dashboard, cron bayar, antrean konfirmasi |
 | checkins | unique `(activity_id, user_id, local_date)`; `(partner_organizer_id, checked_in_at)`; `(review_status) where review_status = 'flagged'` | satu check-in per hari, atribusi, antrean flag |
-| xp_ledger | `(user_id, local_date)`; `(village_id, created_at)` | batas harian, leaderboard |
+| xp_ledger | `(user_id, local_date)`; `(district_id, created_at)` | batas harian, leaderboard |
 | point_ledger | `(user_id, expires_at) where amount > 0` | saldo dan kedaluwarsa |
 | redemptions | unique `(code)`; `(user_id, status)` | pemakaian kasir, dompet |
 | activity_score_ledger | `(activity_id, user_id)`; `(user_id)`; unique `(mission_completion_id) where reason = 'mission_complete'`; unique `(checkin_id) where reason = 'checkin'` | papan peringkat event, skor tidak tercatat dua kali |
@@ -1315,6 +1317,7 @@ Keterangan: **R** baca, **I** insert, **U** update, **D** delete, **fn** hanya l
 | Kartu aktivitas + jangkauan | `0024_activity_cards_reach.sql` | `v_activity_cards` menambah kolom `reach` dan `location_mode` di akhir (view tetap `security_invoker`). Uji: kartu Event Global membawa jangkauan dan mode lokasi; draft tetap tidak terlihat warga |
 | Perbaikan keamanan | `0025_security_hardening.sql` | Hasil tinjauan keamanan: hak tulis view dicabut, GPS check-in disembunyikan dari partner, partner tidak aktif tidak bisa memakai QR/misi, data pemenang dan kode voucher hanya untuk pemilik, poin check-in `flagged` ditahan, larangan meninjau diri sendiri, kode misi min. 6 + laporan `code_bruteforce`, batas percobaan kode grup, `reverse_mission_completion`, constraint URL gambar, Event Global tidak masuk streak/leaderboard kelurahan. Uji: `0025_security_hardening_test.sql` |
 | Kota aktivitas | `0026_activity_city.sql` | `region_city()` dan kolom `city_id`/`city_name` di akhir `v_activity_cards` (view tetap `security_invoker`) untuk pemilih kota di Jelajah. Uji: kota dari cakupan kelurahan/kecamatan, dari kelurahan penyelenggara, kota kedua di luar Cimahi, event Gasyu tanpa cakupan tidak terikat kota |
+| Wilayah se-Indonesia | `0027_nationwide_regions.sql` | 514 kota/kabupaten + 7.285 kecamatan di `regions`, wilayah asal warga dan penyelenggara pindah ke kecamatan (data lama dipindah otomatis), `set_city_active`, peringkat per kota dan kecamatan, `monthly_district_winners`, `v_admin_city_stats`. Uji: data wilayah, onboarding kota mana pun, kota tertutup tanpa peringkat, buka kota, domisili kota/kecamatan, cakupan hanya kota yang dibuka, kolom kecamatan penyelenggara |
 Setiap migrasi membawa RLS policy untuk tabel barunya dan file uji SQL sederhana (`supabase/tests/`) untuk aturan yang tidak boleh dilanggar. Semua uji dijalankan dari database kosong dengan `supabase/tests/run.sh` (juga otomatis di GitHub Actions).
 
 ---
@@ -1330,9 +1333,9 @@ Setiap migrasi membawa RLS policy untuk tabel barunya dan file uji SQL sederhana
 - **Kenapa XP misi dikunci setelah ada yang menyelesaikan.** Mengubah XP atau cara verifikasi di tengah jalan membuat peserta yang sudah selesai dan yang belum diperlakukan berbeda; organizer yang ingin mengubah cukup menonaktifkan misi lama dan membuat misi baru.
 - **Kenapa pembayaran hanya status, tanpa transaksi.** Pilot belum memakai payment gateway, jadi Gasyu tidak memegang uang dan tidak menanggung kewajiban refund. `payment_status` dirancang supaya nanti gateway cukup menulis status yang sama (`paid` dari webhook), tanpa mengubah alur check-in, misi, atau kuota.
 - **Pemakaian budget gabungan.** Saat poin diberikan, `evaluate_completion` memotong dari partner yang checkpoint atau misinya menuntaskan syarat selesai; jika budget partner itu habis, dipotong dari partner merchant lain secara berurutan (host lebih dulu). `point_ledger.source_organizer_id` mencatat sumbernya.
-- **Kenapa `village_id` disalin ke `xp_ledger`.** Supaya leaderboard kelurahan tidak berubah ketika warga pindah kelurahan, dan supaya kueri leaderboard tidak perlu join ke `profiles`.
+- **Kenapa `district_id` disalin ke `xp_ledger`.** Supaya peringkat kecamatan tidak berubah ketika warga pindah kecamatan, dan supaya kueri leaderboard tidak perlu join ke `profiles`.
 - **Kenapa `point_allocations`.** Kedaluwarsa per 6 bulan butuh tahu sisa setiap kredit. Mencatat alokasi debit ke kredit (FIFO) membuat sisa tiap kredit bisa dihitung tepat, tanpa kolom saldo yang bisa tidak sinkron.
-- **Kenapa Event Global memakai ledger skor sendiri.** Peserta Event Global bisa datang dari kota mana pun. Jika skornya masuk `xp_ledger`, peringkat kota dan kelurahan Cimahi ikut terdorong oleh event yang bukan program wilayah, dan batas 1.000 XP per hari ikut membatasi kompetisi event. Ledger terpisah membuat papan peringkat event mulai dari nol, berakhir bersama event, dan bisa dibalik (reversal) tanpa menyentuh level warga. Event Global tetap memakai tabel `activities`, `participations`, `checkins`, dan `mission_completions` yang sama, sehingga QR, misi, pembayaran, dan moderasi tidak perlu dibuat ulang.
+- **Kenapa Event Global memakai ledger skor sendiri.** Peserta Event Global bisa datang dari kota mana pun. Jika skornya masuk `xp_ledger`, peringkat kota dan kecamatan ikut terdorong oleh event yang bukan program wilayah, dan batas 1.000 XP per hari ikut membatasi kompetisi event. Ledger terpisah membuat papan peringkat event mulai dari nol, berakhir bersama event, dan bisa dibalik (reversal) tanpa menyentuh level warga. Event Global tetap memakai tabel `activities`, `participations`, `checkins`, dan `mission_completions` yang sama, sehingga QR, misi, pembayaran, dan moderasi tidak perlu dibuat ulang.
 - **Kenapa aturan seri memakai `occurred_at`.** Bukti foto bisa disetujui berjam-jam setelah dikirim. Jika seri ditentukan dari waktu disetujui, kecepatan panitia meninjau ikut menentukan juara. `occurred_at` menyimpan kapan warga benar-benar mengerjakan misinya.
 - **Kenapa hadiah tidak dialihkan otomatis saat hangus.** Mengalihkan hadiah ke peringkat berikutnya berarti menggeser seluruh daftar pemenang setelah diumumkan. Untuk pilot, hadiah yang hangus dibiarkan hangus dan tercatat; pengalihan bisa ditambahkan nanti sebagai fungsi admin tersendiri.
 - **Skala pilot.** Ribuan warga dan puluhan organizer jauh di bawah batas Postgres; view biasa cukup. Jika leaderboard melambat, ubah view leaderboard menjadi materialized view yang di-refresh tiap 5 menit. Hal yang sama berlaku untuk `v_activity_scoreboard` jika satu Event Global diikuti puluhan ribu peserta.

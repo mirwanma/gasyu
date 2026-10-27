@@ -1,6 +1,7 @@
 # Gasyu — Alur Sistem
 
-Versi 0.13 · 19 Oktober 2026 · Pilot Kota Cimahi
+Versi 0.14 · 27 Oktober 2026 · Pilot Kota Cimahi, terbuka untuk seluruh Indonesia
+Perubahan 0.14: Gasyu terbuka untuk semua kota di Indonesia (migrasi 0027). Wilayah asal warga dan penyelenggara sekarang **kota/kabupaten + kecamatan** dari seluruh Indonesia, bukan kelurahan Cimahi; pilihan "Luar Cimahi" dihapus (bagian 3a). Admin membuka kota satu per satu di halaman Wilayah; peringkat dihitung per kota dan per kecamatan, hanya untuk kota yang sudah dibuka (bagian 17). Cakupan aktivitas berupa kota atau kecamatan di kota yang sudah dibuka (bagian 6). Badge Penjelajah Kelurahan menjadi Penjelajah Kecamatan.
 Perubahan 0.13: pemilih kota di Jelajah (bagian 20b). Warga melihat aktivitas di kotanya sendiri secara otomatis dan bisa memilih kota lain atau Semua kota (migrasi 0026).
 Perubahan 0.12 (tinjauan keamanan, migrasi 0025): anggota tim tidak bisa meninjau atau menandai misinya sendiri, dan misi manual hanya untuk peserta yang sudah check-in (bagian 9b); kode misi minimal 6 karakter dan tebakan massal dari banyak akun ditandai (bagian 9c dan 19); poin dari check-in di luar radius ditahan sampai admin memutuskan (bagian 14c); admin bisa membatalkan misi yang sudah disetujui (bagian 19); refund voucher oleh merchant hanya untuk reward nonaktif dan kode voucher aktif hanya dilihat pemiliknya (bagian 16); kode undangan grup maks. 5 percobaan salah per 15 menit (bagian 11); partner yang keluar atau dibekukan tidak bisa lagi menampilkan QR, dan misinya ikut nonaktif (bagian 10); identitas pemenang Event Global hanya untuk pemenang dan admin.
 Perubahan 0.11: database Event Global sudah dibangun (bagian 22); halaman admin sudah ada: jangkauan dan mode lokasi di formulir event Gasyu, misi berskor, Kelola hadiah, serta Peringkat & pemenang (bagian 20); halaman warga juga sudah ada: tab Event Global di Jelajah, skor dan hadiah di halaman event, papan peringkat `/aktivitas/[id]/peringkat`, hasil scan berupa skor, kartu Beranda, halaman Hadiah `/hadiah` dengan klaim, dan notifikasi hadiah (bagian 22e); kartu "Hadiah yang disponsori" di dashboard merchant dan komunitas (bagian 20a) hanya menampilkan peringkat dan status, tanpa identitas pemenang; warga luar Cimahi memilih kota/kabupaten asal dari daftar (bagian 3); di Event Global peserta tidak pernah berstatus selesai, jadi tetap bisa menambah skor lewat misi sampai acara berakhir (bagian 22c).
@@ -21,7 +22,7 @@ Semua diagram ditulis dalam Mermaid, jadi bisa dibaca langsung di GitHub, VS Cod
 
 1. Entitas dan peta sistem
 2. Peran dan hak akses
-3. Login dan onboarding warga
+3. Login dan onboarding warga (3a. Wilayah se-Indonesia)
 4. Registrasi merchant/UMKM dan komunitas
 5. Undangan anggota tim
 6. Membuat aktivitas
@@ -53,7 +54,7 @@ Gasyu punya empat entitas. Masing-masing punya dashboard sendiri.
 | 1 | **Admin** | Pemilik aplikasi (tim Gasyu) | Web, desktop-first, di `admin.gasyu.id` | Verifikasi merchant dan komunitas, review aktivitas, moderasi, metrik kota, pengaturan aturan main |
 | 2 | **Merchant/UMKM** | UMKM atau usaha apa pun yang mendaftar (kedai, kafe, toko, jasa, bengkel, dll.); dikelola pemilik, staf, kasir | Mobile PWA | Aktivitas, peserta dan pembayaran, misi, QR, kasir voucher, reward dan budget poin, outlet, kolaborasi, tim |
 | 3 | **Komunitas** | Komunitas apa pun yang mendaftar: olahraga (lari, sepeda, futsal, dll.), musik, seni, hobi, sosial, lingkungan, dan lainnya; dikelola ketua dan pengurus | Mobile PWA | Aktivitas, peserta dan pembayaran, misi, QR, member, kolaborasi, tim |
-| 4 | **Warga** | Semua pengguna terdaftar, termasuk yang tinggal di luar Cimahi | Mobile PWA | Level dan XP, aktivitas yang diikuti dan misinya, poin dan voucher, peringkat, grup, komunitas saya, Event Global dan hadiahnya |
+| 4 | **Warga** | Semua pengguna terdaftar, dari kota mana pun di Indonesia | Mobile PWA | Level dan XP, aktivitas yang diikuti dan misinya, poin dan voucher, peringkat, grup, komunitas saya, Event Global dan hadiahnya |
 
 **Tidak ada batasan jenis.** Merchant mencakup semua jenis usaha, dari UMKM rumahan sampai bisnis dengan beberapa cabang. Komunitas mencakup semua jenis komunitas warga. Kategori (lihat bagian 4) hanya dipakai untuk penyaringan dan pencarian, bukan syarat pendaftaran; jika kategorinya tidak ada, pilih "Lainnya".
 
@@ -201,13 +202,13 @@ flowchart TD
     SES --> O{onboarded_at terisi?}
     O -- Ya --> NX
     O -- Tidak --> F1[Isi nama panggilan<br/>dan nama lengkap]
-    F1 --> F2[Pilih kelurahan asal<br/>atau Luar Cimahi]
+    F1 --> F2[Pilih kota/kabupaten<br/>lalu kecamatan tempat tinggal]
     F2 --> F3[Setujui S&K dan<br/>kebijakan privasi]
     F3 --> F4[Simpan profil<br/>onboarded_at = now]
     F4 --> XP[Tambah 50 XP<br/>reason profile_complete]
     XP --> NX{Ada tujuan next?}
     NX -- Ya --> T[Arahkan ke grup,<br/>aktivitas, atau undangan tim]
-    NX -- Tidak --> H[Beranda: aktivitas<br/>di kelurahan saya]
+    NX -- Tidak --> H[Beranda: aktivitas<br/>di kota saya]
 ```
 
 **Aturan tambahan**
@@ -219,12 +220,26 @@ flowchart TD
 - Nama panggilan harus unik (case-insensitive), 3–20 karakter.
 - Warga mengubah nama panggilan dan nama lengkap di `/profil/ubah` (`update_my_profile`).
 - Foto profil juga di `/profil/ubah`: foto dipotong persegi dan diperkecil ke 512 px di HP sebelum diunggah ke bucket publik `avatars` (folder milik warga sendiri), lalu disimpan lewat `set_my_avatar`. Foto lama dihapus otomatis. Foto tampil di profil dan beranda warga sendiri, dan di daftar tim penyelenggara tempat ia bergabung. Saat akun dihapus, foto ikut dihapus.
-- Warga yang memilih "Luar Cimahi" bisa mengisi **kota/kabupaten asal** dari daftar 514 kota/kabupaten (tidak wajib) di onboarding dan Ubah profil (`set_home_city`). Data ini dipakai untuk statistik sebaran peserta Event Global; warga Cimahi tidak mengisinya.
-- Kelurahan asal bisa diganti maksimal sekali per `profile.village_change_days` hari, awal 90 (`change_home_village`, `home_village_changed_at`). Penggantian pertama setelah onboarding langsung dihitung.
+- Kota dan kecamatan tempat tinggal **wajib** diisi saat onboarding (`complete_onboarding`), dari 514 kota/kabupaten dan 7.285 kecamatan se-Indonesia. Aturan wilayah ada di bagian 3a.
+- Kota dan kecamatan bisa diganti (termasuk pindah kota) maksimal sekali per `profile.district_change_days` hari, awal 90 (`change_home_district`, `home_district_changed_at`). Penggantian pertama setelah onboarding langsung dihitung. Akun lama yang belum punya kecamatan boleh langsung mengisinya; Beranda, Profil, dan Peringkat mengingatkan mereka.
 - Tidak ada batas usia dan tidak ada persetujuan orang tua selama pilot.
 - Sesi tetap aktif di HP sampai warga keluar. Selain tombol "Keluar dari akun" (perangkat ini saja), halaman profil punya **Keluar dari semua perangkat** (Supabase Auth `signOut({ scope: 'global' })`), untuk warga yang HP-nya hilang atau pernah masuk di HP orang lain.
 - Hapus akun (`/profil/hapus`, `delete_my_account`, warga mengetik HAPUS): data pribadi di `profiles` dikosongkan dan `deleted_at` diisi; baris ledger tetap ada demi audit, tetapi tidak lagi terhubung ke identitas yang bisa dikenali. Pendaftaran yang belum berjalan dibatalkan, warga keluar dari grup, komunitas, dan tim, notifikasinya dihapus. Ditolak jika ia satu-satunya pemilik/ketua, masih punya pembayaran lunas/menunggu di aktivitas yang belum selesai, atau akun admin. Sesi akun terhapus selalu dikeluarkan dan email yang sama tidak bisa dipakai masuk lagi.
 - Riwayat XP dan poin ada di `/riwayat` (dibaca dari `xp_ledger` dan `point_ledger`). Halaman `/bantuan` berisi pertanyaan umum dan kontak tim dari `app_settings` (`support.whatsapp`, `support.email`).
+
+### 3a. Wilayah se-Indonesia
+
+Gasyu dimulai di Kota Cimahi, tetapi warga, merchant, dan komunitas dari kota mana pun boleh mendaftar.
+
+| Hal | Aturan |
+| --- | --- |
+| Data wilayah | 514 kota/kabupaten dan 7.285 kecamatan (kode Kemendagri) di `regions`. Wilayah asal selalu **kecamatan**; kotanya diambil dari induk kecamatan. Kelurahan Cimahi lama tetap tersimpan untuk riwayat, tetapi tidak bisa dipilih lagi |
+| Pemilih wilayah | Ketik nama kota (mis. "bandung" menemukan Kota Bandung dan Kabupaten Bandung), lalu pilih kecamatan. Dipakai di onboarding, Ubah profil, daftar merchant/komunitas, tambah outlet, dan profil komunitas |
+| Kota dibuka | Admin membuka kota satu per satu di halaman **Wilayah** (`set_city_active`, dicatat di `admin_actions`). Awalnya hanya Kota Cimahi yang dibuka. Halaman Wilayah menampilkan jumlah warga dan penyelenggara per kota (`v_admin_city_stats`) supaya admin tahu kota mana yang sudah ada peminatnya |
+| Kota yang belum dibuka | Warga tetap bisa mendaftar, ikut aktivitas, dan mendapat XP dan poin. Kota itu belum tampil di pemilih kota Jelajah, belum bisa dipakai sebagai cakupan aktivitas, dan peringkat kota/kecamatannya belum tampil. XP tetap tercatat per kecamatan (snapshot), jadi langsung terhitung begitu kota dibuka |
+| Penyelenggara di kota yang belum dibuka | Boleh mendaftar dan diverifikasi. Di halaman Verifikasi admin melihat peringatan "kota belum dibuka" dan tombol untuk membukanya |
+| Akun lama | Warga lama "Luar Cimahi" tidak punya kecamatan (`home_district_id` kosong). Mereka tetap dapat XP dan poin, tetapi tidak masuk peringkat dan tidak lolos aktivitas `residents_only` sampai mengisi kota dan kecamatan |
+| Pengecekan | Kolom kecamatan warga, penyelenggara, outlet, dan area komunitas hanya bisa berisi kecamatan (`is_valid_district`, trigger `check_district_ref`); cakupan aktivitas hanya wilayah di kota yang sudah dibuka (`is_open_region`) |
 
 ---
 
@@ -236,9 +251,9 @@ Dua formulir berbeda, satu alur verifikasi.
 flowchart TD
     S([Warga login memilih<br/>Daftarkan penyelenggara]) --> T{Jenis}
     T -->|Merchant/UMKM| B1[Nama usaha, kategori usaha,<br/>WhatsApp, logo, NIB opsional]
-    B1 --> B2[Tambah minimal 1 outlet:<br/>alamat, kelurahan, titik peta, jam buka]
+    B1 --> B2[Tambah minimal 1 outlet:<br/>alamat, kota + kecamatan, titik peta, jam buka]
     B2 --> B3[Unggah foto tempat usaha]
-    T -->|Komunitas| K1[Nama, kategori minat<br/>olahraga, musik, seni, dll.,<br/>area kegiatan, WhatsApp, logo]
+    T -->|Komunitas| K1[Nama, kategori minat<br/>olahraga, musik, seni, dll.,<br/>area kegiatan kota + kecamatan, WhatsApp, logo]
     K1 --> K2[Akun media sosial,<br/>perkiraan anggota, basecamp opsional]
     K2 --> K2B[Kebijakan bergabung member:<br/>terbuka atau perlu persetujuan]
     K2B --> K3[Unggah bukti: tautan medsos<br/>atau foto kegiatan]
@@ -311,7 +326,7 @@ flowchart TD
     AU3 --> RES
     RES{Siapa boleh ikut?}
     RES -->|Semua warga| PAY
-    RES -->|Hanya warga wilayah event| RES2[Sesuai wilayah cakupan:<br/>kota, kecamatan, atau kelurahan] --> PAY
+    RES -->|Hanya warga wilayah event| RES2[Sesuai wilayah cakupan:<br/>kota atau kecamatan] --> PAY
     PAY{Berbayar?}
     PAY -- Gratis --> CP
     PAY -- Berbayar --> PAY2[Harga per orang,<br/>instruksi bayar: rekening/QRIS/kontak,<br/>batas waktu bayar] --> CP
@@ -356,11 +371,12 @@ flowchart TD
 
 | Pilihan | Yang boleh ikut | Contoh |
 | --- | --- | --- |
-| `open` (default) | Semua warga Gasyu, termasuk yang kelurahan asalnya "Luar Cimahi" atau kota lain | Konser, festival kuliner, fun run terbuka |
-| `residents_only` | Hanya warga yang kelurahan asalnya berada di dalam wilayah cakupan event. Jika cakupannya kota, berlaku untuk seluruh warga kota itu; jika kecamatan atau kelurahan, hanya warga di sana | Lomba antarkelurahan, program kota untuk warga Cimahi, kerja bakti RW |
+| `open` (default) | Semua warga Gasyu, dari kota mana pun | Konser, festival kuliner, fun run terbuka |
+| `residents_only` | Hanya warga yang kecamatan asalnya berada di dalam wilayah cakupan event. Jika cakupannya kota, berlaku untuk seluruh warga kota itu; jika kecamatan, hanya warga kecamatan itu | Lomba antarkecamatan, program kota untuk warga Cimahi, kerja bakti RW |
 
-- Domisili dicek dari kelurahan asal di profil saat mendaftar. Data ini diisi sendiri oleh warga (bukan verifikasi KTP), tetapi hanya bisa diganti sekali per 90 hari, sehingga sulit dipakai untuk berpindah-pindah demi ikut event.
-- Warga yang pindah kelurahan setelah terdaftar tetap boleh ikut sampai selesai.
+- Domisili dicek dari kecamatan asal di profil saat mendaftar. Data ini diisi sendiri oleh warga (bukan verifikasi KTP), tetapi hanya bisa diganti sekali per 90 hari, sehingga sulit dipakai untuk berpindah-pindah demi ikut event.
+- Warga yang pindah kecamatan setelah terdaftar tetap boleh ikut sampai selesai.
+- Wilayah cakupan hanya bisa dipilih dari kota yang sudah dibuka admin (bagian 3a): seluruh kota atau satu kecamatan. Aktivitas lama yang cakupannya kelurahan dipindah ke kecamatannya.
 - Pendaftaran grup: setiap anggota yang dipilih harus memenuhi aturan domisili.
 - Bisa digabung dengan aturan lain: misalnya event khusus member komunitas sekaligus khusus warga Cimahi; kedua syarat harus terpenuhi.
 - Event tetap terlihat oleh semua warga dengan label "Khusus warga [wilayah]", supaya warga lain tahu event itu ada.
@@ -664,7 +680,7 @@ sequenceDiagram
     actor O as Penyelenggara lain
     H->>DB: buat collab_posts (kind collab atau sponsor, kebutuhan, manfaat, tenggat)
     DB-->>PB: tampil untuk penyelenggara terverifikasi
-    O->>PB: saring per kelurahan, kategori, jenis
+    O->>PB: saring per wilayah, kategori, jenis
     O->>DB: apply_open_call(post, peran, kontribusi, pesan)
     DB-->>H: notifikasi pengajuan baru
     H->>DB: decide_application(terima atau tolak)
@@ -690,7 +706,7 @@ sequenceDiagram
 
 ### 10c. Event buatan admin
 
-Admin bisa membuat event atau challenge atas nama **Gasyu**, misalnya festival kota, lomba antarkelurahan, atau program bersama pemerintah kota. Di dalamnya admin memilih merchant dan komunitas yang terlibat dan **langsung menambahkan mereka** tanpa menunggu persetujuan, karena kesepakatannya biasanya sudah dibuat di luar aplikasi.
+Admin bisa membuat event atau challenge atas nama **Gasyu**, misalnya festival kota, lomba antarkecamatan, atau program bersama pemerintah kota. Di dalamnya admin memilih merchant dan komunitas yang terlibat dan **langsung menambahkan mereka** tanpa menunggu persetujuan, karena kesepakatannya biasanya sudah dibuat di luar aplikasi.
 
 ```mermaid
 sequenceDiagram
@@ -791,7 +807,7 @@ sequenceDiagram
     actor T as Ketua / pengurus
     participant DB as Database
     actor W as Warga
-    T->>DB: lihat daftar member (nickname, kelurahan, tanggal gabung, keaktifan)
+    T->>DB: lihat daftar member (nickname, kecamatan, tanggal gabung, keaktifan)
     T->>DB: decide_membership(membership_id, terima atau tolak)
     DB-->>W: notifikasi hasil
     opt Mengeluarkan member
@@ -813,7 +829,7 @@ sequenceDiagram
 | Jumlah komunitas | Warga boleh menjadi member di banyak komunitas, tanpa batas |
 | Tim otomatis member | Ketua dan pengurus selalu member aktif; ketua tidak bisa keluar sebelum menyerahkan peran ketua |
 | Bergabung ulang | Member yang `left` boleh meminta lagi kapan saja; yang `removed` atau `rejected` baru boleh meminta lagi setelah 30 hari |
-| Privasi | Tim melihat nickname, kelurahan, tanggal gabung, dan jumlah check-in member di aktivitas komunitas itu; tidak pernah nama lengkap. Publik hanya melihat jumlah member aktif |
+| Privasi | Tim melihat nickname, kecamatan, tanggal gabung, dan jumlah check-in member di aktivitas komunitas itu; tidak pernah nama lengkap. Publik hanya melihat jumlah member aktif |
 | XP | Bergabung tidak memberi XP, supaya tidak jadi celah farming |
 | Komunitas dibekukan | Keanggotaan tetap tersimpan; aktivitas khusus member ikut tidak bisa diikuti |
 | Grup warga | Terpisah dari keanggotaan; grup bisa berisi warga dari komunitas berbeda |
@@ -835,7 +851,7 @@ flowchart TD
     ST -- Tidak --> X0[Tombol join nonaktif]
     ST -- Ya --> AUD{audience members_only?}
     AUD -- Ya, bukan member aktif --> XM[Tombol join nonaktif<br/>ajakan gabung komunitas]
-    AUD -- Tidak, atau member aktif --> RS{residents_only dan<br/>kelurahan asal di luar cakupan?}
+    AUD -- Tidak, atau member aktif --> RS{residents_only dan<br/>kecamatan asal di luar cakupan?}
     RS -- Ya --> XR[Tombol join nonaktif<br/>Khusus warga wilayah ini]
     RS -- Tidak --> MD{join_mode}
     MD -->|individual| P
@@ -1019,9 +1035,9 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     XL[(xp_ledger)] --> LV[v_user_level<br/>total XP seumur hidup<br/>ke tabel level]
-    XL --> LU[v_leaderboard_users_month<br/>XP bulan berjalan<br/>per kelurahan dan se-kota]
-    XL --> LK[v_leaderboard_villages_month<br/>rata-rata XP per warga aktif<br/>minimal 10 warga aktif]
-    CI[(checkins)] --> AK[v_village_active_month<br/>jumlah warga aktif<br/>tab Kelurahan Teraktif]
+    XL --> LU[v_leaderboard_users_month<br/>XP bulan berjalan<br/>per kecamatan dan se-kota]
+    XL --> LK[v_leaderboard_districts_month<br/>rata-rata XP per warga aktif<br/>minimal 10 warga aktif, per kota]
+    CI[(checkins)] --> AK[v_district_active_month<br/>jumlah warga aktif<br/>tab Kecamatan]
     CI --> LG[v_group_progress<br/>leaderboard grup per aktivitas]
     CI --> OR[v_organizer_reputation<br/>hadir, penyelesaian, kolaborasi]
     CI --> BD[award_badges<br/>dicek setelah check-in]
@@ -1038,14 +1054,14 @@ flowchart LR
 | 4 | Jawara | 4.000 |
 | 5 | Legenda Cimahi | 10.000 |
 
-**Leaderboard kelurahan.** XP dihitung ke kelurahan yang tercatat di `xp_ledger.village_id` saat XP diberikan (snapshot), sehingga pindah kelurahan tidak memindahkan XP lama. Warga "Luar Cimahi" (`village_id` kosong) tidak dihitung. Juara bulan lalu disimpan oleh cron ke `monthly_village_winners`.
+**Peringkat kota dan kecamatan.** Halaman Peringkat punya tiga tab: warga di kecamatan saya, warga se-kota saya, dan peringkat kecamatan di kota saya. Hanya kota yang sudah dibuka admin yang punya peringkat (bagian 3a); warga di kota lain melihat keterangan "peringkat kotamu belum dibuka". XP dihitung ke kecamatan yang tercatat di `xp_ledger.district_id` saat XP diberikan (snapshot), sehingga pindah kecamatan tidak memindahkan XP lama. Warga tanpa kecamatan (akun lama) tidak dihitung. Juara kecamatan bulan lalu di setiap kota disimpan oleh cron ke `monthly_district_winners`.
 
 **Badge awal**
 
 | Kode | Nama | Syarat |
 | --- | --- | --- |
 | first_step | Langkah Pertama | Check-in pertama |
-| village_explorer | Penjelajah Kelurahan | Check-in di 5 kelurahan berbeda |
+| district_explorer | Penjelajah Kecamatan | Check-in di 3 kecamatan berbeda |
 | regular | Langganan | Check-in di penyelenggara yang sama 5 kali |
 | collaborator | Kolaborator | Ikut 3 aktivitas kolaborasi |
 | consistent | Konsisten | Streak 4 minggu |
@@ -1081,7 +1097,7 @@ flowchart TB
         J14[process_prizes<br/>pengingat klaim hadiah, hadiah hangus,<br/>hapus alamat pengiriman lama]
     end
     subgraph TM["Tanggal 1 pukul 00.10 WIB"]
-        J8[snapshot_monthly_winners<br/>simpan juara kelurahan bulan lalu]
+        J8[snapshot_monthly_winners<br/>simpan juara kecamatan bulan lalu]
     end
 ```
 
@@ -1151,7 +1167,7 @@ flowchart TD
 | Poin dari check-in di luar radius ditahan sampai ditinjau | Poin dari QR curian langsung ditukar voucher sebelum admin sempat menolak |
 | XP misi 10–100, total maks. 500 per aktivitas | Penyelenggara membuat misi XP besar untuk mendongkrak warga tertentu |
 | Misi foto dan manual dicatat siapa peninjaunya | Panitia menyetujui temannya sendiri tanpa jejak; admin bisa mengaudit |
-| Skor Event Global terpisah dari XP | Event besar dengan peserta luar kota menggeser peringkat kota dan kelurahan |
+| Skor Event Global terpisah dari XP | Event besar dengan peserta luar kota menggeser peringkat kota dan kecamatan |
 | Masa verifikasi 48 jam sebelum pemenang ditetapkan | Juara dari check-in atau foto yang belum ditinjau |
 | Admin meninjau pemenang sebelum hadiah dikirim; akun dibekukan tidak bisa menang | Akun ganda atau curang membawa pulang hadiah |
 
@@ -1178,8 +1194,8 @@ Satu codebase Next.js melayani dua aplikasi: **Gasyu PWA** (warga, merchant, kom
 | Event Global | Event Global yang diikuti beserta skor dan posisi saya; Event Global yang sedang dibuka pendaftarannya | `v_activity_scoreboard`, `activities` |
 | Hadiah perlu diklaim | Hadiah Event Global berstatus `pending_claim` beserta batas klaimnya | `activity_winners` |
 | Dompet ringkas | Saldo poin, poin yang akan kedaluwarsa 30 hari lagi, voucher aktif | `v_user_points_balance`, `redemptions` |
-| Peringkat | Posisi di kelurahan dan se-kota bulan ini, posisi kelurahan saya | `get_leaderboard` |
-| Rekomendasi | Aktivitas di kelurahan saya dan dari komunitas yang saya ikuti | `activities`, `community_memberships` |
+| Peringkat | Posisi di kecamatan dan se-kota bulan ini, posisi kecamatan saya (hanya kota yang dibuka) | `get_leaderboard` |
+| Rekomendasi | Aktivitas di kota saya (diutamakan kecamatan saya) dan dari komunitas yang saya ikuti | `activities`, `community_memberships` |
 | Badge terbaru | Badge yang baru didapat | `user_badges` |
 
 **Dashboard merchant** (`/merchant/[id]`)
@@ -1208,9 +1224,10 @@ Satu codebase Next.js melayani dua aplikasi: **Gasyu PWA** (warga, merchant, kom
 
 | Bagian | Isi | Sumber data |
 | --- | --- | --- |
-| Metrik kota | Warga aktif mingguan, aktivitas berjalan, merchant dan komunitas aktif, poin beredar vs ditukar, kelurahan teraktif | `v_admin_overview`, `v_village_active_month` |
+| Metrik kota | Warga aktif mingguan, aktivitas berjalan, merchant dan komunitas aktif, poin beredar vs ditukar, kecamatan teraktif di semua kota yang dibuka | `v_admin_overview`, `leaderboard_districts` |
+| Wilayah | Buka atau tutup kota; jumlah warga dan penyelenggara per kota (bagian 3a) | `set_city_active`, `v_admin_city_stats` |
 | Event Gasyu | Buat dan kelola event/challenge Gasyu, tambahkan merchant/komunitas, konfirmasi pembayaran, tinjau bukti misi | `activities`, `activity_partners`, `v_activity_stats` |
-| Event Global | Buat Event Global, atur hadiah per peringkat, pantau papan peringkat, statistik peserta (warga Cimahi vs luar Cimahi, misi selesai) | `activities`, `activity_prizes`, `v_activity_scoreboard`, `v_global_event_stats` |
+| Event Global | Buat Event Global, atur hadiah per peringkat, pantau papan peringkat, statistik peserta (sebaran kota dan kecamatan asal, misi selesai) | `activities`, `activity_prizes`, `v_activity_scoreboard`, `v_global_event_stats` |
 | Hadiah | Pemenang per event, status klaim, data pengiriman, tandai terkirim atau hangus | `activity_winners`, `fraud_flags` |
 | Antrean | Merchant/komunitas menunggu verifikasi, aktivitas menunggu review, check-in dan misi flagged, laporan pola mencurigakan | `organizers`, `activities`, `checkins`, `mission_completions`, `fraud_flags` |
 | Pembayaran | Aktivitas dibatalkan yang masih punya peserta `paid` belum `refunded` | `v_activity_payment_stats` |
@@ -1284,10 +1301,10 @@ flowchart LR
     AD --> A7[/audit/]
 ```
 
-- Halaman Jelajah punya tab **Event Global** yang menampilkan semua Event Global `published` atau `running` tanpa saringan kelurahan. Halaman Hadiah dibuka dari Beranda, Dompet, dan notifikasi.
+- Halaman Jelajah punya tab **Event Global** yang menampilkan semua Event Global `published` atau `running` tanpa saringan wilayah. Halaman Hadiah dibuka dari Beranda, Dompet, dan notifikasi.
 - **Pemilih kota di Jelajah.** Tombol kota di pojok kanan atas memuat daftar kota yang aktif di Gasyu (`regions` tingkat kota) dan pilihan **Semua kota**. Aturannya:
-  - Pilihan awal adalah kota tempat tinggal warga, dari kelurahannya. Untuk warga luar Cimahi, dipakai kota asalnya jika kota itu sudah aktif di Gasyu (kode Kemendagri sama); jika belum, Semua kota.
-  - Kota sebuah aktivitas diambil dari wilayah cakupannya, ditarik ke tingkat kota. Jika cakupan kosong, dipakai kelurahan penyelenggara. Aktivitas tanpa keduanya, misalnya event Gasyu tanpa cakupan, tampil di semua kota.
+  - Pilihan awal adalah kota tempat tinggal warga, dari kecamatannya, jika kota itu sudah dibuka; jika belum, Semua kota.
+  - Kota sebuah aktivitas diambil dari wilayah cakupannya, ditarik ke tingkat kota. Jika cakupan kosong, dipakai kecamatan penyelenggara. Aktivitas tanpa keduanya, misalnya event Gasyu tanpa cakupan, tampil di semua kota.
   - Pencarian dan filter berlaku di dalam kota terpilih. Pilihan kota tersimpan di alamat halaman (`?kota=32.77` atau `?kota=semua`), sehingga terbawa saat pindah filter dan bisa dibagikan.
   - Tab Event Global tidak memakai pemilih kota.
 - Navigasi bawah PWA mengikuti mode aktif: mode warga (Beranda, Jelajah, Scan, Dompet, Profil), mode merchant (Dashboard, Aktivitas, QR, Kasir, Lainnya), mode komunitas (Dashboard, Aktivitas, QR, Member, Lainnya).
@@ -1316,13 +1333,13 @@ sequenceDiagram
 
 | Aturan | Isi |
 | --- | --- |
-| Siapa bisa mengirim | Warga aktif (sudah onboarding, tidak dibekukan), termasuk warga luar Cimahi |
+| Siapa bisa mengirim | Warga aktif (sudah onboarding, tidak dibekukan), dari kota mana pun |
 | Tujuan | Merchant atau komunitas berstatus `approved`; bukan event Gasyu (organizer `platform`) |
 | Tim sendiri | Anggota tim tidak bisa mengirim saran ke penyelenggaranya sendiri; formulir tidak tampil untuk mereka |
 | Isi | Satu jenis saran dan teks 10 sampai 1.000 karakter |
 | Batas | Maksimal `suggestion.daily_limit_per_organizer` saran (awal: 3) per warga per penyelenggara per hari WIB |
-| Tanpa nama | Warga boleh memilih tanpa nama. Tim tidak melihat nickname maupun kelurahan pengirim; admin tetap bisa menelusuri jika ada penyalahgunaan |
-| Privasi | Tim hanya melihat nickname dan kelurahan (tidak pernah `full_name`) lewat `v_organizer_suggestions` |
+| Tanpa nama | Warga boleh memilih tanpa nama. Tim tidak melihat nickname maupun kecamatan pengirim; admin tetap bisa menelusuri jika ada penyalahgunaan |
+| Privasi | Tim hanya melihat nickname dan kecamatan (tidak pernah `full_name`) lewat `v_organizer_suggestions` |
 | Status | `new` (Baru) → `in_progress` (Ditindaklanjuti) → `done` (Selesai), atau `archived` (Diarsipkan). Tidak bisa kembali ke Baru |
 | Siapa menanggapi | Semua anggota tim (pemilik, staf, ketua, pengurus). Balasan hanya terlihat oleh pengirimnya |
 | Notifikasi | Tim: setiap saran baru. Warga: saat ada balasan baru, atau status berubah ke Ditindaklanjuti/Selesai. Mengarsipkan tanpa balasan tidak mengirim notifikasi |
@@ -1339,12 +1356,12 @@ Event Global adalah event yang **terbuka untuk pengguna dari kota mana pun**, ti
 | Hal | Event regional | Event Global |
 | --- | --- | --- |
 | Pembuat | Merchant, komunitas, admin | **Admin saja** selama pilot (host `platform`) |
-| Siapa boleh ikut | Semua warga atau hanya warga wilayah (`residency_rule`) | Semua pengguna yang sudah onboarding, dari kota mana pun, termasuk "Luar Cimahi" |
+| Siapa boleh ikut | Semua warga atau hanya warga wilayah (`residency_rule`) | Semua pengguna yang sudah onboarding, dari kota mana pun, termasuk kota yang belum dibuka |
 | Tampil di | Beranda dan Jelajah, disaring per kota (bagian 20b) | Tab Event Global di Jelajah dan kartu di Beranda semua pengguna, tanpa saringan wilayah |
 | Lokasi | Checkpoint fisik | `onsite` (checkpoint), `online` (tanpa checkpoint), atau `hybrid` (keduanya) |
 | Cara ikut | Pribadi atau grup | Pribadi saja |
-| Hasil check-in dan misi | XP (+ poin dari budget merchant) | **Skor event** saja; tidak menambah XP, level, peringkat kota/kelurahan, atau poin dompet |
-| Peringkat | Peringkat kota dan kelurahan bulanan | **Papan peringkat per event**, hanya berisi peserta event itu |
+| Hasil check-in dan misi | XP (+ poin dari budget merchant) | **Skor event** saja; tidak menambah XP, level, peringkat kota/kecamatan, atau poin dompet |
+| Peringkat | Peringkat kota dan kecamatan bulanan | **Papan peringkat per event**, hanya berisi peserta event itu |
 | Hadiah | Poin → voucher; hadiah lain ditulis di deskripsi | **Hadiah per peringkat** dicatat di sistem, dengan alur klaim dan pengiriman |
 | Partner | Undangan, open call, atau ditambahkan admin | Ditambahkan admin; boleh menyediakan checkpoint, misi, dan hadiah |
 
@@ -1477,4 +1494,4 @@ sequenceDiagram
 | Akun ganda dicegah lewat deteksi pola dan tinjauan admin sebelum hadiah dikirim | Verifikasi nomor HP sebelum klaim hadiah |
 | Kode rahasia sama untuk semua peserta (bisa bocor di event online) | Kode per peserta atau kode berganti per waktu; untuk hadiah bernilai besar, pakai misi foto atau manual |
 | Hadiah hangus tidak dialihkan | Fungsi admin untuk mengalihkan hadiah ke peringkat berikutnya |
-| Asal peserta luar kota hanya tercatat sebagai "Luar Cimahi" | Kolom kota asal di profil untuk laporan sebaran peserta ke pemkot |
+| Asal peserta luar kota tidak tercatat | Semua peserta punya kota dan kecamatan asal (bagian 3a), sehingga sebaran peserta bisa dilaporkan ke pemkot |
