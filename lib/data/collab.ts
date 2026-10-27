@@ -49,10 +49,10 @@ export async function listMyPartnerships(organizerId: string): Promise<PartnerRo
 // Penyelenggara terverifikasi lain, untuk memilih partner.
 export async function listApprovedOrganizers(excludeId?: string) {
   const supabase = await createClient();
-  const { data } = await supabase.from("organizers").select("id, name, type, village:regions(name)").eq("status", "approved").neq("type", "platform").order("name");
+  const { data } = await supabase.from("organizers").select("id, name, type, district:regions(name)").eq("status", "approved").neq("type", "platform").order("name");
   return (data ?? [])
     .filter((o) => o.id !== excludeId)
-    .map((o) => ({ id: o.id as string, name: o.name as string, type: o.type as "merchant" | "community", village: ((Array.isArray(o.village) ? o.village[0] : o.village) as { name: string } | null)?.name ?? null }));
+    .map((o) => ({ id: o.id as string, name: o.name as string, type: o.type as "merchant" | "community", district: ((Array.isArray(o.district) ? o.district[0] : o.district) as { name: string } | null)?.name ?? null }));
 }
 
 export type CollabPost = {

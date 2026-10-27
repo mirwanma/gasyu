@@ -3,7 +3,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "@/lib/safe-next";
-import { OUTSIDE_CIMAHI } from "./constants";
 
 // `step` = langkah formulir yang perlu dibuka lagi untuk memperbaiki error.
 export type OnboardingState = { error?: string; step?: 1 | 2 | 3 };
@@ -13,7 +12,7 @@ const ERRORS: Record<string, { message: string; step: 1 | 2 | 3 }> = {
   invalid_nickname: { message: "Nama panggilan harus 3–20 karakter.", step: 1 },
   nickname_taken: { message: "Nama panggilan ini sudah dipakai. Coba yang lain.", step: 1 },
   invalid_full_name: { message: "Nama lengkap belum diisi.", step: 1 },
-  invalid_village: { message: "Kelurahan tidak ditemukan. Pilih lagi, ya.", step: 2 },
+  invalid_district: { message: "Kecamatan tidak ditemukan. Pilih lagi, ya.", step: 2 },
   account_inactive: { message: "Akun ini sedang tidak aktif. Hubungi tim Gasyu.", step: 3 },
   not_authenticated: { message: "Sesi kamu habis. Masuk lagi, ya.", step: 3 },
 };
@@ -24,11 +23,11 @@ export async function completeOnboarding(
 ): Promise<OnboardingState> {
   const nickname = String(formData.get("nickname") ?? "").trim();
   const fullName = String(formData.get("full_name") ?? "").trim();
-  const village = String(formData.get("village") ?? "");
+  const district = String(formData.get("district") ?? "");
   const next = safeNext(formData.get("next"));
 
-  if (!village) {
-    return { error: "Pilih kelurahan asal kamu, atau Luar Cimahi.", step: 2 };
+  if (!district) {
+    return { error: "Pilih kota dan kecamatan tempat tinggalmu.", step: 2 };
   }
   if (formData.get("terms") !== "on") {
     return { error: "Setujui syarat & ketentuan dan kebijakan privasi dulu, ya.", step: 3 };
@@ -38,7 +37,7 @@ export async function completeOnboarding(
   const { error } = await supabase.rpc("complete_onboarding", {
     p_nickname: nickname,
     p_full_name: fullName,
-    p_village_id: village === OUTSIDE_CIMAHI ? null : village,
+    p_district_id: district,
   });
 
   if (error) {

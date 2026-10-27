@@ -76,7 +76,7 @@ async function Citizens({ q, base }: { q: string; base: string }) {
             <thead>
               <tr className="text-left text-[12px] font-bold uppercase tracking-[0.06em] text-fg-soft">
                 <th className="px-5 py-3 font-bold">Warga</th>
-                <th className="px-3 py-3 font-bold">Kelurahan</th>
+                <th className="px-3 py-3 font-bold">Kecamatan</th>
                 <th className="px-3 py-3 font-bold">XP</th>
                 <th className="px-3 py-3 font-bold">Check-in</th>
                 <th className="px-3 py-3 font-bold">Flag</th>
@@ -95,7 +95,7 @@ async function Citizens({ q, base }: { q: string; base: string }) {
                       </span>
                     </div>
                   </td>
-                  <td className="px-3 py-3">{u.village_name ?? "Luar Cimahi"}</td>
+                  <td className="px-3 py-3">{u.district_name ?? "Wilayah belum diisi"}</td>
                   <td className="px-3 py-3">{formatNumber(u.total_xp)}</td>
                   <td className="px-3 py-3">
                     {u.checkins}

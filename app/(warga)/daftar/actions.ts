@@ -11,7 +11,7 @@ const ERRORS: Record<string, string> = {
   invalid_name: "Nama harus 2–80 karakter.",
   invalid_whatsapp: "Nomor WhatsApp belum benar. Tulis seperti 08xxxxxxxxxx.",
   invalid_category: "Pilih salah satu kategori.",
-  invalid_village: "Kelurahan tidak ditemukan.",
+  invalid_district: "Kecamatan tidak ditemukan. Pilih lagi, ya.",
   outlet_required: "Isi minimal satu outlet.",
   invalid_outlet: "Alamat atau titik lokasi outlet belum lengkap.",
   invalid_join_policy: "Pilih cara bergabung member.",
@@ -28,6 +28,8 @@ export async function registerOrganizer(_prev: RegisterState, formData: FormData
   const proof = formData.get("proof");
 
   if (!text("category")) return { error: ERRORS.invalid_category };
+  const district = text(type === "merchant" ? "outlet_district" : "area_district");
+  if (!district) return { error: type === "merchant" ? "Pilih kota dan kecamatan outlet." : "Pilih kota dan kecamatan area kegiatan." };
   if (logo instanceof File && logo.size > MAX_LOGO) return { error: "Logo terlalu besar, maksimal 2 MB." };
   if (!(proof instanceof File) || proof.size === 0) return { error: "Unggah foto untuk verifikasi dulu, ya." };
   if (proof.size > MAX_PROOF) return { error: "Foto bukti terlalu besar, maksimal 3 MB." };
@@ -46,7 +48,7 @@ export async function registerOrganizer(_prev: RegisterState, formData: FormData
         {
           name: text("outlet_name"),
           address: text("outlet_address"),
-          village_id: text("outlet_village") || null,
+          district_id: district,
           lat: text("outlet_lat"),
           lng: text("outlet_lng"),
           opening_hours: openingHours,
@@ -62,7 +64,7 @@ export async function registerOrganizer(_prev: RegisterState, formData: FormData
       whatsapp: text("whatsapp"),
       interest_category: text("category"),
       description: text("description"),
-      activity_area_village_id: text("area_village") || null,
+      activity_area_district_id: district,
       social_links: social,
       est_members: text("est_members") || null,
       join_policy: text("join_policy") || "approval",

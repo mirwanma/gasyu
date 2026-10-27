@@ -129,7 +129,7 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
                 </div>
                 <span className="text-[16px] font-semibold leading-[1.35]">{text.title}</span>
                 <span className="text-[15px] leading-[1.5] text-fg-soft">
-                  <b className="text-fg">@{f.nickname}</b> · {f.village_name ?? "Luar Cimahi"}
+                  <b className="text-fg">@{f.nickname}</b> · {f.district_name ?? "Wilayah belum diisi"}
                   {text.detail ? ` · ${text.detail}` : ""}
                   {f.suspended_at ? " · akun sedang beku" : ""}
                 </span>
@@ -214,7 +214,7 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
                     <td className="px-5 py-3">
                       <div className="flex flex-col">
                         <b>{c.nickname}</b>
-                        <span className="text-[13px] text-fg-soft">{c.village_name ?? "Luar Cimahi"}</span>
+                        <span className="text-[13px] text-fg-soft">{c.district_name ?? "Wilayah belum diisi"}</span>
                       </div>
                     </td>
                     <td className="px-3 py-3">

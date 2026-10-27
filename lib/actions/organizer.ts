@@ -94,11 +94,11 @@ export async function updateOrganizerProfile(_prev: ActionState, formData: FormD
         social_links: social,
         est_members: text("est_members") ? Number(text("est_members")) : null,
         basecamp_address: text("basecamp_address") || null,
-        activity_area_village_id: text("area_village") || null,
+        activity_area_district_id: text("area_district") || null,
       })
       .eq("organizer_id", organizerId);
     if (error) return { error: "Nomor WhatsApp atau kategori belum benar." };
-    if (text("area_village")) await supabase.from("organizers").update({ village_id: text("area_village") }).eq("id", organizerId);
+    if (text("area_district")) await supabase.from("organizers").update({ district_id: text("area_district") }).eq("id", organizerId);
   }
 
   const logo = formData.get("logo");
@@ -137,13 +137,14 @@ export async function addOutlet(_prev: ActionState, formData: FormData): Promise
   const text = (key: string) => String(formData.get(key) ?? "").trim();
   const days = text("days").split(",").filter(Boolean);
   const openingHours = Object.fromEntries(days.map((day) => [day, [text("open_time") || "08:00", text("close_time") || "21:00"]]));
+  if (!text("outlet_district")) return { error: "Pilih kota dan kecamatan outlet." };
 
   const supabase = await createClient();
   const { error } = await supabase.from("merchant_outlets").insert({
     organizer_id: organizerId,
     name: text("outlet_name") || "Outlet",
     address: text("outlet_address"),
-    village_id: text("outlet_village") || null,
+    district_id: text("outlet_district"),
     lat: Number(text("outlet_lat")),
     lng: Number(text("outlet_lng")),
     opening_hours: openingHours,

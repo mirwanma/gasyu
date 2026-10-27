@@ -68,7 +68,7 @@ function CommunityRow({ c }: { c: CommunityCard }) {
         <span className="text-[15px] font-semibold">{c.name}</span>
         <span className="text-[13px] text-fg-soft">
           {categoryLabel(c.category)}
-          {c.villageName ? ` · ${c.villageName}` : ""}
+          {c.districtName ? ` · ${c.districtName}` : ""}
           {c.membershipStatus === null && (c.joinPolicy === "open" ? " · gabung langsung" : " · perlu persetujuan")}
         </span>
       </span>

@@ -15,7 +15,7 @@ export default function MasukPage({ searchParams }: PageProps<"/masuk">) {
           kumpulkan XP-nya.
         </h1>
         <p className="text-[16px] leading-[1.55] text-fg-soft">
-          Ikut event dan challenge dari UMKM dan komunitas di Cimahi.
+          Ikut event dan challenge dari UMKM dan komunitas di kotamu.
         </p>
       </div>
       <Suspense fallback={<p className="text-[15px] text-fg-muted">Memuat…</p>}>

@@ -2,15 +2,10 @@
 
 import { useActionState, useState } from "react";
 import { completeOnboarding, type OnboardingState } from "./actions";
-import { OUTSIDE_CIMAHI } from "./constants";
 import { buttonStyles, cardClass, inputClass, labelClass } from "@/components/styles";
 import { ErrorMessage, SubmitButton } from "@/components/ui";
-
-export type DistrictOption = {
-  id: string;
-  name: string;
-  villages: { id: string; name: string }[];
-};
+import { RegionPicker, type RegionValue } from "@/components/region-picker";
+import type { CityChoice } from "@/lib/data/regions";
 
 type Step = 1 | 2 | 3;
 
@@ -20,8 +15,8 @@ const TITLES: Record<Step, { title: string; intro: string }> = {
     intro: "Nama panggilan tampil di peringkat. Nama lengkap tidak ditampilkan ke publik.",
   },
   2: {
-    title: "Kamu warga mana?",
-    intro: "XP-mu ikut dihitung untuk kelurahan ini di peringkat bulanan. Bisa diganti sekali tiap 90 hari.",
+    title: "Kamu tinggal di mana?",
+    intro: "Pilih kota dan kecamatanmu. XP-mu ikut dihitung untuk kecamatan ini di peringkat bulanan. Bisa diganti sekali tiap 90 hari.",
   },
   3: {
     title: "Satu langkah lagi",
@@ -33,11 +28,11 @@ const INITIAL: OnboardingState = {};
 
 export function OnboardingForm({
   next,
-  districts,
+  cities,
   profileXp,
 }: {
   next: string;
-  districts: DistrictOption[];
+  cities: CityChoice[];
   profileXp: number;
 }) {
   const [state, formAction] = useActionState<OnboardingState, FormData>(completeOnboarding, INITIAL);
@@ -52,14 +47,8 @@ export function OnboardingForm({
 
   const [nickname, setNickname] = useState("");
   const [fullName, setFullName] = useState("");
-  const [village, setVillage] = useState("");
-  const [query, setQuery] = useState("");
+  const [region, setRegion] = useState<RegionValue | null>(null);
   const [localError, setLocalError] = useState<string>();
-
-  const villageName =
-    village === OUTSIDE_CIMAHI
-      ? "Luar Cimahi"
-      : districts.flatMap((d) => d.villages).find((v) => v.id === village)?.name;
 
   const advance = () => {
     if (step === 1) {
@@ -67,14 +56,9 @@ export function OnboardingForm({
       if (nick.length < 3 || nick.length > 20) return setLocalError("Nama panggilan harus 3–20 karakter.");
       if (!fullName.trim()) return setLocalError("Nama lengkap belum diisi.");
     }
-    if (step === 2 && !village) return setLocalError("Pilih kelurahan asal kamu, atau Luar Cimahi.");
+    if (step === 2 && !region) return setLocalError("Pilih kota dan kecamatan tempat tinggalmu.");
     goTo((step + 1) as Step);
   };
-
-  const keyword = query.trim().toLowerCase();
-  const filtered = districts
-    .map((d) => ({ ...d, villages: d.villages.filter((v) => v.name.toLowerCase().includes(keyword)) }))
-    .filter((d) => d.villages.length > 0);
 
   const error = localError ?? (nav.base === state ? undefined : state.error);
 
@@ -91,7 +75,6 @@ export function OnboardingForm({
       className="flex flex-1 flex-col gap-[22px]"
     >
       <input type="hidden" name="next" value={next} />
-      <input type="hidden" name="village" value={village} />
 
       <div className="flex flex-col gap-3.5">
         <div className="grid grid-cols-3 gap-1.5" aria-hidden="true">
@@ -144,46 +127,9 @@ export function OnboardingForm({
         </div>
       </div>
 
-      {/* Langkah 2: kelurahan */}
+      {/* Langkah 2: kota dan kecamatan */}
       <div hidden={step !== 2} className="flex flex-col gap-[22px]">
-        <div className="flex h-[50px] items-center gap-2.5 rounded-[14px] border border-line bg-surface px-3.5 focus-within:border-primary-soft">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-fg-muted" aria-hidden="true">
-            <path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4" />
-          </svg>
-          <label htmlFor="cari" className="sr-only">
-            Cari kelurahan
-          </label>
-          <input
-            id="cari"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Cari kelurahan"
-            className="flex-1 bg-transparent text-[16px] text-fg outline-none placeholder:text-fg-muted"
-          />
-        </div>
-
-        <div className="flex flex-col gap-4">
-          {filtered.map((district) => (
-            <div key={district.id} className="flex flex-col gap-2">
-              <span className="text-[13px] font-bold uppercase tracking-[0.06em] text-fg-muted">
-                {district.name}
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {district.villages.map((v) => (
-                  <Chip key={v.id} selected={village === v.id} onClick={() => setVillage(v.id)}>
-                    {v.name}
-                  </Chip>
-                ))}
-              </div>
-            </div>
-          ))}
-          {filtered.length === 0 && (
-            <p className="text-[15px] text-fg-soft">Kelurahan tidak ditemukan.</p>
-          )}
-          <Chip selected={village === OUTSIDE_CIMAHI} dashed onClick={() => setVillage(OUTSIDE_CIMAHI)}>
-            Luar Cimahi
-          </Chip>
-        </div>
+        <RegionPicker cities={cities} name="district" onChange={setRegion} />
       </div>
 
       {/* Langkah 3: ringkasan dan persetujuan */}
@@ -191,7 +137,7 @@ export function OnboardingForm({
         <dl className={`${cardClass} flex flex-col gap-3 p-4 text-[15px]`}>
           <SummaryRow label="Nama panggilan" value={nickname.trim()} />
           <SummaryRow label="Nama lengkap" value={fullName.trim()} />
-          <SummaryRow label="Kelurahan" value={villageName ?? "-"} />
+          <SummaryRow label="Wilayah" value={region ? `${region.districtName}, ${region.cityName}` : "-"} />
         </dl>
         <label className="flex items-start gap-3 text-[15px] leading-[1.55] text-fg-label">
           <input name="terms" type="checkbox" className="mt-0.5 size-5 shrink-0 accent-primary" />
@@ -216,34 +162,6 @@ export function OnboardingForm({
         )}
       </div>
     </form>
-  );
-}
-
-function Chip({
-  children,
-  selected,
-  dashed,
-  onClick,
-}: {
-  children: React.ReactNode;
-  selected: boolean;
-  dashed?: boolean;
-  onClick: () => void;
-}) {
-  const look = selected
-    ? "border-primary bg-primary text-white"
-    : dashed
-      ? "border-dashed border-line-strong bg-transparent text-fg-label"
-      : "border-line bg-surface text-fg-label";
-  return (
-    <button
-      type="button"
-      aria-pressed={selected}
-      onClick={onClick}
-      className={`h-11 self-start rounded-full border px-3.5 text-[15px] font-semibold ${look}`}
-    >
-      {children}
-    </button>
   );
 }
 

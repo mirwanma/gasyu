@@ -24,7 +24,7 @@ export type TeamSuggestion = {
   replied_at: string | null;
   replied_by_nickname: string | null;
   nickname: string | null;
-  village_name: string | null;
+  district_name: string | null;
   created_at: string;
 };
 
@@ -48,7 +48,7 @@ export async function listOrganizerSuggestions(organizerId: string): Promise<Tea
   const supabase = await createClient();
   const { data } = await supabase
     .from("v_organizer_suggestions")
-    .select("id, category, body, is_anonymous, status, reply, replied_at, replied_by_nickname, nickname, village_name, created_at")
+    .select("id, category, body, is_anonymous, status, reply, replied_at, replied_by_nickname, nickname, district_name, created_at")
     .eq("organizer_id", organizerId)
     .order("created_at", { ascending: false })
     .limit(300);

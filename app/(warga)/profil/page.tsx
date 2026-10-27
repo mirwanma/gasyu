@@ -60,7 +60,7 @@ async function ProfileContent() {
         <UserAvatar nickname={user.nickname} avatarUrl={user.avatarUrl} size={68} />
         <div className="flex flex-col gap-[3px]">
           <span className="font-display text-[24px] font-bold">{user.nickname}</span>
-          <span className="text-[15px] text-fg-soft">{user.villageName ?? "Luar Cimahi"}</span>
+          <span className="text-[15px] text-fg-soft">{user.regionLabel ?? "Wilayah belum diisi"}</span>
           <span className="text-[13px] font-semibold text-xp">
             Level {level.level} · {level.name} · {totalXp.toLocaleString("id-ID")} XP
           </span>

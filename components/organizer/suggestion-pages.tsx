@@ -86,7 +86,7 @@ function SuggestionCard({ s, back }: { s: TeamSuggestion; back: string }) {
         <span className="flex flex-1 flex-col gap-0.5">
           <span className="text-[15px] font-semibold">
             {s.is_anonymous ? "Tanpa nama" : s.nickname}
-            {s.village_name ? <span className="font-normal text-fg-soft"> · {s.village_name}</span> : null}
+            {s.district_name ? <span className="font-normal text-fg-soft"> · {s.district_name}</span> : null}
           </span>
           <span className="text-[12px] text-fg-muted">
             {CATEGORY_LABELS[s.category]} · {timeAgo(s.created_at)}

@@ -20,6 +20,8 @@
 --     districts), v_district_active_month, monthly_district_winners.
 --   * Badge Penjelajah Kecamatan (check-in di 3 kecamatan berbeda), checkpoint_district.
 --   * Cakupan aktivitas harus berada di kota yang sudah dibuka (is_open_region).
+--   * Trigger check_district_ref: kolom kecamatan penyelenggara hanya berisi kecamatan.
+--   * v_admin_city_stats: warga dan penyelenggara per kota (admin).
 --   * View yang menampilkan wilayah warga: kolom village_name menjadi district_name.
 
 -- -----------------------------------------------------------------------------
@@ -187,6 +189,32 @@ as $$
   )
   select exists (select 1 from up where id = p_region_id);
 $$;
+
+-- Kolom kecamatan yang bisa diubah tim penyelenggara lewat tabel harus berisi kecamatan.
+create function public.check_district_ref()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+declare
+  v_value uuid := (to_jsonb(new) ->> tg_argv[0])::uuid;
+begin
+  if v_value is not null and not public.is_valid_district(v_value) then
+    raise exception 'invalid_district';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger organizers_check_district
+  before insert or update of district_id on public.organizers
+  for each row execute function public.check_district_ref('district_id');
+create trigger merchant_outlets_check_district
+  before insert or update of district_id on public.merchant_outlets
+  for each row execute function public.check_district_ref('district_id');
+create trigger community_profiles_check_district
+  before insert or update of activity_area_district_id on public.community_profiles
+  for each row execute function public.check_district_ref('activity_area_district_id');
 
 -- -----------------------------------------------------------------------------
 -- 4. Akun warga
@@ -1363,6 +1391,31 @@ where a.reach = 'global' and (select public.is_admin());
 
 revoke all on public.v_global_event_stats from anon, authenticated;
 grant select on public.v_global_event_stats to authenticated;
+
+-- Admin: jumlah warga dan penyelenggara per kota, untuk memutuskan kota mana yang dibuka.
+create view public.v_admin_city_stats as
+select
+  c.id as city_id, c.name, c.province_name, c.is_active,
+  coalesce(p.n, 0)::integer as citizens,
+  coalesce(o.n, 0)::integer as organizers,
+  coalesce(o.pending, 0)::integer as pending_organizers
+from public.regions c
+left join (
+  select d.parent_id as city_id, count(*) as n
+  from public.profiles pr join public.regions d on d.id = pr.home_district_id
+  where pr.deleted_at is null and pr.onboarded_at is not null
+  group by d.parent_id
+) p on p.city_id = c.id
+left join (
+  select d.parent_id as city_id, count(*) as n, count(*) filter (where org.status = 'pending') as pending
+  from public.organizers org join public.regions d on d.id = org.district_id
+  where org.type <> 'platform'
+  group by d.parent_id
+) o on o.city_id = c.id
+where c.level = 'city' and (select public.is_admin());
+
+revoke all on public.v_admin_city_stats from anon, authenticated;
+grant select on public.v_admin_city_stats to authenticated;
 
 -- -----------------------------------------------------------------------------
 -- Hak akses fungsi baru

@@ -2,7 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { TargetKind } from "@/lib/activities";
 
-export type GroupMember = { user_id: string; nickname: string; village_name: string | null; role: "leader" | "member"; joined_at: string };
+export type GroupMember = { user_id: string; nickname: string; district_name: string | null; role: "leader" | "member"; joined_at: string };
 export type MyGroup = { id: string; name: string; leader_id: string; invite_code: string; members: GroupMember[]; isLeader: boolean };
 
 // Grup tempat warga aktif, lengkap dengan anggota aktif.
@@ -13,7 +13,7 @@ export async function listMyGroups(userId: string): Promise<MyGroup[]> {
   if (ids.length === 0) return [];
   const [{ data: groups }, { data: members }] = await Promise.all([
     supabase.from("groups").select("id, name, leader_id, invite_code").in("id", ids).order("name"),
-    supabase.from("v_group_members").select("group_id, user_id, nickname, village_name, role, joined_at").in("group_id", ids).eq("status", "active").order("joined_at"),
+    supabase.from("v_group_members").select("group_id, user_id, nickname, district_name, role, joined_at").in("group_id", ids).eq("status", "active").order("joined_at"),
   ]);
   return (groups ?? []).map((g) => ({
     id: g.id as string,

@@ -16,7 +16,7 @@ type MemberRow = {
   removed_reason: string | null;
   created_at: string;
   nickname: string;
-  village_name: string | null;
+  district_name: string | null;
   team_role: "chair" | "officer" | null;
 };
 
@@ -122,7 +122,7 @@ async function MemberBody({ ctx, id, tab, error }: { ctx: OrganizerContext; id: 
                 <span className="flex flex-1 flex-col gap-0.5">
                   <span className="text-[15px] font-semibold">{m.nickname}</span>
                   <span className="text-[13px] text-fg-soft">
-                    {m.village_name ?? "Luar Cimahi"} · {timeAgo(m.created_at)}
+                    {m.district_name ?? "Wilayah belum diisi"} · {timeAgo(m.created_at)}
                   </span>
                 </span>
               </div>
@@ -140,7 +140,7 @@ async function MemberBody({ ctx, id, tab, error }: { ctx: OrganizerContext; id: 
             </div>
           ))}
           <span className="text-[13px] leading-[1.5] text-fg-soft">
-            Kamu hanya melihat nama panggilan, kelurahan, dan keaktifan member. Permintaan yang tidak dijawab 30 hari otomatis
+            Kamu hanya melihat nama panggilan, kecamatan, dan keaktifan member. Permintaan yang tidak dijawab 30 hari otomatis
             ditolak.
           </span>
         </>
@@ -158,7 +158,7 @@ async function MemberBody({ ctx, id, tab, error }: { ctx: OrganizerContext; id: 
                   )}
                 </span>
                 <span className="text-[13px] text-fg-soft">
-                  {m.village_name ?? "Luar Cimahi"} · gabung {m.joined_at ? formatMonthYear(m.joined_at) : "-"}
+                  {m.district_name ?? "Wilayah belum diisi"} · gabung {m.joined_at ? formatMonthYear(m.joined_at) : "-"}
                 </span>
               </span>
               {!m.team_role && (

@@ -215,6 +215,13 @@ export type Database = {
             referencedRelation: "regions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "activities_scope_region_id_fkey"
+            columns: ["scope_region_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_city_stats"
+            referencedColumns: ["city_id"]
+          },
         ]
       }
       activity_checkpoints: {
@@ -1670,27 +1677,6 @@ export type Database = {
           },
         ]
       }
-      cities: {
-        Row: {
-          code: string
-          name: string
-          province_code: string
-          province_name: string
-        }
-        Insert: {
-          code: string
-          name: string
-          province_code: string
-          province_name: string
-        }
-        Update: {
-          code?: string
-          name?: string
-          province_code?: string
-          province_name?: string
-        }
-        Relationships: []
-      }
       collab_applications: {
         Row: {
           contribution: string | null
@@ -2000,6 +1986,13 @@ export type Database = {
             referencedRelation: "regions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "collab_posts_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_city_stats"
+            referencedColumns: ["city_id"]
+          },
         ]
       }
       community_memberships: {
@@ -2158,7 +2151,7 @@ export type Database = {
       }
       community_profiles: {
         Row: {
-          activity_area_village_id: string | null
+          activity_area_district_id: string | null
           basecamp_address: string | null
           basecamp_lat: number | null
           basecamp_lng: number | null
@@ -2173,7 +2166,7 @@ export type Database = {
           whatsapp: string
         }
         Insert: {
-          activity_area_village_id?: string | null
+          activity_area_district_id?: string | null
           basecamp_address?: string | null
           basecamp_lat?: number | null
           basecamp_lng?: number | null
@@ -2188,7 +2181,7 @@ export type Database = {
           whatsapp: string
         }
         Update: {
-          activity_area_village_id?: string | null
+          activity_area_district_id?: string | null
           basecamp_address?: string | null
           basecamp_lat?: number | null
           basecamp_lng?: number | null
@@ -2204,11 +2197,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "community_profiles_activity_area_village_id_fkey"
-            columns: ["activity_area_village_id"]
+            foreignKeyName: "community_profiles_activity_area_district_id_fkey"
+            columns: ["activity_area_district_id"]
             isOneToOne: false
             referencedRelation: "regions"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_profiles_activity_area_district_id_fkey"
+            columns: ["activity_area_district_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_city_stats"
+            referencedColumns: ["city_id"]
           },
           {
             foreignKeyName: "community_profiles_organizer_id_fkey"
@@ -2593,6 +2593,7 @@ export type Database = {
         Row: {
           address: string
           created_at: string
+          district_id: string | null
           id: string
           is_active: boolean
           lat: number
@@ -2601,11 +2602,11 @@ export type Database = {
           opening_hours: Json | null
           organizer_id: string
           updated_at: string
-          village_id: string | null
         }
         Insert: {
           address: string
           created_at?: string
+          district_id?: string | null
           id?: string
           is_active?: boolean
           lat: number
@@ -2614,11 +2615,11 @@ export type Database = {
           opening_hours?: Json | null
           organizer_id: string
           updated_at?: string
-          village_id?: string | null
         }
         Update: {
           address?: string
           created_at?: string
+          district_id?: string | null
           id?: string
           is_active?: boolean
           lat?: number
@@ -2627,9 +2628,22 @@ export type Database = {
           opening_hours?: Json | null
           organizer_id?: string
           updated_at?: string
-          village_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "merchant_outlets_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "merchant_outlets_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_city_stats"
+            referencedColumns: ["city_id"]
+          },
           {
             foreignKeyName: "merchant_outlets_organizer_id_fkey"
             columns: ["organizer_id"]
@@ -2671,13 +2685,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_organizer_reputation"
             referencedColumns: ["organizer_id"]
-          },
-          {
-            foreignKeyName: "merchant_outlets_village_id_fkey"
-            columns: ["village_id"]
-            isOneToOne: false
-            referencedRelation: "regions"
-            referencedColumns: ["id"]
           },
         ]
       }
@@ -3116,38 +3123,62 @@ export type Database = {
           },
         ]
       }
-      monthly_village_winners: {
+      monthly_district_winners: {
         Row: {
           active_citizens: number
           avg_xp: number
+          city_id: string
           created_at: string
+          district_id: string
           month: string
           rank: number
-          village_id: string
         }
         Insert: {
           active_citizens: number
           avg_xp: number
+          city_id: string
           created_at?: string
+          district_id: string
           month: string
           rank: number
-          village_id: string
         }
         Update: {
           active_citizens?: number
           avg_xp?: number
+          city_id?: string
           created_at?: string
+          district_id?: string
           month?: string
           rank?: number
-          village_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "monthly_village_winners_village_id_fkey"
-            columns: ["village_id"]
+            foreignKeyName: "monthly_district_winners_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
             referencedRelation: "regions"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "monthly_district_winners_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_city_stats"
+            referencedColumns: ["city_id"]
+          },
+          {
+            foreignKeyName: "monthly_district_winners_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "monthly_district_winners_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_city_stats"
+            referencedColumns: ["city_id"]
           },
         ]
       }
@@ -3435,6 +3466,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          district_id: string | null
           id: string
           logo_url: string | null
           name: string
@@ -3445,12 +3477,12 @@ export type Database = {
           updated_at: string
           verified_at: string | null
           verified_by: string | null
-          village_id: string | null
         }
         Insert: {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          district_id?: string | null
           id?: string
           logo_url?: string | null
           name: string
@@ -3461,12 +3493,12 @@ export type Database = {
           updated_at?: string
           verified_at?: string | null
           verified_by?: string | null
-          village_id?: string | null
         }
         Update: {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          district_id?: string | null
           id?: string
           logo_url?: string | null
           name?: string
@@ -3477,7 +3509,6 @@ export type Database = {
           updated_at?: string
           verified_at?: string | null
           verified_by?: string | null
-          village_id?: string | null
         }
         Relationships: [
           {
@@ -3502,6 +3533,20 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "organizers_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organizers_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_city_stats"
+            referencedColumns: ["city_id"]
+          },
+          {
             foreignKeyName: "organizers_verified_by_fkey"
             columns: ["verified_by"]
             isOneToOne: false
@@ -3521,13 +3566,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_user_points_balance"
             referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "organizers_village_id_fkey"
-            columns: ["village_id"]
-            isOneToOne: false
-            referencedRelation: "regions"
-            referencedColumns: ["id"]
           },
         ]
       }
@@ -3923,9 +3961,8 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           full_name: string | null
-          home_city_code: string | null
-          home_village_changed_at: string | null
-          home_village_id: string | null
+          home_district_changed_at: string | null
+          home_district_id: string | null
           id: string
           is_admin: boolean
           nickname: string | null
@@ -3939,9 +3976,8 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           full_name?: string | null
-          home_city_code?: string | null
-          home_village_changed_at?: string | null
-          home_village_id?: string | null
+          home_district_changed_at?: string | null
+          home_district_id?: string | null
           id: string
           is_admin?: boolean
           nickname?: string | null
@@ -3955,9 +3991,8 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           full_name?: string | null
-          home_city_code?: string | null
-          home_village_changed_at?: string | null
-          home_village_id?: string | null
+          home_district_changed_at?: string | null
+          home_district_id?: string | null
           id?: string
           is_admin?: boolean
           nickname?: string | null
@@ -3968,18 +4003,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "profiles_home_city_code_fkey"
-            columns: ["home_city_code"]
-            isOneToOne: false
-            referencedRelation: "cities"
-            referencedColumns: ["code"]
-          },
-          {
-            foreignKeyName: "profiles_home_village_id_fkey"
-            columns: ["home_village_id"]
+            foreignKeyName: "profiles_home_district_id_fkey"
+            columns: ["home_district_id"]
             isOneToOne: false
             referencedRelation: "regions"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_home_district_id_fkey"
+            columns: ["home_district_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_city_stats"
+            referencedColumns: ["city_id"]
           },
         ]
       }
@@ -4101,6 +4136,7 @@ export type Database = {
           level: Database["public"]["Enums"]["region_level"]
           name: string
           parent_id: string | null
+          province_name: string | null
         }
         Insert: {
           code?: string | null
@@ -4110,6 +4146,7 @@ export type Database = {
           level: Database["public"]["Enums"]["region_level"]
           name: string
           parent_id?: string | null
+          province_name?: string | null
         }
         Update: {
           code?: string | null
@@ -4119,6 +4156,7 @@ export type Database = {
           level?: Database["public"]["Enums"]["region_level"]
           name?: string
           parent_id?: string | null
+          province_name?: string | null
         }
         Relationships: [
           {
@@ -4127,6 +4165,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "regions"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "regions_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_city_stats"
+            referencedColumns: ["city_id"]
           },
         ]
       }
@@ -4483,39 +4528,39 @@ export type Database = {
           amount: number
           checkin_id: string | null
           created_at: string
+          district_id: string | null
           id: string
           local_date: string
           mission_completion_id: string | null
           note: string | null
           reason: Database["public"]["Enums"]["xp_reason"]
           user_id: string
-          village_id: string | null
         }
         Insert: {
           activity_id?: string | null
           amount: number
           checkin_id?: string | null
           created_at?: string
+          district_id?: string | null
           id?: string
           local_date?: string
           mission_completion_id?: string | null
           note?: string | null
           reason: Database["public"]["Enums"]["xp_reason"]
           user_id: string
-          village_id?: string | null
         }
         Update: {
           activity_id?: string | null
           amount?: number
           checkin_id?: string | null
           created_at?: string
+          district_id?: string | null
           id?: string
           local_date?: string
           mission_completion_id?: string | null
           note?: string | null
           reason?: Database["public"]["Enums"]["xp_reason"]
           user_id?: string
-          village_id?: string | null
         }
         Relationships: [
           {
@@ -4589,6 +4634,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "xp_ledger_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xp_ledger_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_city_stats"
+            referencedColumns: ["city_id"]
+          },
+          {
             foreignKeyName: "xp_ledger_mission_completion_id_fkey"
             columns: ["mission_completion_id"]
             isOneToOne: false
@@ -4622,13 +4681,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_user_points_balance"
             referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "xp_ledger_village_id_fkey"
-            columns: ["village_id"]
-            isOneToOne: false
-            referencedRelation: "regions"
-            referencedColumns: ["id"]
           },
         ]
       }
@@ -4829,6 +4881,13 @@ export type Database = {
             referencedRelation: "regions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "activities_scope_region_id_fkey"
+            columns: ["scope_region_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_city_stats"
+            referencedColumns: ["city_id"]
+          },
         ]
       }
       v_activity_daily_checkins: {
@@ -4895,6 +4954,7 @@ export type Database = {
           activity_id: string | null
           completed_at: string | null
           created_at: string | null
+          district_name: string | null
           group_id: string | null
           id: string | null
           nickname: string | null
@@ -4907,7 +4967,6 @@ export type Database = {
           refunded_at: string | null
           status: Database["public"]["Enums"]["participation_status"] | null
           user_id: string | null
-          village_name: string | null
         }
         Relationships: [
           {
@@ -5519,6 +5578,18 @@ export type Database = {
           },
         ]
       }
+      v_admin_city_stats: {
+        Row: {
+          citizens: number | null
+          city_id: string | null
+          is_active: boolean | null
+          name: string | null
+          organizers: number | null
+          pending_organizers: number | null
+          province_name: string | null
+        }
+        Relationships: []
+      }
       v_admin_overview: {
         Row: {
           active_communities: number | null
@@ -5564,6 +5635,7 @@ export type Database = {
           checkins: number | null
           created_at: string | null
           deleted_at: string | null
+          district_name: string | null
           full_name: string | null
           id: string | null
           is_admin: boolean | null
@@ -5573,7 +5645,6 @@ export type Database = {
           open_flags: number | null
           suspended_at: string | null
           total_xp: number | null
-          village_name: string | null
         }
         Relationships: []
       }
@@ -5590,13 +5661,13 @@ export type Database = {
           checked_in_at: string | null
           checkpoint_id: string | null
           distance_m: number | null
+          district_name: string | null
           group_id: string | null
           id: string | null
           local_date: string | null
           nickname: string | null
           partner_organizer_id: string | null
           review_status: Database["public"]["Enums"]["review_status"] | null
-          village_name: string | null
         }
         Relationships: [
           {
@@ -5756,6 +5827,7 @@ export type Database = {
           community_id: string | null
           created_at: string | null
           decided_at: string | null
+          district_name: string | null
           ended_at: string | null
           id: string | null
           joined_at: string | null
@@ -5765,7 +5837,6 @@ export type Database = {
           status: Database["public"]["Enums"]["membership_status"] | null
           team_role: Database["public"]["Enums"]["member_role"] | null
           user_id: string | null
-          village_name: string | null
         }
         Relationships: [
           {
@@ -5833,19 +5904,40 @@ export type Database = {
           },
         ]
       }
+      v_district_active_month: {
+        Row: {
+          active_citizens: number | null
+          district_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_home_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_home_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "v_admin_city_stats"
+            referencedColumns: ["city_id"]
+          },
+        ]
+      }
       v_global_event_stats: {
         Row: {
           active_participants: number | null
           activity_id: string | null
           avg_score: number | null
-          cimahi_participants: number | null
           cities: Json | null
+          districts: Json | null
           ends_at: string | null
           location_mode:
             | Database["public"]["Enums"]["activity_location_mode"]
             | null
           missions_completed: number | null
-          outside_participants: number | null
           prizes_claimed: number | null
           prizes_delivered: number | null
           prizes_forfeited: number | null
@@ -5854,20 +5946,19 @@ export type Database = {
           starts_at: string | null
           status: Database["public"]["Enums"]["activity_status"] | null
           title: string | null
-          villages: Json | null
+          unknown_region_participants: number | null
         }
         Insert: {
           active_participants?: never
           activity_id?: string | null
           avg_score?: never
-          cimahi_participants?: never
           cities?: never
+          districts?: never
           ends_at?: string | null
           location_mode?:
             | Database["public"]["Enums"]["activity_location_mode"]
             | null
           missions_completed?: never
-          outside_participants?: never
           prizes_claimed?: never
           prizes_delivered?: never
           prizes_forfeited?: never
@@ -5876,20 +5967,19 @@ export type Database = {
           starts_at?: string | null
           status?: Database["public"]["Enums"]["activity_status"] | null
           title?: string | null
-          villages?: never
+          unknown_region_participants?: never
         }
         Update: {
           active_participants?: never
           activity_id?: string | null
           avg_score?: never
-          cimahi_participants?: never
           cities?: never
+          districts?: never
           ends_at?: string | null
           location_mode?:
             | Database["public"]["Enums"]["activity_location_mode"]
             | null
           missions_completed?: never
-          outside_participants?: never
           prizes_claimed?: never
           prizes_delivered?: never
           prizes_forfeited?: never
@@ -5898,19 +5988,19 @@ export type Database = {
           starts_at?: string | null
           status?: Database["public"]["Enums"]["activity_status"] | null
           title?: string | null
-          villages?: never
+          unknown_region_participants?: never
         }
         Relationships: []
       }
       v_group_members: {
         Row: {
+          district_name: string | null
           group_id: string | null
           joined_at: string | null
           nickname: string | null
           role: Database["public"]["Enums"]["group_role"] | null
           status: Database["public"]["Enums"]["group_member_status"] | null
           user_id: string | null
-          village_name: string | null
         }
         Relationships: [
           {
@@ -5964,27 +6054,30 @@ export type Database = {
         }
         Relationships: []
       }
-      v_leaderboard_users_month: {
-        Row: {
-          nickname: string | null
-          rank_city: number | null
-          rank_village: number | null
-          user_id: string | null
-          village_id: string | null
-          village_name: string | null
-          xp_month: number | null
-        }
-        Relationships: []
-      }
-      v_leaderboard_villages_month: {
+      v_leaderboard_districts_month: {
         Row: {
           active_citizens: number | null
           avg_xp: number | null
+          city_id: string | null
+          city_name: string | null
+          district_id: string | null
           district_name: string | null
           rank: number | null
-          village_id: string | null
-          village_name: string | null
           xp_total: number | null
+        }
+        Relationships: []
+      }
+      v_leaderboard_users_month: {
+        Row: {
+          city_id: string | null
+          city_name: string | null
+          district_id: string | null
+          district_name: string | null
+          nickname: string | null
+          rank_city: number | null
+          rank_district: number | null
+          user_id: string | null
+          xp_month: number | null
         }
         Relationships: []
       }
@@ -6124,13 +6217,13 @@ export type Database = {
       v_mission_manual_candidates: {
         Row: {
           activity_id: string | null
+          district_name: string | null
           done: boolean | null
           eligible: boolean | null
           group_id: string | null
           mission_id: string | null
           nickname: string | null
           user_id: string | null
-          village_name: string | null
         }
         Relationships: [
           {
@@ -6223,6 +6316,7 @@ export type Database = {
         Row: {
           activity_id: string | null
           activity_title: string | null
+          district_name: string | null
           id: string | null
           mission_id: string | null
           mission_title: string | null
@@ -6234,7 +6328,6 @@ export type Database = {
           status: Database["public"]["Enums"]["completion_status"] | null
           submitted_at: string | null
           user_id: string | null
-          village_name: string | null
           xp_reward: number | null
         }
         Relationships: [
@@ -6500,6 +6593,7 @@ export type Database = {
           checkpoint_id: string | null
           checkpoint_name: string | null
           distance_m: number | null
+          district_name: string | null
           id: string | null
           local_date: string | null
           nickname: string | null
@@ -6510,7 +6604,6 @@ export type Database = {
           review_status: Database["public"]["Enums"]["review_status"] | null
           reviewed_at: string | null
           user_id: string | null
-          village_name: string | null
           xp_awarded: number | null
         }
         Relationships: [
@@ -6642,6 +6735,7 @@ export type Database = {
           checkpoint_name: string | null
           created_at: string | null
           detail: Json | null
+          district_name: string | null
           id: string | null
           kind: Database["public"]["Enums"]["flag_kind"] | null
           nickname: string | null
@@ -6653,7 +6747,6 @@ export type Database = {
           status: Database["public"]["Enums"]["flag_status"] | null
           suspended_at: string | null
           user_id: string | null
-          village_name: string | null
         }
         Relationships: [
           {
@@ -6763,6 +6856,7 @@ export type Database = {
           body: string | null
           category: Database["public"]["Enums"]["suggestion_category"] | null
           created_at: string | null
+          district_name: string | null
           id: string | null
           is_anonymous: boolean | null
           nickname: string | null
@@ -6774,7 +6868,6 @@ export type Database = {
           status_changed_at: string | null
           updated_at: string | null
           user_id: string | null
-          village_name: string | null
         }
         Relationships: [
           {
@@ -7153,21 +7246,6 @@ export type Database = {
           },
         ]
       }
-      v_village_active_month: {
-        Row: {
-          active_citizens: number | null
-          village_id: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_home_village_id_fkey"
-            columns: ["village_id"]
-            isOneToOne: false
-            referencedRelation: "regions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Functions: {
       accept_organizer_invite: { Args: { p_token: string }; Returns: string }
@@ -7273,8 +7351,8 @@ export type Database = {
         Args: { p_partner_id: string }
         Returns: undefined
       }
-      change_home_village: {
-        Args: { p_village_id: string }
+      change_home_district: {
+        Args: { p_district_id: string }
         Returns: undefined
       }
       check_code_bruteforce: {
@@ -7310,7 +7388,10 @@ export type Database = {
         }
         Returns: number
       }
-      checkpoint_village: { Args: { p_checkpoint_id: string }; Returns: string }
+      checkpoint_district: {
+        Args: { p_checkpoint_id: string }
+        Returns: string
+      }
       claim_prize: {
         Args: { p_shipping?: Json; p_winner_id: string }
         Returns: undefined
@@ -7335,7 +7416,7 @@ export type Database = {
         Returns: Json
       }
       complete_onboarding: {
-        Args: { p_full_name: string; p_nickname: string; p_village_id: string }
+        Args: { p_district_id: string; p_full_name: string; p_nickname: string }
         Returns: number
       }
       confirm_group_registration: {
@@ -7470,37 +7551,42 @@ export type Database = {
         Args: { p_activity_id: string }
         Returns: boolean
       }
+      is_open_region: { Args: { p_region_id: string }; Returns: boolean }
       is_resident_of: {
         Args: { p_region_id: string; p_user_id: string }
         Returns: boolean
       }
       is_team_leader: { Args: { p_organizer_id: string }; Returns: boolean }
       is_team_member: { Args: { p_organizer_id: string }; Returns: boolean }
+      is_valid_district: { Args: { p_district_id: string }; Returns: boolean }
       join_activity: { Args: { p_activity_id: string }; Returns: string }
       join_group: { Args: { p_invite_code: string }; Returns: string }
-      leaderboard_users: {
-        Args: { p_month?: string }
-        Returns: {
-          nickname: string
-          rank_city: number
-          rank_village: number
-          user_id: string
-          village_id: string
-          village_name: string
-          xp_month: number
-        }[]
-      }
-      leaderboard_villages: {
-        Args: { p_month?: string }
+      leaderboard_districts: {
+        Args: { p_city_id?: string; p_month?: string }
         Returns: {
           active_citizens: number
           avg_xp: number
+          city_id: string
+          city_name: string
+          district_id: string
           district_name: string
           qualifies: boolean
           rank: number
-          village_id: string
-          village_name: string
           xp_total: number
+        }[]
+      }
+      leaderboard_users: {
+        Args: { p_month?: string }
+        Returns: {
+          city_id: string
+          city_name: string
+          district_id: string
+          district_name: string
+          nickname: string
+          rank_city: number
+          rank_district: number
+          user_id: string
+          xp_month: number
         }[]
       }
       leave_activity: { Args: { p_partner_id: string }; Returns: undefined }
@@ -7591,9 +7677,9 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: {
           avatar_url: string
+          district_name: string
           id: string
           nickname: string
-          village_name: string
         }[]
       }
       qr_slot: { Args: { p_at?: string }; Returns: number }
@@ -7609,6 +7695,7 @@ export type Database = {
       }
       regenerate_invite_code: { Args: { p_group_id: string }; Returns: string }
       region_city: { Args: { p_region_id: string }; Returns: string }
+      region_label: { Args: { p_region_id: string }; Returns: string }
       register_group: {
         Args: {
           p_activity_id: string
@@ -7698,7 +7785,10 @@ export type Database = {
         Args: { p_active: boolean; p_checkpoint_id: string }
         Returns: undefined
       }
-      set_home_city: { Args: { p_code: string }; Returns: undefined }
+      set_city_active: {
+        Args: { p_active: boolean; p_city_id: string }
+        Returns: undefined
+      }
       set_join_policy: {
         Args: {
           p_community_id: string

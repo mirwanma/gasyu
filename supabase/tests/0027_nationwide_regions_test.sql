@@ -163,6 +163,19 @@ insert into ids select 'act', public.create_activity((select v from ids where k 
 select pg_temp.assert((select city_name = 'Kota Administrasi Jakarta Pusat' from public.v_activity_cards where id = (select v from ids where k = 'act')),
   'kartu aktivitas memakai kota penyelenggara');
 
+-- Kolom kecamatan penyelenggara hanya berisi kecamatan
+select pg_temp.assert_fails($$update public.organizers set district_id = (select id from public.regions where name = 'Baros' and level = 'village')
+  where id = (select v from ids where k = 'k')$$, 'invalid_district', 'tim tidak bisa mengisi kelurahan');
+select pg_temp.assert_fails($$update public.community_profiles set activity_area_district_id = (select id from public.regions where code = '31.71')
+  where organizer_id = (select v from ids where k = 'k')$$, 'invalid_district', 'area komunitas tidak bisa diisi kota');
+
+-- Statistik kota untuk admin
+select pg_temp.assert((select count(*) = 0 from public.v_admin_city_stats), 'statistik kota hanya untuk admin');
+select pg_temp.login('00000000-0000-0000-0000-00000000000e');
+select pg_temp.assert((select citizens = 2 and organizers = 1 and not is_active from public.v_admin_city_stats
+  where name = 'Kota Administrasi Jakarta Pusat'), 'statistik Jakarta Pusat: 2 warga (W3, ketua), 1 komunitas');
+select pg_temp.assert((select count(*) = 514 from public.v_admin_city_stats), 'admin melihat semua kota');
+
 rollback;
 \o
 \echo UJI 0027 LULUS

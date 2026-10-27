@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { ActivityForm, type ActivityFormValues } from "@/components/organizer/activity-form";
 import { adminSaveActivity } from "@/lib/actions/activities";
 import { getActivityCard } from "@/lib/data/activities";
-import { getVillageOptions } from "@/lib/data/organizers";
+import { listScopeOptions } from "@/lib/data/regions";
 import { createClient } from "@/lib/supabase/server";
 
 // Admin membuat atau mengubah event/challenge atas nama Gasyu.
@@ -24,9 +24,8 @@ async function FormLoader({ searchParams }: Pick<PageProps<"/admin/aktivitas/bar
   const sp = await searchParams;
   const editId = typeof sp.ubah === "string" ? sp.ubah : undefined;
   const supabase = await createClient();
-  const [districts, { data: city }, { data: platformId }, card, { data: raw }] = await Promise.all([
-    getVillageOptions(),
-    supabase.from("regions").select("id").eq("level", "city").eq("is_active", true).limit(1).maybeSingle(),
+  const [scopeCities, { data: platformId }, card, { data: raw }] = await Promise.all([
+    listScopeOptions(),
     supabase.rpc("platform_organizer_id"),
     editId ? getActivityCard(editId) : Promise.resolve(null),
     editId ? supabase.from("activities").select("payment_instructions, payment_window_hours").eq("id", editId).maybeSingle() : Promise.resolve({ data: null }),
@@ -36,7 +35,7 @@ async function FormLoader({ searchParams }: Pick<PageProps<"/admin/aktivitas/bar
     : undefined;
   return (
     <div className="max-w-md">
-      <ActivityForm organizerId={String(platformId ?? "")} type="merchant" cityId={(city?.id as string | undefined) ?? null} districts={districts} initial={initial} action={adminSaveActivity} allowGlobal />
+      <ActivityForm organizerId={String(platformId ?? "")} type="merchant" scopeCities={scopeCities} initial={initial} action={adminSaveActivity} allowGlobal />
     </div>
   );
 }

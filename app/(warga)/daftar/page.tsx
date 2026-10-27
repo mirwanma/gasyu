@@ -2,7 +2,8 @@ import { Suspense } from "react";
 import { backLinkClass } from "@/components/styles";
 import { DaftarForm } from "./daftar-form";
 import { Icon } from "@/components/icons";
-import { getVillageOptions } from "@/lib/data/organizers";
+import { getDistrictInfo, listCityChoices } from "@/lib/data/regions";
+import { getCurrentUser } from "@/lib/data/user";
 
 // Daftarkan merchant atau komunitas. Mode penyelenggara memakai tema terang.
 export default function DaftarPage({ searchParams }: PageProps<"/daftar">) {
@@ -26,6 +27,14 @@ export default function DaftarPage({ searchParams }: PageProps<"/daftar">) {
 
 async function FormLoader({ searchParams }: Pick<PageProps<"/daftar">, "searchParams">) {
   const { jenis } = await searchParams;
-  const districts = await getVillageOptions();
-  return <DaftarForm districts={districts} initialType={jenis === "komunitas" ? "community" : "merchant"} />;
+  const [cities, user] = await Promise.all([listCityChoices(), getCurrentUser()]);
+  // Wilayah awal: tempat tinggal pendaftar, bisa diganti.
+  const home = await getDistrictInfo(user?.homeDistrictId ?? null);
+  return (
+    <DaftarForm
+      cities={cities}
+      home={home ? { cityId: home.cityId, districtId: home.districtId } : null}
+      initialType={jenis === "komunitas" ? "community" : "merchant"}
+    />
+  );
 }

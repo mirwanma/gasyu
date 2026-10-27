@@ -43,23 +43,3 @@ export async function getOrganizerForTeam(organizerId: string, userId: string, t
   return mine.find((org) => org.id === organizerId && org.type === type) ?? null;
 }
 
-// Daftar kelurahan aktif dikelompokkan per kecamatan (untuk formulir).
-export async function getVillageOptions() {
-  const supabase = await createClient();
-  const { data: regions } = await supabase
-    .from("regions")
-    .select("id, name, level, parent_id")
-    .eq("is_active", true)
-    .in("level", ["district", "village"])
-    .order("name");
-
-  return (regions ?? [])
-    .filter((region) => region.level === "district")
-    .map((district) => ({
-      id: district.id as string,
-      name: district.name as string,
-      villages: (regions ?? [])
-        .filter((region) => region.parent_id === district.id)
-        .map((village) => ({ id: village.id as string, name: village.name as string })),
-    }));
-}

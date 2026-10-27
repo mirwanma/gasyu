@@ -6,7 +6,7 @@ import { checkNewPassword, passwordErrorMessage } from "@/lib/password";
 import { createClient } from "@/lib/supabase/server";
 
 // Aksi akun warga. Aturan (unik, 90 hari, syarat hapus akun) ditegakkan oleh
-// fungsi database update_my_profile, change_home_village, delete_my_account.
+// fungsi database update_my_profile, change_home_district, delete_my_account.
 
 export type AccountState = { error?: string; success?: string };
 
@@ -14,9 +14,9 @@ const ERRORS: Record<string, string> = {
   invalid_nickname: "Nama panggilan harus 3–20 karakter.",
   nickname_taken: "Nama panggilan ini sudah dipakai. Coba yang lain.",
   invalid_full_name: "Nama lengkap belum diisi.",
-  same_village: "Itu sudah kelurahan kamu sekarang.",
-  village_change_too_soon: "Kelurahan baru bisa diganti lagi setelah batas waktunya lewat.",
-  invalid_village: "Kelurahan tidak ditemukan. Pilih lagi, ya.",
+  same_district: "Itu sudah kecamatan kamu sekarang.",
+  district_change_too_soon: "Wilayah baru bisa diganti lagi setelah batas waktunya lewat.",
+  invalid_district: "Kecamatan tidak ditemukan. Pilih lagi, ya.",
   confirmation_required: "Ketik HAPUS untuk mengonfirmasi.",
   admin_account: "Akun admin tidak bisa dihapus dari aplikasi. Hubungi tim Gasyu.",
   transfer_leadership_first: "Kamu satu-satunya pemilik atau ketua di merchant/komunitas. Jadikan anggota tim lain pemilik/ketua lewat menu Tim dulu.",
@@ -45,15 +45,15 @@ export async function updateProfile(_prev: AccountState, formData: FormData): Pr
   return { success: "Profil tersimpan." };
 }
 
-export async function changeVillage(_prev: AccountState, formData: FormData): Promise<AccountState> {
-  const raw = String(formData.get("village") ?? "");
-  if (!raw) return { error: "Pilih kelurahan dulu." };
+export async function changeDistrict(_prev: AccountState, formData: FormData): Promise<AccountState> {
+  const district = String(formData.get("district") ?? "");
+  if (!district) return { error: "Pilih kota dan kecamatan dulu." };
   const supabase = await createClient();
-  const { error } = await supabase.rpc("change_home_village", { p_village_id: raw === "luar" ? null : raw });
-  if (error) return { error: msg(error.message, "Kelurahan gagal diganti. Coba lagi.") };
+  const { error } = await supabase.rpc("change_home_district", { p_district_id: district });
+  if (error) return { error: msg(error.message, "Wilayah gagal diganti. Coba lagi.") };
   revalidatePath("/profil");
   revalidatePath("/");
-  return { success: "Kelurahan asal sudah diganti." };
+  return { success: "Wilayah tempat tinggal sudah diganti." };
 }
 
 // Hapus semua file di folder avatars milik pengguna, kecuali yang disebut.

@@ -34,7 +34,7 @@ async function CommunityProfile({ params, searchParams }: PageProps<"/k/[slug]">
 
   const { data: org } = await supabase
     .from("organizers")
-    .select("id, name, logo_url, description, status, village:regions(name), profile:community_profiles(interest_category, join_policy, basecamp_address, social_links)")
+    .select("id, name, logo_url, description, status, district:regions(name, city:parent_id(name)), profile:community_profiles(interest_category, join_policy, basecamp_address, social_links)")
     .eq("slug", slug)
     .eq("type", "community")
     .maybeSingle();
@@ -46,7 +46,8 @@ async function CommunityProfile({ params, searchParams }: PageProps<"/k/[slug]">
     basecamp_address: string | null;
     social_links: Record<string, string>;
   } | null;
-  const village = (Array.isArray(org.village) ? org.village[0] : org.village) as { name: string } | null;
+  const district = (Array.isArray(org.district) ? org.district[0] : org.district) as { name: string; city: { name: string } | { name: string }[] | null } | null;
+  const city = Array.isArray(district?.city) ? district.city[0] : district?.city;
 
   const [{ data: stats }, activities, myOrgs, { data: membership }] = await Promise.all([
     supabase.rpc("community_public_stats", { p_community_id: org.id }).maybeSingle(),
@@ -94,7 +95,7 @@ async function CommunityProfile({ params, searchParams }: PageProps<"/k/[slug]">
           </div>
           <span className="text-[15px] text-fg-soft">
             {profile ? categoryLabel(profile.interest_category) : ""}
-            {village ? ` · ${village.name}` : ""}
+            {district ? ` · ${district.name}${city ? `, ${city.name}` : ""}` : ""}
             {profile?.basecamp_address ? ` · basecamp ${profile.basecamp_address}` : ""}
           </span>
           {org.description && <p className="text-[15px] leading-[1.55] text-fg-label">{org.description}</p>}

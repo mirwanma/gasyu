@@ -31,7 +31,7 @@ test.describe("admin", () => {
     await page.goto(page.url().replace("/misi?", "/peringkat?"));
     await expect(page.getByRole("heading", { name: "Papan peringkat" })).toBeVisible();
     await expect(page.getByText(/Live · \d+ peserta/)).toBeVisible();
-    await expect(page.getByText("Kota Bandung")).toBeVisible();
+    await expect(page.getByText("Kota Bandung", { exact: true }).first()).toBeVisible();
   });
 
   test("master misi menampilkan template awal", async ({ page }) => {

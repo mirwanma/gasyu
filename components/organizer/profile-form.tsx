@@ -6,18 +6,18 @@ import { cardClass, chipClass, inputClass, labelClass, textareaClass } from "@/c
 import { ErrorMessage, SubmitButton, SuccessMessage } from "@/components/ui";
 import { COMMUNITY_CATEGORIES, MERCHANT_CATEGORIES } from "@/lib/organizers";
 import { ImageFileInput } from "@/components/image-file-input";
-
-type District = { id: string; name: string; villages: { id: string; name: string }[] };
+import { RegionPicker } from "@/components/region-picker";
+import type { CityChoice } from "@/lib/data/regions";
 
 export function ProfileForm({
   organizerId,
   type,
-  districts,
+  cities,
   values,
 }: {
   organizerId: string;
   type: "merchant" | "community";
-  districts: District[];
+  cities: CityChoice[];
   values: {
     name: string;
     description: string;
@@ -28,7 +28,8 @@ export function ProfileForm({
     tiktok: string;
     estMembers: string;
     basecamp: string;
-    areaVillage: string;
+    // Area kegiatan komunitas (kecamatan) dan kotanya.
+    area: { cityId: string; districtId: string } | null;
     hasProof: boolean;
   };
 }) {
@@ -73,21 +74,15 @@ export function ProfileForm({
       {type === "community" && (
         <>
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="area_village" className={labelClass}>
-              Area kegiatan (kelurahan)
-            </label>
-            <select id="area_village" name="area_village" defaultValue={values.areaVillage} className={inputClass}>
-              <option value="">Pilih kelurahan</option>
-              {districts.map((district) => (
-                <optgroup key={district.id} label={`Kec. ${district.name}`}>
-                  {district.villages.map((village) => (
-                    <option key={village.id} value={village.id}>
-                      {village.name}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
+            <span className="text-[15px] font-semibold">Area kegiatan</span>
+            <RegionPicker
+              cities={cities}
+              name="area_district"
+              idPrefix="area"
+              initialCityId={values.area?.cityId}
+              initialDistrictId={values.area?.districtId}
+              closedNote="Kamu tetap bisa melanjutkan. Tim Gasyu meninjau pembukaan kota ini saat verifikasi."
+            />
           </div>
           <Field id="instagram" label="Instagram" defaultValue={values.instagram} placeholder="nama akun tanpa @" />
           <Field id="tiktok" label="TikTok" defaultValue={values.tiktok} placeholder="nama akun tanpa @" />

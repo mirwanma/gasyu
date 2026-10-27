@@ -7,7 +7,8 @@ import { cardClass, chipClass, inputClass, labelClass, textareaClass } from "@/c
 import { ErrorMessage, SubmitButton, SuccessMessage } from "@/components/ui";
 import { ImageFileInput } from "@/components/image-file-input";
 
-type District = { id: string; name: string; villages: { id: string; name: string }[] };
+import { ScopeOptions } from "@/components/scope-select";
+import type { ScopeCity } from "@/lib/data/regions";
 export type ActivityFormValues = {
   id?: string;
   type: ActivityType;
@@ -42,8 +43,7 @@ const STEPS = ["Dasar", "Waktu & cakupan", "Aturan ikut", "Harga"];
 export function ActivityForm({
   organizerId,
   type,
-  cityId,
-  districts,
+  scopeCities,
   initial,
   action,
   canSetPrice,
@@ -51,8 +51,8 @@ export function ActivityForm({
 }: {
   organizerId: string;
   type: "merchant" | "community";
-  cityId: string | null;
-  districts: District[];
+  // Kota yang sudah dibuka beserta kecamatannya, untuk wilayah cakupan.
+  scopeCities: ScopeCity[];
   initial?: ActivityFormValues;
   action?: (prev: ActivityActionState, formData: FormData) => Promise<ActivityActionState>;
   canSetPrice?: boolean;
@@ -121,7 +121,7 @@ export function ActivityForm({
           <div className="flex flex-col gap-2">
             <span className={labelClass}>Jangkauan</span>
             <div className="grid grid-cols-2 gap-2">
-              {([["regional", "Regional", "Warga Cimahi, XP dan poin"], ["global", "Event Global", "Pengguna kota mana pun, skor dan hadiah khusus"]] as const).map(([value, label, hint]) => {
+              {([["regional", "Regional", "Warga kota setempat, XP dan poin"], ["global", "Event Global", "Pengguna kota mana pun, skor dan hadiah khusus"]] as const).map(([value, label, hint]) => {
                 const on = reach === value;
                 return (
                   <button key={value} type="button" aria-pressed={on} onClick={() => setReach(value)} className={`flex flex-col gap-0.5 rounded-2xl border p-3 text-left ${on ? "border-primary bg-primary-tint" : "border-line bg-surface"}`}>
@@ -224,15 +224,7 @@ export function ActivityForm({
           <label htmlFor="scope_region_id" className={labelClass}>Wilayah cakupan</label>
           <select id="scope_region_id" name="scope_region_id" value={scope} onChange={(e) => setScope(e.target.value)} className={inputClass}>
             <option value="">Tanpa cakupan khusus</option>
-            {cityId && <option value={cityId}>Seluruh kota</option>}
-            {districts.map((d) => (
-              <optgroup key={d.id} label={`Kec. ${d.name}`}>
-                <option value={d.id}>Seluruh Kec. {d.name}</option>
-                {d.villages.map((v) => (
-                  <option key={v.id} value={v.id}>{v.name}</option>
-                ))}
-              </optgroup>
-            ))}
+            <ScopeOptions cities={scopeCities} />
           </select>
           <span className="text-[13px] text-fg-soft">Dipakai untuk aturan khusus warga dan rekomendasi di Jelajah.</span>
         </div>

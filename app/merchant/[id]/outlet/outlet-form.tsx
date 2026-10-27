@@ -5,8 +5,8 @@ import { addOutlet, type ActionState } from "@/lib/actions/organizer";
 import { Icon } from "@/components/icons";
 import { cardClass, chipClass, inputClass, labelClass } from "@/components/styles";
 import { ErrorMessage, SubmitButton, SuccessMessage } from "@/components/ui";
-
-type District = { id: string; name: string; villages: { id: string; name: string }[] };
+import { RegionPicker } from "@/components/region-picker";
+import type { CityChoice } from "@/lib/data/regions";
 
 const DAYS = [
   ["mon", "Sen"],
@@ -18,7 +18,7 @@ const DAYS = [
   ["sun", "Min"],
 ] as const;
 
-export function OutletForm({ organizerId, districts }: { organizerId: string; districts: District[] }) {
+export function OutletForm({ organizerId, cities, home }: { organizerId: string; cities: CityChoice[]; home: { cityId: string; districtId: string } | null }) {
   const [state, formAction] = useActionState<ActionState, FormData>(addOutlet, {});
   const [days, setDays] = useState<string[]>(DAYS.map(([key]) => key));
   const [coords, setCoords] = useState({ lat: "", lng: "" });
@@ -49,19 +49,14 @@ export function OutletForm({ organizerId, districts }: { organizerId: string; di
         <label htmlFor="outlet_address" className={labelClass}>Alamat</label>
         <input id="outlet_address" name="outlet_address" required maxLength={300} className={inputClass} />
       </div>
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="outlet_village" className={labelClass}>Kelurahan</label>
-        <select id="outlet_village" name="outlet_village" defaultValue="" className={inputClass}>
-          <option value="">Pilih kelurahan</option>
-          {districts.map((district) => (
-            <optgroup key={district.id} label={`Kec. ${district.name}`}>
-              {district.villages.map((village) => (
-                <option key={village.id} value={village.id}>{village.name}</option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-      </div>
+      <RegionPicker
+        cities={cities}
+        name="outlet_district"
+        idPrefix="outlet"
+        initialCityId={home?.cityId}
+        initialDistrictId={home?.districtId}
+        closedNote="Outlet tetap bisa ditambahkan. Tim Gasyu meninjau pembukaan kota ini."
+      />
       <div className="flex flex-col gap-2">
         <span className="text-[15px] font-semibold">Titik lokasi</span>
         <div className="grid grid-cols-2 gap-2">

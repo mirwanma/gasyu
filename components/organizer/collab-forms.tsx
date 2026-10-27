@@ -4,8 +4,10 @@ import { useActionState, useState } from "react";
 import { adminAddPartner, applyOpenCall, createCollabPost, invitePartner, respondPartnerInvite, setPartnerBudget, type CollabActionState } from "@/lib/actions/collab";
 import { cardClass, chipClass, inputClass, labelClass, textareaClass } from "@/components/styles";
 import { ErrorMessage, SubmitButton, SuccessMessage } from "@/components/ui";
+import { ScopeOptions } from "@/components/scope-select";
+import type { ScopeCity } from "@/lib/data/regions";
 
-type OrgOption = { id: string; name: string; type: "merchant" | "community"; village: string | null };
+type OrgOption = { id: string; name: string; type: "merchant" | "community"; district: string | null };
 type Ctx = { organizerId: string; typeOrg: string };
 
 // Jawab undangan partner; merchant bisa langsung mengisi budget poin.
@@ -68,7 +70,7 @@ export function InvitePartnerForm({ activityId, organizers, ctx }: { activityId:
         <select name="partner_organizer_id" value={orgId} onChange={(e) => setOrgId(e.target.value)} className={inputClass}>
           {organizers.map((o) => (
             <option key={o.id} value={o.id}>
-              {o.name} · {o.type === "merchant" ? "merchant" : "komunitas"}{o.village ? ` · ${o.village}` : ""}
+              {o.name} · {o.type === "merchant" ? "merchant" : "komunitas"}{o.district ? ` · ${o.district}` : ""}
             </option>
           ))}
         </select>
@@ -120,7 +122,7 @@ export function AdminAddPartnerForm({ activityId, organizers }: { activityId: st
 }
 
 // Buka open call baru.
-export function NewPostForm({ ctx, activities, districts }: { ctx: Ctx; activities: { id: string; title: string }[]; districts: { id: string; name: string; villages: { id: string; name: string }[] }[] }) {
+export function NewPostForm({ ctx, activities, scopeCities }: { ctx: Ctx; activities: { id: string; title: string }[]; scopeCities: ScopeCity[] }) {
   const [state, action] = useActionState<CollabActionState, FormData>(createCollabPost, {});
   const [kind, setKind] = useState<"collab" | "sponsor">("collab");
   return (
@@ -150,14 +152,7 @@ export function NewPostForm({ ctx, activities, districts }: { ctx: Ctx; activiti
       <div className="grid grid-cols-2 gap-2">
         <select name="region_id" defaultValue="" className={inputClass} aria-label="Wilayah">
           <option value="">Semua wilayah</option>
-          {districts.map((d) => (
-            <optgroup key={d.id} label={`Kec. ${d.name}`}>
-              <option value={d.id}>Seluruh Kec. {d.name}</option>
-              {d.villages.map((v) => (
-                <option key={v.id} value={v.id}>{v.name}</option>
-              ))}
-            </optgroup>
-          ))}
+          <ScopeOptions cities={scopeCities} />
         </select>
         <input name="deadline" type="date" className={inputClass} aria-label="Tenggat" />
       </div>

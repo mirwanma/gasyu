@@ -17,6 +17,7 @@ export function AdminSidebar({ pendingOrganizers, pendingActivities, openFlags, 
     { label: "Moderasi", href: "/admin/moderasi", icon: "flag", count: openFlags },
     { label: "Pembayaran", href: "/admin/pembayaran", icon: "wallet", count: refundsPending },
     { label: "Pengguna", href: "/admin/pengguna", icon: "users" },
+    { label: "Wilayah", href: "/admin/wilayah", icon: "pin" },
     { label: "Pengaturan", href: "/admin/pengaturan", icon: "sliders" },
     { label: "Audit", href: "/admin/audit", icon: "clock" },
   ];
@@ -29,7 +30,7 @@ export function AdminSidebar({ pendingOrganizers, pendingActivities, openFlags, 
           <span className="text-[24px] font-extrabold leading-[1.1] tracking-[-0.03em]">
             gasyu <span className="text-[15px] font-semibold tracking-normal text-fg-soft">admin</span>
           </span>
-          <span className="text-[13px] text-fg-soft">Pilot Kota Cimahi</span>
+          <span className="text-[13px] text-fg-soft">Seluruh Indonesia</span>
         </span>
       </div>
       <nav aria-label="Menu admin" className="flex flex-row flex-wrap gap-1 md:flex-col">

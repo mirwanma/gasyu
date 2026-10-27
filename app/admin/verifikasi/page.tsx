@@ -4,6 +4,8 @@ import { OrganizerAvatar } from "@/components/avatar";
 import { cardClass, tagClass, textareaClass } from "@/components/styles";
 import { SubmitButton } from "@/components/ui";
 import { categoryLabel, type OrganizerType } from "@/lib/data/organizers";
+import { getDistrictInfo } from "@/lib/data/regions";
+import { setCityActive } from "@/lib/actions/moderation";
 import { formatDateTime, timeAgo } from "@/lib/format";
 import { signedUrl } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
@@ -39,7 +41,7 @@ type QueueRow = {
   logo_url: string | null;
   status: string;
   created_at: string;
-  village: { name: string } | { name: string }[] | null;
+  district_id: string | null;
 };
 
 async function Queue({ searchParams }: Pick<PageProps<"/admin/verifikasi">, "searchParams">) {
@@ -47,10 +49,11 @@ async function Queue({ searchParams }: Pick<PageProps<"/admin/verifikasi">, "sea
   const supabase = await createClient();
   const { data } = await supabase
     .from("organizers")
-    .select("id, type, name, logo_url, status, created_at, village:regions(name)")
+    .select("id, type, name, logo_url, status, created_at, district_id")
     .eq("status", "pending")
     .order("created_at");
   const queue = (data ?? []) as QueueRow[];
+  const regions = new Map(await Promise.all(queue.map(async (q) => [q.id, await getDistrictInfo(q.district_id)] as const)));
   const selectedId = typeof pilih === "string" && queue.some((q) => q.id === pilih) ? pilih : queue[0]?.id;
 
   return (
@@ -61,7 +64,7 @@ async function Queue({ searchParams }: Pick<PageProps<"/admin/verifikasi">, "sea
         )}
         {queue.length === 0 && <p className="p-5 text-[15px] text-fg-soft">Antrean kosong. Semua pendaftar sudah diperiksa.</p>}
         {queue.map((q) => {
-          const village = (Array.isArray(q.village) ? q.village[0] : q.village) as { name: string } | null;
+          const region = regions.get(q.id) ?? null;
           const selected = q.id === selectedId;
           return (
             <a
@@ -73,7 +76,8 @@ async function Queue({ searchParams }: Pick<PageProps<"/admin/verifikasi">, "sea
               <span className="flex flex-1 flex-col gap-0.5">
                 <span className="text-[16px] font-semibold">{q.name}</span>
                 <span className="text-[13px] text-fg-soft">
-                  {village?.name ?? "-"} · {timeAgo(q.created_at)}
+                  {region ? `${region.districtName}, ${region.cityName}` : "-"} · {timeAgo(q.created_at)}
+                  {region && !region.cityActive && <span className="font-semibold text-warn"> · kota belum dibuka</span>}
                 </span>
               </span>
               <span className={`${tagClass.base} ${q.type === "merchant" ? tagClass.warn : tagClass.hot}`}>
@@ -98,7 +102,7 @@ async function Detail({ id }: { id: string }) {
   const { data: org } = await supabase
     .from("organizers")
     .select(
-      "id, type, name, logo_url, description, created_at, review_note, creator:profiles!organizers_created_by_fkey(nickname), merchant:merchant_profiles(merchant_category, nib, whatsapp, proof_url), community:community_profiles(interest_category, whatsapp, social_links, est_members, basecamp_address, join_policy, proof_url, area:regions(name)), outlets:merchant_outlets(name, address, lat, lng, opening_hours, village:regions(name))",
+      "id, type, name, logo_url, description, created_at, review_note, district_id, creator:profiles!organizers_created_by_fkey(nickname), merchant:merchant_profiles(merchant_category, nib, whatsapp, proof_url), community:community_profiles(interest_category, whatsapp, social_links, est_members, basecamp_address, join_policy, proof_url), outlets:merchant_outlets(name, address, lat, lng, opening_hours, district:regions(name))",
     )
     .eq("id", id)
     .maybeSingle();
@@ -115,9 +119,9 @@ async function Detail({ id }: { id: string }) {
     basecamp_address: string | null;
     join_policy: string;
     proof_url: string | null;
-    area: { name: string } | { name: string }[] | null;
   } | null;
-  const outlets = (org.outlets ?? []) as { name: string; address: string; lat: number; lng: number; opening_hours: Record<string, [string, string]> | null; village: { name: string } | { name: string }[] | null }[];
+  const region = await getDistrictInfo(org.district_id);
+  const outlets = (org.outlets ?? []) as { name: string; address: string; lat: number; lng: number; opening_hours: Record<string, [string, string]> | null; district: { name: string } | { name: string }[] | null }[];
   const proofUrl = await signedUrl(supabase, "organizer-proofs", merchant?.proof_url ?? community?.proof_url ?? null);
   const type = org.type as OrganizerType;
 
@@ -132,7 +136,7 @@ async function Detail({ id }: { id: string }) {
       : [
           ["WhatsApp", community?.whatsapp ?? "-"],
           ["Kategori", categoryLabel(community?.interest_category ?? "")],
-          ["Area kegiatan", (one(community?.area ?? null) as { name: string } | null)?.name ?? "-"],
+          ["Area kegiatan", region ? `${region.districtName}, ${region.cityName}` : "-"],
           ["Perkiraan anggota", community?.est_members?.toString() ?? "-"],
           ["Media sosial", Object.entries(community?.social_links ?? {}).map(([k, v]) => `${k}: @${v}`).join(", ") || "-"],
           ["Cara bergabung", community?.join_policy === "open" ? "Terbuka" : "Perlu persetujuan"],
@@ -151,6 +155,21 @@ async function Detail({ id }: { id: string }) {
         </div>
       </div>
       {org.description && <p className="text-[15px] leading-[1.55] text-fg-label">{org.description}</p>}
+      {region && !region.cityActive && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] bg-warn-tint px-3.5 py-3 text-[15px] text-warn">
+          <span>
+            {region.cityName} belum dibuka di Gasyu. Penyelenggara tetap bisa disetujui, tetapi aktivitasnya baru bisa memakai cakupan wilayah setelah kota dibuka.
+          </span>
+          <form action={setCityActive}>
+            <input type="hidden" name="city_id" value={region.cityId} />
+            <input type="hidden" name="active" value="true" />
+            <input type="hidden" name="back" value={`/admin/verifikasi?pilih=${org.id}`} />
+            <SubmitButton size="small" variant="dark" pendingText="Membuka…">
+              Buka {region.cityName}
+            </SubmitButton>
+          </form>
+        </div>
+      )}
       {org.review_note && (
         <p className="rounded-[14px] bg-warn-tint px-3.5 py-3 text-[15px] text-warn">Pengajuan ulang. Catatan sebelumnya: {org.review_note}</p>
       )}
@@ -165,7 +184,7 @@ async function Detail({ id }: { id: string }) {
       </div>
 
       {outlets.map((o, i) => {
-        const village = one(o.village) as { name: string } | null;
+        const district = one(o.district) as { name: string } | null;
         const days = Object.keys(DAY_LABELS).filter((d) => o.opening_hours?.[d]);
         const hours = days.length > 0 ? `${days.map((d) => DAY_LABELS[d] ?? d).join(", ")} · ${o.opening_hours![days[0]][0]}–${o.opening_hours![days[0]][1]}` : "-";
         return (
@@ -173,7 +192,7 @@ async function Detail({ id }: { id: string }) {
             <span className="font-semibold">{o.name}</span>
             <span className="text-fg-soft">
               {o.address}
-              {village ? ` · Kel. ${village.name}` : ""}
+              {district ? ` · Kec. ${district.name}` : ""}
             </span>
             <span className="text-fg-soft">Jam buka: {hours}</span>
             <a

@@ -79,7 +79,7 @@ export const JOIN_MODE_LABELS: Record<JoinMode, string> = { individual: "Individ
 // Event Global (ALUR bagian 22): jangkauan dan mode lokasi.
 export type ActivityReach = "regional" | "global";
 export type LocationMode = "onsite" | "online" | "hybrid";
-export const LOCATION_MODE_LABELS: Record<LocationMode, string> = { onsite: "Di Cimahi", online: "Online", hybrid: "Online + di lokasi" };
+export const LOCATION_MODE_LABELS: Record<LocationMode, string> = { onsite: "Di lokasi", online: "Online", hybrid: "Online + di lokasi" };
 export const LOCATION_MODE_OPTIONS: [LocationMode, string, string][] = [
   ["onsite", "Di lokasi", "Check-in di checkpoint, wajib minimal satu"],
   ["online", "Online", "Tanpa checkpoint; misi foto, kode, atau manual"],

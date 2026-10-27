@@ -8,7 +8,7 @@ export type CommunityCard = {
   logoUrl: string | null;
   category: string;
   joinPolicy: "open" | "approval";
-  villageName: string | null;
+  districtName: string | null;
   membershipStatus: "active" | "pending" | null;
 };
 
@@ -17,13 +17,13 @@ type Row = {
   name: string;
   slug: string;
   logo_url: string | null;
-  village: { name: string } | { name: string }[] | null;
+  district: { name: string } | { name: string }[] | null;
   profile: { interest_category: string; join_policy: "open" | "approval" } | { interest_category: string; join_policy: "open" | "approval" }[] | null;
 };
 
 function toCard(row: Row, status: CommunityCard["membershipStatus"]): CommunityCard {
   const profile = Array.isArray(row.profile) ? row.profile[0] : row.profile;
-  const village = Array.isArray(row.village) ? row.village[0] : row.village;
+  const district = Array.isArray(row.district) ? row.district[0] : row.district;
   return {
     id: row.id,
     name: row.name,
@@ -31,7 +31,7 @@ function toCard(row: Row, status: CommunityCard["membershipStatus"]): CommunityC
     logoUrl: row.logo_url,
     category: profile?.interest_category ?? "other",
     joinPolicy: profile?.join_policy ?? "approval",
-    villageName: village?.name ?? null,
+    districtName: district?.name ?? null,
     membershipStatus: status,
   };
 }
@@ -42,7 +42,7 @@ export async function listCommunities(userId: string): Promise<CommunityCard[]> 
   const [{ data: orgs }, { data: memberships }] = await Promise.all([
     supabase
       .from("organizers")
-      .select("id, name, slug, logo_url, village:regions(name), profile:community_profiles(interest_category, join_policy)")
+      .select("id, name, slug, logo_url, district:regions(name), profile:community_profiles(interest_category, join_policy)")
       .eq("type", "community")
       .eq("status", "approved")
       .order("name"),

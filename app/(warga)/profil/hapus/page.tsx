@@ -18,7 +18,7 @@ export default function HapusAkunPage() {
         <section className={`${cardClass} flex flex-col gap-3 p-4`}>
           <span className="text-[16px] font-semibold">Yang terjadi kalau akun dihapus</span>
           <ul className="flex list-disc flex-col gap-1.5 pl-5 text-[15px] leading-[1.5] text-fg-label">
-            <li>Nama panggilan, nama lengkap, dan kelurahanmu dihapus. Kamu tidak muncul lagi di leaderboard.</li>
+            <li>Nama panggilan, nama lengkap, dan wilayah tempat tinggalmu dihapus. Kamu tidak muncul lagi di leaderboard.</li>
             <li>Pendaftaran aktivitas yang belum berjalan dibatalkan. Kamu keluar dari grup, komunitas, dan tim penyelenggara.</li>
             <li>XP, poin, dan voucher hangus dan tidak bisa dipulihkan.</li>
             <li>Catatan transaksi tetap disimpan tanpa identitas, demi keadilan leaderboard dan audit.</li>
