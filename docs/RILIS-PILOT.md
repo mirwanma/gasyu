@@ -181,7 +181,7 @@ Lakukan di HP sungguhan, di alamat produksi, dengan akun asli (bukan dummy):
 
 - [ ] Masuk dengan email: kode tiba dalam 1 menit, tidak masuk spam, dan kodenya bisa dipakai.
 - [ ] Masuk dengan Google (jika diaktifkan).
-- [ ] Onboarding: cari kota (mis. Bandung), pilih kecamatan; kota yang belum dibuka menampilkan keterangan.
+- [ ] Onboarding: pilih provinsi, kota (mis. Kota Bandung), lalu kecamatan; kota yang belum dibuka menampilkan keterangan.
 - [ ] Admin Wilayah: buka kota, lalu peringkat kota itu muncul di HP warganya.
 - [ ] Pasang aplikasi ke layar utama ("Tambahkan ke Layar Utama"), lalu buka dari ikon.
 - [ ] Admin: buka `https://admin.gasyu.id`, lalu verifikasi satu merchant uji dan satu komunitas uji.

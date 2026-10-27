@@ -202,7 +202,7 @@ flowchart TD
     SES --> O{onboarded_at terisi?}
     O -- Ya --> NX
     O -- Tidak --> F1[Isi nama panggilan<br/>dan nama lengkap]
-    F1 --> F2[Pilih kota/kabupaten<br/>lalu kecamatan tempat tinggal]
+    F1 --> F2[Pilih provinsi, kota/kabupaten,<br/>lalu kecamatan tempat tinggal]
     F2 --> F3[Setujui S&K dan<br/>kebijakan privasi]
     F3 --> F4[Simpan profil<br/>onboarded_at = now]
     F4 --> XP[Tambah 50 XP<br/>reason profile_complete]
@@ -234,7 +234,7 @@ Gasyu dimulai di Kota Cimahi, tetapi warga, merchant, dan komunitas dari kota ma
 | Hal | Aturan |
 | --- | --- |
 | Data wilayah | 514 kota/kabupaten dan 7.285 kecamatan (kode Kemendagri) di `regions`. Wilayah asal selalu **kecamatan**; kotanya diambil dari induk kecamatan. Kelurahan Cimahi lama tetap tersimpan untuk riwayat, tetapi tidak bisa dipilih lagi |
-| Pemilih wilayah | Ketik nama kota (mis. "bandung" menemukan Kota Bandung dan Kabupaten Bandung), lalu pilih kecamatan. Dipakai di onboarding, Ubah profil, daftar merchant/komunitas, tambah outlet, dan profil komunitas |
+| Pemilih wilayah | Tiga pilihan bertingkat: provinsi (38), kota/kabupaten di provinsi itu, lalu kecamatan. Dipakai di onboarding, Ubah profil, daftar merchant/komunitas, tambah outlet, dan profil komunitas |
 | Kota dibuka | Admin membuka kota satu per satu di halaman **Wilayah** (`set_city_active`, dicatat di `admin_actions`). Awalnya hanya Kota Cimahi yang dibuka. Halaman Wilayah menampilkan jumlah warga dan penyelenggara per kota (`v_admin_city_stats`) supaya admin tahu kota mana yang sudah ada peminatnya |
 | Kota yang belum dibuka | Warga tetap bisa mendaftar, ikut aktivitas, dan mendapat XP dan poin. Kota itu belum tampil di pemilih kota Jelajah, belum bisa dipakai sebagai cakupan aktivitas, dan peringkat kota/kecamatannya belum tampil. XP tetap tercatat per kecamatan (snapshot), jadi langsung terhitung begitu kota dibuka |
 | Penyelenggara di kota yang belum dibuka | Boleh mendaftar dan diverifikasi. Di halaman Verifikasi admin melihat peringatan "kota belum dibuka" dan tombol untuk membukanya |

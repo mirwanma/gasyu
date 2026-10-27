@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Icon } from "@/components/icons";
 import { inputClass, labelClass } from "@/components/styles";
 import { createClient } from "@/lib/supabase/client";
 import type { CityChoice } from "@/lib/data/regions";
@@ -10,13 +9,6 @@ export type RegionValue = { districtId: string; districtName: string; cityName: 
 
 type District = { id: string; name: string };
 
-// "Kota Bandung" dan "Kabupaten Bandung" sama-sama cocok dengan kata kunci "bandung".
-function normalize(text: string) {
-  return text.toLowerCase().replace(/^(kota administrasi|kota|kabupaten administrasi|kabupaten)\s+/, "");
-}
-
-// Pemilih wilayah asal: cari kota/kabupaten (seluruh Indonesia), lalu pilih kecamatannya.
-// Nilai yang dikirim formulir: id kecamatan di input tersembunyi `name`.
 export function RegionPicker({
   cities,
   name,
@@ -35,12 +27,14 @@ export function RegionPicker({
   // Keterangan jika kota yang dipilih belum dibuka di Gasyu.
   closedNote?: string;
 }) {
-  const [cityId, setCityId] = useState<string | null>(initialCityId);
-  const [query, setQuery] = useState("");
+  const [province, setProvince] = useState<string>(() => cities.find((c) => c.id === initialCityId)?.province ?? "");
+  const [cityId, setCityId] = useState<string>(initialCityId ?? "");
   const [districts, setDistricts] = useState<{ cityId: string; rows: District[] } | null>(null);
   const [districtId, setDistrictId] = useState<string>(initialDistrictId ?? "");
   const [loadError, setLoadError] = useState(false);
 
+  const provinces = useMemo(() => [...new Set(cities.map((c) => c.province).filter((p): p is string => Boolean(p)))].sort(), [cities]);
+  const provinceCities = useMemo(() => cities.filter((c) => c.province === province), [cities, province]);
   const city = cities.find((c) => c.id === cityId) ?? null;
   const rows = districts?.cityId === cityId ? districts.rows : null;
 
@@ -65,19 +59,16 @@ export function RegionPicker({
     };
   }, [cityId]);
 
-  const matches = useMemo(() => {
-    const keyword = normalize(query.trim());
-    if (!keyword) return [];
-    return cities
-      .filter((c) => normalize(c.name).includes(keyword) || c.name.toLowerCase().includes(keyword))
-      .sort((a, b) => Number(normalize(b.name).startsWith(keyword)) - Number(normalize(a.name).startsWith(keyword)))
-      .slice(0, 8);
-  }, [cities, query]);
+  const pickProvince = (value: string) => {
+    setProvince(value);
+    setCityId("");
+    setDistrictId("");
+    onChange?.(null);
+  };
 
   const pickCity = (id: string) => {
     setCityId(id);
     setDistrictId("");
-    setQuery("");
     onChange?.(null);
   };
 
@@ -92,49 +83,34 @@ export function RegionPicker({
       <input type="hidden" name={name} value={districtId} />
 
       <div className="flex flex-col gap-2.5">
-        <span className={labelClass} id={`${idPrefix}-kota-label`}>
-          Kota/kabupaten
-        </span>
-        {city ? (
-          <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-2xl border border-primary bg-surface px-4">
-            <span className="flex min-w-0 items-center gap-2 text-[16px] font-semibold text-fg">
-              <Icon name="pin" size={18} className="shrink-0 text-primary" />
-              <span className="truncate">{city.name}</span>
-            </span>
-            <button type="button" onClick={() => { setCityId(null); setDistrictId(""); onChange?.(null); }} className="min-h-11 shrink-0 text-[15px] font-semibold text-link">
-              Ganti
-            </button>
-          </div>
-        ) : (
-          <>
-            <div className="relative">
-              <Icon name="search" size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-fg-muted" />
-              <input
-                id={`${idPrefix}-kota`}
-                aria-labelledby={`${idPrefix}-kota-label`}
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Ketik nama kota, mis. Bandung"
-                autoComplete="off"
-                className={`${inputClass} pl-11`}
-              />
-            </div>
-            {query.trim() !== "" && (
-              <ul className="flex flex-col overflow-hidden rounded-2xl border border-line bg-surface" aria-label="Hasil pencarian kota">
-                {matches.map((c) => (
-                  <li key={c.id}>
-                    <button type="button" onClick={() => pickCity(c.id)} className="flex min-h-12 w-full flex-col items-start justify-center px-4 py-2 text-left hover:bg-surface-2">
-                      <span className="text-[15px] font-semibold text-fg">{c.name}</span>
-                      {c.province && <span className="text-[13px] text-fg-muted">{c.province}</span>}
-                    </button>
-                  </li>
-                ))}
-                {matches.length === 0 && <li className="px-4 py-3 text-[15px] text-fg-soft">Kota tidak ditemukan.</li>}
-              </ul>
-            )}
-          </>
-        )}
+        <label htmlFor={`${idPrefix}-provinsi`} className={labelClass}>
+          Provinsi
+        </label>
+        <select id={`${idPrefix}-provinsi`} value={province} onChange={(event) => pickProvince(event.target.value)} className={inputClass}>
+          <option value="">Pilih provinsi</option>
+          {provinces.map((p) => (
+            <option key={p} value={p}>
+              {p}
+            </option>
+          ))}
+        </select>
       </div>
+
+      {province && (
+        <div className="flex flex-col gap-2.5">
+          <label htmlFor={`${idPrefix}-kota`} className={labelClass}>
+            Kota/kabupaten
+          </label>
+          <select id={`${idPrefix}-kota`} value={cityId} onChange={(event) => pickCity(event.target.value)} className={inputClass}>
+            <option value="">Pilih kota/kabupaten</option>
+            {provinceCities.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {city && (
         <div className="flex flex-col gap-2.5">

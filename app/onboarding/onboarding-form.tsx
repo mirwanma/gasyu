@@ -16,7 +16,7 @@ const TITLES: Record<Step, { title: string; intro: string }> = {
   },
   2: {
     title: "Kamu tinggal di mana?",
-    intro: "Pilih kota dan kecamatanmu. XP-mu ikut dihitung untuk kecamatan ini di peringkat bulanan. Bisa diganti sekali tiap 90 hari.",
+    intro: "Pilih provinsi, kota, dan kecamatanmu. XP-mu ikut dihitung untuk kecamatan ini di peringkat bulanan. Bisa diganti sekali tiap 90 hari.",
   },
   3: {
     title: "Satu langkah lagi",
