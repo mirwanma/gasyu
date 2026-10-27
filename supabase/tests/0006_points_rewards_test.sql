@@ -42,7 +42,7 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000d', 'w@uji.test'),
   ('00000000-0000-0000-0000-00000000000c', 'l@uji.test');
 update public.profiles set nickname = 'uji' || right(id::text, 1), full_name = 'Uji', terms_accepted_at = now(), onboarded_at = now(),
-  home_village_id = (select id from public.regions where name = 'Baros');
+  home_district_id = (select id from public.regions where name = 'Cimahi Tengah');
 update public.profiles set is_admin = true where id = '00000000-0000-0000-0000-00000000000e';
 
 create temp table ids (k text primary key, v uuid);
@@ -54,7 +54,7 @@ set local role authenticated;
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
 insert into ids select 'merchant', public.register_organizer('merchant', json_build_object('name', 'Kopi Lereng', 'whatsapp', '08120000000',
   'merchant_category', 'kopi', 'outlets', json_build_array(json_build_object('name', 'Cabang Baros', 'address', 'Jl. Baros 10',
-  'village_id', (select id from public.regions where name = 'Baros'), 'lat', -6.890000, 'lng', 107.540000)))::jsonb);
+  'district_id', (select id from public.regions where name = 'Cimahi Tengah'), 'lat', -6.890000, 'lng', 107.540000)))::jsonb);
 insert into ids select 'outlet', id from public.merchant_outlets where organizer_id = (select v from ids where k = 'merchant');
 select pg_temp.login('00000000-0000-0000-0000-00000000000b');
 insert into ids select 'community', public.register_organizer('community', json_build_object('name', 'Cimahi Runners', 'whatsapp', '08120000001',

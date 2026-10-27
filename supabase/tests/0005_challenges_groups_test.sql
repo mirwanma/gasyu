@@ -33,7 +33,7 @@ end;
 $$;
 grant execute on all functions in schema pg_temp to anon, authenticated;
 
--- Akun: O pemilik merchant, A admin, W1..W4 warga Baros, L warga luar Cimahi
+-- Akun: O pemilik merchant, A admin, W1..W4 warga Cimahi Tengah, L akun lama tanpa kecamatan
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000a', 'o@uji.test'),
   ('00000000-0000-0000-0000-00000000000e', 'a@uji.test'),
@@ -43,7 +43,7 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-000000000004', 'w4@uji.test'),
   ('00000000-0000-0000-0000-00000000000c', 'l@uji.test');
 update public.profiles set nickname = 'uji' || right(id::text, 1), full_name = 'Uji', terms_accepted_at = now(), onboarded_at = now();
-update public.profiles set home_village_id = (select id from public.regions where name = 'Baros')
+update public.profiles set home_district_id = (select id from public.regions where name = 'Cimahi Tengah')
   where id not in ('00000000-0000-0000-0000-00000000000c');
 update public.profiles set is_admin = true where id = '00000000-0000-0000-0000-00000000000e';
 
@@ -56,8 +56,8 @@ set local role authenticated;
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
 insert into ids select 'merchant', public.register_organizer('merchant', json_build_object('name', 'Kopi Lereng', 'whatsapp', '08120000000',
   'merchant_category', 'kopi', 'outlets', json_build_array(
-    json_build_object('name', 'Cabang Baros', 'address', 'Jl. Baros 10', 'village_id', (select id from public.regions where name = 'Baros'), 'lat', -6.890000, 'lng', 107.540000),
-    json_build_object('name', 'Cabang Cibabat', 'address', 'Jl. Cibabat 5', 'village_id', (select id from public.regions where name = 'Cibabat'), 'lat', -6.870000, 'lng', 107.550000)))::jsonb);
+    json_build_object('name', 'Cabang Baros', 'address', 'Jl. Baros 10', 'district_id', (select id from public.regions where name = 'Cimahi Tengah'), 'lat', -6.890000, 'lng', 107.540000),
+    json_build_object('name', 'Cabang Cibabat', 'address', 'Jl. Cibabat 5', 'district_id', (select id from public.regions where name = 'Cimahi Utara'), 'lat', -6.870000, 'lng', 107.550000)))::jsonb);
 insert into ids select 'outlet1', id from public.merchant_outlets where organizer_id = (select v from ids where k = 'merchant') and name = 'Cabang Baros';
 insert into ids select 'outlet2', id from public.merchant_outlets where organizer_id = (select v from ids where k = 'merchant') and name = 'Cabang Cibabat';
 select pg_temp.login('00000000-0000-0000-0000-00000000000e');

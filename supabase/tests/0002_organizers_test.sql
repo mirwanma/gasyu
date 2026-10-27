@@ -50,7 +50,7 @@ update public.profiles set nickname = 'ketua', full_name = 'Ketua Rahasia', term
 update public.profiles set nickname = 'pengurus', full_name = 'Pengurus Rahasia', terms_accepted_at = now(), onboarded_at = now()
   where id = '00000000-0000-0000-0000-00000000000c';
 update public.profiles set nickname = 'warga', full_name = 'Warga Rahasia', terms_accepted_at = now(), onboarded_at = now(),
-  home_village_id = (select id from public.regions where name = 'Baros')
+  home_district_id = (select id from public.regions where name = 'Cimahi Tengah')
   where id = '00000000-0000-0000-0000-00000000000d';
 update public.profiles set nickname = 'admin', full_name = 'Admin', terms_accepted_at = now(), onboarded_at = now(), is_admin = true
   where id = '00000000-0000-0000-0000-00000000000e';
@@ -81,7 +81,7 @@ create temp table ids (k text primary key, v uuid);
 insert into ids select 'merchant', public.register_organizer('merchant', json_build_object(
   'name', 'Kopi Lereng', 'whatsapp', '+62 812-3456-789', 'merchant_category', 'kopi', 'nib', '',
   'outlets', json_build_array(json_build_object(
-    'name', 'Cabang Baros', 'address', 'Jl. Baros No. 10', 'village_id', (select id from public.regions where name = 'Baros'),
+    'name', 'Cabang Baros', 'address', 'Jl. Baros No. 10', 'district_id', (select id from public.regions where name = 'Cimahi Tengah'),
     'lat', -6.8906, 'lng', 107.5423, 'opening_hours', json_build_object('mon', json_build_array('08:00', '22:00'))))
 )::jsonb);
 
@@ -110,7 +110,7 @@ select pg_temp.assert((select slug from public.organizers where id = (select v f
 select pg_temp.login('00000000-0000-0000-0000-00000000000b');
 insert into ids select 'community', public.register_organizer('community', json_build_object(
   'name', 'Cimahi Runners', 'whatsapp', '08120000001', 'interest_category', 'olahraga',
-  'activity_area_village_id', (select id from public.regions where name = 'Cimahi'),
+  'activity_area_district_id', (select id from public.regions where name = 'Cimahi Tengah'),
   'social_links', json_build_object('instagram', 'cimahirunners'), 'est_members', 40, 'join_policy', 'approval')::jsonb);
 
 select pg_temp.assert(public.team_role((select v from ids where k = 'community')) = 'chair', 'pendaftar komunitas menjadi chair');
@@ -215,8 +215,8 @@ select pg_temp.assert(
   (select nickname from public.v_community_members where community_id = (select v from ids where k = 'community') and status = 'pending') = 'warga',
   'view member menampilkan nickname');
 select pg_temp.assert(
-  (select village_name from public.v_community_members where community_id = (select v from ids where k = 'community') and status = 'pending') = 'Baros',
-  'view member menampilkan kelurahan');
+  (select district_name from public.v_community_members where community_id = (select v from ids where k = 'community') and status = 'pending') = 'Cimahi Tengah',
+  'view member menampilkan kecamatan');
 select pg_temp.assert((select pending_requests from public.v_community_member_stats where community_id = (select v from ids where k = 'community')) = 1, 'statistik: 1 permintaan');
 insert into ids select 'req', id from public.v_community_members where status = 'pending';
 

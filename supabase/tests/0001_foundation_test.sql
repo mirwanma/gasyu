@@ -36,9 +36,14 @@ grant execute on all functions in schema pg_temp to anon, authenticated;
 -- ---------------------------------------------------------------------------
 -- 1. Seed wilayah, setting, level
 -- ---------------------------------------------------------------------------
-select pg_temp.assert((select count(*) from public.regions where level = 'city') = 1, '1 kota');
-select pg_temp.assert((select count(*) from public.regions where level = 'district') = 3, '3 kecamatan');
-select pg_temp.assert((select count(*) from public.regions where level = 'village') = 15, '15 kelurahan');
+-- Sejak 0027: 514 kota/kabupaten dan 7.285 kecamatan se-Indonesia; hanya Kota Cimahi yang aktif.
+select pg_temp.assert((select count(*) from public.regions where level = 'city') = 514, '514 kota/kabupaten');
+select pg_temp.assert((select count(*) from public.regions where level = 'district') = 7285, '7.285 kecamatan');
+select pg_temp.assert((select count(*) from public.regions where level = 'city' and is_active) = 1, 'hanya 1 kota aktif');
+select pg_temp.assert((select count(*) from public.regions r join public.regions c on c.id = r.parent_id
+  where r.level = 'district' and c.name = 'Kota Cimahi') = 3, 'Cimahi 3 kecamatan');
+select pg_temp.assert((select count(*) from public.regions where level = 'village') = 15, '15 kelurahan (riwayat)');
+select pg_temp.assert((select count(*) from public.regions where level = 'village' and is_active) = 0, 'kelurahan tidak dipilih lagi');
 select pg_temp.assert(public.setting_int('xp.daily_cap') = 1000, 'xp.daily_cap = 1000');
 select pg_temp.assert((select count(*) from public.levels) = 5, '5 level');
 select pg_temp.assert_fails(
@@ -75,7 +80,7 @@ select pg_temp.assert_fails(
   $$update public.profiles set onboarded_at = now() where id = auth.uid()$$,
   'permission denied', 'warga tidak bisa mengisi onboarded_at sendiri');
 select pg_temp.assert_fails(
-  $$update public.profiles set home_village_id = null where id = auth.uid()$$,
+  $$update public.profiles set home_district_id = null where id = auth.uid()$$,
   'permission denied', 'kelurahan hanya diubah lewat fungsi');
 
 -- XP tidak bisa ditulis dari client
@@ -95,13 +100,16 @@ select pg_temp.assert_fails(
   'invalid_full_name', 'nama lengkap kosong');
 select pg_temp.assert_fails(
   $$select public.complete_onboarding('andi', 'Andi Saputra',
-      (select id from public.regions where level = 'district' limit 1))$$,
-  'invalid_village', 'kecamatan bukan kelurahan');
+      (select id from public.regions where level = 'village' limit 1))$$,
+  'invalid_district', 'kelurahan bukan kecamatan');
+select pg_temp.assert_fails(
+  $$select public.complete_onboarding('andi', 'Andi Saputra', null)$$,
+  'invalid_district', 'kecamatan wajib diisi');
 
 -- Onboarding: berhasil, +50 XP
 select pg_temp.assert(
   public.complete_onboarding('Andi', 'Andi Saputra',
-    (select id from public.regions where name = 'Cibabat')) = 50,
+    (select id from public.regions where name = 'Cimahi Utara')) = 50,
   'onboarding memberi 50 XP');
 select pg_temp.assert(
   (select onboarded_at is not null and terms_accepted_at is not null from public.profiles where id = auth.uid()),
@@ -110,11 +118,11 @@ select pg_temp.assert(
   (select sum(amount) from public.xp_ledger where user_id = auth.uid()) = 50,
   'warga A melihat 50 XP miliknya');
 select pg_temp.assert(
-  (select village_id from public.xp_ledger where user_id = auth.uid())
-    = (select id from public.regions where name = 'Cibabat'),
-  'xp_ledger menyimpan snapshot kelurahan');
+  (select district_id from public.xp_ledger where user_id = auth.uid())
+    = (select id from public.regions where name = 'Cimahi Utara'),
+  'xp_ledger menyimpan snapshot kecamatan');
 select pg_temp.assert_fails(
-  $$select public.complete_onboarding('andi2', 'Andi Saputra', null)$$,
+  $$select public.complete_onboarding('andi2', 'Andi Saputra', (select id from public.regions where name = 'Cimahi Utara'))$$,
   'already_onboarded', 'onboarding hanya sekali');
 
 -- Kolom aman boleh diubah
@@ -124,19 +132,21 @@ select pg_temp.assert(
   'warga bisa mengubah nama lengkap');
 
 -- ---------------------------------------------------------------------------
--- 4. Warga B (luar Cimahi) tidak melihat data A
+-- 4. Warga B (Kota Bandung, kota yang belum dibuka) tidak melihat data A
 -- ---------------------------------------------------------------------------
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-00000000000b","role":"authenticated"}', true);
 
 select pg_temp.assert((select count(*) from public.profiles) = 1, 'warga B hanya melihat profilnya sendiri');
 select pg_temp.assert((select count(*) from public.xp_ledger) = 0, 'warga B tidak melihat XP warga A');
 select pg_temp.assert_fails(
-  $$select public.complete_onboarding('ANDI', 'Budi', null)$$,
+  $$select public.complete_onboarding('ANDI', 'Budi', (select id from public.regions where code = '32.73.01'))$$,
   'nickname_taken', 'nickname unik tanpa beda huruf besar-kecil');
-select pg_temp.assert(public.complete_onboarding('budi', 'Budi Santoso', null) = 50, 'warga luar Cimahi bisa onboarding');
+select pg_temp.assert(public.complete_onboarding('budi', 'Budi Santoso', (select id from public.regions where code = '32.73.01')) = 50,
+  'warga kota yang belum dibuka bisa onboarding');
 select pg_temp.assert(
-  (select home_village_id is null from public.profiles where id = auth.uid()),
-  'warga luar Cimahi: home_village_id null');
+  (select c.name = 'Kota Bandung' and not c.is_active from public.profiles p
+   join public.regions d on d.id = p.home_district_id join public.regions c on c.id = d.parent_id where p.id = auth.uid()),
+  'warga B: kecamatan di Kota Bandung');
 -- RLS menyaring diam-diam: update tidak error, tetapi tidak ada baris yang berubah
 update public.app_settings set value = '99999' where key = 'xp.daily_cap';
 select pg_temp.assert(public.setting_int('xp.daily_cap') = 1000, 'warga tidak bisa mengubah app_settings');
@@ -148,7 +158,7 @@ reset role;
 set local role anon;
 select set_config('request.jwt.claims', '', true);
 
-select pg_temp.assert((select count(*) from public.regions) = 19, 'anon bisa membaca wilayah');
+select pg_temp.assert((select count(*) from public.regions) = 7814, 'anon bisa membaca wilayah');
 select pg_temp.assert_fails($$select * from public.profiles$$, 'permission denied', 'anon tidak bisa membaca profiles');
 select pg_temp.assert_fails($$select public.complete_onboarding('x', 'x', null)$$, 'permission denied', 'anon tidak bisa onboarding');
 

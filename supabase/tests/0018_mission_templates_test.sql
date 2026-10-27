@@ -37,7 +37,7 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000e', 'a@uji.test'),
   ('00000000-0000-0000-0000-0000000000d1', 'w@uji.test');
 update public.profiles set nickname = 'uji' || right(id::text, 2), full_name = 'Nama Uji', terms_accepted_at = now(), onboarded_at = now(),
-  home_village_id = (select id from public.regions where name = 'Baros');
+  home_district_id = (select id from public.regions where name = 'Cimahi Tengah');
 update public.profiles set is_admin = true where id = '00000000-0000-0000-0000-00000000000e';
 
 create temp table ids (k text primary key, v uuid);
@@ -76,7 +76,7 @@ select pg_temp.assert((select count(*) = 1 from public.admin_actions where actio
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
 insert into ids select 'm', public.register_organizer('merchant', json_build_object('name', 'Kopi Lereng', 'whatsapp', '08120000000',
   'merchant_category', 'kopi', 'outlets', json_build_array(json_build_object('name', 'Cabang Baros', 'address', 'Jl. Baros 10',
-  'village_id', (select id from public.regions where name = 'Baros'), 'lat', -6.89, 'lng', 107.54)))::jsonb);
+  'district_id', (select id from public.regions where name = 'Cimahi Tengah'), 'lat', -6.89, 'lng', 107.54)))::jsonb);
 insert into ids select 'ev', public.create_activity((select v from ids where k = 'm'), json_build_object(
   'title', 'Ngopi Bareng', 'starts_at', '2030-01-01T10:00+07', 'ends_at', '2030-01-01T14:00+07')::jsonb);
 insert into ids select 'cp', public.add_checkpoint((select v from ids where k = 'ev'), json_build_object(

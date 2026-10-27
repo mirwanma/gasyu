@@ -31,7 +31,7 @@ set local role authenticated;
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
 insert into ids select 'm', public.register_organizer('merchant', json_build_object('name', 'Kopi Lereng', 'whatsapp', '08120000000',
   'merchant_category', 'kopi', 'outlets', json_build_array(json_build_object('name', 'Cabang Baros', 'address', 'Jl. Baros 10',
-  'village_id', (select id from public.regions where name = 'Baros'), 'lat', -6.89, 'lng', 107.54)))::jsonb);
+  'district_id', (select id from public.regions where name = 'Cimahi Tengah'), 'lat', -6.89, 'lng', 107.54)))::jsonb);
 reset role;
 
 -- Data langsung (superuser): satu reward, voucher, dan kredit poin

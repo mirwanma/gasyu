@@ -41,7 +41,7 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000e', 'a@uji.test'),
   ('00000000-0000-0000-0000-00000000000d', 'w@uji.test');
 update public.profiles set nickname = 'uji' || right(id::text, 1), full_name = 'Uji', terms_accepted_at = now(), onboarded_at = now(),
-  home_village_id = (select id from public.regions where name = 'Baros');
+  home_district_id = (select id from public.regions where name = 'Cimahi Tengah');
 update public.profiles set is_admin = true where id = '00000000-0000-0000-0000-00000000000e';
 
 create temp table ids (k text primary key, v uuid);
@@ -51,12 +51,12 @@ set local role authenticated;
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
 insert into ids select 'm', public.register_organizer('merchant', json_build_object('name', 'Kopi Lereng', 'whatsapp', '08120000000',
   'merchant_category', 'kopi', 'outlets', json_build_array(json_build_object('name', 'Cabang Baros', 'address', 'Jl. Baros 10',
-  'village_id', (select id from public.regions where name = 'Baros'), 'lat', -6.89, 'lng', 107.54)))::jsonb);
+  'district_id', (select id from public.regions where name = 'Cimahi Tengah'), 'lat', -6.89, 'lng', 107.54)))::jsonb);
 insert into ids select 'outlet', id from public.merchant_outlets where organizer_id = (select v from ids where k = 'm');
 select pg_temp.login('00000000-0000-0000-0000-00000000000f');
 insert into ids select 'm2', public.register_organizer('merchant', json_build_object('name', 'Seblak Teh Ai', 'whatsapp', '08120000002',
   'merchant_category', 'kuliner', 'outlets', json_build_array(json_build_object('name', 'Warung Melong', 'address', 'Jl. Melong 2',
-  'village_id', (select id from public.regions where name = 'Baros'), 'lat', -6.88, 'lng', 107.55)))::jsonb);
+  'district_id', (select id from public.regions where name = 'Cimahi Tengah'), 'lat', -6.88, 'lng', 107.55)))::jsonb);
 select pg_temp.login('00000000-0000-0000-0000-00000000000b');
 insert into ids select 'k', public.register_organizer('community', json_build_object('name', 'Cimahi Runners', 'whatsapp', '08120000001',
   'interest_category', 'olahraga', 'join_policy', 'open')::jsonb);
@@ -120,7 +120,7 @@ select pg_temp.assert_fails($$select public.create_collab_post((select v from id
 insert into ids select 'post', public.create_collab_post((select v from ids where k = 'k'), json_build_object(
   'kind', 'sponsor', 'activity_id', (select v from ids where k = 'ev2'), 'title', 'Jalan Santai butuh sponsor',
   'needs', 'hadiah voucher dan budget poin', 'benefits', 'logo di halaman aktivitas, checkpoint di outlet',
-  'region_id', (select id from public.regions where name = 'Baros'))::jsonb);
+  'region_id', (select id from public.regions where name = 'Cimahi Tengah'))::jsonb);
 select pg_temp.assert_fails(
   $$select public.apply_open_call((select v from ids where k = 'post'), (select v from ids where k = 'k'), 'sponsor', 0, null, null)$$,
   'own_post', 'tidak bisa mengajukan ke open call sendiri');
