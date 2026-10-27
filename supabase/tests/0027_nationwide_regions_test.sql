@@ -53,6 +53,7 @@ select pg_temp.assert(to_regprocedure('public.set_home_city(text)') is null and 
 select pg_temp.assert((select rule ->> 'type' = 'distinct_districts' and (rule ->> 'count')::int = 3 from public.badges where code = 'district_explorer'),
   'badge Penjelajah Kecamatan: 3 kecamatan');
 select pg_temp.assert(public.setting_int('profile.district_change_days') = 90, 'kunci ganti wilayah 90 hari');
+select pg_temp.assert((select name = 'Legenda Kota' from public.levels where level = 5), 'level 5 bernama Legenda Kota');
 
 -- Akun: A admin, W1 warga Cimahi Tengah, W2 warga Sukasari (Kota Bandung), W3 akun lama tanpa kecamatan, K ketua komunitas
 insert into auth.users (id, email) values

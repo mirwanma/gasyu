@@ -19,6 +19,7 @@
 --     leaderboard_users, leaderboard_districts, get_leaderboard (scope district, city,
 --     districts), v_district_active_month, monthly_district_winners.
 --   * Badge Penjelajah Kecamatan (check-in di 3 kecamatan berbeda), checkpoint_district.
+--   * Level 5 "Legenda Cimahi" menjadi "Legenda Kota".
 --   * Cakupan aktivitas harus berada di kota yang sudah dibuka (is_open_region).
 --   * Trigger check_district_ref: kolom kecamatan penyelenggara hanya berisi kecamatan.
 --   * v_admin_city_stats: warga dan penyelenggara per kota (admin).
@@ -816,6 +817,8 @@ set code = 'district_explorer',
     description = 'Check-in di 3 kecamatan berbeda.',
     rule = '{"type":"distinct_districts","count":3}'
 where code = 'village_explorer';
+
+update public.levels set name = 'Legenda Kota' where level = 5 and name = 'Legenda Cimahi';
 
 -- Cakupan aktivitas hanya wilayah yang aktif di kota yang sudah dibuka.
 create function public.is_open_region(p_region_id uuid)
