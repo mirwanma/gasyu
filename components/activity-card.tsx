@@ -33,7 +33,7 @@ export function StatusTag({ status }: { status: ActivityStatus }) {
 }
 
 // Kartu aktivitas untuk warga (Jelajah, beranda), mengikuti artboard "Warga · Jelajah".
-// Event Global: skor dan hadiah utama menggantikan XP dan poin (ALUR bagian 22e).
+// Event Global: skor dan hadiah utama menggantikan Jejak dan poin (ALUR bagian 22e).
 export function ActivityCard({ card, href, footer, topPrize }: { card: Card; href: string; footer?: React.ReactNode; topPrize?: string | null }) {
   const tag = cardTag(card);
   const isGlobal = card.reach === "global";
@@ -62,7 +62,7 @@ export function ActivityCard({ card, href, footer, topPrize }: { card: Card; hre
             <span className="min-w-0 truncate text-hot">{topPrize ? `Hadiah: ${topPrize}` : "Skor & hadiah per peringkat"}</span>
           ) : (
             <>
-              <span className="text-xp">+{card.xp_base} XP</span>
+              <span className="text-xp">+{card.xp_base} Jejak</span>
               <span className="text-success">{card.points_per_completion > 0 ? `+${card.points_per_completion} poin` : "Tanpa poin"}</span>
             </>
           )}

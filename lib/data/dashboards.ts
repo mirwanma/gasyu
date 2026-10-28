@@ -156,7 +156,7 @@ export async function listWeeklyActive(): Promise<{ week_start: string; active_c
 
 export type DistrictRow = { district_id: string; name: string; city: string; active_citizens: number; avg_xp: number };
 
-// Kecamatan teraktif bulan ini di semua kota yang sudah dibuka: rata-rata XP per warga aktif.
+// Kecamatan teraktif bulan ini di semua kota yang sudah dibuka: rata-rata Jejak per warga aktif.
 export async function listActiveDistricts(limit = 5): Promise<DistrictRow[]> {
   const supabase = await createClient();
   const { data } = await supabase.rpc("leaderboard_districts", { p_month: null, p_city_id: null });
@@ -260,7 +260,7 @@ function toReversible(c: CompletionRow, flagId: string | null): ReversibleMissio
     activity_title: c.activity?.title ?? "",
     at: c.reviewed_at ?? c.submitted_at,
     distance_m: c.distance_m,
-    reward: score > 0 ? `${formatNumber(score)} skor` : `${c.mission?.xp_reward ?? 0} XP`,
+    reward: score > 0 ? `${formatNumber(score)} skor` : `${c.mission?.xp_reward ?? 0} Jejak`,
   };
 }
 

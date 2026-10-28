@@ -6,7 +6,7 @@ import { getCurrentUser } from "@/lib/data/user";
 import { formatDateTime } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 
-// Riwayat XP dan poin warga, dibaca langsung dari ledger (RLS: hanya miliknya).
+// Riwayat Jejak dan poin warga, dibaca langsung dari ledger (RLS: hanya miliknya).
 const XP_LABELS: Record<string, string> = {
   profile_complete: "Profil lengkap",
   event_checkin: "Check-in event",
@@ -27,6 +27,9 @@ const POINT_LABELS: Record<string, string> = {
   reversal: "Dibatalkan",
   adjustment: "Penyesuaian",
 };
+
+// Catatan lama dari award_xp masih menyebut "XP"; label di aplikasi sekarang "Jejak".
+const noteLabel = (note: string | null) => note?.replace("batas XP harian", "batas Jejak harian") ?? null;
 
 type Row = { id: string; amount: number; reason: string; note: string | null; created_at: string; activity: { title: string } | { title: string }[] | null };
 
@@ -64,20 +67,20 @@ async function Content({ searchParams }: Pick<PageProps<"/riwayat">, "searchPara
     .limit(200);
   const rows = (data ?? []) as unknown as Row[];
   const labels = tab === "xp" ? XP_LABELS : POINT_LABELS;
-  const unit = tab === "xp" ? "XP" : "poin";
+  const unit = tab === "xp" ? "Jejak" : "poin";
 
   return (
     <>
       <nav aria-label="Jenis riwayat" className="flex gap-2">
         <a href="/riwayat?tab=xp" className={`${chipClass.base} ${tab === "xp" ? chipClass.selected : chipClass.idle}`}>
-          XP
+          Jejak
         </a>
         <a href="/riwayat?tab=poin" className={`${chipClass.base} ${tab === "poin" ? chipClass.selected : chipClass.idle}`}>
           Poin
         </a>
       </nav>
       <p className="text-[15px] leading-[1.5] text-fg-soft">
-        {tab === "xp" ? "XP menentukan level dan peringkat. XP tidak bisa ditukar." : "Poin bisa ditukar dengan voucher merchant di Dompet. Poin punya masa berlaku."}
+        {tab === "xp" ? "Jejak menentukan level dan peringkat. Jejak tidak bisa ditukar." : "Poin bisa ditukar dengan voucher merchant di Dompet. Poin punya masa berlaku."}
       </p>
       {rows.length === 0 ? (
         <p className={`${cardClass} p-4 text-[15px] text-fg-soft`}>Belum ada riwayat {unit}.</p>
@@ -90,7 +93,7 @@ async function Content({ searchParams }: Pick<PageProps<"/riwayat">, "searchPara
                 <span className="flex flex-1 flex-col gap-0.5">
                   <span className="text-[15px] font-semibold">{labels[r.reason] ?? r.reason}</span>
                   <span className="text-[13px] text-fg-soft">
-                    {activity?.title ?? r.note ?? ""}
+                    {activity?.title ?? noteLabel(r.note) ?? ""}
                     {(activity?.title ?? r.note) ? " · " : ""}
                     {formatDateTime(r.created_at)}
                   </span>

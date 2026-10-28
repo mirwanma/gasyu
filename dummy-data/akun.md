@@ -20,7 +20,7 @@ Semua email memakai domain `@dummy.ramein.id` dan id akun berawalan `dd000000-00
 | bagas@dummy.ramein.id | bagas | Bagas Pratama | Cimahi Tengah | Anggota grup Night Run (lunas), 1 dari 3 checkpoint challenge kopi, member Creative Hub |
 | ayu@dummy.ramein.id | ayu | Ayu Lestari | Cimahi Utara | Undangan grup Night Run belum dijawab, 2 dari 3 checkpoint challenge kopi, ulasan foto menunggu tinjauan |
 | fajar@dummy.ramein.id | fajar | Fajar Ramadhan | Cimahi Selatan | Belum bayar Night Run, check-in Festival di stand Kopi Lereng, foto misi disetujui, 2× salah kode misi, minta gabung Gowes (menunggu) |
-| nadia@dummy.ramein.id | nadia | Nadia Safitri | Cimahi Selatan | Challenge kopi **selesai** (250 XP + 60 poin), Festival selesai, tukar poin jadi voucher kopi |
+| nadia@dummy.ramein.id | nadia | Nadia Safitri | Cimahi Selatan | Challenge kopi **selesai** (250 Jejak + 60 poin), Festival selesai, tukar poin jadi voucher kopi |
 | rizky@dummy.ramein.id | rizky | Rizky Maulana | Cimahi Tengah | Terdaftar Festival dan challenge kopi, belum check-in |
 | tono@dummy.ramein.id | pak_tono | Tono Suharto | Cimahi Tengah | Terdaftar Festival, member Sahabat Lingkungan |
 | vina@dummy.ramein.id | vina | Vina Anggraini | Sukasari, Kota Bandung (kota belum dibuka) | Check-in Festival dari luar radius → ditandai (muncul di Moderasi); peringkat 1 Lomba Foto Wisata (Event Global) |
@@ -52,7 +52,7 @@ Semua email memakai domain `@dummy.ramein.id` dan id akun berawalan `dd000000-00
 | --- | --- | --- | --- | --- |
 | Cimahi Night Run 5K | event berbayar Rp35.000 | Cimahi Runners + sponsor Kopi Lereng (budget 500 poin) | Terbit, 3 hari lagi | 2 checkpoint; misi: selesaikan rute (manual, wajib), mampir booth sponsor (QR, wajib), foto finish (bonus), kode MC `LARI2026` (rahasia, dibuka panitia) |
 | Festival Kuliner Pasar Atas | event gratis | Seblak Teh Ai + cohost Kopi Lereng | Berjalan hari ini | 2 stand; misi: kode struk `PEDAS3` (wajib), foto bareng Teh Ai (bonus), kuis (manual, sudah dibuka; Siti pemenangnya). 40 poin per penyelesaian |
-| Jelajah 3 Kedai Kopi Lereng | challenge sedang, target 3 checkpoint berbeda | Kopi Lereng | Berjalan (hari ke-5 dari 14) | 3 checkpoint; misi bonus kode struk `ARENKU` dan ulasan (foto). 250 XP + 60 poin saat selesai |
+| Jelajah 3 Kedai Kopi Lereng | challenge sedang, target 3 checkpoint berbeda | Kopi Lereng | Berjalan (hari ke-5 dari 14) | 3 checkpoint; misi bonus kode struk `ARENKU` dan ulasan (foto). 250 Jejak + 60 poin saat selesai |
 | Lomba Foto Wisata Cimahi | **Event Global** (online + di lokasi), gratis | Gasyu (admin) + sponsor hadiah Kopi Lereng | Berjalan (5 hari lagi selesai) | Checkpoint Alun-alun; misi: foto ikon wisata (300 skor), kode papan informasi `WISATA` (200 skor), tur sejarah (manual, 500 skor). Hadiah: Juara 1 kamera (dikirim), Juara 2–3 voucher ngopi dari Kopi Lereng (ambil di outlet), peringkat 4–10 badge. Peserta: Rani, Dimas, Siti, Nadia, Vina |
 | Tantangan Online HUT Cimahi | **Event Global** (online), sudah selesai | Gasyu (admin) + sponsor hadiah Kopi Lereng | **Selesai, pemenang ditetapkan** | Misi: kode siaran `HUTCIMAHI` (300 skor), tebak foto lawas (manual, 500), cerita kenangan (manual, 150). Pemenang: Rani juara 1 tumbler + kaos (dikirim, **belum diklaim**, coba klaim di HP), Vina juara 2 voucher (sudah diklaim), Siti juara 3 voucher (belum diklaim) |
 | Workshop Mural Tembok Pasar | event khusus member | Cimahi Creative Hub | **Menunggu review admin** | 1 checkpoint, 1 misi manual |

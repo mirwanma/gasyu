@@ -336,7 +336,7 @@ begin
   ch_kopi := public.create_activity(org_kopi, jsonb_build_object(
     'type', 'challenge', 'difficulty', 'medium', 'target_kind', 'distinct_checkpoints', 'target_count', 3, 'target_scope', 'individual',
     'goal', 'visit', 'title', 'Jelajah 3 Kedai Kopi Lereng',
-    'description', 'Kunjungi tiga titik Kopi Lereng dalam dua minggu: Baros, Cibabat, dan pop-up di Alun-alun. Scan QR di kasir tiap kunjungan (satu check-in per hari). Selesai = 250 XP + 60 poin.',
+    'description', 'Kunjungi tiga titik Kopi Lereng dalam dua minggu: Baros, Cibabat, dan pop-up di Alun-alun. Scan QR di kasir tiap kunjungan (satu check-in per hari). Selesai = 250 Jejak + 60 poin.',
     'scope_region_id', (select id from public.regions where name = 'Kota Cimahi'),
     'starts_at', now() + interval '1 day', 'ends_at', now() + interval '15 days',
     'join_mode', 'individual', 'residency_rule', 'open', 'audience', 'public'));

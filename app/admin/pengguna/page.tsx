@@ -77,7 +77,7 @@ async function Citizens({ q, base }: { q: string; base: string }) {
               <tr className="text-left text-[12px] font-bold uppercase tracking-[0.06em] text-fg-soft">
                 <th className="px-5 py-3 font-bold">Warga</th>
                 <th className="px-3 py-3 font-bold">Kecamatan</th>
-                <th className="px-3 py-3 font-bold">XP</th>
+                <th className="px-3 py-3 font-bold">Jejak</th>
                 <th className="px-3 py-3 font-bold">Check-in</th>
                 <th className="px-3 py-3 font-bold">Flag</th>
                 <th className="px-3 py-3 font-bold">Status</th>

@@ -49,7 +49,7 @@ export async function reverseCheckin(formData: FormData) {
   back("/admin/moderasi", error, "balik");
 }
 
-// Batalkan misi yang sudah disetujui: XP/skor dibalik dengan baris negatif dan warga diberi tahu.
+// Batalkan misi yang sudah disetujui: Jejak/skor dibalik dengan baris negatif dan warga diberi tahu.
 export async function reverseMission(formData: FormData) {
   const supabase = await createClient();
   const { error } = await supabase.rpc("reverse_mission_completion", {

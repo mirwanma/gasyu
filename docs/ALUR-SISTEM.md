@@ -1,12 +1,13 @@
 # Gasyu — Alur Sistem
 
-Versi 0.14 · 27 Oktober 2026 · Pilot Kota Cimahi, terbuka untuk seluruh Indonesia
+Versi 0.15 · 28 Oktober 2026 · Pilot Kota Cimahi, terbuka untuk seluruh Indonesia
+Perubahan 0.15: poin status untuk warga sekarang bernama **Jejak** (dulu XP) di aplikasi dan dokumen, supaya mudah dipahami semua umur dan tidak tertukar dengan poin yang bisa ditukar. Aturan dan angkanya tidak berubah; nama di kode tetap `xp` (`xp_ledger`, `xp_reward`, `xp.daily_cap`).
 Perubahan 0.14: Gasyu terbuka untuk semua kota di Indonesia (migrasi 0027). Wilayah asal warga dan penyelenggara sekarang **kota/kabupaten + kecamatan** dari seluruh Indonesia, bukan kelurahan Cimahi; pilihan "Luar Cimahi" dihapus (bagian 3a). Admin membuka kota satu per satu di halaman Wilayah; peringkat dihitung per kota dan per kecamatan, hanya untuk kota yang sudah dibuka (bagian 17). Cakupan aktivitas berupa kota atau kecamatan di kota yang sudah dibuka (bagian 6). Badge Penjelajah Kelurahan menjadi Penjelajah Kecamatan, dan level 5 Legenda Cimahi menjadi Legenda Kota.
 Perubahan 0.13: pemilih kota di Jelajah (bagian 20b). Warga melihat aktivitas di kotanya sendiri secara otomatis dan bisa memilih kota lain atau Semua kota (migrasi 0026).
 Perubahan 0.12 (tinjauan keamanan, migrasi 0025): anggota tim tidak bisa meninjau atau menandai misinya sendiri, dan misi manual hanya untuk peserta yang sudah check-in (bagian 9b); kode misi minimal 6 karakter dan tebakan massal dari banyak akun ditandai (bagian 9c dan 19); poin dari check-in di luar radius ditahan sampai admin memutuskan (bagian 14c); admin bisa membatalkan misi yang sudah disetujui (bagian 19); refund voucher oleh merchant hanya untuk reward nonaktif dan kode voucher aktif hanya dilihat pemiliknya (bagian 16); kode undangan grup maks. 5 percobaan salah per 15 menit (bagian 11); partner yang keluar atau dibekukan tidak bisa lagi menampilkan QR, dan misinya ikut nonaktif (bagian 10); identitas pemenang Event Global hanya untuk pemenang dan admin.
 Perubahan 0.11: database Event Global sudah dibangun (bagian 22); halaman admin sudah ada: jangkauan dan mode lokasi di formulir event Gasyu, misi berskor, Kelola hadiah, serta Peringkat & pemenang (bagian 20); halaman warga juga sudah ada: tab Event Global di Jelajah, skor dan hadiah di halaman event, papan peringkat `/aktivitas/[id]/peringkat`, hasil scan berupa skor, kartu Beranda, halaman Hadiah `/hadiah` dengan klaim, dan notifikasi hadiah (bagian 22e); kartu "Hadiah yang disponsori" di dashboard merchant dan komunitas (bagian 20a) hanya menampilkan peringkat dan status, tanpa identitas pemenang; warga luar Cimahi memilih kota/kabupaten asal dari daftar (bagian 3); di Event Global peserta tidak pernah berstatus selesai, jadi tetap bisa menambah skor lewat misi sampai acara berakhir (bagian 22c).
 Perubahan 0.10: keluar dari semua perangkat (bagian 3); hadiah non-poin ditulis di deskripsi (bagian 6); ganti bukti bayar dan tombol chat panitia di WhatsApp (bagian 8); voucher berlaku di outlet tertentu (bagian 16); deteksi otomatis peninjau yang menyetujui terlalu cepat (bagian 19). Semua sudah dibangun (voucher per outlet dan peninjau cepat di migrasi 0020).
-Perubahan 0.9: Event Global, yaitu event buatan admin yang terbuka untuk pengguna dari kota mana pun, dengan misi, skor, papan peringkat, dan hadiah khusus event yang terpisah dari XP, level, dan poin (bagian 22); hak akses (bagian 2), validasi (bagian 6), penetapan pemenang saat settled (bagian 7), syarat selesai event online (bagian 9d), cron `process_prizes` (bagian 18), anti-curang (bagian 19), dashboard dan peta halaman (bagian 20).
+Perubahan 0.9: Event Global, yaitu event buatan admin yang terbuka untuk pengguna dari kota mana pun, dengan misi, skor, papan peringkat, dan hadiah khusus event yang terpisah dari Jejak, level, dan poin (bagian 22); hak akses (bagian 2), validasi (bagian 6), penetapan pemenang saat settled (bagian 7), syarat selesai event online (bagian 9d), cron `process_prizes` (bagian 18), anti-curang (bagian 19), dashboard dan peta halaman (bagian 20).
 Perubahan 0.8: pengingat voucher dan poin hampir kedaluwarsa (bagian 18); master misi (bagian 9f); saran warga untuk merchant dan komunitas (bagian 21); ubah profil, ganti kelurahan, hapus akun, riwayat, bantuan (bagian 3); serah terima peran pemilik/ketua (bagian 5).
 Perubahan 0.7: aturan domisili peserta, yaitu hanya warga wilayah event atau semua warga (bagian 6).
 Perubahan 0.6: pembuat event mengatur kapan tiap misi tampil ke warga (bagian 9e).
@@ -33,7 +34,7 @@ Semua diagram ditulis dalam Mermaid, jadi bisa dibaca langsung di GitHub, VS Cod
 11. Grup warga
 12. Keanggotaan komunitas
 13. Join aktivitas (pribadi dan grup)
-14. Check-in QR dan pemberian XP/poin
+14. Check-in QR dan pemberian Jejak/poin
 15. Progress dan penyelesaian challenge
 16. Tukar poin dan pakai voucher
 17. Leaderboard, level, dan badge
@@ -54,7 +55,7 @@ Gasyu punya empat entitas. Masing-masing punya dashboard sendiri.
 | 1 | **Admin** | Pemilik aplikasi (tim Gasyu) | Web, desktop-first, di `admin.gasyu.id` | Verifikasi merchant dan komunitas, review aktivitas, moderasi, metrik kota, pengaturan aturan main |
 | 2 | **Merchant/UMKM** | UMKM atau usaha apa pun yang mendaftar (kedai, kafe, toko, jasa, bengkel, dll.); dikelola pemilik, staf, kasir | Mobile PWA | Aktivitas, peserta dan pembayaran, misi, QR, kasir voucher, reward dan budget poin, outlet, kolaborasi, tim |
 | 3 | **Komunitas** | Komunitas apa pun yang mendaftar: olahraga (lari, sepeda, futsal, dll.), musik, seni, hobi, sosial, lingkungan, dan lainnya; dikelola ketua dan pengurus | Mobile PWA | Aktivitas, peserta dan pembayaran, misi, QR, member, kolaborasi, tim |
-| 4 | **Warga** | Semua pengguna terdaftar, dari kota mana pun di Indonesia | Mobile PWA | Level dan XP, aktivitas yang diikuti dan misinya, poin dan voucher, peringkat, grup, komunitas saya, Event Global dan hadiahnya |
+| 4 | **Warga** | Semua pengguna terdaftar, dari kota mana pun di Indonesia | Mobile PWA | Level dan Jejak, aktivitas yang diikuti dan misinya, poin dan voucher, peringkat, grup, komunitas saya, Event Global dan hadiahnya |
 
 **Tidak ada batasan jenis.** Merchant mencakup semua jenis usaha, dari UMKM rumahan sampai bisnis dengan beberapa cabang. Komunitas mencakup semua jenis komunitas warga. Kategori (lihat bagian 4) hanya dipakai untuk penyaringan dan pencarian, bukan syarat pendaftaran; jika kategorinya tidak ada, pilih "Lainnya".
 
@@ -62,7 +63,7 @@ Gasyu punya empat entitas. Masing-masing punya dashboard sendiri.
 
 **Istilah.** Di aplikasi dan dokumen ini, merchant dan komunitas disebut bersama sebagai **penyelenggara** bila aturannya berlaku untuk keduanya. Di database keduanya tetap satu tabel induk `organizers` (tipe `merchant` atau `community`), sehingga aktivitas, kolaborasi, checkpoint, dan misi bisa menunjuk ke keduanya dengan satu relasi. Kata "organizer" tidak tampil di aplikasi.
 
-Gambaran besar: siapa memakai apa, dan di mana logika penting dijalankan. Semua aturan XP, poin, dan hak akses dijalankan di server (fungsi database dan server action), tidak di HP pengguna.
+Gambaran besar: siapa memakai apa, dan di mana logika penting dijalankan. Semua aturan Jejak, poin, dan hak akses dijalankan di server (fungsi database dan server action), tidak di HP pengguna.
 
 ```mermaid
 flowchart LR
@@ -116,8 +117,8 @@ flowchart LR
 | Prinsip | Penerapan |
 | --- | --- |
 | Akses dijaga database | Setiap tabel memakai Row Level Security; UI hanya menyembunyikan, database yang menolak |
-| Uang permainan hanya ditulis server | XP, poin, dan skor Event Global hanya masuk lewat fungsi `security definer`, client tidak punya izin `insert` ke ledger |
-| Saldo dari ledger | Saldo XP, poin, dan skor event dihitung dari `xp_ledger`, `point_ledger`, dan `activity_score_ledger`, tidak ada kolom saldo |
+| Uang permainan hanya ditulis server | Jejak, poin, dan skor Event Global hanya masuk lewat fungsi `security definer`, client tidak punya izin `insert` ke ledger |
+| Saldo dari ledger | Saldo Jejak, poin, dan skor event dihitung dari `xp_ledger`, `point_ledger`, dan `activity_score_ledger`, tidak ada kolom saldo |
 | Satu akun banyak peran | Akun warga bisa menjadi pemilik merchant dan pengurus komunitas sekaligus |
 | Zona waktu tunggal | Semua batas harian dan bulanan memakai `Asia/Jakarta` |
 
@@ -205,8 +206,8 @@ flowchart TD
     F1 --> F2[Pilih provinsi, kota/kabupaten,<br/>lalu kecamatan tempat tinggal]
     F2 --> F3[Setujui S&K dan<br/>kebijakan privasi]
     F3 --> F4[Simpan profil<br/>onboarded_at = now]
-    F4 --> XP[Tambah 50 XP<br/>reason profile_complete]
-    XP --> NX{Ada tujuan next?}
+    F4 --> Jejak[Tambah 50 Jejak<br/>reason profile_complete]
+    Jejak --> NX{Ada tujuan next?}
     NX -- Ya --> T[Arahkan ke grup,<br/>aktivitas, atau undangan tim]
     NX -- Tidak --> H[Beranda: aktivitas<br/>di kota saya]
 ```
@@ -225,7 +226,7 @@ flowchart TD
 - Tidak ada batas usia dan tidak ada persetujuan orang tua selama pilot.
 - Sesi tetap aktif di HP sampai warga keluar. Selain tombol "Keluar dari akun" (perangkat ini saja), halaman profil punya **Keluar dari semua perangkat** (Supabase Auth `signOut({ scope: 'global' })`), untuk warga yang HP-nya hilang atau pernah masuk di HP orang lain.
 - Hapus akun (`/profil/hapus`, `delete_my_account`, warga mengetik HAPUS): data pribadi di `profiles` dikosongkan dan `deleted_at` diisi; baris ledger tetap ada demi audit, tetapi tidak lagi terhubung ke identitas yang bisa dikenali. Pendaftaran yang belum berjalan dibatalkan, warga keluar dari grup, komunitas, dan tim, notifikasinya dihapus. Ditolak jika ia satu-satunya pemilik/ketua, masih punya pembayaran lunas/menunggu di aktivitas yang belum selesai, atau akun admin. Sesi akun terhapus selalu dikeluarkan dan email yang sama tidak bisa dipakai masuk lagi.
-- Riwayat XP dan poin ada di `/riwayat` (dibaca dari `xp_ledger` dan `point_ledger`). Halaman `/bantuan` berisi pertanyaan umum dan kontak tim dari `app_settings` (`support.whatsapp`, `support.email`).
+- Riwayat Jejak dan poin ada di `/riwayat` (dibaca dari `xp_ledger` dan `point_ledger`). Halaman `/bantuan` berisi pertanyaan umum dan kontak tim dari `app_settings` (`support.whatsapp`, `support.email`).
 
 ### 3a. Wilayah se-Indonesia
 
@@ -236,9 +237,9 @@ Gasyu dimulai di Kota Cimahi, tetapi warga, merchant, dan komunitas dari kota ma
 | Data wilayah | 514 kota/kabupaten dan 7.285 kecamatan (kode Kemendagri) di `regions`. Wilayah asal selalu **kecamatan**; kotanya diambil dari induk kecamatan. Kelurahan Cimahi lama tetap tersimpan untuk riwayat, tetapi tidak bisa dipilih lagi |
 | Pemilih wilayah | Tiga pilihan bertingkat: provinsi (38), kota/kabupaten di provinsi itu, lalu kecamatan. Dipakai di onboarding, Ubah profil, daftar merchant/komunitas, tambah outlet, dan profil komunitas |
 | Kota dibuka | Admin membuka kota satu per satu di halaman **Wilayah** (`set_city_active`, dicatat di `admin_actions`). Awalnya hanya Kota Cimahi yang dibuka. Halaman Wilayah menampilkan jumlah warga dan penyelenggara per kota (`v_admin_city_stats`) supaya admin tahu kota mana yang sudah ada peminatnya |
-| Kota yang belum dibuka | Warga tetap bisa mendaftar, ikut aktivitas, dan mendapat XP dan poin. Kota itu belum tampil di pemilih kota Jelajah, belum bisa dipakai sebagai cakupan aktivitas, dan peringkat kota/kecamatannya belum tampil. XP tetap tercatat per kecamatan (snapshot), jadi langsung terhitung begitu kota dibuka |
+| Kota yang belum dibuka | Warga tetap bisa mendaftar, ikut aktivitas, dan mendapat Jejak dan poin. Kota itu belum tampil di pemilih kota Jelajah, belum bisa dipakai sebagai cakupan aktivitas, dan peringkat kota/kecamatannya belum tampil. Jejak tetap tercatat per kecamatan (snapshot), jadi langsung terhitung begitu kota dibuka |
 | Penyelenggara di kota yang belum dibuka | Boleh mendaftar dan diverifikasi. Di halaman Verifikasi admin melihat peringatan "kota belum dibuka" dan tombol untuk membukanya |
-| Akun lama | Warga lama "Luar Cimahi" tidak punya kecamatan (`home_district_id` kosong). Mereka tetap dapat XP dan poin, tetapi tidak masuk peringkat dan tidak lolos aktivitas `residents_only` sampai mengisi kota dan kecamatan |
+| Akun lama | Warga lama "Luar Cimahi" tidak punya kecamatan (`home_district_id` kosong). Mereka tetap dapat Jejak dan poin, tetapi tidak masuk peringkat dan tidak lolos aktivitas `residents_only` sampai mengisi kota dan kecamatan |
 | Pengecekan | Kolom kecamatan warga, penyelenggara, outlet, dan area komunitas hanya bisa berisi kecamatan (`is_valid_district`, trigger `check_district_ref`); cakupan aktivitas hanya wilayah di kota yang sudah dibuka (`is_open_region`) |
 
 ---
@@ -331,7 +332,7 @@ flowchart TD
     PAY -- Gratis --> CP
     PAY -- Berbayar --> PAY2[Harga per orang,<br/>instruksi bayar: rekening/QRIS/kontak,<br/>batas waktu bayar] --> CP
     CP[Checkpoint: pilih outlet<br/>atau titik peta + radius]
-    CP --> MS[Misi opsional:<br/>judul, cara verifikasi, XP, wajib atau bonus]
+    CP --> MS[Misi opsional:<br/>judul, cara verifikasi, Jejak, wajib atau bonus]
     MS --> RW{Host merchant?}
     RW -- Ya --> PB[Poin per penyelesaian<br/>+ budget poin]
     RW -- Tidak, komunitas --> NP[Tanpa poin sendiri<br/>poin hanya dari sponsor merchant]
@@ -362,7 +363,7 @@ flowchart TD
 - `audience = members_only` hanya boleh jika host bertipe komunitas.
 - `residency_rule = residents_only` wajib punya wilayah cakupan (`scope_region_id`).
 - Jika `is_paid = true`: `price_idr` minimal Rp1.000 dan `payment_instructions` terisi.
-- Misi: setiap misi aktif punya cara verifikasi yang lengkap (misi QR punya checkpoint, misi kode punya kode rahasia); XP tiap misi 10–100 dan total XP misi per aktivitas maksimal 500.
+- Misi: setiap misi aktif punya cara verifikasi yang lengkap (misi QR punya checkpoint, misi kode punya kode rahasia); Jejak tiap misi 10–100 dan total Jejak misi per aktivitas maksimal 500.
 - Challenge dengan target berbasis misi wajib punya minimal satu misi aktif (dan minimal satu misi wajib untuk `required_missions`).
 - Event Global (`reach = global`): aturan tambahan di bagian 22b, termasuk boleh tanpa checkpoint untuk mode `online`/`hybrid`, minimal satu misi aktif, dan minimal satu hadiah.
 - Open call yang terhubung ke aktivitas otomatis ditutup.
@@ -383,7 +384,7 @@ flowchart TD
 
 **Hadiah non-poin.** Merchant dan komunitas boleh menjanjikan hadiah di luar poin, misalnya merchandise, sertifikat, atau medali. Untuk aktivitas regional, hadiah ini cukup ditulis di deskripsi aktivitas dan diurus sendiri oleh penyelenggara; sistem tidak mencatat atau memeriksanya. Hadiah yang dicatat sistem hanya ada di Event Global (bagian 22d).
 
-**Aktivitas khusus member.** Tetap tampil di beranda dan halaman komunitas (dengan label "Khusus member"), supaya warga lain tahu dan tertarik bergabung, tetapi tombol join hanya aktif untuk member aktif komunitas host. Aturan XP, poin, dan check-in sama dengan aktivitas publik.
+**Aktivitas khusus member.** Tetap tampil di beranda dan halaman komunitas (dengan label "Khusus member"), supaya warga lain tahu dan tertarik bergabung, tetapi tombol join hanya aktif untuk member aktif komunitas host. Aturan Jejak, poin, dan check-in sama dengan aktivitas publik.
 
 ---
 
@@ -459,7 +460,7 @@ flowchart TD
 | Grup | Tiap anggota membayar dan dikonfirmasi sendiri-sendiri |
 | Pembatalan oleh warga | Diizinkan sebelum check-in pertama; pengembalian dana diurus langsung dengan penyelenggara, tim menandai `refunded` jika dana dikembalikan |
 | Aktivitas dibatalkan | Peserta yang sudah `paid` mendapat notifikasi; tim wajib menandai `refunded` setelah mengembalikan dana, dan admin bisa melihat yang belum |
-| XP dan poin | Sama dengan aktivitas gratis; membayar tidak memberi XP |
+| Jejak dan poin | Sama dengan aktivitas gratis; membayar tidak memberi Jejak |
 | Bukti bayar | Disimpan di Storage privat, hanya bisa dilihat warga pemilik dan tim penyelenggara host. Selama status `awaiting_confirmation`, warga boleh mengganti bukti (bukti lama ditimpa); fungsi `submit_payment_proof` sudah mengizinkannya, tinggal tombol "Ganti bukti" di halaman status bayar |
 | Kontak panitia | Halaman status bayar punya tombol "Chat panitia di WhatsApp" yang membuka nomor WhatsApp host dari profil merchant/komunitas. Untuk event Gasyu dipakai `payment.gasyu_whatsapp` di `app_settings`, atau `support.whatsapp` jika kosong. Nomor hanya tampil ke peserta terdaftar aktivitas itu |
 
@@ -473,7 +474,7 @@ Misi adalah tugas di dalam sebuah aktivitas (event atau challenge) yang dibuat d
 
 ### 9a. Cara verifikasi misi
 
-| Cara (`verification`) | Cocok untuk | Selesai ketika | XP masuk |
+| Cara (`verification`) | Cocok untuk | Selesai ketika | Jejak masuk |
 | --- | --- | --- | --- |
 | `qr_scan` | "Kunjungi booth sponsor", "Mampir ke pos 3" | Warga memindai QR misi (berganti tiap 60 detik) di dalam radius | Langsung |
 | `secret_code` | "Ikuti sesi talkshow sampai akhir", "Temukan kode di mural" | Warga mengetik kode yang diumumkan/disembunyikan di lokasi | Langsung |
@@ -486,7 +487,7 @@ Misi adalah tugas di dalam sebuah aktivitas (event atau challenge) yang dibuat d
 flowchart TD
     S([Tim penyelenggara: Tambah misi]) --> F[Judul, deskripsi, ikon,<br/>urutan tampil]
     F --> K{Wajib atau bonus?}
-    K --> X[XP misi 10-100]
+    K --> X[Jejak misi 10-100]
     X --> V{Cara verifikasi}
     V -->|qr_scan| Q[Pilih checkpoint<br/>radius ikut checkpoint]
     V -->|secret_code| C[Tentukan kode<br/>disimpan sebagai hash]
@@ -504,11 +505,11 @@ flowchart TD
     SV[Simpan activity_missions]
     SV --> ED{Sudah ada yang<br/>menyelesaikan misi ini?}
     ED -- Belum --> E1[Semua kolom bisa diubah]
-    ED -- Sudah --> E2[XP dan cara verifikasi terkunci;<br/>hanya teks yang bisa diubah,<br/>atau misi dinonaktifkan]
+    ED -- Sudah --> E2[Jejak dan cara verifikasi terkunci;<br/>hanya teks yang bisa diubah,<br/>atau misi dinonaktifkan]
 ```
 
 - Partner yang punya checkpoint di aktivitas boleh membuat misi `qr_scan` di checkpoint miliknya; misi itu tercatat atas nama partner tersebut untuk atribusi.
-- Misi yang dinonaktifkan hilang dari daftar warga, tetapi XP yang sudah diberikan tetap.
+- Misi yang dinonaktifkan hilang dari daftar warga, tetapi Jejak yang sudah diberikan tetap.
 - Setiap misi hanya bisa diselesaikan sekali per warga.
 - Kode rahasia minimal 6 karakter (`mission.code_min_length`).
 - Anggota tim tidak bisa menyetujui bukti foto atau menandai misi manual untuk akunnya sendiri; anggota tim lain yang melakukannya.
@@ -546,7 +547,7 @@ sequenceDiagram
     end
     DB->>DB: saat approved: insert xp_ledger reason mission_complete (ikut batas 1.000/hari)
     DB->>DB: evaluate_completion(participation): cek syarat selesai aktivitas
-    DB-->>App: XP, progress misi, status selesai
+    DB-->>App: Jejak, progress misi, status selesai
 ```
 
 - Foto yang ditolak boleh diunggah ulang selama aktivitas masih `running`.
@@ -563,11 +564,11 @@ Fungsi `evaluate_completion` dipanggil setiap ada check-in atau misi yang disetu
 | Event tanpa misi wajib | Warga check-in (seperti sebelumnya) |
 | Event dengan misi wajib | Warga check-in **dan** semua misi wajib disetujui |
 | Event Global `online`, atau `hybrid` tanpa check-in | Semua misi wajib disetujui; jika tidak ada misi wajib, saat misi pertama disetujui |
-| Challenge target `total_checkins` / `distinct_checkpoints` | Target check-in tercapai (misi hanya menambah XP) |
+| Challenge target `total_checkins` / `distinct_checkpoints` | Target check-in tercapai (misi hanya menambah Jejak) |
 | Challenge target `required_missions` | Semua misi wajib disetujui |
 | Challenge target `missions_completed` | Jumlah misi disetujui (wajib maupun bonus) mencapai `target_count` |
 
-Misi bonus selalu opsional: menambah XP, tetapi tidak menghalangi status selesai. Misi wajib yang **belum pernah dibuka** (misalnya mode manual yang tidak jadi dibuka panitia) tidak dihitung sebagai syarat; begitu terbuka, ia langsung menjadi syarat. Hadiah penyelesaian (XP challenge dan poin dari budget) tetap diberikan sekali, saat status menjadi `completed`. Setelah status `completed`, warga tetap boleh mengerjakan misi bonus yang masih terbuka (termasuk yang baru dibuka belakangan) sampai aktivitas berakhir; XP misi tetap diberikan sekali per misi dan status tidak berubah.
+Misi bonus selalu opsional: menambah Jejak, tetapi tidak menghalangi status selesai. Misi wajib yang **belum pernah dibuka** (misalnya mode manual yang tidak jadi dibuka panitia) tidak dihitung sebagai syarat; begitu terbuka, ia langsung menjadi syarat. Hadiah penyelesaian (Jejak challenge dan poin dari budget) tetap diberikan sekali, saat status menjadi `completed`. Setelah status `completed`, warga tetap boleh mengerjakan misi bonus yang masih terbuka (termasuk yang baru dibuka belakangan) sampai aktivitas berakhir; Jejak misi tetap diberikan sekali per misi dan status tidak berubah.
 
 ### 9e. Kapan misi tampil ke warga
 
@@ -582,7 +583,7 @@ Misi tidak harus langsung terlihat saat event terbit. Pembuat event mengatur car
 
 Selain itu, setiap misi yang belum terbuka bisa diatur **ditampilkan sebagai teaser** (`show_teaser`) atau **disembunyikan sepenuhnya**:
 
-- **Teaser**: warga melihat kartu terkunci tanpa judul dan isi, hanya keterangan kapan atau bagaimana misi terbuka ("Misi rahasia, terbuka pukul 19.00", "Selesaikan Pos 1 untuk membuka"). Jumlah XP boleh ditampilkan supaya penasaran.
+- **Teaser**: warga melihat kartu terkunci tanpa judul dan isi, hanya keterangan kapan atau bagaimana misi terbuka ("Misi rahasia, terbuka pukul 19.00", "Selesaikan Pos 1 untuk membuka"). Jumlah Jejak boleh ditampilkan supaya penasaran.
 - **Tersembunyi**: misi sama sekali tidak muncul sampai terbuka.
 
 ```mermaid
@@ -621,7 +622,7 @@ sequenceDiagram
     actor A as Admin
     participant App as Gasyu
     actor P as Tim penyelenggara
-    A->>App: Buat/ubah template (judul, instruksi, tips, kategori, verifikasi, saran XP, untuk siapa)
+    A->>App: Buat/ubah template (judul, instruksi, tips, kategori, verifikasi, saran Jejak, untuk siapa)
     P->>App: Tambah misi di aktivitas
     App-->>P: Daftar template aktif yang cocok (jenis aktivitas, tipe penyelenggara)
     P->>App: Pakai template, sesuaikan isi, isi kode/checkpoint, simpan
@@ -632,7 +633,7 @@ sequenceDiagram
 | Aturan | Isi |
 | --- | --- |
 | Siapa mengelola | Hanya admin: buat, ubah, aktifkan, nonaktifkan (tercatat di audit). Template tidak dihapus supaya statistik tetap utuh |
-| Isi template | Judul, instruksi untuk warga, tips untuk penyelenggara, kategori (kunjungan, belanja, media sosial, olahraga, lingkungan, edukasi, komunitas, lainnya), cara verifikasi, saran XP (dalam batas `mission.xp_min`–`mission.xp_max`), wajib/bonus |
+| Isi template | Judul, instruksi untuk warga, tips untuk penyelenggara, kategori (kunjungan, belanja, media sosial, olahraga, lingkungan, edukasi, komunitas, lainnya), cara verifikasi, saran Jejak (dalam batas `mission.xp_min`–`mission.xp_max`), wajib/bonus |
 | Untuk siapa | Bisa dibatasi ke event atau challenge, dan ke merchant atau komunitas; kosong = semua. Event Gasyu melihat semua template |
 | Partner (bukan host) | Hanya melihat template Scan QR, sesuai aturan misi partner |
 | Disalin, bukan ditautkan | Isi template disalin ke misi dan tetap bisa diubah penyelenggara. Mengubah atau menonaktifkan template tidak mengubah misi yang sudah dibuat |
@@ -830,7 +831,7 @@ sequenceDiagram
 | Tim otomatis member | Ketua dan pengurus selalu member aktif; ketua tidak bisa keluar sebelum menyerahkan peran ketua |
 | Bergabung ulang | Member yang `left` boleh meminta lagi kapan saja; yang `removed` atau `rejected` baru boleh meminta lagi setelah 30 hari |
 | Privasi | Tim melihat nickname, kecamatan, tanggal gabung, dan jumlah check-in member di aktivitas komunitas itu; tidak pernah nama lengkap. Publik hanya melihat jumlah member aktif |
-| XP | Bergabung tidak memberi XP, supaya tidak jadi celah farming |
+| Jejak | Bergabung tidak memberi Jejak, supaya tidak jadi celah farming |
 | Komunitas dibekukan | Keanggotaan tetap tersimpan; aktivitas khusus member ikut tidak bisa diikuti |
 | Grup warga | Terpisah dari keanggotaan; grup bisa berisi warga dari komunitas berbeda |
 
@@ -879,7 +880,7 @@ flowchart TD
 
 - Kuota dihitung per orang: `registered + in_progress + completed + invited`.
 - Satu warga hanya punya satu partisipasi per aktivitas (pribadi atau lewat satu grup).
-- Join tidak memberi XP atau skor; XP dan skor baru masuk saat check-in atau misi selesai.
+- Join tidak memberi Jejak atau skor; Jejak dan skor baru masuk saat check-in atau misi selesai.
 - Event Global: tidak ada pemeriksaan domisili, keanggotaan, maupun grup. Siapa pun yang sudah onboarding, dari kota mana pun, langsung mendaftar sendiri (bagian 22).
 - Warga bisa membatalkan sebelum check-in pertama; kursinya kembali ke kuota.
 - Aktivitas berbayar lewat grup: setiap anggota yang mengonfirmasi mendapat `payment_status unpaid` dan batas waktu bayarnya sendiri.
@@ -888,7 +889,7 @@ flowchart TD
 
 ---
 
-## 14. Check-in QR dan pemberian XP/poin
+## 14. Check-in QR dan pemberian Jejak/poin
 
 Ini alur paling kritis. Semua langkah setelah pemindaian terjadi di satu fungsi database `perform_checkin` dalam satu transaksi.
 
@@ -933,7 +934,7 @@ sequenceDiagram
     else Lolos
         DB->>DB: 5. hitung jarak ke checkpoint
         DB->>DB: 6. insert checkins (review_status ok atau flagged jika di luar radius)
-        DB->>DB: 7. hitung XP (lihat tabel di bawah) dan potong ke batas 1.000 per hari
+        DB->>DB: 7. hitung Jejak (lihat tabel di bawah) dan potong ke batas 1.000 per hari
         DB->>DB: 8. insert xp_ledger
         DB->>DB: 9. perbarui progress, lalu evaluate_completion (bagian 9d)
         opt Syarat selesai terpenuhi
@@ -943,28 +944,28 @@ sequenceDiagram
             end
         end
         DB->>DB: 12. cek bonus grup dan badge
-        DB-->>App: hasil: XP, poin, level, badge baru
+        DB-->>App: hasil: Jejak, poin, level, badge baru
         App-->>W: animasi hadiah
     end
 ```
 
-### 14c. Perhitungan XP
+### 14c. Perhitungan Jejak
 
 | Komponen | Kapan | Nilai |
 | --- | --- | --- |
-| Dasar event | Check-in di event | 100 XP |
-| Dasar challenge | Saat challenge selesai | 150 / 250 / 400 XP (easy / medium / hard) |
-| Misi | Saat misi disetujui (langsung untuk QR/kode, saat ditinjau untuk foto/manual) | 10–100 XP per misi sesuai pengaturan penyelenggara; total per aktivitas maks. 500 XP; tidak kena bonus kolaborasi dan grup |
-| Kunjungan pertama | Pertama kali check-in di penyelenggara itu | +50 XP |
-| Kolaborasi | Aktivitas punya lebih dari satu partner accepted | +25% XP dasar |
-| Bonus grup | Minimal 3 anggota grup yang sama check-in di aktivitas yang sama hari itu | +20% XP dasar untuk semua anggota yang hadir |
-| Batas harian | Total XP per warga per hari (WIB) | Maksimal 1.000 XP; kelebihan dipotong |
+| Dasar event | Check-in di event | 100 Jejak |
+| Dasar challenge | Saat challenge selesai | 150 / 250 / 400 Jejak (easy / medium / hard) |
+| Misi | Saat misi disetujui (langsung untuk QR/kode, saat ditinjau untuk foto/manual) | 10–100 Jejak per misi sesuai pengaturan penyelenggara; total per aktivitas maks. 500 Jejak; tidak kena bonus kolaborasi dan grup |
+| Kunjungan pertama | Pertama kali check-in di penyelenggara itu | +50 Jejak |
+| Kolaborasi | Aktivitas punya lebih dari satu partner accepted | +25% Jejak dasar |
+| Bonus grup | Minimal 3 anggota grup yang sama check-in di aktivitas yang sama hari itu | +20% Jejak dasar untuk semua anggota yang hadir |
+| Batas harian | Total Jejak per warga per hari (WIB) | Maksimal 1.000 Jejak; kelebihan dipotong |
 
 **Bonus grup** diberikan sekali per anggota per aktivitas per hari. Saat anggota ketiga check-in, fungsi menambahkan bonus untuk ketiganya sekaligus; anggota keempat dan seterusnya langsung mendapat bonus saat check-in.
 
-Di Event Global, check-in dan misi memberi **skor event** (bagian 22c) lewat `award_activity_score`, tanpa XP, bonus, poin, dan batas harian.
+Di Event Global, check-in dan misi memberi **skor event** (bagian 22c) lewat `award_activity_score`, tanpa Jejak, bonus, poin, dan batas harian.
 
-**Check-in di luar radius** tetap memberi XP atau skor (supaya warga dengan GPS kurang akurat tidak dirugikan), tetapi ditandai `flagged`. Jika admin menolaknya, fungsi `reverse_checkin` menulis baris XP dan poin bernilai negatif.
+**Check-in di luar radius** tetap memberi Jejak atau skor (supaya warga dengan GPS kurang akurat tidak dirugikan), tetapi ditandai `flagged`. Jika admin menolaknya, fungsi `reverse_checkin` menulis baris Jejak dan poin bernilai negatif.
 
 **Poin tertahan.** Poin dari check-in yang ditandai belum bisa dipakai sampai admin menyatakan check-in itu sah. Di Dompet tampil "X poin tertahan". Jika ditolak, poinnya ditarik; jika sah, poin langsung masuk saldo.
 
@@ -978,19 +979,19 @@ flowchart TD
     SC -->|individual| I1[progress pribadi = jumlah check-in,<br/>checkpoint berbeda, atau misi disetujui<br/>sesuai target_kind]
     I1 --> I2{progress >= target_count?}
     I2 -- Tidak --> I3[status in_progress]
-    I2 -- Ya --> DONE[Warga completed<br/>+ XP penyelesaian + poin jika ada budget]
+    I2 -- Ya --> DONE[Warga completed<br/>+ Jejak penyelesaian + poin jika ada budget]
     SC -->|group| G1[progress grup = jumlah<br/>dari semua anggota grup]
     G1 --> G2{progress grup >= target_count?}
     G2 -- Tidak --> G3[anggota in_progress<br/>leaderboard grup diperbarui]
     G2 -- Ya --> G4[Semua anggota yang sudah<br/>berkontribusi minimal 1 kali]
-    G4 --> DONE2[completed + XP + poin<br/>untuk tiap kontributor]
+    G4 --> DONE2[completed + Jejak + poin<br/>untuk tiap kontributor]
     G4 --> NC[Anggota tanpa kontribusi:<br/>tidak dapat hadiah penyelesaian]
 ```
 
 - Jenis target: `total_checkins` (jumlah check-in), `distinct_checkpoints` (checkpoint berbeda, cocok untuk "jelajah 5 kedai"), `required_missions` (semua misi wajib selesai), dan `missions_completed` (jumlah misi selesai mencapai target, contoh "selesaikan 4 dari 6 misi").
 - Target grup berbasis misi: `missions_completed` dihitung dari jumlah misi disetujui seluruh anggota grup (misi yang sama oleh dua anggota dihitung dua). `required_missions` tidak tersedia untuk target grup.
 - Satu check-in per aktivitas per hari tetap berlaku untuk challenge; misi tidak dibatasi per hari, hanya sekali per misi per warga.
-- Challenge yang berakhir sebelum target tercapai: partisipasi tetap `in_progress`, lalu cron mengubahnya menjadi tidak selesai saat `settled`. XP dari check-in harian tetap dimiliki warga.
+- Challenge yang berakhir sebelum target tercapai: partisipasi tetap `in_progress`, lalu cron mengubahnya menjadi tidak selesai saat `settled`. Jejak dari check-in harian tetap dimiliki warga.
 
 ---
 
@@ -1034,9 +1035,9 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-    XL[(xp_ledger)] --> LV[v_user_level<br/>total XP seumur hidup<br/>ke tabel level]
-    XL --> LU[v_leaderboard_users_month<br/>XP bulan berjalan<br/>per kecamatan dan se-kota]
-    XL --> LK[v_leaderboard_districts_month<br/>rata-rata XP per warga aktif<br/>minimal 10 warga aktif, per kota]
+    XL[(xp_ledger)] --> LV[v_user_level<br/>total Jejak seumur hidup<br/>ke tabel level]
+    XL --> LU[v_leaderboard_users_month<br/>Jejak bulan berjalan<br/>per kecamatan dan se-kota]
+    XL --> LK[v_leaderboard_districts_month<br/>rata-rata Jejak per warga aktif<br/>minimal 10 warga aktif, per kota]
     CI[(checkins)] --> AK[v_district_active_month<br/>jumlah warga aktif<br/>tab Kecamatan]
     CI --> LG[v_group_progress<br/>leaderboard grup per aktivitas]
     CI --> OR[v_organizer_reputation<br/>hadir, penyelesaian, kolaborasi]
@@ -1046,7 +1047,7 @@ flowchart LR
 
 **Level**
 
-| Level | Nama | XP kumulatif |
+| Level | Nama | Jejak kumulatif |
 | --- | --- | --- |
 | 1 | Warga Baru | 0 |
 | 2 | Penjelajah | 500 |
@@ -1054,7 +1055,7 @@ flowchart LR
 | 4 | Jawara | 4.000 |
 | 5 | Legenda Kota | 10.000 |
 
-**Peringkat kota dan kecamatan.** Halaman Peringkat punya tiga tab: warga di kecamatan saya, warga se-kota saya, dan peringkat kecamatan di kota saya. Hanya kota yang sudah dibuka admin yang punya peringkat (bagian 3a); warga di kota lain melihat keterangan "peringkat kotamu belum dibuka". XP dihitung ke kecamatan yang tercatat di `xp_ledger.district_id` saat XP diberikan (snapshot), sehingga pindah kecamatan tidak memindahkan XP lama. Warga tanpa kecamatan (akun lama) tidak dihitung. Juara kecamatan bulan lalu di setiap kota disimpan oleh cron ke `monthly_district_winners`.
+**Peringkat kota dan kecamatan.** Halaman Peringkat punya tiga tab: warga di kecamatan saya, warga se-kota saya, dan peringkat kecamatan di kota saya. Hanya kota yang sudah dibuka admin yang punya peringkat (bagian 3a); warga di kota lain melihat keterangan "peringkat kotamu belum dibuka". Jejak dihitung ke kecamatan yang tercatat di `xp_ledger.district_id` saat Jejak diberikan (snapshot), sehingga pindah kecamatan tidak memindahkan Jejak lama. Warga tanpa kecamatan (akun lama) tidak dihitung. Juara kecamatan bulan lalu di setiap kota disimpan oleh cron ke `monthly_district_winners`.
 
 **Badge awal**
 
@@ -1111,14 +1112,14 @@ flowchart TB
 | settle_ended_activities | 1 jam | `ended` lebih dari 48 jam menjadi `settled`; partisipasi yang belum memenuhi syarat selesai menjadi `not_completed`; `mission_completions` yang masih `pending_review` menjadi `rejected`; untuk Event Global memanggil `finalize_activity_winners` |
 | expire_points | Harian | Baris `point_ledger` negatif `reason = expiry` untuk sisa poin yang kedaluwarsa |
 | expire_redemptions | Harian | Voucher `active` lewat `expires_at` menjadi `expired` |
-| award_streak | Senin | +50 XP untuk warga dengan minimal satu check-in di setiap minggu berturut-turut |
+| award_streak | Senin | +50 Jejak untuk warga dengan minimal satu check-in di setiap minggu berturut-turut |
 | expire_membership_requests | Harian | `community_memberships` berstatus `pending` lebih dari 30 hari menjadi `rejected` + notifikasi ke warga |
 | prune_code_attempts | Harian | Menghapus baris `mission_code_attempts` yang lebih dari 1 hari |
 | notify_expiring | Harian 08.05 WIB | Notifikasi ke warga untuk voucher aktif dan poin yang akan kedaluwarsa dalam `reminder.expiry_days` hari (awal 7). Voucher diingatkan sekali; poin paling sering sekali per jangka itu. Jam pagi dipilih supaya notifikasi tidak masuk tengah malam |
 | snapshot_monthly_winners | Bulanan | Insert `monthly_village_winners` untuk bulan lalu |
 | process_prizes | Harian 08.05 WIB | Mengirim `prize_claim_reminder` 3 hari sebelum `claim_deadline`; `pending_claim` yang lewat batas menjadi `forfeited` + notifikasi; mengosongkan alamat pengiriman 30 hari setelah `delivered` |
 
-Leaderboard bulanan tidak perlu di-reset: view menyaring XP berdasarkan bulan berjalan, sehingga otomatis mulai dari nol tiap tanggal 1.
+Leaderboard bulanan tidak perlu di-reset: view menyaring Jejak berdasarkan bulan berjalan, sehingga otomatis mulai dari nol tiap tanggal 1.
 
 ---
 
@@ -1142,7 +1143,7 @@ flowchart TD
     D2 -->|Tidak| A4[draft + review_note]
     Q3 --> D3{Sah?}
     D3 -->|Ya| A5[review_status approved]
-    D3 -->|Tidak| A6[reverse_checkin<br/>XP dan poin dibalik]
+    D3 -->|Tidak| A6[reverse_checkin<br/>Jejak dan poin dibalik]
     Q4 --> D4{Tindakan}
     D4 -->|Peringatan| A7[catat di fraud_flags]
     D4 -->|Bekukan akun| A8[profiles.suspended_at diisi<br/>tidak bisa check-in dan menukar]
@@ -1156,18 +1157,18 @@ flowchart TD
 | QR berganti tiap 60 detik | Foto QR disebar ke grup chat |
 | Cek radius GPS 150 m | Check-in dari rumah dengan QR curian |
 | Satu check-in per aktivitas per hari | Memindai berkali-kali |
-| Batas 1.000 XP per hari | Farming XP besar-besaran |
-| XP/poin hanya dari fungsi server | Memanipulasi request dari HP |
+| Batas 1.000 Jejak per hari | Farming Jejak besar-besaran |
+| Jejak/poin hanya dari fungsi server | Memanipulasi request dari HP |
 | Budget poin per aktivitas | Poin tak terbatas yang membebani merchant |
 | Deteksi pola (`fraud_flags`) | Banyak akun dari satu lokasi dan waktu yang sama, check-in beruntun di lokasi berjauhan dalam waktu tidak wajar |
 | Kode voucher sekali pakai | Voucher dipakai ulang |
 | QR misi berganti tiap 60 detik + cek radius | Foto QR misi disebar |
 | Batas percobaan kode misi (5 per 15 menit) + kode minimal 6 karakter + laporan tebakan massal | Menebak kode rahasia, termasuk dari banyak akun |
-| Peninjau tidak bisa menyetujui misinya sendiri; misi manual hanya untuk yang sudah check-in | Panitia memberi XP ke diri sendiri atau ke orang yang tidak hadir |
+| Peninjau tidak bisa menyetujui misinya sendiri; misi manual hanya untuk yang sudah check-in | Panitia memberi Jejak ke diri sendiri atau ke orang yang tidak hadir |
 | Poin dari check-in di luar radius ditahan sampai ditinjau | Poin dari QR curian langsung ditukar voucher sebelum admin sempat menolak |
-| XP misi 10–100, total maks. 500 per aktivitas | Penyelenggara membuat misi XP besar untuk mendongkrak warga tertentu |
+| Jejak misi 10–100, total maks. 500 per aktivitas | Penyelenggara membuat misi Jejak besar untuk mendongkrak warga tertentu |
 | Misi foto dan manual dicatat siapa peninjaunya | Panitia menyetujui temannya sendiri tanpa jejak; admin bisa mengaudit |
-| Skor Event Global terpisah dari XP | Event besar dengan peserta luar kota menggeser peringkat kota dan kecamatan |
+| Skor Event Global terpisah dari Jejak | Event besar dengan peserta luar kota menggeser peringkat kota dan kecamatan |
 | Masa verifikasi 48 jam sebelum pemenang ditetapkan | Juara dari check-in atau foto yang belum ditinjau |
 | Admin meninjau pemenang sebelum hadiah dikirim; akun dibekukan tidak bisa menang | Akun ganda atau curang membawa pulang hadiah |
 
@@ -1175,7 +1176,7 @@ Bukti foto misi ditinjau oleh tim penyelenggara, bukan admin. Admin hanya turun 
 
 **Peninjau terlalu cepat (`reviewer_burst`).** Jika satu anggota tim menyetujui `fraud.reviewer_burst_count` bukti foto atau lebih (awal 50) dalam `fraud.reviewer_burst_minutes` menit (awal 10), sistem membuat satu `fraud_flags` berjenis `reviewer_burst` per jendela waktu, berisi peninjau, penyelenggara, aktivitas, dan jumlah bukti. Persetujuan tetap berlaku (tidak dibatalkan otomatis), supaya panitia yang memang meninjau cepat di acara besar tidak terganggu. Admin melihatnya di halaman Moderasi dan bisa mengabaikan, memberi peringatan, membalik misi tertentu, atau membekukan penyelenggara.
 
-**Membatalkan misi.** Admin bisa membatalkan misi yang sudah disetujui lewat `reverse_mission_completion` (wajib alasan): status misi menjadi ditolak, XP atau skor ditarik dengan baris negatif, laporan terkait ditutup, dan warga mendapat notifikasi. Di halaman Moderasi tombol ini ada di kartu "Peninjau terlalu cepat" (daftar persetujuan dalam jendela itu) dan di daftar "Misi QR di luar radius".
+**Membatalkan misi.** Admin bisa membatalkan misi yang sudah disetujui lewat `reverse_mission_completion` (wajib alasan): status misi menjadi ditolak, Jejak atau skor ditarik dengan baris negatif, laporan terkait ditutup, dan warga mendapat notifikasi. Di halaman Moderasi tombol ini ada di kartu "Peninjau terlalu cepat" (daftar persetujuan dalam jendela itu) dan di daftar "Misi QR di luar radius".
 
 ---
 
@@ -1189,7 +1190,7 @@ Satu codebase Next.js melayani dua aplikasi: **Gasyu PWA** (warga, merchant, kom
 
 | Bagian | Isi | Sumber data |
 | --- | --- | --- |
-| Kartu level | Level, XP total, XP menuju level berikutnya, streak minggu ini | `v_user_level`, `xp_ledger` |
+| Kartu level | Level, Jejak total, Jejak menuju level berikutnya, streak minggu ini | `v_user_level`, `xp_ledger` |
 | Aktivitasku | Aktivitas yang diikuti hari ini dan mendatang, status bayar, misi yang belum selesai | `participations`, `v_participation_missions` |
 | Event Global | Event Global yang diikuti beserta skor dan posisi saya; Event Global yang sedang dibuka pendaftarannya | `v_activity_scoreboard`, `activities` |
 | Hadiah perlu diklaim | Hadiah Event Global berstatus `pending_claim` beserta batas klaimnya | `activity_winners` |
@@ -1233,7 +1234,7 @@ Satu codebase Next.js melayani dua aplikasi: **Gasyu PWA** (warga, merchant, kom
 | Pembayaran | Aktivitas dibatalkan yang masih punya peserta `paid` belum `refunded` | `v_activity_payment_stats` |
 | Pengguna | Cari warga, merchant, komunitas; bekukan atau aktifkan | `profiles`, `organizers` |
 | Master misi | Template misi siap pakai untuk penyelenggara, statistik pemakaian | `mission_templates`, `v_mission_template_stats` |
-| Pengaturan | Angka aturan main (XP, batas, radius, kedaluwarsa, skor dan klaim Event Global) | `app_settings` |
+| Pengaturan | Angka aturan main (Jejak, batas, radius, kedaluwarsa, skor dan klaim Event Global) | `app_settings` |
 | Audit | Riwayat tindakan admin | `admin_actions` |
 
 ### 20b. Peta halaman
@@ -1260,7 +1261,7 @@ flowchart LR
     WG --> W11[/daftar/merchant dan<br/>/daftar/komunitas/]
     WG --> W12[/saran: saran saya<br/>status dan balasan/]
     WG --> W13[/profil/ubah dan /profil/hapus/]
-    WG --> W14[/riwayat: XP dan poin/]
+    WG --> W14[/riwayat: Jejak dan poin/]
     WG --> W15[/bantuan/]
     WG --> W16[/hadiah: hadiah Event Global<br/>dan klaim/]
 
@@ -1315,7 +1316,7 @@ flowchart LR
 
 ## 21. Saran warga
 
-Warga bisa memberi saran ke merchant atau komunitas: ide aktivitas, produk atau menu, pelayanan, tempat dan fasilitas, atau lainnya. Tim penyelenggara membaca, membalas, dan menandai statusnya. Saran tidak memberi XP atau poin supaya tidak memancing spam.
+Warga bisa memberi saran ke merchant atau komunitas: ide aktivitas, produk atau menu, pelayanan, tempat dan fasilitas, atau lainnya. Tim penyelenggara membaca, membalas, dan menandai statusnya. Saran tidak memberi Jejak atau poin supaya tidak memancing spam.
 
 ```mermaid
 sequenceDiagram
@@ -1360,7 +1361,7 @@ Event Global adalah event yang **terbuka untuk pengguna dari kota mana pun**, ti
 | Tampil di | Beranda dan Jelajah, disaring per kota (bagian 20b) | Tab Event Global di Jelajah dan kartu di Beranda semua pengguna, tanpa saringan wilayah |
 | Lokasi | Checkpoint fisik | `onsite` (checkpoint), `online` (tanpa checkpoint), atau `hybrid` (keduanya) |
 | Cara ikut | Pribadi atau grup | Pribadi saja |
-| Hasil check-in dan misi | XP (+ poin dari budget merchant) | **Skor event** saja; tidak menambah XP, level, peringkat kota/kecamatan, atau poin dompet |
+| Hasil check-in dan misi | Jejak (+ poin dari budget merchant) | **Skor event** saja; tidak menambah Jejak, level, peringkat kota/kecamatan, atau poin dompet |
 | Peringkat | Peringkat kota dan kecamatan bulanan | **Papan peringkat per event**, hanya berisi peserta event itu |
 | Hadiah | Poin → voucher; hadiah lain ditulis di deskripsi | **Hadiah per peringkat** dicatat di sistem, dengan alur klaim dan pengiriman |
 | Partner | Undangan, open call, atau ditambahkan admin | Ditambahkan admin; boleh menyediakan checkpoint, misi, dan hadiah |
@@ -1483,7 +1484,7 @@ sequenceDiagram
 - **Papan peringkat** (`/aktivitas/[id]/peringkat`): 100 besar, posisi saya, label Live/Sementara/Final.
 - **Beranda**: kartu skor dan posisi saya di Event Global yang diikuti, serta kartu "Hadiah perlu diklaim".
 - **Hadiah** (`/hadiah`): semua hadiah Event Global milik saya, status klaim, formulir data pengiriman, dan batas klaim.
-- Skor event **tidak** tampil di kartu level, XP, dompet, atau peringkat kota, supaya warga tidak bingung antara skor event dan XP.
+- Skor event **tidak** tampil di kartu level, Jejak, dompet, atau peringkat kota, supaya warga tidak bingung antara skor event dan Jejak.
 
 ### 22f. Batasan pilot dan pengembangan berikutnya
 

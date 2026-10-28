@@ -163,7 +163,7 @@ async function Groups() {
       })}
 
       <p className="text-[13px] leading-[1.55] text-fg-muted">
-        Bonus grup +{setting("xp.group_bonus_pct", 20)}% XP saat minimal {setting("xp.group_bonus_min_members", 3)} anggota check-in di aktivitas yang sama di hari yang sama.
+        Bonus grup +{setting("xp.group_bonus_pct", 20)}% Jejak saat minimal {setting("xp.group_bonus_min_members", 3)} anggota check-in di aktivitas yang sama di hari yang sama.
         Grup bisa mendaftar ke aktivitas bermode grup lewat halaman aktivitasnya; hanya ketua yang mendaftarkan.
       </p>
     </>

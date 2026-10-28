@@ -40,14 +40,14 @@ async function Content() {
   const email = text("support.email");
 
   const faqs: [string, string][] = [
-    ["Bagaimana cara dapat XP?", "Ikut event atau challenge, lalu scan QR check-in di lokasi. Kerjakan misinya untuk XP tambahan. Ada juga bonus kunjungan pertama, bonus grup, bonus kolaborasi, dan bonus streak mingguan."],
-    ["Apa bedanya XP dan poin?", `XP adalah status: menentukan level dan peringkat, dan tidak bisa ditukar. Poin bisa ditukar dengan voucher merchant di Dompet dan berlaku ${num("points.expiry_months", 6)} bulan. Poin hanya ada jika merchant menyediakan budget poin.`],
-    ["Kenapa XP saya tidak bertambah?", `Satu aktivitas hanya bisa check-in sekali per hari, dan XP harian dibatasi ${num("xp.daily_cap", 1000).toLocaleString("id-ID")} XP per orang. Lihat rinciannya di Profil, Riwayat XP & poin.`],
+    ["Bagaimana cara dapat Jejak?", "Ikut event atau challenge, lalu scan QR check-in di lokasi. Kerjakan misinya untuk Jejak tambahan. Ada juga bonus kunjungan pertama, bonus grup, bonus kolaborasi, dan bonus streak mingguan."],
+    ["Apa bedanya Jejak dan poin?", `Jejak adalah status: menentukan level dan peringkat, dan tidak bisa ditukar. Poin bisa ditukar dengan voucher merchant di Dompet dan berlaku ${num("points.expiry_months", 6)} bulan. Poin hanya ada jika merchant menyediakan budget poin.`],
+    ["Kenapa Jejak saya tidak bertambah?", `Satu aktivitas hanya bisa check-in sekali per hari, dan Jejak harian dibatasi ${num("xp.daily_cap", 1000).toLocaleString("id-ID")} Jejak per orang. Lihat rinciannya di Profil, Riwayat Jejak & poin.`],
     ["Check-in saya ditandai atau ditinjau, kenapa?", `Jika lokasimu lebih dari ${num("checkin.radius_m_default", 150)} m dari checkpoint atau tidak terbaca, check-in tetap dicatat tetapi ditinjau tim Gasyu. Nyalakan lokasi di HP saat scan.`],
     ["Bagaimana cara bayar aktivitas berbayar?", "Pembayaran langsung ke penyelenggara sesuai instruksi di halaman aktivitas, lalu unggah foto bukti bayar. Penyelenggara yang menandai lunas. Gasyu tidak memegang uang."],
     ["Bagaimana kalau aktivitas berbayar dibatalkan?", "Pengembalian dana diurus penyelenggara. Kamu mendapat notifikasi saat refund ditandai selesai. Jika lama tidak ada kabar, hubungi tim Gasyu lewat kontak di bawah."],
     ["Bisakah saya ganti kota atau kecamatan?", `Bisa, di Profil, Ubah profil. Kota dan kecamatan hanya bisa diganti sekali setiap ${num("profile.district_change_days", 90)} hari supaya peringkat tetap adil.`],
-    ["Kotaku belum ada peringkatnya, kenapa?", "Gasyu membuka kota satu per satu. Kamu tetap bisa ikut aktivitas dan mengumpulkan XP; peringkat kota dan kecamatanmu tampil begitu kotamu dibuka."],
+    ["Kotaku belum ada peringkatnya, kenapa?", "Gasyu membuka kota satu per satu. Kamu tetap bisa ikut aktivitas dan mengumpulkan Jejak; peringkat kota dan kecamatanmu tampil begitu kotamu dibuka."],
     ["Lupa kata sandi, bagaimana?", "Di halaman masuk, pilih Lupa kata sandi. Kami kirim kode 6 angka ke email, lalu kamu bisa membuat kata sandi baru. Kata sandi juga bisa diganti kapan saja di Profil, Kata sandi."],
     ["Bagaimana mendaftarkan usaha atau komunitas?", "Buka Profil, lalu Daftarkan merchant atau komunitas. Tim Gasyu memverifikasi data, biasanya 1–2 hari kerja."],
     ["Akun saya dibekukan, apa yang harus dilakukan?", "Hubungi tim Gasyu lewat kontak di bawah dan sebutkan nama panggilanmu. Kami akan meninjau ulang."],

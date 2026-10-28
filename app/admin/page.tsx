@@ -100,7 +100,7 @@ async function Overview() {
                   <b>{i + 1}</b> {v.name} <span className="text-fg-soft">· {v.city}</span>
                 </span>
                 <span className="text-fg-soft">
-                  {formatNumber(v.avg_xp)} XP · {v.active_citizens} warga
+                  {formatNumber(v.avg_xp)} Jejak · {v.active_citizens} warga
                 </span>
               </div>
               <div className="h-2 overflow-hidden rounded-md bg-track">
@@ -108,7 +108,7 @@ async function Overview() {
               </div>
             </div>
           ))}
-          <span className="text-[13px] text-fg-soft">Rata-rata XP per warga aktif bulan ini. Peringkat resmi (min. 10 warga) di fitur leaderboard.</span>
+          <span className="text-[13px] text-fg-soft">Rata-rata Jejak per warga aktif bulan ini. Peringkat resmi (min. 10 warga) di fitur leaderboard.</span>
         </section>
       </div>
 

@@ -72,9 +72,9 @@ export async function MisiBody({
   const showForm = query.tambah === "1" || !!editing;
   const canEdit = !["ended", "settled", "cancelled"].includes(card.status) && (type === "admin" || !!ctx);
   const pendingCount = missions.reduce((s, m) => s + m.stats.pending, 0);
-  // Event Global: misi memberi skor event, bukan XP (ALUR bagian 22b).
+  // Event Global: misi memberi skor event, bukan Jejak (ALUR bagian 22b).
   const isGlobal = card.reach === "global";
-  const reward = (m: { xp_reward: number; score_reward: number }) => (isGlobal ? `+${m.score_reward.toLocaleString("id-ID")} skor` : `+${m.xp_reward} XP`);
+  const reward = (m: { xp_reward: number; score_reward: number }) => (isGlobal ? `+${m.score_reward.toLocaleString("id-ID")} skor` : `+${m.xp_reward} Jejak`);
   const totalScore = missions.filter((m) => m.is_active).reduce((s, m) => s + m.score_reward, 0);
   // Master misi: template aktif yang cocok untuk aktivitas dan penyelenggara ini.
   const templates =
@@ -90,7 +90,7 @@ export async function MisiBody({
   const notices: Record<string, string> = {
     buka: `Misi dibuka. ${query.n ?? 0} peserta diberi tahu.`,
     tandai: `${query.n ?? 0} peserta ditandai selesai.`,
-    setuju: isGlobal ? "Bukti disetujui. Skor masuk ke papan peringkat." : "Bukti disetujui. XP masuk ke warga.",
+    setuju: isGlobal ? "Bukti disetujui. Skor masuk ke papan peringkat." : "Bukti disetujui. Jejak masuk ke warga.",
     tolak: "Bukti ditolak dan warga diberi tahu. Ia boleh mengunggah ulang.",
   };
 
@@ -156,7 +156,7 @@ export async function MisiBody({
             <p className={`${cardClass} p-4 text-[15px] leading-[1.5] text-fg-soft`}>
               {isGlobal
                 ? "Belum ada misi. Di Event Global setiap misi memberi skor event (10–1.000) untuk papan peringkat; peserta tetap bisa menambah skor sampai acara berakhir."
-                : "Belum ada misi. Misi adalah tugas di dalam aktivitas: scan QR booth, kode rahasia, foto, atau ditandai panitia. Warga dapat XP tiap misi, dan misi wajib ikut menentukan status selesai."}
+                : "Belum ada misi. Misi adalah tugas di dalam aktivitas: scan QR booth, kode rahasia, foto, atau ditandai panitia. Warga dapat Jejak tiap misi, dan misi wajib ikut menentukan status selesai."}
             </p>
           )}
           {missions.map((m) => {
@@ -292,7 +292,7 @@ function TemplatePicker({
           <span className="text-[15px] font-bold text-link">Dari master misi: {chosen.title}</span>
           <a href={clearHref} className="text-[13px] font-semibold text-link">Ganti</a>
         </span>
-        <span className="text-[13px] leading-[1.5] text-fg-label">Isi form sudah terisi dari template. Sesuaikan judul, instruksi, dan XP dengan aktivitasmu.</span>
+        <span className="text-[13px] leading-[1.5] text-fg-label">Isi form sudah terisi dari template. Sesuaikan judul, instruksi, dan Jejak dengan aktivitasmu.</span>
         {chosen.organizer_tips && <span className="text-[13px] leading-[1.5] text-fg-label">Tips: {chosen.organizer_tips}</span>}
       </section>
     );
@@ -312,7 +312,7 @@ function TemplatePicker({
             <span className="flex flex-1 flex-col gap-0.5">
               <span className="text-[15px] font-semibold">{t.title}</span>
               <span className="text-[12px] text-fg-soft">
-                {CATEGORY_LABELS[t.category]} · {VERIFICATION_LABELS[t.verification]} · {t.xp_reward} XP · {t.is_required ? "wajib" : "bonus"}
+                {CATEGORY_LABELS[t.category]} · {VERIFICATION_LABELS[t.verification]} · {t.xp_reward} Jejak · {t.is_required ? "wajib" : "bonus"}
               </span>
             </span>
             <a href={pickHref(t.id)} className={smallButton.outline}>Pakai</a>
@@ -401,7 +401,7 @@ async function ReviewTab({ aid, organizerId, type, rewardOf }: { aid: string; or
             <div className="flex h-40 items-center justify-center rounded-[14px] bg-track text-[13px] text-fg-soft">Foto tidak bisa dimuat</div>
           )}
           <span className="text-[15px]">
-            <b>{first.nickname}</b> · {first.mission_title} · {formatDateTime(first.submitted_at)} · {rewardOf(first.mission_id) || `+${first.xp_reward} XP`}
+            <b>{first.nickname}</b> · {first.mission_title} · {formatDateTime(first.submitted_at)} · {rewardOf(first.mission_id) || `+${first.xp_reward} Jejak`}
           </span>
           <form action={reviewCompletion} className="flex flex-col gap-2">
             <input type="hidden" name="completion_id" value={first.id} />

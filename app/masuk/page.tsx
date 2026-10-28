@@ -12,7 +12,7 @@ export default function MasukPage({ searchParams }: PageProps<"/masuk">) {
         <h1 className="font-display text-[32px] font-bold leading-[1.15]">
           Ramaikan kotamu,
           <br />
-          kumpulkan XP-nya.
+          tinggalkan Jejakmu.
         </h1>
         <p className="text-[16px] leading-[1.55] text-fg-soft">
           Ikut event dan challenge dari UMKM dan komunitas di kotamu.

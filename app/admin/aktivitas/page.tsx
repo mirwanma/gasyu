@@ -110,7 +110,7 @@ async function Detail({ id, tab }: { id: string; tab: string }) {
     isGlobal ? ["Jangkauan", "Semua kota · daftar pribadi"] : ["Audiens", card.audience === "members_only" ? "Khusus member" : "Publik"],
     isGlobal ? ["Lokasi", LOCATION_MODE_LABELS[card.location_mode]] : ["Cakupan", card.scope_region_name ? `${card.scope_region_name}${card.residency_rule === "residents_only" ? " · khusus warga" : ""}` : "Tanpa cakupan"],
     ["Kuota", card.quota ? card.quota.toLocaleString("id-ID") : "Tanpa batas"],
-    ["Hadiah", isGlobal ? "Skor event + hadiah per peringkat" : `+${card.xp_base} XP${card.points_per_completion ? ` · +${card.points_per_completion} poin` : ""}`],
+    ["Hadiah", isGlobal ? "Skor event + hadiah per peringkat" : `+${card.xp_base} Jejak${card.points_per_completion ? ` · +${card.points_per_completion} poin` : ""}`],
     ["Peserta", String(participants ?? 0)],
     ["Diajukan", `${creator?.nickname ?? "-"} · ${raw?.created_at ? timeAgo(raw.created_at) : "-"}`],
   ];
@@ -238,7 +238,7 @@ async function Detail({ id, tab }: { id: string; tab: string }) {
           {(missions ?? []).map((m) => (
             <div key={m.id} className={`flex flex-col gap-1 rounded-2xl border border-line p-3 ${m.is_active ? "" : "opacity-60"}`}>
               <span className="text-[12px] font-bold uppercase tracking-[0.06em] text-fg-soft">
-                {m.is_required ? "Wajib" : "Bonus"} · {VERIFICATION_LABELS[m.verification as MissionVerification]} · {m.score_reward > 0 ? `${formatNumber(m.score_reward)} skor` : `${m.xp_reward} XP`}
+                {m.is_required ? "Wajib" : "Bonus"} · {VERIFICATION_LABELS[m.verification as MissionVerification]} · {m.score_reward > 0 ? `${formatNumber(m.score_reward)} skor` : `${m.xp_reward} Jejak`}
                 {m.is_active ? "" : " · nonaktif"}
               </span>
               <span className="text-[15px] font-semibold">{m.title}</span>

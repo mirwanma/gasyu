@@ -90,7 +90,7 @@ export function HomeView({
       </header>
 
       <section
-        aria-label="Level dan XP"
+        aria-label="Level dan Jejak"
         className="relative animate-pop overflow-hidden rounded-[30px] bg-linear-140 from-hero-from via-hero-via to-hero-to p-5 text-on-hero shadow-hero"
       >
         <span className="absolute -right-12 -top-16 size-48 rounded-full bg-white/12" aria-hidden="true" />
@@ -115,7 +115,7 @@ export function HomeView({
           <div className="flex min-w-0 flex-col gap-1.5">
             <span className="font-display text-[24px] font-extrabold leading-tight">{level.name}</span>
             <span className="text-[14px] opacity-95">
-              <b>{totalXp.toLocaleString("id-ID")} XP</b>
+              <b>{totalXp.toLocaleString("id-ID")} Jejak</b>
               {level.nextMinXp === null ? " · level tertinggi" : ` · ${(level.nextMinXp - totalXp).toLocaleString("id-ID")} lagi ke ${nextName}`}
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -149,7 +149,7 @@ export function HomeView({
           <Icon name="pin" size={22} weight="fill" className="shrink-0 text-warn" />
           <span className="flex flex-col gap-0.5">
             <span className="text-[16px] font-semibold">Lengkapi kota dan kecamatanmu</span>
-            <span className="text-[14px] leading-[1.5] text-fg-soft">Supaya XP-mu masuk peringkat kota dan kecamatan, dan kamu bisa ikut aktivitas khusus warga.</span>
+            <span className="text-[14px] leading-[1.5] text-fg-soft">Supaya Jejakmu masuk peringkat kota dan kecamatan, dan kamu bisa ikut aktivitas khusus warga.</span>
           </span>
         </a>
       )}
@@ -225,7 +225,7 @@ export function HomeView({
                 <Icon name="target" size={18} weight="fill" />
               </span>
               <span>
-                Kamu <b>#{myRank}</b>. Butuh <b>{xpToPodium.toLocaleString("id-ID")} XP</b> lagi untuk masuk 3 besar!
+                Kamu <b>#{myRank}</b>. Butuh <b>{xpToPodium.toLocaleString("id-ID")} Jejak</b> lagi untuk masuk 3 besar!
               </span>
             </p>
           )}
@@ -357,7 +357,7 @@ function Podium({ rows }: { rows: LeaderRow[] }) {
               {row.nickname}
               {row.is_me ? " (kamu)" : ""}
             </span>
-            <span className="text-[12px] text-fg-soft">{row.xp.toLocaleString("id-ID")} XP</span>
+            <span className="text-[12px] text-fg-soft">{row.xp.toLocaleString("id-ID")} Jejak</span>
             <span className={`mt-1.5 grid w-full ${height} place-items-center rounded-t-[18px] rounded-b-lg font-display text-[26px] font-extrabold text-white ${block}`}>
               <span className="sr-only">Peringkat </span>
               {row.rank}

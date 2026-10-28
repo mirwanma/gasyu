@@ -16,7 +16,7 @@ const TITLES: Record<Step, { title: string; intro: string }> = {
   },
   2: {
     title: "Kamu tinggal di mana?",
-    intro: "Pilih provinsi, kota, dan kecamatanmu. XP-mu ikut dihitung untuk kecamatan ini di peringkat bulanan. Bisa diganti sekali tiap 90 hari.",
+    intro: "Pilih provinsi, kota, dan kecamatanmu. Jejakmu ikut dihitung untuk kecamatan ini di peringkat bulanan. Bisa diganti sekali tiap 90 hari.",
   },
   3: {
     title: "Satu langkah lagi",
@@ -149,7 +149,7 @@ export function OnboardingForm({
         <ErrorMessage message={error} />
         {profileXp > 0 && (
           <div className={`flex items-center gap-2.5 rounded-[14px] border border-line bg-surface px-3.5 py-3 text-[15px] text-fg-label`}>
-            <span className="font-display text-[16px] font-bold text-xp">+{profileXp} XP</span>
+            <span className="font-display text-[16px] font-bold text-xp">+{profileXp} Jejak</span>
             setelah profil lengkap
           </div>
         )}

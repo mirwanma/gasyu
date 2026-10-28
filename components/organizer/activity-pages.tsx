@@ -244,7 +244,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
         {[
           [String(participants ?? 0), "peserta"],
           [String(activeCheckpoints), "checkpoint"],
-          [`+${card.xp_base}`, "XP dasar"],
+          [`+${card.xp_base}`, "Jejak dasar"],
         ].map(([v, k]) => (
           <div key={k} className={`${cardClass} flex flex-col gap-1 p-3`}>
             <span className="font-display text-[24px] font-semibold">{v}</span>
@@ -388,7 +388,7 @@ async function AktivitasDetail({ ctx, id, type, base, aid, hasil, error, edit }:
             <span className="text-[13px] text-fg-soft">
               {card.points_per_completion > 0 && (budget?.budget ?? 0) > 0
                 ? `Cukup untuk ${Math.floor((budget?.remaining ?? 0) / card.points_per_completion)} peserta lagi yang menyelesaikan.`
-                : "Poin diberikan ke warga yang menyelesaikan aktivitas, dipotong dari budget. Tanpa budget, warga tetap dapat XP."}
+                : "Poin diberikan ke warga yang menyelesaikan aktivitas, dipotong dari budget. Tanpa budget, warga tetap dapat Jejak."}
               {!pointsEditable ? " Poin per penyelesaian terkunci setelah diajukan." : ""}
             </span>
             {isLeader && ["draft", "awaiting_partners", "in_review", "published"].includes(card.status) && (

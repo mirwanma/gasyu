@@ -4,8 +4,8 @@ Panduan kerja untuk Claude di proyek ini. Baca seluruh file ini di awal setiap s
 
 **Sumber kebenaran** (baca bagian yang relevan sebelum menulis kode):
 
-- `docs/ALUR-SISTEM.md` — alur, peran, aturan bisnis (v0.13)
-- `docs/DESAIN-DATABASE.md` — tabel, enum, fungsi, RLS, urutan migrasi (v0.13)
+- `docs/ALUR-SISTEM.md` — alur, peran, aturan bisnis (v0.15)
+- `docs/DESAIN-DATABASE.md` — tabel, enum, fungsi, RLS, urutan migrasi (v0.15)
 - `docs/BRAND.md` — warna, tipografi, logo, gaya bahasa
 - `docs/RILIS-PILOT.md` — daftar cek rilis pilot (pengaturan Supabase, Vercel, data, konten hukum)
 - PRD (PDF milik pemilik proyek, tidak disimpan di repo)
@@ -16,7 +16,7 @@ Jika `CLAUDE.md` dan dokumen di `docs/` berbeda, ikuti `docs/` dan beri tahu pem
 
 Gasyu adalah platform gamifikasi kota sebagai alat marketing bergamifikasi untuk merchant/UMKM dan komunitas lokal.
 Merchant dan komunitas (disebut bersama **penyelenggara**) membuat event atau challenge, sendiri atau berkolaborasi, lengkap dengan misi.
-Warga ikut, check-in via QR, mengerjakan misi, dapat XP (status) dan poin (ditukar voucher merchant), dan kecamatannya bersaing di peringkat kotanya.
+Warga ikut, check-in via QR, mengerjakan misi, dapat Jejak (status) dan poin (ditukar voucher merchant), dan kecamatannya bersaing di peringkat kotanya.
 Admin (tim Gasyu) memverifikasi, memoderasi, dan bisa membuat event atas nama Gasyu.
 Pilot: Kota Cimahi, tetapi warga, merchant, dan komunitas dari seluruh Indonesia (514 kota/kabupaten, 7.285 kecamatan) boleh mendaftar. Admin membuka kota satu per satu (`regions.is_active`).
 
@@ -47,26 +47,26 @@ Pilot: Kota Cimahi, tetapi warga, merchant, dan komunitas dari seluruh Indonesia
 | Checkpoint | lokasi check-in milik partner | `activity_checkpoints` |
 | Partisipasi | warga ikut aktivitas, pribadi atau lewat grup | `participations` |
 | Grup | 2–10 warga yang join bersama | `groups`, `group_members` |
-| XP | poin status, tidak bisa ditukar | `xp_ledger` |
+| Jejak | poin status, tidak bisa ditukar (dulu disebut XP; kata "XP" tidak tampil di UI) | `xp_ledger`, `xp_reward`, `award_xp` (nama di kode tetap `xp`) |
 | Poin | mata uang reward, dari budget merchant | `point_ledger`, `point_allocations` |
 | Reward / voucher | hadiah dari merchant | `rewards`, `redemptions` |
 | Event Gasyu | event buatan admin, host organizer `platform` | `organizers.type = 'platform'` |
 | Saran | saran warga untuk merchant/komunitas, dibalas tim | `suggestions` |
 | Event Global | event buatan admin yang terbuka untuk pengguna dari kota mana pun; skor, peringkat, dan hadiah khusus event | `activities.reach = 'global'` |
-| Skor event | hasil check-in dan misi di Event Global, terpisah dari XP dan poin | `activity_score_ledger` |
+| Skor event | hasil check-in dan misi di Event Global, terpisah dari Jejak dan poin | `activity_score_ledger` |
 | Hadiah event | hadiah per rentang peringkat Event Global, diklaim pemenang | `activity_prizes`, `activity_winners` |
 
 ## Aturan yang tidak boleh dilanggar
 
 1. **Akses ditegakkan di database.** Setiap tabel baru wajib punya RLS policy di migrasi yang sama. Jangan pernah mengandalkan pengecekan di UI saja.
-2. **XP dan poin hanya ditulis oleh server** (fungsi database `security definer` yang dipanggil dari server action), tidak pernah dari client.
+2. **Jejak dan poin hanya ditulis oleh server** (fungsi database `security definer` yang dipanggil dari server action), tidak pernah dari client.
 3. **Saldo dihitung dari ledger.** Ledger hanya insert; koreksi berupa baris negatif. Jangan menyimpan kolom saldo.
-4. **Dua mata uang terpisah.** XP tidak pernah bisa ditukar. Poin hanya diberikan jika budget poin partner merchant masih cukup. Komunitas dan Gasyu tidak punya budget poin sendiri.
-5. **Anti-curang:** satu check-in per aktivitas per warga per hari (WIB); maksimal 1.000 XP per warga per hari; QR check-in dan QR misi berganti tiap 60 detik; di luar radius checkpoint (150 m) dicatat dengan flag; kode misi maks. 5 percobaan per 15 menit; XP misi 10–100, total maks. 500 per aktivitas.
+4. **Dua mata uang terpisah.** Jejak tidak pernah bisa ditukar. Poin hanya diberikan jika budget poin partner merchant masih cukup. Komunitas dan Gasyu tidak punya budget poin sendiri.
+5. **Anti-curang:** satu check-in per aktivitas per warga per hari (WIB); maksimal 1.000 Jejak per warga per hari; QR check-in dan QR misi berganti tiap 60 detik; di luar radius checkpoint (150 m) dicatat dengan flag; kode misi maks. 5 percobaan per 15 menit; Jejak misi 10–100, total maks. 500 per aktivitas.
 6. **Privasi:** partner hanya melihat identitas peserta yang check-in di checkpoint miliknya; data warga lain hanya `nickname`, tidak pernah `full_name`; bukti bayar dan foto misi di bucket privat.
 7. **Aktivitas penyelenggara selalu melalui persetujuan admin** sebelum `published`. Pengecualian: event Gasyu (host `platform`) langsung `published` saat diajukan admin.
 8. **Pembayaran di luar aplikasi.** Aktivitas boleh berbayar, tetapi Gasyu hanya mencatat harga dan `payment_status` yang dikonfirmasi manual. Jangan menambahkan payment gateway.
-9. **Wilayah asal = kecamatan** (`home_district_id`, `organizers.district_id`), dari kota mana pun di Indonesia; wajib saat onboarding dan daftar penyelenggara. Kota yang belum dibuka admin tidak punya peringkat dan tidak bisa jadi cakupan aktivitas. Akun lama tanpa kecamatan dapat XP dan poin, tetapi tidak masuk peringkat dan tidak lolos aktivitas `residents_only` (`docs/ALUR-SISTEM.md` bagian 3a).
+9. **Wilayah asal = kecamatan** (`home_district_id`, `organizers.district_id`), dari kota mana pun di Indonesia; wajib saat onboarding dan daftar penyelenggara. Kota yang belum dibuka admin tidak punya peringkat dan tidak bisa jadi cakupan aktivitas. Akun lama tanpa kecamatan dapat Jejak dan poin, tetapi tidak masuk peringkat dan tidak lolos aktivitas `residents_only` (`docs/ALUR-SISTEM.md` bagian 3a).
 10. **Zona waktu tunggal:** semua batas harian dan bulanan memakai `Asia/Jakarta`.
 11. **Merchant dan komunitas dipisah** di UI, registrasi, peran tim, dan dashboard. Cek tipe penyelenggara di server dan RLS, bukan hanya menyembunyikan tombol.
 12. **Angka aturan main** dibaca dari `app_settings`, jangan di-hardcode di banyak tempat.
@@ -117,7 +117,7 @@ app/                  # route Next.js
 components/
 lib/
   supabase/           # client.ts (browser), server.ts, proxy.ts (sesi), database.types.ts (otomatis), types.ts
-  gamification/       # helper tampilan XP, level, badge (aturan tetap di database)
+  gamification/       # helper tampilan Jejak, level, badge (aturan tetap di database)
 proxy.ts              # pengganti middleware: refresh sesi, wajib onboarding
 supabase/
   migrations/         # termasuk data awal: wilayah Cimahi, levels, badges, app_settings, master misi
@@ -132,4 +132,4 @@ docs/
 
 Ikuti `docs/DESAIN-DATABASE.md` bagian 9 (irisan 1–11).
 
-Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016), foto profil (0017), master misi (0018), pengingat kedaluwarsa (0019), uji E2E, keluar dari semua perangkat, ganti bukti bayar, chat panitia di WhatsApp, voucher per outlet dan deteksi peninjau cepat (0020), perbaikan review (0021), Event Global tahap 1 database + kota asal (0022), misi bonus setelah selesai (0023), Event Global tahap 2 halaman admin (0024), Event Global tahap 3 halaman warga, kartu Hadiah yang disponsori di dashboard merchant/komunitas, perbaikan keamanan (0025), daftar cek rilis, pemilih kota di Jelajah (0026), login dan daftar dengan email + kata sandi, tema Hangat & Menantang (BRAND v1.4: dua tema terang/gelap di Profil, Bricolage + Figtree, ikon Phosphor, beranda bento + misi hari ini + podium), wilayah se-Indonesia: kota + kecamatan, buka kota di admin Wilayah (0027) — pemolesan dan rilis pilot — perbarui baris ini setiap pindah irisan.
+Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016), foto profil (0017), master misi (0018), pengingat kedaluwarsa (0019), uji E2E, keluar dari semua perangkat, ganti bukti bayar, chat panitia di WhatsApp, voucher per outlet dan deteksi peninjau cepat (0020), perbaikan review (0021), Event Global tahap 1 database + kota asal (0022), misi bonus setelah selesai (0023), Event Global tahap 2 halaman admin (0024), Event Global tahap 3 halaman warga, kartu Hadiah yang disponsori di dashboard merchant/komunitas, perbaikan keamanan (0025), daftar cek rilis, pemilih kota di Jelajah (0026), login dan daftar dengan email + kata sandi, tema Hangat & Menantang (BRAND v1.4: dua tema terang/gelap di Profil, Bricolage + Figtree, ikon Phosphor, beranda bento + misi hari ini + podium), wilayah se-Indonesia: kota + kecamatan, buka kota di admin Wilayah (0027), label XP menjadi Jejak (BRAND v1.5) — pemolesan dan rilis pilot — perbarui baris ini setiap pindah irisan.
