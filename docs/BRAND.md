@@ -1,8 +1,10 @@
-# Gasyu — Brand Identity v1.4
+# Gasyu — Brand Identity v1.5
 
 Panduan brand untuk desain dan pengembangan aplikasi. `CLAUDE.md` merujuk ke file ini:
 
 > Brand dan UI: ikuti `docs/BRAND.md` (warna, tipografi, logo, gaya bahasa). Jangan membuat warna atau font di luar token di sana.
+
+Perubahan 1.5 (28 Oktober 2026): poin status warga ditulis **Jejak** (huruf J besar), tidak pernah "XP". Contoh: "+100 Jejak", "Jejakmu bulan ini". Token warna `xp` tetap namanya.
 
 Perubahan 1.4 (22 Oktober 2026): tema **Hangat & Menantang**. Dua tema yang bisa dipilih warga di Profil (Terang krem hangat, Gelap espresso hangat; tanpa pilihan mengikuti HP). Font **Bricolage Grotesque** (judul, angka) + **Figtree** (teks). Ikon **Phosphor**. Tombol 3D, navigasi kaca melayang, kartu level bergradien senja, bento skor, podium 3 besar. Ukuran huruf dasar kembali 16 px dengan skala bervariasi. Menggantikan palet v1.3.
 
@@ -66,10 +68,10 @@ Referensi: Material 3 Expressive (aksen ketiga, gerak pegas, satu–dua "hero mo
 | `primary` | `#E2622F` | sama | Tombol utama (oranye terakota), tepi 3D `primary-press` `#B8471C` |
 | `primary-tint` | `#FFE7D8` | `#3B2417` | Latar oranye muda, menu aktif |
 | `link` | `#C2501F` | `#FF9A6B` | Tautan |
-| `sun` | `#FFB938` | sama | Aksen kedua: cincin XP, juara 1, streak |
+| `sun` | `#FFB938` | sama | Aksen kedua: cincin Jejak, juara 1, streak |
 | `gold-from` → `gold-to` | `#FFF0C2` → `#FFC85C` | `#4D3611` → `#8A5B10` | Kartu poin (teks `on-gold`) |
 | `berry` / `berry-tint` | `#C2375F` / `#FCE4EC` | `#FF7AA2` / `#3D1A26` | Aksen ketiga: tantangan, hitung mundur, hadiah |
-| `success` (= `xp`) | `#2B8A63` | `#4CC08E` | Sukses, XP |
+| `success` (= `xp`) | `#2B8A63` | `#4CC08E` | Sukses, Jejak |
 | `points` | `#B06A00` | `#FFC85C` | Angka poin |
 | `warn` / `info` / `danger` | `#8A5A00` / `#1F6A94` / `#B42318` | `#FFC85C` / `#7CC4EE` / `#FF8A80` | Status (masing-masing punya `-tint`) |
 | `hero-from` → `hero-via` → `hero-to` | `#FF9A3D` → `#E2622F` → `#C2375F` | sama | Gradien senja kartu level (satu-satunya hero di layar) |
@@ -123,7 +125,7 @@ Ukuran dasar 16 px. Skala sengaja bervariasi supaya mata langsung tertuju ke yan
 
 | Pakai | Hindari |
 | --- | --- |
-| Mantap! Kamu dapat 100 XP. Tinggal 2 kedai lagi buat voucher. | Selamat!!! Anda telah berhasil memperoleh poin pengalaman. |
+| Mantap! Kamu dapat 100 Jejak. Tinggal 2 kedai lagi buat voucher. | Selamat!!! Anda telah berhasil memperoleh poin pengalaman. |
 | QR ini sudah kedaluwarsa. Minta staf tampilkan yang baru, ya. | Error 403: token tidak valid. |
 
 Tagline: **Bikin kota makin rame, bareng-bareng.**

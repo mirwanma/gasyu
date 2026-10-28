@@ -7,9 +7,9 @@ test.describe("warga", () => {
     await loginAs(context, ACCOUNTS.warga, baseURL!);
   });
 
-  test("beranda menampilkan XP, dompet, dan aktivitasku", async ({ page }) => {
+  test("beranda menampilkan Jejak, dompet, dan aktivitasku", async ({ page }) => {
     await open(page, "/");
-    await expect(page.getByLabel("Level dan XP")).toBeVisible();
+    await expect(page.getByLabel("Level dan Jejak")).toBeVisible();
     await expect(page.getByRole("progressbar", { name: "Progres ke level berikutnya" })).toBeVisible();
     await expect(page.getByLabel("Ringkasan skor").getByText("Poin kamu")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Aktivitasku" })).toBeVisible();
@@ -75,7 +75,7 @@ test.describe("warga", () => {
 
   test("menu profil lengkap", async ({ page }) => {
     await open(page, "/profil");
-    for (const label of ["Ubah profil", "Riwayat XP & poin", "Notifikasi", "Grup saya", "Komunitas saya", "Saran saya", "Peringkat", "Bantuan"]) {
+    for (const label of ["Ubah profil", "Riwayat Jejak & poin", "Notifikasi", "Grup saya", "Komunitas saya", "Saran saya", "Peringkat", "Bantuan"]) {
       await expect(page.getByRole("navigation", { name: "Menu profil" }).getByRole("link", { name: label })).toBeVisible();
     }
   });

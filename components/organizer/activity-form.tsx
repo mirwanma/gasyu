@@ -121,7 +121,7 @@ export function ActivityForm({
           <div className="flex flex-col gap-2">
             <span className={labelClass}>Jangkauan</span>
             <div className="grid grid-cols-2 gap-2">
-              {([["regional", "Regional", "Warga kota setempat, XP dan poin"], ["global", "Event Global", "Pengguna kota mana pun, skor dan hadiah khusus"]] as const).map(([value, label, hint]) => {
+              {([["regional", "Regional", "Warga kota setempat, Jejak dan poin"], ["global", "Event Global", "Pengguna kota mana pun, skor dan hadiah khusus"]] as const).map(([value, label, hint]) => {
                 const on = reach === value;
                 return (
                   <button key={value} type="button" aria-pressed={on} onClick={() => setReach(value)} className={`flex flex-col gap-0.5 rounded-2xl border p-3 text-left ${on ? "border-primary bg-primary-tint" : "border-line bg-surface"}`}>
@@ -238,7 +238,7 @@ export function ActivityForm({
       <section className={`${cardClass} flex flex-col gap-4 p-4 ${step === 2 ? "" : "hidden"}`}>
         {isGlobal ? (
           <p className="rounded-2xl bg-info-tint px-4 py-3 text-[13px] leading-[1.5] text-info">
-            Event Global terbuka untuk pengguna dari kota mana pun dan didaftar pribadi. Hasilnya skor event, bukan XP atau poin.
+            Event Global terbuka untuk pengguna dari kota mana pun dan didaftar pribadi. Hasilnya skor event, bukan Jejak atau poin.
             Setelah draft tersimpan, susun misi (skor 10–1.000 per misi, total maks. 5.000) dan hadiah per peringkat, lalu terbitkan.
           </p>
         ) : (
@@ -246,7 +246,7 @@ export function ActivityForm({
             {kind === "challenge" && (
               <>
                 <div className="flex flex-col gap-2">
-                  <span className={labelClass}>Tingkat kesulitan (menentukan XP)</span>
+                  <span className={labelClass}>Tingkat kesulitan (menentukan Jejak)</span>
                   <div className="flex flex-wrap gap-2">
                     {(Object.keys(DIFFICULTY_LABELS) as Difficulty[]).map((value) => (
                       <button key={value} type="button" aria-pressed={difficulty === value} onClick={() => setDifficulty(value)} className={chip(difficulty === value)}>
@@ -327,7 +327,7 @@ export function ActivityForm({
               </div>
             )}
             <p className="rounded-2xl bg-info-tint px-4 py-3 text-[13px] leading-[1.5] text-info">
-              XP dasar mengikuti pengaturan Gasyu (event 100 XP; challenge sesuai kesulitan). Poin diatur di halaman aktivitas, misi di halaman Misi.
+              Jejak dasar mengikuti pengaturan Gasyu (event 100 Jejak; challenge sesuai kesulitan). Poin diatur di halaman aktivitas, misi di halaman Misi.
               Setelah tersimpan sebagai draft, tambahkan checkpoint lalu ajukan ke tim Gasyu.
             </p>
           </>

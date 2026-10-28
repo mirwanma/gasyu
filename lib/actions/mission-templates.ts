@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Json } from "@/lib/supabase/types";
 
-// Aksi admin untuk master misi. Hak admin dan batas XP dicek ulang di
+// Aksi admin untuk master misi. Hak admin dan batas Jejak dicek ulang di
 // upsert_mission_template dan set_mission_template_active.
 
 export type TemplateState = { error?: string };
@@ -13,7 +13,7 @@ export type TemplateState = { error?: string };
 const ERRORS: Record<string, string> = {
   not_allowed: "Hanya admin yang bisa mengelola master misi.",
   invalid_title: "Judul template harus 3–80 karakter.",
-  invalid_xp: "XP di luar batas yang diizinkan (lihat mission.xp_min dan mission.xp_max di Pengaturan).",
+  invalid_xp: "Jejak di luar batas yang diizinkan (lihat mission.xp_min dan mission.xp_max di Pengaturan).",
   invalid_template: "Template tidak ditemukan.",
 };
 

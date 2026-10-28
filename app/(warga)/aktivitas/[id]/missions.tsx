@@ -19,13 +19,13 @@ export function MissionSection({ list, activityId, activityType, targetKind }: {
     ? "Setiap misi yang berhasil menambah skor event. Skor tertinggi memenangkan hadiah, dan kamu bisa terus menambah skor sampai acara berakhir."
     : activityType === "event"
       ? requiredTotal > 0
-        ? "Selesai saat kamu check-in di checkpoint dan semua misi wajib disetujui. Misi bonus menambah XP."
-        : "Selesai saat kamu check-in di checkpoint. Misi bonus menambah XP."
+        ? "Selesai saat kamu check-in di checkpoint dan semua misi wajib disetujui. Misi bonus menambah Jejak."
+        : "Selesai saat kamu check-in di checkpoint. Misi bonus menambah Jejak."
       : targetKind === "required_missions"
         ? "Selesai saat semua misi wajib disetujui."
         : targetKind === "missions_completed"
           ? "Selesai saat jumlah misi yang disetujui mencapai target."
-          : "Progress bertambah tiap check-in di checkpoint. Misi menambah XP.";
+          : "Progress bertambah tiap check-in di checkpoint. Misi menambah Jejak.";
 
   return (
     <section id="misi" className="flex scroll-mt-4 flex-col gap-2.5">
@@ -50,7 +50,7 @@ export function MissionSection({ list, activityId, activityType, targetKind }: {
 }
 
 function MissionCard({ m, activityId, global }: { m: CitizenMission; activityId: string; global: boolean }) {
-  const reward = global ? `+${m.score_reward.toLocaleString("id-ID")} skor` : `+${m.xp_reward} XP`;
+  const reward = global ? `+${m.score_reward.toLocaleString("id-ID")} skor` : `+${m.xp_reward} Jejak`;
   const kindTag = global ? null : <span className={`${tagClass.base} ${m.is_required ? tagClass.hot : tagClass.info}`}>{m.is_required ? "WAJIB" : "BONUS"}</span>;
   if (!m.open) {
     return (

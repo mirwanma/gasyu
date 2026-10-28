@@ -93,14 +93,14 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
     await Promise.all(flags.filter((f) => mode === "open" && f.kind === "reviewer_burst").map(async (f) => [f.id, await listBurstApprovals(f)] as const)),
   );
   const notices: Record<string, string> = {
-    sah: "Check-in dinyatakan sah. XP dan poin tetap.",
-    balik: "Check-in ditolak. XP dan poin warga dibalik dan warga diberi tahu.",
+    sah: "Check-in dinyatakan sah. Jejak dan poin tetap.",
+    balik: "Check-in ditolak. Jejak dan poin warga dibalik dan warga diberi tahu.",
     dismiss: "Laporan diabaikan.",
     warn: "Peringatan dikirim ke warga.",
     suspend: "Akun warga dibekukan.",
     beku: "Akun dibekukan.",
     aktif: "Akun diaktifkan kembali.",
-    misi: "Misi dibatalkan. XP atau skor warga dibalik dan warga diberi tahu.",
+    misi: "Misi dibatalkan. Jejak atau skor warga dibalik dan warga diberi tahu.",
   };
 
   return (
@@ -180,7 +180,7 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
         <section className={`${cardClass} flex flex-col gap-2 p-5`}>
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="font-display text-[18px] font-semibold">Misi QR di luar radius</h2>
-            <span className="text-[13px] text-fg-soft">XP sudah diberikan · batalkan = XP atau skor dibalik</span>
+            <span className="text-[13px] text-fg-soft">Jejak sudah diberikan · batalkan = Jejak atau skor dibalik</span>
           </div>
           {flaggedMissions.map((m) => (
             <ReverseMissionRow key={m.completion_id} m={m} defaultNote="Di luar radius checkpoint" />
@@ -191,7 +191,7 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
       <section className={`${cardClass} overflow-hidden`}>
         <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line px-5 py-4">
           <h2 className="font-display text-[18px] font-semibold">Check-in ditandai</h2>
-          <span className="text-[13px] text-fg-soft">XP sudah diberikan · tolak = XP dan poin dibalik</span>
+          <span className="text-[13px] text-fg-soft">Jejak sudah diberikan · tolak = Jejak dan poin dibalik</span>
         </div>
         {checkins.length === 0 ? (
           <p className="p-5 text-[15px] text-fg-soft">{mode === "open" ? "Tidak ada check-in yang menunggu keputusan." : "Belum ada riwayat keputusan."}</p>
@@ -204,7 +204,7 @@ async function Board({ searchParams }: Pick<PageProps<"/admin/moderasi">, "searc
                   <th className="px-3 py-3 font-bold">Aktivitas · checkpoint</th>
                   <th className="px-3 py-3 font-bold">Jarak</th>
                   <th className="px-3 py-3 font-bold">Waktu</th>
-                  <th className="px-3 py-3 font-bold">XP</th>
+                  <th className="px-3 py-3 font-bold">Jejak</th>
                   <th className="px-5 py-3 text-right font-bold">Keputusan</th>
                 </tr>
               </thead>

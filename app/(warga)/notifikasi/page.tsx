@@ -58,25 +58,25 @@ function describe(n: Notification): { title: string; body?: string; href?: strin
     case "mission_proof_submitted":
       return { title: `Bukti foto baru: ${p.mission_title}`, body: `Dari aktivitas "${p.title}". Tinjau di halaman Misi.` };
     case "mission_approved":
-      // Event Global memberi skor event, bukan XP.
+      // Event Global memberi skor event, bukan Jejak.
       if (Number(p.score) > 0) return { title: `Misi "${p.mission_title}" disetujui · +${Number(p.score).toLocaleString("id-ID")} skor`, body: `Event Global "${p.title}".`, href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
-      return { title: `Misi "${p.mission_title}" disetujui · +${p.xp ?? 0} XP`, body: p.completed ? `Aktivitas "${p.title}" selesai!` : `Aktivitas "${p.title}".`, href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
+      return { title: `Misi "${p.mission_title}" disetujui · +${p.xp ?? 0} Jejak`, body: p.completed ? `Aktivitas "${p.title}" selesai!` : `Aktivitas "${p.title}".`, href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
     case "mission_rejected":
       return { title: `Bukti misi "${p.mission_title}" ditolak`, body: typeof p.note === "string" && p.note ? `${p.note} · unggah ulang selama aktivitas berjalan.` : "Unggah ulang selama aktivitas berjalan.", href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
     case "mission_reversed":
       return {
         title: `Misi "${p.mission_title}" dibatalkan tim Gasyu`,
-        body: `${Number(p.score) > 0 ? `${Number(p.score).toLocaleString("id-ID")} skor event` : `${p.xp ?? 0} XP`} ditarik kembali.${typeof p.note === "string" && p.note ? ` Catatan: ${p.note}` : ""}`,
+        body: `${Number(p.score) > 0 ? `${Number(p.score).toLocaleString("id-ID")} skor event` : `${p.xp ?? 0} Jejak`} ditarik kembali.${typeof p.note === "string" && p.note ? ` Catatan: ${p.note}` : ""}`,
         href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined,
       };
     case "mission_revealed":
-      return { title: `Misi baru terbuka: ${p.mission_title}`, body: Number(p.score) > 0 ? `+${Number(p.score).toLocaleString("id-ID")} skor di "${p.title}".` : `+${p.xp ?? 0} XP di "${p.title}".`, href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
+      return { title: `Misi baru terbuka: ${p.mission_title}`, body: Number(p.score) > 0 ? `+${Number(p.score).toLocaleString("id-ID")} skor di "${p.title}".` : `+${p.xp ?? 0} Jejak di "${p.title}".`, href: typeof p.activity_id === "string" ? `/aktivitas/${p.activity_id}` : undefined };
     case "badge_awarded":
       return { title: `Badge baru: ${p.badge_name}`, body: "Lihat koleksi badge kamu di Profil.", href: "/profil" };
     case "checkin_rejected":
       return {
         title: `Check-in di "${p.activity_title}" ditolak tim Gasyu`,
-        body: `${Number(p.score) > 0 ? `${Number(p.score).toLocaleString("id-ID")} skor event` : `${p.xp ?? 0} XP${Number(p.points) > 0 ? ` dan ${p.points} poin` : ""}`} ditarik kembali.${typeof p.note === "string" && p.note ? ` Catatan: ${p.note}` : ""}`,
+        body: `${Number(p.score) > 0 ? `${Number(p.score).toLocaleString("id-ID")} skor event` : `${p.xp ?? 0} Jejak${Number(p.points) > 0 ? ` dan ${p.points} poin` : ""}`} ditarik kembali.${typeof p.note === "string" && p.note ? ` Catatan: ${p.note}` : ""}`,
       };
     // Event Global: hadiah per peringkat (ALUR bagian 22d)
     case "prize_won":

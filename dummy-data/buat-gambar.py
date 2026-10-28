@@ -75,7 +75,7 @@ def photo(name, caption, c1, c2):
 
 cover("night-run", "Cimahi Night Run 5K", "Lari malam santai keliling pusat kota · Cimahi Runners", "#4B45E0", "#6D2FD8")
 cover("festival-kuliner", "Festival Kuliner Pasar Atas", "Seblak, kopi, surabi, live akustik · Seblak Teh Ai × Kopi Lereng", "#7A4B12", "#C2410C")
-cover("jelajah-kopi", "Jelajah 3 Kedai Kopi Lereng", "Challenge 2 minggu · 3 titik · 250 XP + 60 poin", "#145C48", "#1F6F8B")
+cover("jelajah-kopi", "Jelajah 3 Kedai Kopi Lereng", "Challenge 2 minggu · 3 titik · 250 Jejak + 60 poin", "#145C48", "#1F6F8B")
 cover("workshop-mural", "Workshop Mural Tembok Pasar", "Khusus member Cimahi Creative Hub", "#7A2554", "#3B2F8F")
 logo("kopi-lereng", "KL", "#5B3A1E", "#A0522D", "Kopi Lereng")
 logo("seblak-teh-ai", "SA", "#C2410C", "#F0508A", "Seblak Teh Ai")

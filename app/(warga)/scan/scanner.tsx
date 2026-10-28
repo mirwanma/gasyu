@@ -196,7 +196,7 @@ export function Scanner({ initial, levels }: { initial: QrPayload | null; levels
   );
 }
 
-// Event Global: hasil berupa skor event, tanpa XP, level, atau poin (ALUR bagian 22c).
+// Event Global: hasil berupa skor event, tanpa Jejak, level, atau poin (ALUR bagian 22c).
 function ScoreReward(props: { kind: "checkin"; result: CheckinResult } | { kind: "mission"; result: MissionResult }) {
   const isCheckin = props.kind === "checkin";
   const gained = isCheckin ? (props.result.score ?? 0) : (props.result.mission_score ?? 0);
@@ -225,7 +225,7 @@ function ScoreReward(props: { kind: "checkin"; result: CheckinResult } | { kind:
         )}
       </div>
       <p className="w-full rounded-2xl border border-line bg-surface px-4 py-3 text-[15px] leading-[1.5] text-fg-label">
-        Ini Event Global: skor hanya dihitung untuk papan peringkat event ini, tidak menambah XP, level, atau poin.
+        Ini Event Global: skor hanya dihitung untuk papan peringkat event ini, tidak menambah Jejak, level, atau poin.
       </p>
       {props.result.flagged && (
         <p className="w-full rounded-2xl bg-warn-tint px-4 py-3 text-[13px] leading-[1.5] text-warn">
@@ -255,7 +255,7 @@ function Reward({ result, levels }: { result: CheckinResult; levels: LevelRow[] 
     ["Bonus grup 20%", result.xp_group],
   ];
   const isChallenge = result.activity_type === "challenge";
-  // XP sebelum dipotong batas harian; jika total lebih kecil, batas harian tercapai.
+  // Jejak sebelum dipotong batas harian; jika total lebih kecil, batas harian tercapai.
   const planned = rows.reduce((sum, [, v]) => sum + v, 0);
   const shown = result.target_scope === "group" ? (result.group_progress ?? result.progress) : result.progress;
   return (
@@ -276,7 +276,7 @@ function Reward({ result, levels }: { result: CheckinResult; levels: LevelRow[] 
       <div className="flex w-full gap-3">
         <div className="flex flex-1 flex-col items-center gap-1 rounded-[20px] border border-line bg-surface p-4">
           <span className="font-display text-[32px] font-bold text-xp">+{result.xp_total}</span>
-          <span className="text-[13px] text-fg-soft">XP</span>
+          <span className="text-[13px] text-fg-soft">Jejak</span>
         </div>
         <div className="flex flex-1 flex-col items-center gap-1 rounded-[20px] border border-line bg-surface p-4">
           <PointsBox points={result.points} promised={result.points_promised ?? 0} completed={result.completed} from={result.partner_name} />
@@ -289,8 +289,8 @@ function Reward({ result, levels }: { result: CheckinResult; levels: LevelRow[] 
             <span className="font-semibold">+{v}</span>
           </div>
         ))}
-        {planned === 0 && isChallenge && !result.completed && <span className="text-[15px] text-fg-soft">XP challenge masuk saat challenge selesai. Check-in ini tercatat sebagai progres.</span>}
-        {result.xp_total < planned && <span className="text-[15px] text-fg-soft">Batas XP harian sudah tercapai, jadi XP check-in ini dipotong. Check-in tetap tercatat.</span>}
+        {planned === 0 && isChallenge && !result.completed && <span className="text-[15px] text-fg-soft">Jejak challenge masuk saat challenge selesai. Check-in ini tercatat sebagai progres.</span>}
+        {result.xp_total < planned && <span className="text-[15px] text-fg-soft">Batas Jejak harian sudah tercapai, jadi Jejak check-in ini dipotong. Check-in tetap tercatat.</span>}
         <div className="h-px bg-track" />
         <div className="flex flex-col gap-1.5">
           <div className="flex justify-between text-[13px] text-fg-soft">
@@ -299,7 +299,7 @@ function Reward({ result, levels }: { result: CheckinResult; levels: LevelRow[] 
             </span>
             <span>
               {result.total_xp.toLocaleString("id-ID")}
-              {level.nextMinXp !== null ? ` / ${level.nextMinXp.toLocaleString("id-ID")}` : ""} XP
+              {level.nextMinXp !== null ? ` / ${level.nextMinXp.toLocaleString("id-ID")}` : ""} Jejak
             </span>
           </div>
           <div className="h-2 overflow-hidden rounded-lg bg-track">
@@ -346,7 +346,7 @@ function MissionReward({ result, levels }: { result: MissionResult; levels: Leve
       <div className="flex w-full gap-3">
         <div className="flex flex-1 flex-col items-center gap-1 rounded-[20px] border border-line bg-surface p-4">
           <span className="font-display text-[32px] font-bold text-xp">+{gained}</span>
-          <span className="text-[13px] text-fg-soft">XP{result.xp ? " · termasuk bonus selesai" : ""}</span>
+          <span className="text-[13px] text-fg-soft">Jejak{result.xp ? " · termasuk bonus selesai" : ""}</span>
         </div>
         <div className="flex flex-1 flex-col items-center gap-1 rounded-[20px] border border-line bg-surface p-4">
           <PointsBox points={result.points ?? 0} promised={result.points_promised ?? 0} completed={Boolean(result.completed)} />
@@ -359,7 +359,7 @@ function MissionReward({ result, levels }: { result: MissionResult; levels: Leve
           </span>
           <span>
             {totalXp.toLocaleString("id-ID")}
-            {level.nextMinXp !== null ? ` / ${level.nextMinXp.toLocaleString("id-ID")}` : ""} XP
+            {level.nextMinXp !== null ? ` / ${level.nextMinXp.toLocaleString("id-ID")}` : ""} Jejak
           </span>
         </div>
         <div className="h-2 overflow-hidden rounded-lg bg-track">

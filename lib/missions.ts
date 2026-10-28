@@ -64,7 +64,7 @@ export type MissionResult = {
   completion_id?: string;
   mission_title: string;
   mission_xp?: number;
-  mission_score?: number; // Event Global: skor event, bukan XP
+  mission_score?: number; // Event Global: skor event, bukan Jejak
   reach?: "regional" | "global";
   xp?: number;
   points?: number;

@@ -128,7 +128,7 @@ Login Google (tombol "Masuk dengan Google"):
 - [ ] `support.email`: email bantuan, misalnya `"halo@gasyu.id"`.
 - [ ] `payment.gasyu_whatsapp`: nomor WhatsApp panitia untuk event berbayar buatan Gasyu.
       Jika kosong, aplikasi memakai `support.whatsapp`.
-- [ ] Tinjau angka aturan main lain. Nilai sekarang sesuai dokumen: radius 150 m, XP harian maks. 1.000,
+- [ ] Tinjau angka aturan main lain. Nilai sekarang sesuai dokumen: radius 150 m, Jejak harian maks. 1.000,
       poin berlaku 6 bulan, peringkat kecamatan minimal 10 warga aktif, dan seterusnya.
       Ubah hanya jika memang diputuskan berbeda.
 

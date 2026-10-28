@@ -83,7 +83,7 @@ async function Explore({ searchParams }: Pick<PageProps<"/jelajah">, "searchPara
 
       {isGlobal && (
         <p className="rounded-2xl bg-hot-tint px-4 py-3 text-[13px] leading-[1.5] text-hot">
-          Event Global terbuka untuk pengguna dari kota mana pun. Hasilnya skor event dan papan peringkat khusus event, dengan hadiah untuk peringkat teratas. Skor tidak menambah XP atau poin.
+          Event Global terbuka untuk pengguna dari kota mana pun. Hasilnya skor event dan papan peringkat khusus event, dengan hadiah untuk peringkat teratas. Skor tidak menambah Jejak atau poin.
         </p>
       )}
 

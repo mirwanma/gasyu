@@ -62,7 +62,7 @@ async function ProfileContent() {
           <span className="font-display text-[24px] font-bold">{user.nickname}</span>
           <span className="text-[15px] text-fg-soft">{user.regionLabel ?? "Wilayah belum diisi"}</span>
           <span className="text-[13px] font-semibold text-xp">
-            Level {level.level} · {level.name} · {totalXp.toLocaleString("id-ID")} XP
+            Level {level.level} · {level.name} · {totalXp.toLocaleString("id-ID")} Jejak
           </span>
         </div>
       </div>
@@ -191,7 +191,7 @@ async function ProfileContent() {
           <Icon name="chevron" size={16} className="text-fg-muted" />
         </a>
         <a href="/riwayat" className="flex h-[52px] items-center justify-between border-b border-line px-4 text-[15px] font-medium text-fg">
-          Riwayat XP & poin
+          Riwayat Jejak & poin
           <Icon name="chevron" size={16} className="text-fg-muted" />
         </a>
         <a href="/notifikasi" className="flex h-[52px] items-center justify-between border-b border-line px-4 text-[15px] font-medium text-fg">

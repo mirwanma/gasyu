@@ -115,7 +115,7 @@ async function Body({ searchParams }: Pick<PageProps<"/admin/misi">, "searchPara
                   </span>
                   {t.description && <span className="text-[15px] leading-[1.5] text-fg-label">{t.description}</span>}
                   {t.organizer_tips && <span className="text-[13px] leading-[1.5] text-fg-soft">Tips: {t.organizer_tips}</span>}
-                  <span className="text-[13px] text-fg-muted">{audienceLabel(t)} · {t.xp_reward} XP</span>
+                  <span className="text-[13px] text-fg-muted">{audienceLabel(t)} · {t.xp_reward} Jejak</span>
                 </span>
                 <span className="flex min-w-[170px] flex-col gap-0.5 text-[13px] text-fg-soft">
                   <span><b className="text-fg">{t.stats.activities}</b> aktivitas · <b className="text-fg">{t.stats.missions}</b> misi</span>

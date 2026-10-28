@@ -67,7 +67,7 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
       ? ["Lokasi", card.location_mode === "online" ? "Online" : `${LOCATION_MODE_LABELS[card.location_mode]}${checkpoints[0] ? ` · ${checkpoints[0].name}` : ""}`]
       : ["Lokasi", checkpoints[0]?.name ?? card.scope_region_name ?? "Diumumkan penyelenggara"],
     ["Kuota", card.quota ? `${card.seats_taken} dari ${card.quota.toLocaleString("id-ID")}` : `Tanpa batas · ${card.seats_taken} peserta`],
-    isGlobal ? ["Hadiah", prizes[0] ? prizes[0].title : "Skor & hadiah per peringkat"] : ["Hadiah", `+${card.xp_base} XP${card.points_per_completion > 0 ? ` · +${card.points_per_completion} poin` : ""}`],
+    isGlobal ? ["Hadiah", prizes[0] ? prizes[0].title : "Skor & hadiah per peringkat"] : ["Hadiah", `+${card.xp_base} Jejak${card.points_per_completion > 0 ? ` · +${card.points_per_completion} poin` : ""}`],
   ];
   if (card.type === "challenge") facts.splice(2, 0, ["Target", `${targetLabel(card.target_kind, card.target_count, card.target_scope)} · ${DIFFICULTY_LABELS[card.difficulty ?? "easy"]}`]);
 
@@ -104,7 +104,7 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
 
         {isGlobal && (
           <p className="rounded-2xl bg-hot-tint px-4 py-3 text-[15px] leading-[1.5] text-hot">
-            Event Global terbuka untuk pengguna dari kota mana pun. Check-in dan misi menambah skor event untuk papan peringkat ini, bukan XP atau poin.
+            Event Global terbuka untuk pengguna dari kota mana pun. Check-in dan misi menambah skor event untuk papan peringkat ini, bukan Jejak atau poin.
           </p>
         )}
 
@@ -224,7 +224,7 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
         {participation?.status === "completed" && (
           <p className="rounded-2xl bg-success-tint px-4 py-3 text-[15px] text-success">
             Kamu sudah check-in dan menyelesaikan aktivitas ini.
-            {missions?.missions.some((m) => m.open && m.can_work) ? " Misi bonus masih bisa dikerjakan untuk tambahan XP." : ""}
+            {missions?.missions.some((m) => m.open && m.can_work) ? " Misi bonus masih bisa dikerjakan untuk tambahan Jejak." : ""}
           </p>
         )}
       </div>

@@ -116,7 +116,7 @@ begin
     'title', 'Festival Rupiah & QRIS Cimahi',
     'description', 'Gasyu bersama Bank Indonesia Jawa Barat, UMKM, dan komunitas Cimahi menggelar festival satu hari: '
       || 'kenali ciri keaslian Rupiah, belajar QRIS dan transaksi digital yang aman, belanja produk UMKM pakai QRIS, '
-      || 'ikut kelas, dan seru-seruan di panggung. Check-in di gerbang, selesaikan 3 misi wajib, dan kumpulkan XP dari 31 misi bonus. '
+      || 'ikut kelas, dan seru-seruan di panggung. Check-in di gerbang, selesaikan 3 misi wajib, dan kumpulkan Jejak dari 31 misi bonus. '
       || 'Gratis dan terbuka untuk semua, termasuk warga luar Cimahi.',
     'scope_region_id', v_city,
     'starts_at', cfg.festival_mulai, 'ends_at', cfg.festival_selesai,

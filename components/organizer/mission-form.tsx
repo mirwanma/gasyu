@@ -26,10 +26,10 @@ export type MissionFormValues = {
 };
 
 const VERIFICATION_HELP: Record<MissionVerification, string> = {
-  qr_scan: "Warga memindai QR misi (berganti tiap 60 detik) di dalam radius checkpoint. XP langsung masuk.",
+  qr_scan: "Warga memindai QR misi (berganti tiap 60 detik) di dalam radius checkpoint. Jejak langsung masuk.",
   secret_code: "Warga mengetik kode yang diumumkan atau disembunyikan di lokasi. Maks. 5 percobaan per 15 menit.",
-  photo: "Warga mengunggah foto; tim meninjau lalu menyetujui atau menolak. XP masuk saat disetujui.",
-  manual: "Tim menandai peserta yang berhasil (misalnya finis lomba). XP masuk saat ditandai.",
+  photo: "Warga mengunggah foto; tim meninjau lalu menyetujui atau menolak. Jejak masuk saat disetujui.",
+  manual: "Tim menandai peserta yang berhasil (misalnya finis lomba). Jejak masuk saat ditandai.",
 };
 
 // Form tambah/ubah misi, mengikuti alur ALUR-SISTEM 9b dan 9e.
@@ -56,7 +56,7 @@ export function MissionForm({
   initial?: MissionFormValues;
   onCancelHref: string;
   templateId?: string;
-  // Event Global: skor menggantikan XP, tanpa wajib/bonus, dan tanpa scan QR untuk event online (ALUR bagian 22b).
+  // Event Global: skor menggantikan Jejak, tanpa wajib/bonus, dan tanpa scan QR untuk event online (ALUR bagian 22b).
   global?: { locationMode: "onsite" | "online" | "hybrid" };
 }) {
   const [state, formAction] = useActionState<MissionActionState, FormData>(saveMission, {});
@@ -66,7 +66,7 @@ export function MissionForm({
   const locked = initial?.locked ?? false;
   const ownCheckpoints = partnerOrganizerId ? checkpoints.filter((c) => c.partner_organizer_id === partnerOrganizerId) : checkpoints;
   const verifications = (partnerOnly ? ["qr_scan"] : ["manual", "qr_scan", "secret_code", "photo"]).filter((v) => !(global?.locationMode === "online" && v === "qr_scan")) as MissionVerification[];
-  const unit = global ? "skor" : "XP";
+  const unit = global ? "skor" : "Jejak";
   const prereqOptions = otherMissions.filter((m) => m.id !== initial?.id && (!required || m.is_required));
 
   // Setelah tersimpan, formulir diganti ringkasan supaya misi tidak tersimpan dua kali.
@@ -117,7 +117,7 @@ export function MissionForm({
           ))}
         </div>
         <input type="hidden" name="is_required" value={required ? "on" : ""} />
-        <span className="text-[13px] text-fg-soft">Misi wajib ikut menentukan status selesai; misi bonus hanya menambah XP.</span>
+        <span className="text-[13px] text-fg-soft">Misi wajib ikut menentukan status selesai; misi bonus hanya menambah Jejak.</span>
       </fieldset>
 
       {global ? (
@@ -125,13 +125,13 @@ export function MissionForm({
           <input type="hidden" name="xp_reward" value="0" />
           <label htmlFor="m_score" className={labelClass}>Skor misi (10–1.000)</label>
           <input id="m_score" name="score_reward" type="number" min={10} max={1000} required readOnly={locked} defaultValue={initial?.score_reward || 100} inputMode="numeric" className={inputClass} />
-          <span className="text-[13px] text-fg-soft">Total skor semua misi aktif maksimal 5.000. Skor hanya untuk papan peringkat event ini, tidak menambah XP atau poin.</span>
+          <span className="text-[13px] text-fg-soft">Total skor semua misi aktif maksimal 5.000. Skor hanya untuk papan peringkat event ini, tidak menambah Jejak atau poin.</span>
         </div>
       ) : (
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="m_xp" className={labelClass}>XP misi (10–100)</label>
+          <label htmlFor="m_xp" className={labelClass}>Jejak misi (10–100)</label>
           <input id="m_xp" name="xp_reward" type="number" min={10} max={100} required readOnly={locked} defaultValue={initial?.xp_reward ?? 30} inputMode="numeric" className={inputClass} />
-          <span className="text-[13px] text-fg-soft">Total XP semua misi aktif maksimal 500 per aktivitas.</span>
+          <span className="text-[13px] text-fg-soft">Total Jejak semua misi aktif maksimal 500 per aktivitas.</span>
         </div>
       )}
 
@@ -145,7 +145,7 @@ export function MissionForm({
           ))}
         </div>
         <input type="hidden" name="verification" value={verification} />
-        <span className="text-[13px] leading-[1.5] text-fg-soft">{global ? VERIFICATION_HELP[verification].replaceAll("XP", "Skor") : VERIFICATION_HELP[verification]}</span>
+        <span className="text-[13px] leading-[1.5] text-fg-soft">{global ? VERIFICATION_HELP[verification].replaceAll("Jejak", "Skor") : VERIFICATION_HELP[verification]}</span>
       </fieldset>
 
       {verification === "qr_scan" && (

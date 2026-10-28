@@ -16,8 +16,8 @@ const ERRORS: Record<string, string> = {
   invalid_activity: "Aktivitas tidak ditemukan.",
   invalid_mission: "Misi tidak ditemukan atau sudah nonaktif.",
   activity_locked: "Aktivitas ini sudah ditutup, misi tidak bisa diubah.",
-  invalid_mission_xp: "XP misi harus 10–100.",
-  mission_total_xp_exceeded: "Total XP semua misi aktif maksimal 500 per aktivitas.",
+  invalid_mission_xp: "Jejak misi harus 10–100.",
+  mission_total_xp_exceeded: "Total Jejak semua misi aktif maksimal 500 per aktivitas.",
   mission_checkpoint_required: "Misi scan QR butuh checkpoint.",
   mission_checkpoint_not_owned: "Checkpoint itu bukan milik partner pembuat misi.",
   mission_code_required: "Isi kode rahasia untuk misi kode.",
@@ -27,7 +27,7 @@ const ERRORS: Record<string, string> = {
   mission_prerequisite_other_activity: "Misi prasyarat harus dari aktivitas yang sama.",
   mission_prerequisite_must_be_required: "Misi wajib hanya boleh berprasyarat misi wajib.",
   mission_prerequisite_cycle: "Rantai prasyarat berputar; pilih misi lain.",
-  mission_locked: "Sudah ada yang menyelesaikan misi ini: XP, cara verifikasi, dan status wajib terkunci. Nonaktifkan dan buat misi baru jika perlu.",
+  mission_locked: "Sudah ada yang menyelesaikan misi ini: Jejak, cara verifikasi, dan status wajib terkunci. Nonaktifkan dan buat misi baru jika perlu.",
   mission_cannot_hide: "Misi yang sudah terbuka tidak bisa disembunyikan lagi.",
   invalid_mission_window: "Jendela waktu misi tidak valid.",
   mission_partner_not_accepted: "Partner pembuat misi belum menerima undangan.",
@@ -55,7 +55,7 @@ const ERRORS: Record<string, string> = {
   // Event Global
   invalid_mission_score: "Skor misi harus 10–1.000.",
   mission_total_score_exceeded: "Total skor semua misi aktif maksimal 5.000.",
-  global_mission_no_xp: "Misi Event Global memakai skor, bukan XP.",
+  global_mission_no_xp: "Misi Event Global memakai skor, bukan Jejak.",
   online_no_qr_mission: "Event online tidak boleh punya misi scan QR.",
 };
 
@@ -190,7 +190,7 @@ export async function submitMissionCode(_prev: MissionActionState, formData: For
   revalidatePath(`/aktivitas/${activityId}`);
   revalidatePath("/");
   if (r.reach === "global") return { success: `Misi "${r.mission_title}" selesai: +${(r.mission_score ?? 0).toLocaleString("id-ID")} skor event` };
-  return { success: `Misi "${r.mission_title}" selesai: +${r.mission_xp ?? 0} XP${r.completed ? " · aktivitas selesai!" : ""}` };
+  return { success: `Misi "${r.mission_title}" selesai: +${r.mission_xp ?? 0} Jejak${r.completed ? " · aktivitas selesai!" : ""}` };
 }
 
 export async function submitMissionPhoto(_prev: MissionActionState, formData: FormData): Promise<MissionActionState> {

@@ -49,8 +49,8 @@ async function Board({ searchParams }: Pick<PageProps<"/peringkat">, "searchPara
           <span className="font-display text-[18px] font-semibold">{region ? `Peringkat ${region.cityName} belum dibuka` : "Lengkapi tempat tinggalmu"}</span>
           <span className="text-[15px] leading-[1.55] text-fg-soft">
             {region
-              ? "Gasyu membuka peringkat kota satu per satu. XP-mu tetap tercatat dan langsung masuk peringkat begitu kotamu dibuka."
-              : "Pilih kota dan kecamatan tempat tinggalmu supaya XP-mu masuk peringkat kota dan kecamatan."}
+              ? "Gasyu membuka peringkat kota satu per satu. Jejakmu tetap tercatat dan langsung masuk peringkat begitu kotamu dibuka."
+              : "Pilih kota dan kecamatan tempat tinggalmu supaya Jejakmu masuk peringkat kota dan kecamatan."}
           </span>
           {!region && (
             <a href="/profil/ubah" className="mt-1 text-[15px] font-semibold text-link">
@@ -112,7 +112,7 @@ async function Board({ searchParams }: Pick<PageProps<"/peringkat">, "searchPara
           ) : (
             <span className="font-display text-[18px] font-semibold">Belum ada</span>
           )}
-          <span className="text-[13px] text-fg-muted">Rata-rata XP per warga aktif · minimal {districts?.min_active_citizens ?? 10} warga untuk masuk peringkat</span>
+          <span className="text-[13px] text-fg-muted">Rata-rata Jejak per warga aktif · minimal {districts?.min_active_citizens ?? 10} warga untuk masuk peringkat</span>
         </a>
       )}
 
@@ -126,7 +126,7 @@ async function Board({ searchParams }: Pick<PageProps<"/peringkat">, "searchPara
                 {w.district?.name}
               </span>
               <span className="text-[13px] text-fg-soft">
-                {Math.round(Number(w.avg_xp)).toLocaleString("id-ID")} XP · {w.active_citizens} warga
+                {Math.round(Number(w.avg_xp)).toLocaleString("id-ID")} Jejak · {w.active_citizens} warga
               </span>
             </div>
           ))}
@@ -138,7 +138,7 @@ async function Board({ searchParams }: Pick<PageProps<"/peringkat">, "searchPara
 
 function UserBoard({ rows, me, total, scopeLabel }: { rows: LeaderRow[]; me: { rank: number; xp: number } | null; total: number; scopeLabel: string }) {
   if (rows.length === 0) {
-    return <p className={`${cardClass} p-4 text-[15px] text-fg-soft`}>Belum ada XP bulan ini {scopeLabel}. Check-in di aktivitas untuk masuk peringkat.</p>;
+    return <p className={`${cardClass} p-4 text-[15px] text-fg-soft`}>Belum ada Jejak bulan ini {scopeLabel}. Check-in di aktivitas untuk masuk peringkat.</p>;
   }
   const top = rows.slice(0, 3);
   const podium = [top[1], top[0], top[2]].filter(Boolean) as LeaderRow[];
@@ -160,7 +160,7 @@ function UserBoard({ rows, me, total, scopeLabel }: { rows: LeaderRow[]; me: { r
                 {p.nickname}
                 {p.is_me ? " (kamu)" : ""}
               </span>
-              <span className="text-[13px] font-semibold text-xp">{p.xp.toLocaleString("id-ID")} XP</span>
+              <span className="text-[13px] font-semibold text-xp">{p.xp.toLocaleString("id-ID")} Jejak</span>
               <div className={`flex w-full justify-center rounded-t-[18px] rounded-b-lg pt-2.5 font-display text-[28px] font-extrabold text-white ${BLOCK[i] ?? "bg-surface-2"} ${first ? "h-24" : p.rank === 2 ? "h-[70px]" : "h-14"}`}>
                 {p.rank}
               </div>
@@ -192,7 +192,7 @@ function Row({ row }: { row: LeaderRow }) {
         {row.nickname}
         {row.is_me && row.nickname !== "Kamu" ? " (kamu)" : ""}
       </span>
-      <span className="text-[15px] font-semibold text-xp">{row.xp.toLocaleString("id-ID")} XP</span>
+      <span className="text-[15px] font-semibold text-xp">{row.xp.toLocaleString("id-ID")} Jejak</span>
     </div>
   );
 }
@@ -214,7 +214,7 @@ function DistrictBoard({ rows, minActive, cityName }: { rows: DistrictRow[]; min
               </span>
               <span className="text-[12px] text-fg-soft">{r.active_citizens} warga aktif</span>
             </span>
-            <span className="text-[15px] font-semibold text-xp">{Math.round(Number(r.avg_xp)).toLocaleString("id-ID")} XP</span>
+            <span className="text-[15px] font-semibold text-xp">{Math.round(Number(r.avg_xp)).toLocaleString("id-ID")} Jejak</span>
           </div>
         ))}
       </div>
@@ -234,7 +234,7 @@ function DistrictBoard({ rows, minActive, cityName }: { rows: DistrictRow[]; min
           </div>
         </details>
       )}
-      <span className="text-[13px] text-fg-muted">Rata-rata XP per warga aktif bulan ini. XP dicatat ke kecamatan saat diberikan, jadi pindah kecamatan tidak memindahkan XP lama.</span>
+      <span className="text-[13px] text-fg-muted">Rata-rata Jejak per warga aktif bulan ini. Jejak dicatat ke kecamatan saat diberikan, jadi pindah kecamatan tidak memindahkan Jejak lama.</span>
     </>
   );
 }

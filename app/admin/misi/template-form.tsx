@@ -68,7 +68,7 @@ export function TemplateForm({ initial, xpMin, xpMax }: { initial?: MissionTempl
 
       <div className="grid gap-4 md:grid-cols-4">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="t_xp" className={labelClass}>Saran XP ({xpMin}–{xpMax})</label>
+          <label htmlFor="t_xp" className={labelClass}>Saran Jejak ({xpMin}–{xpMax})</label>
           <input id="t_xp" name="xp_reward" type="number" required min={xpMin} max={xpMax} defaultValue={initial?.xp_reward ?? 30} className={inputClass} />
         </div>
         <div className="flex flex-col gap-1.5">

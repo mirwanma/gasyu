@@ -24,7 +24,7 @@ export type CheckinResult = {
   total_xp: number;
   // Poin per penyelesaian aktivitas (ditambahkan server action), untuk teks "masuk setelah selesai".
   points_promised?: number;
-  // Event Global: skor event menggantikan XP dan poin (ALUR bagian 22c).
+  // Event Global: skor event menggantikan Jejak dan poin (ALUR bagian 22c).
   reach?: "regional" | "global";
   score?: number;
   event_score?: number;

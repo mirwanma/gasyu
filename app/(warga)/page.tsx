@@ -113,7 +113,7 @@ function openMissions(card: ActivityCard, list: Awaited<ReturnType<typeof getCit
             checkpointName: m.checkpoint_name,
             verification: m.verification,
             howTo: VERIFICATION_HOW[m.verification],
-            reward: card.reach === "global" ? `+${m.score_reward} skor` : `+${m.xp_reward} XP`,
+            reward: card.reach === "global" ? `+${m.score_reward} skor` : `+${m.xp_reward} Jejak`,
             deadline: m.available_until ?? card.ends_at,
             timeLeft: timeLeftLabel(m.available_until ?? card.ends_at),
           },
