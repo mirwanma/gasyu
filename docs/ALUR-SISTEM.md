@@ -1,6 +1,7 @@
 # Gasyu — Alur Sistem
 
-Versi 0.15 · 28 Oktober 2026 · Pilot Kota Cimahi, terbuka untuk seluruh Indonesia
+Versi 0.16 · 28 Oktober 2026 · Pilot Kota Cimahi, terbuka untuk seluruh Indonesia
+Perubahan 0.16: level 5 bernama **Legenda** (dulu Legenda Kota), karena Gasyu dipakai di banyak kota (bagian 17, migrasi 0028).
 Perubahan 0.15: poin status untuk warga sekarang bernama **Jejak** (dulu XP) di aplikasi dan dokumen, supaya mudah dipahami semua umur dan tidak tertukar dengan poin yang bisa ditukar. Aturan dan angkanya tidak berubah; nama di kode tetap `xp` (`xp_ledger`, `xp_reward`, `xp.daily_cap`).
 Perubahan 0.14: Gasyu terbuka untuk semua kota di Indonesia (migrasi 0027). Wilayah asal warga dan penyelenggara sekarang **kota/kabupaten + kecamatan** dari seluruh Indonesia, bukan kelurahan Cimahi; pilihan "Luar Cimahi" dihapus (bagian 3a). Admin membuka kota satu per satu di halaman Wilayah; peringkat dihitung per kota dan per kecamatan, hanya untuk kota yang sudah dibuka (bagian 17). Cakupan aktivitas berupa kota atau kecamatan di kota yang sudah dibuka (bagian 6). Badge Penjelajah Kelurahan menjadi Penjelajah Kecamatan, dan level 5 Legenda Cimahi menjadi Legenda Kota.
 Perubahan 0.13: pemilih kota di Jelajah (bagian 20b). Warga melihat aktivitas di kotanya sendiri secara otomatis dan bisa memilih kota lain atau Semua kota (migrasi 0026).
@@ -1053,7 +1054,7 @@ flowchart LR
 | 2 | Penjelajah | 500 |
 | 3 | Penggerak | 1.500 |
 | 4 | Jawara | 4.000 |
-| 5 | Legenda Kota | 10.000 |
+| 5 | Legenda | 10.000 |
 
 **Peringkat kota dan kecamatan.** Halaman Peringkat punya tiga tab: warga di kecamatan saya, warga se-kota saya, dan peringkat kecamatan di kota saya. Hanya kota yang sudah dibuka admin yang punya peringkat (bagian 3a); warga di kota lain melihat keterangan "peringkat kotamu belum dibuka". Jejak dihitung ke kecamatan yang tercatat di `xp_ledger.district_id` saat Jejak diberikan (snapshot), sehingga pindah kecamatan tidak memindahkan Jejak lama. Warga tanpa kecamatan (akun lama) tidak dihitung. Juara kecamatan bulan lalu di setiap kota disimpan oleh cron ke `monthly_district_winners`.
 
