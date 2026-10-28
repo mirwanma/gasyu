@@ -48,7 +48,7 @@ declare
   k4 constant uuid := 'dd000000-0000-4000-8000-0000000000b4'; -- Lina, Sahabat Lingkungan Cimahi
   k5 constant uuid := 'dd000000-0000-4000-8000-0000000000b5'; -- Bayu, Cimahi Foodies
   acc record;
-  v_village uuid;
+  v_district uuid;
   -- penyelenggara
   org_kopi uuid; org_seblak uuid; org_batik uuid; org_bengkel uuid; org_buku uuid; org_liwet uuid;
   org_run uuid; org_gowes uuid; org_hub uuid; org_hijau uuid; org_food uuid;
@@ -107,9 +107,12 @@ begin
       -- DB uji lokal tanpa skema auth lengkap
       insert into auth.users (id, email) values (acc.id, acc.email);
     end if;
-    select id into v_village from public.regions where level = 'village' and name = acc.village;
+    -- Kecamatan dari nama kelurahan contoh; Vina (tanpa kelurahan) tinggal di Sukasari, Kota Bandung.
+    select coalesce((select parent_id from public.regions where level = 'village' and name = acc.village),
+                    (select id from public.regions where code = '32.73.01'))
+    into v_district;
     update public.profiles
-    set nickname = acc.nickname, full_name = acc.full_name, home_village_id = v_village, is_admin = acc.is_admin,
+    set nickname = acc.nickname, full_name = acc.full_name, home_district_id = v_district, is_admin = acc.is_admin,
         terms_accepted_at = now() - make_interval(days => acc.days_ago), onboarded_at = now() - make_interval(days => acc.days_ago),
         created_at = now() - make_interval(days => acc.days_ago)
     where id = acc.id;
@@ -123,8 +126,8 @@ begin
     'name', 'Kopi Lereng', 'whatsapp', '081220001001', 'merchant_category', 'kopi', 'nib', '1234567890123',
     'description', 'Kedai kopi lokal dengan biji dari Lereng Burangrang. Favorit: kopi susu gula aren dan roti bakar. Buka 07.00–22.00.',
     'outlets', jsonb_build_array(
-      jsonb_build_object('name', 'Kopi Lereng Baros', 'address', 'Jl. Baros No. 10, Baros, Cimahi Tengah', 'village_id', (select id from public.regions where name = 'Baros'), 'lat', -6.8913, 'lng', 107.5412),
-      jsonb_build_object('name', 'Kopi Lereng Cibabat', 'address', 'Jl. Kolonel Masturi No. 88, Cibabat, Cimahi Utara', 'village_id', (select id from public.regions where name = 'Cibabat'), 'lat', -6.8601, 'lng', 107.5428))));
+      jsonb_build_object('name', 'Kopi Lereng Baros', 'address', 'Jl. Baros No. 10, Baros, Cimahi Tengah', 'district_id', (select parent_id from public.regions where level = 'village' and name = 'Baros'), 'lat', -6.8913, 'lng', 107.5412),
+      jsonb_build_object('name', 'Kopi Lereng Cibabat', 'address', 'Jl. Kolonel Masturi No. 88, Cibabat, Cimahi Utara', 'district_id', (select parent_id from public.regions where level = 'village' and name = 'Cibabat'), 'lat', -6.8601, 'lng', 107.5428))));
   select id into out_kopi_baros from public.merchant_outlets where organizer_id = org_kopi and name like '%Baros';
   select id into out_kopi_cibabat from public.merchant_outlets where organizer_id = org_kopi and name like '%Cibabat';
 
@@ -132,35 +135,35 @@ begin
   org_seblak := public.register_organizer('merchant', jsonb_build_object(
     'name', 'Seblak Teh Ai', 'whatsapp', '081220001002', 'merchant_category', 'kuliner',
     'description', 'Seblak legendaris Melong sejak 2015, level pedas 0–5. Ada seblak seafood, ceker, dan kuah tulang.',
-    'outlets', jsonb_build_array(jsonb_build_object('name', 'Warung Seblak Teh Ai', 'address', 'Jl. Melong Asih No. 21, Melong, Cimahi Selatan', 'village_id', (select id from public.regions where name = 'Melong'), 'lat', -6.9305, 'lng', 107.5465))));
+    'outlets', jsonb_build_array(jsonb_build_object('name', 'Warung Seblak Teh Ai', 'address', 'Jl. Melong Asih No. 21, Melong, Cimahi Selatan', 'district_id', (select parent_id from public.regions where level = 'village' and name = 'Melong'), 'lat', -6.9305, 'lng', 107.5465))));
   select id into out_seblak from public.merchant_outlets where organizer_id = org_seblak;
 
   perform pg_temp.login(m3);
   org_batik := public.register_organizer('merchant', jsonb_build_object(
     'name', 'Batik Cimahi Heritage', 'whatsapp', '081220001003', 'merchant_category', 'fesyen', 'nib', '9876543210987',
     'description', 'Batik tulis dan cap motif khas Cimahi: Ciawitali, Pusdik, dan Kujang. Workshop membatik tiap Sabtu.',
-    'outlets', jsonb_build_array(jsonb_build_object('name', 'Galeri Batik Cimahi Heritage', 'address', 'Jl. Gatot Subroto No. 45, Cimahi, Cimahi Tengah', 'village_id', (select id from public.regions where name = 'Cimahi'), 'lat', -6.8731, 'lng', 107.5423))));
+    'outlets', jsonb_build_array(jsonb_build_object('name', 'Galeri Batik Cimahi Heritage', 'address', 'Jl. Gatot Subroto No. 45, Cimahi, Cimahi Tengah', 'district_id', (select parent_id from public.regions where level = 'village' and name = 'Cimahi'), 'lat', -6.8731, 'lng', 107.5423))));
   select id into out_batik from public.merchant_outlets where organizer_id = org_batik;
 
   perform pg_temp.login(m4);
   org_bengkel := public.register_organizer('merchant', jsonb_build_object(
     'name', 'Bengkel Motor Jaya', 'whatsapp', '081220001004', 'merchant_category', 'otomotif',
     'description', 'Servis motor semua merek, ganti oli 15 menit, cek gratis untuk warga Cibeureum.',
-    'outlets', jsonb_build_array(jsonb_build_object('name', 'Bengkel Motor Jaya', 'address', 'Jl. Cibeureum Raya No. 7, Cibeureum, Cimahi Selatan', 'village_id', (select id from public.regions where name = 'Cibeureum'), 'lat', -6.9108, 'lng', 107.5520))));
+    'outlets', jsonb_build_array(jsonb_build_object('name', 'Bengkel Motor Jaya', 'address', 'Jl. Cibeureum Raya No. 7, Cibeureum, Cimahi Selatan', 'district_id', (select parent_id from public.regions where level = 'village' and name = 'Cibeureum'), 'lat', -6.9108, 'lng', 107.5520))));
   select id into out_bengkel from public.merchant_outlets where organizer_id = org_bengkel;
 
   perform pg_temp.login(m5);
   org_buku := public.register_organizer('merchant', jsonb_build_object(
     'name', 'Toko Buku Cendekia', 'whatsapp', '081220001005', 'merchant_category', 'retail',
     'description', 'Toko buku dan alat tulis sejak 1998. Ada pojok baca gratis dan diskon pelajar.',
-    'outlets', jsonb_build_array(jsonb_build_object('name', 'Toko Buku Cendekia', 'address', 'Jl. Amir Machmud No. 120, Cimahi, Cimahi Tengah', 'village_id', (select id from public.regions where name = 'Cimahi'), 'lat', -6.8745, 'lng', 107.5431))));
+    'outlets', jsonb_build_array(jsonb_build_object('name', 'Toko Buku Cendekia', 'address', 'Jl. Amir Machmud No. 120, Cimahi, Cimahi Tengah', 'district_id', (select parent_id from public.regions where level = 'village' and name = 'Cimahi'), 'lat', -6.8745, 'lng', 107.5431))));
   select id into out_buku from public.merchant_outlets where organizer_id = org_buku;
 
   perform pg_temp.login(m6);
   org_liwet := public.register_organizer('merchant', jsonb_build_object(
     'name', 'Nasi Liwet Mang Udin', 'whatsapp', '081220001006', 'merchant_category', 'kuliner',
     'description', 'Nasi liwet kastrol untuk 4–6 orang, ikan asin peda, sambal terasi. Pesan H-1.',
-    'outlets', jsonb_build_array(jsonb_build_object('name', 'Nasi Liwet Mang Udin', 'address', 'Jl. Padasuka No. 3, Padasuka, Cimahi Tengah', 'village_id', (select id from public.regions where name = 'Padasuka'), 'lat', -6.8810, 'lng', 107.5480))));
+    'outlets', jsonb_build_array(jsonb_build_object('name', 'Nasi Liwet Mang Udin', 'address', 'Jl. Padasuka No. 3, Padasuka, Cimahi Tengah', 'district_id', (select parent_id from public.regions where level = 'village' and name = 'Padasuka'), 'lat', -6.8810, 'lng', 107.5480))));
 
   -- ---------------------------------------------------------------------------
   -- 3. Komunitas (5) — 4 disetujui, 1 menunggu verifikasi
@@ -169,28 +172,28 @@ begin
   org_run := public.register_organizer('community', jsonb_build_object(
     'name', 'Cimahi Runners', 'whatsapp', '081220002001', 'interest_category', 'olahraga', 'join_policy', 'open', 'est_members', 120,
     'description', 'Komunitas lari santai Cimahi. Lari bareng tiap Sabtu pagi dari Lapangan Rajawali, semua pace boleh ikut.',
-    'activity_area_village_id', (select id from public.regions where name = 'Baros'),
+    'activity_area_district_id', (select parent_id from public.regions where level = 'village' and name = 'Baros'),
     'basecamp_address', 'Lapangan Rajawali, Jl. Rajawali, Cimahi', 'basecamp_lat', -6.8842, 'basecamp_lng', 107.5365));
   perform pg_temp.login(k2);
   org_gowes := public.register_organizer('community', jsonb_build_object(
     'name', 'Cimahi Gowes', 'whatsapp', '081220002002', 'interest_category', 'olahraga', 'join_policy', 'approval', 'est_members', 80,
     'description', 'Komunitas sepeda santai dan touring. Gowes Minggu pagi keliling Cimahi Utara.',
-    'activity_area_village_id', (select id from public.regions where name = 'Cibabat')));
+    'activity_area_district_id', (select parent_id from public.regions where level = 'village' and name = 'Cibabat')));
   perform pg_temp.login(k3);
   org_hub := public.register_organizer('community', jsonb_build_object(
     'name', 'Cimahi Creative Hub', 'whatsapp', '081220002003', 'interest_category', 'seni', 'join_policy', 'approval', 'est_members', 45,
     'description', 'Wadah seniman muda Cimahi: mural, ilustrasi, dan musik indie. Workshop bulanan di Gedung Kesenian.',
-    'activity_area_village_id', (select id from public.regions where name = 'Setiamanah')));
+    'activity_area_district_id', (select parent_id from public.regions where level = 'village' and name = 'Setiamanah')));
   perform pg_temp.login(k4);
   org_hijau := public.register_organizer('community', jsonb_build_object(
     'name', 'Sahabat Lingkungan Cimahi', 'whatsapp', '081220002004', 'interest_category', 'lingkungan', 'join_policy', 'open', 'est_members', 200,
     'description', 'Gerakan bersih sungai Cimahi dan bank sampah kelurahan. Aksi tiap akhir bulan.',
-    'activity_area_village_id', (select id from public.regions where name = 'Citeureup')));
+    'activity_area_district_id', (select parent_id from public.regions where level = 'village' and name = 'Citeureup')));
   perform pg_temp.login(k5);
   org_food := public.register_organizer('community', jsonb_build_object(
     'name', 'Cimahi Foodies', 'whatsapp', '081220002005', 'interest_category', 'hobi', 'join_policy', 'open', 'est_members', 300,
     'description', 'Komunitas pemburu kuliner Cimahi. Review jujur, jalan bareng tiap Jumat malam.',
-    'activity_area_village_id', (select id from public.regions where name = 'Cigugur Tengah')));
+    'activity_area_district_id', (select parent_id from public.regions where level = 'village' and name = 'Cigugur Tengah')));
 
   -- Verifikasi oleh admin (Mang Udin dan Cimahi Foodies dibiarkan menunggu untuk demo antrean admin)
   perform pg_temp.login(u_admin);
@@ -383,7 +386,7 @@ begin
   ev_mural := public.create_activity(org_hub, jsonb_build_object(
     'type', 'event', 'goal', 'membership', 'title', 'Workshop Mural Tembok Pasar',
     'description', 'Belajar mural bareng seniman Cimahi Creative Hub, lalu mengecat tembok sepanjang 20 m di Pasar Antri. Cat dan kuas disediakan. Khusus member komunitas.',
-    'scope_region_id', (select id from public.regions where name = 'Setiamanah'),
+    'scope_region_id', (select parent_id from public.regions where level = 'village' and name = 'Setiamanah'),
     'starts_at', (date_trunc('day', now() at time zone 'Asia/Jakarta') + interval '8 days 8 hours') at time zone 'Asia/Jakarta',
     'ends_at', (date_trunc('day', now() at time zone 'Asia/Jakarta') + interval '8 days 12 hours') at time zone 'Asia/Jakarta',
     'quota', 30, 'join_mode', 'individual', 'residency_rule', 'open', 'audience', 'members_only'));
@@ -394,8 +397,6 @@ begin
   -- ---------------------------------------------------------------------------
   -- 8b. Event Global: Lomba Foto Wisata Cimahi (admin, online + di lokasi, terbuka untuk semua kota) — sedang berjalan
   -- ---------------------------------------------------------------------------
-  perform pg_temp.login(w10);
-  perform public.set_home_city('32.73'); -- Vina dari Kota Bandung
   perform pg_temp.login(u_admin);
   ev_global := public.create_activity(public.platform_organizer_id(), jsonb_build_object(
     'type', 'event', 'goal', 'awareness', 'title', 'Lomba Foto Wisata Cimahi',

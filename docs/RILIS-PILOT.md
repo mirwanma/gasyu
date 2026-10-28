@@ -6,7 +6,7 @@ Panduan langkah demi langkah sebelum warga sungguhan mulai memakai Gasyu.
 Centang `[x]` setiap langkah yang sudah selesai. Langkah bertanda **(wajib)** harus beres sebelum rilis.
 Langkah lain sangat disarankan, tetapi bisa menyusul.
 
-Kode, database, dan uji otomatis sudah selesai (migrasi 0001–0026, uji SQL, dan uji browser lolos).
+Kode, database, dan uji otomatis sudah selesai (migrasi 0001–0027, uji SQL, dan uji browser lolos).
 Yang tersisa di sini adalah **pengaturan di luar kode** yang hanya bisa dilakukan pemilik akun.
 
 ---
@@ -15,10 +15,10 @@ Yang tersisa di sini adalah **pengaturan di luar kode** yang hanya bisa dilakuka
 
 | Hal | Kondisi | Perlu tindakan? |
 | --- | --- | --- |
-| Migrasi database | 26 dari 26 sudah terpasang | Tidak |
+| Migrasi database | 26 dari 27 sudah terpasang; 0027 (wilayah se-Indonesia) belum | Ya: `npx supabase db push`, lalu deploy aplikasi bersamaan |
 | Jadwal otomatis (cron) | 14 aktif, 0 gagal dalam 24 jam terakhir | Tidak |
 | Bucket Storage | 6 bucket: `logos`, `covers`, `avatars` publik; `organizer-proofs`, `payment-proofs`, `mission-proofs` privat | Tidak |
-| Wilayah | 1 kota, 3 kecamatan, 15 kelurahan Cimahi | Tidak |
+| Wilayah | 514 kota/kabupaten dan 7.285 kecamatan; hanya Kota Cimahi yang dibuka | Buka kota lain di admin Wilayah bila sudah siap |
 | Penyelenggara platform | "Gasyu" sudah ada | Isi WhatsApp panitia (bagian 4) |
 | Akun admin | `admin@dummy.ramein.id` (dummy) dan akun pemilik | **Hapus admin dummy** |
 | Data dummy | 23 akun dummy beserta aktivitas, voucher, dan lainnya | **Bersihkan** |
@@ -129,7 +129,7 @@ Login Google (tombol "Masuk dengan Google"):
 - [ ] `payment.gasyu_whatsapp`: nomor WhatsApp panitia untuk event berbayar buatan Gasyu.
       Jika kosong, aplikasi memakai `support.whatsapp`.
 - [ ] Tinjau angka aturan main lain. Nilai sekarang sesuai dokumen: radius 150 m, XP harian maks. 1.000,
-      poin berlaku 6 bulan, leaderboard kelurahan minimal 10 warga aktif, dan seterusnya.
+      poin berlaku 6 bulan, peringkat kecamatan minimal 10 warga aktif, dan seterusnya.
       Ubah hanya jika memang diputuskan berbeda.
 
 **Isi awal:**
@@ -164,7 +164,7 @@ tentang data apa yang dikumpulkan dan untuk apa.
 
 - [ ] Pemilik proyek menyiapkan teks **Syarat & Ketentuan** dan **Kebijakan Privasi**
       (sebaiknya ditinjau orang yang paham hukum). Isi minimal:
-  - Data yang dikumpulkan: nama, nickname, email, kelurahan, lokasi saat check-in, foto bukti misi, bukti bayar,
+  - Data yang dikumpulkan: nama, nickname, email, kota dan kecamatan, lokasi saat check-in, foto bukti misi, bukti bayar,
     serta nomor HP dan alamat pemenang Event Global.
   - Kegunaannya, siapa yang bisa melihatnya (partner hanya melihat peserta di checkpoint miliknya),
     dan berapa lama disimpan (alamat pemenang dihapus 30 hari setelah hadiah dikirim).
@@ -181,7 +181,8 @@ Lakukan di HP sungguhan, di alamat produksi, dengan akun asli (bukan dummy):
 
 - [ ] Masuk dengan email: kode tiba dalam 1 menit, tidak masuk spam, dan kodenya bisa dipakai.
 - [ ] Masuk dengan Google (jika diaktifkan).
-- [ ] Onboarding: pilih kelurahan, lalu warga luar Cimahi pilih kota asal.
+- [ ] Onboarding: pilih provinsi, kota (mis. Kota Bandung), lalu kecamatan; kota yang belum dibuka menampilkan keterangan.
+- [ ] Admin Wilayah: buka kota, lalu peringkat kota itu muncul di HP warganya.
 - [ ] Pasang aplikasi ke layar utama ("Tambahkan ke Layar Utama"), lalu buka dari ikon.
 - [ ] Admin: buka `https://admin.gasyu.id`, lalu verifikasi satu merchant uji dan satu komunitas uji.
 - [ ] Merchant uji membuat event dengan checkpoint, admin menyetujui, dan warga check-in dengan memindai QR di lokasi.

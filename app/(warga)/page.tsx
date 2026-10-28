@@ -58,7 +58,7 @@ async function CitizenHome() {
     Promise.all(myGlobal.map((id) => getLeaderboard(id, 1))),
     listTopPrizes(openGlobal.map((c) => c.id)),
     Promise.all(running.map(({ card }) => getCitizenMissions(card.id))),
-    getUserLeaderboard(user.homeVillageId ? "village" : "city"),
+    getUserLeaderboard("district"),
   ]);
   const dailyMissions = running
     .flatMap(({ card }, i) => openMissions(card, missionLists[i]))
@@ -69,14 +69,16 @@ async function CitizenHome() {
   const recommended = recommend(publicActivities, {
     joinedIds,
     communityIds: new Set(myCommunityIds),
-    villageId: user.homeVillageId,
+    districtId: user.homeDistrictId,
+    cityId: dashboard?.city_id ?? null,
   });
 
   return (
     <HomeView
       nickname={user.nickname}
       avatarUrl={user.avatarUrl}
-      villageName={user.villageName ?? undefined}
+      districtName={dashboard?.district_name ?? undefined}
+      cityName={dashboard?.city_name ?? undefined}
       totalXp={(xpRows ?? []).reduce((sum, row) => sum + row.amount, 0)}
       levels={levels ?? []}
       greeting={greetingFor()}
@@ -84,7 +86,7 @@ async function CitizenHome() {
       myActivities={myActivities}
       recommended={recommended}
       wallet={{ balance: wallet.balance, activeVouchers: vouchers.filter((v) => v.status === "active").length, expiring30d: wallet.expiring_30d }}
-      rank={dashboard ? { village: dashboard.rank_village, city: dashboard.rank_city, xpMonth: dashboard.xp_month, streakWeeks: dashboard.streak_weeks, villageRank: dashboard.village_rank } : undefined}
+      rank={dashboard ? { district: dashboard.rank_district, city: dashboard.rank_city, xpMonth: dashboard.xp_month, streakWeeks: dashboard.streak_weeks, districtRank: dashboard.district_rank } : undefined}
       badges={dashboard ? { recent: dashboard.badges.slice(0, 3), earned: dashboard.badges.length, total: dashboard.badge_total } : undefined}
       globalScores={globalScores}
       openGlobal={openGlobal.map((card) => ({ card, topPrize: topPrizes.get(card.id) ?? null }))}
@@ -135,14 +137,15 @@ function isFuture(value: string) {
   return new Date(value).getTime() > Date.now();
 }
 
-// Rekomendasi: aktivitas terbit yang belum diikuti, diutamakan dari komunitas
-// yang diikuti dan yang cakupannya kelurahan sendiri (atau seluruh kota).
+// Rekomendasi: aktivitas terbit di kota warga yang belum diikuti, diutamakan dari komunitas
+// yang diikuti dan yang cakupannya kecamatan sendiri. Aktivitas tanpa kota (event Gasyu) ikut tampil.
 function recommend(
   cards: ActivityCard[],
-  ctx: { joinedIds: Set<string>; communityIds: Set<string>; villageId: string | null },
+  ctx: { joinedIds: Set<string>; communityIds: Set<string>; districtId: string | null; cityId: string | null },
 ): { card: ActivityCard; reason: string }[] {
   return cards
     .filter((card) => !ctx.joinedIds.has(card.id))
+    .filter((card) => !ctx.cityId || !card.city_id || card.city_id === ctx.cityId)
     .map((card) => {
       let score = 0;
       let reason = "Terbuka untuk semua";
@@ -150,16 +153,16 @@ function recommend(
         score += 1;
         reason = "Event Gasyu";
       }
-      if (card.scope_region_id && card.scope_region_id === ctx.villageId) {
+      if (card.scope_region_id && card.scope_region_id === ctx.districtId) {
         score += 2;
-        reason = "Di kelurahanmu";
+        reason = "Di kecamatanmu";
       }
       if (ctx.communityIds.has(card.host_organizer_id)) {
         score += 3;
         reason = `Dari ${card.host_name}`;
       }
       if (card.audience === "members_only" && !ctx.communityIds.has(card.host_organizer_id)) score -= 10;
-      if (card.residency_rule === "residents_only" && !ctx.villageId) score -= 10;
+      if (card.residency_rule === "residents_only" && (!ctx.cityId || card.city_id !== ctx.cityId)) score -= 10;
       return { card, reason, score };
     })
     .filter((row) => row.score > -5)

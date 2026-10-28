@@ -32,7 +32,7 @@ end;
 $$;
 grant execute on all functions in schema pg_temp to anon, authenticated;
 
--- Akun: O pemilik merchant (sponsor hadiah), A admin, W1 warga Cimahi, W2–W4 warga luar Cimahi
+-- Akun: O pemilik merchant (sponsor hadiah), A admin, W1 warga Cimahi, W2–W4 tanpa kecamatan
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000a', 'o@uji.test'),
   ('00000000-0000-0000-0000-00000000000e', 'a@uji.test'),
@@ -41,7 +41,7 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000000d3', 'w3@uji.test'),
   ('00000000-0000-0000-0000-0000000000d4', 'w4@uji.test');
 update public.profiles set nickname = 'uji' || right(id::text, 2), full_name = 'Nama Rahasia', terms_accepted_at = now(), onboarded_at = now();
-update public.profiles set home_village_id = (select id from public.regions where name = 'Baros')
+update public.profiles set home_district_id = (select id from public.regions where name = 'Cimahi Tengah')
   where id in ('00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000e', '00000000-0000-0000-0000-0000000000d1');
 update public.profiles set is_admin = true where id = '00000000-0000-0000-0000-00000000000e';
 

@@ -5,7 +5,7 @@ import { OrganizerShell } from "@/components/organizer/shell";
 import { cardClass, tagClass } from "@/components/styles";
 import { SubmitButton } from "@/components/ui";
 import { toggleOutlet } from "@/lib/actions/organizer";
-import { getVillageOptions } from "@/lib/data/organizers";
+import { getDistrictInfo, listCityChoices } from "@/lib/data/regions";
 import { createClient } from "@/lib/supabase/server";
 
 const DAY_LABELS: Record<string, string> = { mon: "Sen", tue: "Sel", wed: "Rab", thu: "Kam", fri: "Jum", sat: "Sab", sun: "Min" };
@@ -38,20 +38,24 @@ function describeHours(hours: Record<string, [string, string]> | null) {
 
 async function OutletBody({ id }: { id: string }) {
   const supabase = await createClient();
-  const [{ data: outlets }, districts] = await Promise.all([
+  const [{ data: outlets }, cities, { data: org }] = await Promise.all([
     supabase
       .from("merchant_outlets")
-      .select("id, name, address, lat, lng, opening_hours, is_active, village:regions(name)")
+      .select("id, name, address, lat, lng, opening_hours, is_active, district:regions(name, city:parent_id(name))")
       .eq("organizer_id", id)
       .order("created_at"),
-    getVillageOptions(),
+    listCityChoices(),
+    supabase.from("organizers").select("district_id").eq("id", id).maybeSingle(),
   ]);
+  // Outlet baru diawali dengan wilayah utama merchant.
+  const home = await getDistrictInfo(org?.district_id ?? null);
 
   return (
     <>
       <section className="flex flex-col gap-2.5">
         {(outlets ?? []).map((outlet) => {
-          const village = (Array.isArray(outlet.village) ? outlet.village[0] : outlet.village) as { name: string } | null;
+          const district = (Array.isArray(outlet.district) ? outlet.district[0] : outlet.district) as { name: string; city: { name: string } | { name: string }[] | null } | null;
+          const city = Array.isArray(district?.city) ? district.city[0] : district?.city;
           return (
             <div key={outlet.id} className={`${cardClass} flex flex-col gap-2 p-4`}>
               <div className="flex items-center justify-between gap-2">
@@ -62,7 +66,7 @@ async function OutletBody({ id }: { id: string }) {
               </div>
               <span className="text-[15px] text-fg-soft">
                 {outlet.address}
-                {village ? ` · Kel. ${village.name}` : ""}
+                {district ? ` · Kec. ${district.name}${city ? `, ${city.name}` : ""}` : ""}
               </span>
               <span className="text-[15px] text-fg-soft">{describeHours(outlet.opening_hours as Record<string, [string, string]> | null)}</span>
               <div className="flex items-center justify-between">
@@ -88,7 +92,7 @@ async function OutletBody({ id }: { id: string }) {
           );
         })}
       </section>
-      <OutletForm organizerId={id} districts={districts} />
+      <OutletForm organizerId={id} cities={cities} home={home ? { cityId: home.cityId, districtId: home.districtId } : null} />
     </>
   );
 }

@@ -19,9 +19,9 @@ import { getPaymentStats } from "@/lib/data/payments";
 import { PesertaBody } from "@/components/organizer/participants";
 import { DIFFICULTY_LABELS, JOIN_MODE_LABELS, formatPrice, formatSchedule, targetLabel, typeLabel } from "@/lib/activities";
 import { getActivityCard, getCheckpoints, listOrganizerActivities } from "@/lib/data/activities";
-import { getVillageOptions } from "@/lib/data/organizers";
 import { formatDateTime, timeAgo } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
+import { listScopeOptions } from "@/lib/data/regions";
 
 type Kind = "merchant" | "community";
 const basePath = (type: Kind, id: string) => `/${type === "merchant" ? "merchant" : "komunitas"}/${id}`;
@@ -124,9 +124,8 @@ export function AktivitasBaruPage({ id, type }: { id: string; type: Kind }) {
 }
 
 async function FormLoader({ id, type, initial, canSetPrice }: { id: string; type: Kind; initial?: ActivityFormValues; canSetPrice: boolean }) {
-  const supabase = await createClient();
-  const [districts, { data: city }] = await Promise.all([getVillageOptions(), supabase.from("regions").select("id").eq("level", "city").eq("is_active", true).limit(1).maybeSingle()]);
-  return <ActivityForm organizerId={id} type={type} cityId={(city?.id as string | undefined) ?? null} districts={districts} initial={initial} canSetPrice={canSetPrice} />;
+  const scopeCities = await listScopeOptions();
+  return <ActivityForm organizerId={id} type={type} scopeCities={scopeCities} initial={initial} canSetPrice={canSetPrice} />;
 }
 
 // ---- Kelola satu aktivitas ----------------------------------------------

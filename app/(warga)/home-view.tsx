@@ -14,7 +14,8 @@ import { DailyMissions, type DailyMission } from "./daily-missions";
 export function HomeView({
   nickname,
   avatarUrl,
-  villageName,
+  districtName,
+  cityName,
   totalXp,
   levels,
   greeting,
@@ -32,7 +33,9 @@ export function HomeView({
 }: {
   nickname: string;
   avatarUrl?: string | null;
-  villageName?: string;
+  // Kecamatan dan kota tempat tinggal; kosong untuk akun lama yang belum mengisinya.
+  districtName?: string;
+  cityName?: string;
   totalXp: number;
   levels: LevelRow[];
   greeting: string;
@@ -40,7 +43,8 @@ export function HomeView({
   myActivities: { card: Card; participation: Participation }[];
   recommended?: { card: Card; reason: string }[];
   wallet: { balance: number; activeVouchers: number; expiring30d: number };
-  rank?: { village: number | null; city: number | null; xpMonth: number; streakWeeks: number; villageRank: number | null };
+  // Peringkat hanya ada jika kota warga sudah dibuka.
+  rank?: { district: number | null; city: number | null; xpMonth: number; streakWeeks: number; districtRank: number | null };
   badges?: { recent: { code: string; name: string; awarded_at: string }[]; earned: number; total: number };
   // Event Global (ALUR bagian 22e): skor dan posisi per event yang diikuti, event yang dibuka, dan hadiah yang perlu diklaim.
   globalScores?: Record<string, { rank: number | null; score: number }>;
@@ -56,8 +60,9 @@ export function HomeView({
     level.nextMinXp === null ? 100 : Math.round(((totalXp - currentMin) / (level.nextMinXp - currentMin)) * 100);
   const nextName = levels.find((row) => row.min_xp === level.nextMinXp)?.name;
 
-  const villageRank = rank?.villageRank ?? null;
-  const myRank = rank?.village ?? rank?.city ?? null;
+  const districtRank = rank?.districtRank ?? null;
+  const myRank = rank?.district ?? rank?.city ?? null;
+  const cityShort = cityName?.replace(/^(Kota Administrasi|Kota|Kabupaten Administrasi|Kabupaten)\s+/, "");
   const third = topCitizens[2];
   const xpToPodium = third && rank && !topCitizens.some((row) => row.is_me) ? Math.max(third.xp - rank.xpMonth + 1, 1) : null;
 
@@ -122,22 +127,32 @@ export function HomeView({
               )}
               <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-[13px] font-bold">
                 <Icon name="pin" size={15} weight="fill" />
-                {villageName ?? "Luar Cimahi"}
+                {districtName ?? "Wilayah belum diisi"}
               </span>
             </div>
           </div>
         </div>
-        {villageRank && (
-          <a href="/peringkat?tab=kelurahan" className="relative mt-4 flex items-center gap-2.5 rounded-[18px] bg-black/20 px-3.5 py-2.5 text-[14px]">
+        {districtRank && (
+          <a href="/peringkat?tab=kecamatan" className="relative mt-4 flex items-center gap-2.5 rounded-[18px] bg-black/20 px-3.5 py-2.5 text-[14px]">
             <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-sun text-on-sun">
               <Icon name="trophy" size={18} weight="fill" />
             </span>
             <span>
-              Kelurahanmu <b>#{villageRank} se-Cimahi</b> bulan ini
+              Kecamatanmu <b>#{districtRank} se-{cityShort}</b> bulan ini
             </span>
           </a>
         )}
       </section>
+
+      {!districtName && (
+        <a href="/profil/ubah" className={`${cardClass} flex items-center gap-3 border-warn/40 p-4 text-fg`}>
+          <Icon name="pin" size={22} weight="fill" className="shrink-0 text-warn" />
+          <span className="flex flex-col gap-0.5">
+            <span className="text-[16px] font-semibold">Lengkapi kota dan kecamatanmu</span>
+            <span className="text-[14px] leading-[1.5] text-fg-soft">Supaya XP-mu masuk peringkat kota dan kecamatan, dan kamu bisa ikut aktivitas khusus warga.</span>
+          </span>
+        </a>
+      )}
 
       {prizeAlert && prizeAlert.count > 0 && (
         <a href="/hadiah" className="flex animate-pop items-center gap-3 rounded-3xl border border-berry/40 bg-berry-tint p-4 text-fg">
@@ -202,7 +217,7 @@ export function HomeView({
               Semua
             </a>
           </div>
-          <span className="text-[14px] text-fg-soft">3 besar bulan ini {villageName ? `di ${villageName}` : "se-Cimahi"}</span>
+          <span className="text-[14px] text-fg-soft">3 besar bulan ini {districtName ? `di ${districtName}` : ""}</span>
           <Podium rows={topCitizens} />
           {xpToPodium && myRank && (
             <p className="mt-3 flex items-center gap-2.5 rounded-[18px] bg-primary-tint px-3.5 py-3 text-[14px]">
@@ -251,7 +266,7 @@ export function HomeView({
             <span className="text-[16px] font-semibold">Belum ikut aktivitas</span>
             <span className="text-[15px] leading-[1.5] text-fg-soft">
               Cari event dan challenge dari UMKM dan komunitas
-              {villageName ? ` di sekitar ${villageName}` : " di Cimahi"} lewat Jelajah.
+              {districtName ? ` di sekitar ${districtName}` : " di kotamu"} lewat Jelajah.
             </span>
           </a>
         ) : (

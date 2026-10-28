@@ -41,7 +41,7 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000000d1', 'w1@uji.test'),
   ('00000000-0000-0000-0000-0000000000d2', 'w2@uji.test');
 update public.profiles set nickname = 'uji' || right(id::text, 2), full_name = 'Nama Lengkap Rahasia', terms_accepted_at = now(), onboarded_at = now(),
-  home_village_id = (select id from public.regions where name = 'Baros');
+  home_district_id = (select id from public.regions where name = 'Cimahi Tengah');
 update public.profiles set is_admin = true where id = '00000000-0000-0000-0000-00000000000e';
 
 create temp table ids (k text primary key, v uuid);
@@ -52,7 +52,7 @@ set local role authenticated;
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
 insert into ids select 'm', public.register_organizer('merchant', json_build_object('name', 'Kopi Lereng', 'whatsapp', '08120000000',
   'merchant_category', 'kopi', 'outlets', json_build_array(json_build_object('name', 'Cabang Baros', 'address', 'Jl. Baros 10',
-  'village_id', (select id from public.regions where name = 'Baros'), 'lat', -6.89, 'lng', 107.54)))::jsonb);
+  'district_id', (select id from public.regions where name = 'Cimahi Tengah'), 'lat', -6.89, 'lng', 107.54)))::jsonb);
 create temp table tok (k text primary key, v text);
 grant all on table tok to authenticated;
 insert into tok select 'inv', public.create_organizer_invite((select v from ids where k = 'm'), 'staff');
@@ -115,7 +115,7 @@ select pg_temp.login('00000000-0000-0000-0000-00000000000c');
 select pg_temp.assert((select count(*) = 0 from public.suggestions), 'staf tidak membaca tabel mentah');
 select pg_temp.assert((select count(*) = 3 from public.v_organizer_suggestions where organizer_id = (select v from ids where k = 'm')), 'staf membaca saran lewat view');
 select pg_temp.assert((select nickname = 'ujid1' and user_id is not null from public.v_organizer_suggestions where id = (select v from ids where k = 's1')), 'tim melihat nickname pengirim');
-select pg_temp.assert((select nickname is null and user_id is null and village_name is null from public.v_organizer_suggestions where id = (select v from ids where k = 's2')), 'saran anonim tanpa identitas');
+select pg_temp.assert((select nickname is null and user_id is null and district_name is null from public.v_organizer_suggestions where id = (select v from ids where k = 's2')), 'saran anonim tanpa identitas');
 
 select pg_temp.login('00000000-0000-0000-0000-00000000000b');
 select pg_temp.assert((select count(*) = 0 from public.v_organizer_suggestions where organizer_id = (select v from ids where k = 'm')), 'tim penyelenggara lain tidak membaca');

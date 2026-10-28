@@ -85,7 +85,7 @@ export type ReviewItem = {
   xp_reward: number;
   activity_title: string;
   nickname: string;
-  village_name: string | null;
+  district_name: string | null;
 };
 
 export async function listReviewQueue(activityId: string, mode: "pending" | "history" = "pending"): Promise<ReviewItem[]> {
@@ -98,12 +98,12 @@ export async function listReviewQueue(activityId: string, mode: "pending" | "his
 
 // eligible = boleh ditandai: sudah check-in (jika aktivitas punya checkpoint) dan bukan akun penanda sendiri.
 // self = akun yang sedang membuka halaman ini.
-export type ManualCandidate = { user_id: string; nickname: string; village_name: string | null; group_id: string | null; done: boolean; eligible: boolean; self: boolean };
+export type ManualCandidate = { user_id: string; nickname: string; district_name: string | null; group_id: string | null; done: boolean; eligible: boolean; self: boolean };
 
 export async function listManualCandidates(missionId: string): Promise<ManualCandidate[]> {
   const supabase = await createClient();
   const [{ data }, { data: claims }] = await Promise.all([
-    supabase.from("v_mission_manual_candidates").select("user_id, nickname, village_name, group_id, done, eligible").eq("mission_id", missionId).order("nickname"),
+    supabase.from("v_mission_manual_candidates").select("user_id, nickname, district_name, group_id, done, eligible").eq("mission_id", missionId).order("nickname"),
     supabase.auth.getClaims(),
   ]);
   const uid = claims?.claims?.sub;

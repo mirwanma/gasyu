@@ -1,4 +1,4 @@
--- Uji akun warga (0015): ubah profil, ganti kelurahan, hapus akun.
+-- Uji akun warga (0015): ubah profil, ganti kecamatan, hapus akun.
 -- Semua perubahan dibatalkan di akhir (rollback). Jalankan setelah 0001–0015.
 \o /dev/null
 begin;
@@ -41,7 +41,7 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000000d1', 'w1@uji.test'),
   ('00000000-0000-0000-0000-0000000000d2', 'w2@uji.test');
 update public.profiles set nickname = 'uji' || right(id::text, 2), full_name = 'Nama Uji', terms_accepted_at = now(), onboarded_at = now(),
-  home_village_id = (select id from public.regions where name = 'Baros');
+  home_district_id = (select id from public.regions where name = 'Cimahi Tengah');
 update public.profiles set is_admin = true where id = '00000000-0000-0000-0000-00000000000e';
 select public.award_xp('00000000-0000-0000-0000-00000000000c', 120, 'adjustment');
 
@@ -53,7 +53,7 @@ set local role authenticated;
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
 insert into ids select 'm', public.register_organizer('merchant', json_build_object('name', 'Kopi Lereng', 'whatsapp', '08120000000',
   'merchant_category', 'kopi', 'outlets', json_build_array(json_build_object('name', 'Cabang Baros', 'address', 'Jl. Baros 10',
-  'village_id', (select id from public.regions where name = 'Baros'), 'lat', -6.89, 'lng', 107.54)))::jsonb);
+  'district_id', (select id from public.regions where name = 'Cimahi Tengah'), 'lat', -6.89, 'lng', 107.54)))::jsonb);
 insert into tok select 'inv', public.create_organizer_invite((select v from ids where k = 'm'), 'staff');
 select pg_temp.login('00000000-0000-0000-0000-00000000000c');
 select public.accept_organizer_invite((select v from tok where k = 'inv'));
@@ -76,19 +76,21 @@ select public.update_my_profile('  rani_baros  ', ' Rani Puspita ');
 select pg_temp.assert((select nickname::text = 'rani_baros' and full_name = 'Rani Puspita' from public.profiles where id = auth.uid()), 'profil diperbarui dan dirapikan');
 
 -- ---------------------------------------------------------------------------
--- 2. Ganti kelurahan
+-- 2. Ganti kecamatan
 -- ---------------------------------------------------------------------------
-select pg_temp.assert_fails($$select public.change_home_village((select id from public.regions where name = 'Baros'))$$, 'same_village', 'kelurahan sama ditolak');
-select pg_temp.assert_fails($$select public.change_home_village((select id from public.regions where level = 'district' limit 1))$$, 'invalid_village', 'kecamatan bukan kelurahan');
-select public.change_home_village((select id from public.regions where name = 'Cibabat'));
-select pg_temp.assert((select home_village_id = (select id from public.regions where name = 'Cibabat') and home_village_changed_at is not null
-  from public.profiles where id = auth.uid()), 'kelurahan berganti dan tanggal tercatat');
-select pg_temp.assert_fails($$select public.change_home_village((select id from public.regions where name = 'Melong'))$$, 'village_change_too_soon', 'ganti lagi sebelum 90 hari ditolak');
+select pg_temp.assert_fails($$select public.change_home_district((select id from public.regions where name = 'Cimahi Tengah'))$$, 'same_district', 'kecamatan sama ditolak');
+select pg_temp.assert_fails($$select public.change_home_district((select id from public.regions where level = 'village' limit 1))$$, 'invalid_district', 'kelurahan bukan kecamatan');
+select public.change_home_district((select id from public.regions where name = 'Cimahi Utara'));
+select pg_temp.assert((select home_district_id = (select id from public.regions where name = 'Cimahi Utara') and home_district_changed_at is not null
+  from public.profiles where id = auth.uid()), 'kecamatan berganti dan tanggal tercatat');
+select pg_temp.assert_fails($$select public.change_home_district((select id from public.regions where name = 'Cimahi Selatan'))$$, 'district_change_too_soon', 'ganti lagi sebelum 90 hari ditolak');
 reset role;
-update public.profiles set home_village_changed_at = now() - interval '91 days' where id = '00000000-0000-0000-0000-0000000000d1';
+update public.profiles set home_district_changed_at = now() - interval '91 days' where id = '00000000-0000-0000-0000-0000000000d1';
 set local role authenticated;
-select public.change_home_village(null);
-select pg_temp.assert((select home_village_id is null from public.profiles where id = auth.uid()), 'setelah 90 hari boleh ganti ke Luar Cimahi');
+select pg_temp.assert_fails($$select public.change_home_district(null)$$, 'invalid_district', 'kecamatan tidak boleh dikosongkan');
+select public.change_home_district((select id from public.regions where code = '32.73.01'));
+select pg_temp.assert((select home_district_id = (select id from public.regions where code = '32.73.01') from public.profiles where id = auth.uid()),
+  'setelah 90 hari boleh pindah ke kota lain');
 
 -- ---------------------------------------------------------------------------
 -- 3. Hapus akun
@@ -103,7 +105,7 @@ select pg_temp.assert_fails($$select public.delete_my_account('HAPUS')$$, 'admin
 select pg_temp.login('00000000-0000-0000-0000-00000000000c');
 select public.delete_my_account('hapus');
 reset role;
-select pg_temp.assert((select deleted_at is not null and full_name is null and home_village_id is null and nickname::text like 'hapus-%'
+select pg_temp.assert((select deleted_at is not null and full_name is null and home_district_id is null and nickname::text like 'hapus-%'
   from public.profiles where id = '00000000-0000-0000-0000-00000000000c'), 'data pribadi dikosongkan');
 select pg_temp.assert((select count(*) = 0 from public.organizer_members where user_id = '00000000-0000-0000-0000-00000000000c'), 'keluar dari tim');
 select pg_temp.assert((select status = 'left' from public.community_memberships where user_id = '00000000-0000-0000-0000-00000000000c'), 'keanggotaan komunitas jadi keluar');

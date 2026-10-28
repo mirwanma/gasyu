@@ -40,7 +40,7 @@ export type ActivityCard = {
   target_count: number | null;
   reach: ActivityReach;
   location_mode: LocationMode;
-  // Kota aktivitas (dari cakupan, atau kelurahan penyelenggara). NULL = berlaku untuk semua kota.
+  // Kota aktivitas (dari cakupan, atau kecamatan penyelenggara). NULL = berlaku untuk semua kota.
   city_id: string | null;
   city_name: string | null;
 };
@@ -114,15 +114,20 @@ export async function listCities(): Promise<CityOption[]> {
   return (data ?? []).map((r) => ({ id: r.id, name: r.name, slug: r.code ?? r.id }));
 }
 
-// Kota tempat tinggal warga: dari kelurahannya, atau kota asal warga luar Cimahi jika kota itu sudah aktif di Gasyu.
+// Kota tempat tinggal warga (dari kecamatannya), jika kota itu sudah dibuka di Gasyu.
 export async function getHomeCityId(userId: string, cities: CityOption[]): Promise<string | null> {
   const supabase = await createClient();
-  const { data } = await supabase.from("profiles").select("home_village_id, home_city_code").eq("id", userId).maybeSingle();
-  if (data?.home_village_id) {
-    const { data: cityId } = await supabase.rpc("region_city", { p_region_id: data.home_village_id });
-    return cityId ?? null;
-  }
-  return cities.find((c) => data?.home_city_code && c.slug === data.home_city_code)?.id ?? null;
+  const { data } = await supabase.from("profiles").select("home_district_id").eq("id", userId).maybeSingle();
+  if (!data?.home_district_id) return null;
+  const { data: cityId } = await supabase.rpc("region_city", { p_region_id: data.home_district_id });
+  return cities.find((c) => c.id === cityId)?.id ?? null;
+}
+
+// Apakah warga tinggal di wilayah cakupan aktivitas (kecamatan atau kota).
+export async function isResidentOf(userId: string, regionId: string): Promise<boolean> {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("is_resident_of", { p_user_id: userId, p_region_id: regionId });
+  return Boolean(data);
 }
 
 // Aktivitas terbit/berjalan milik satu penyelenggara, untuk profil publik /m dan /k.

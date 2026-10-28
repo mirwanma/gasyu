@@ -91,10 +91,10 @@ export async function listWinners(activityId: string): Promise<Winner[]> {
 export type GlobalEventStats = {
   registrants: number;
   active_participants: number;
-  cimahi_participants: number;
-  outside_participants: number;
-  cities: { name: string; province: string; count: number }[];
-  villages: { name: string; count: number }[];
+  // Peserta akun lama yang belum mengisi kota dan kecamatan.
+  unknown_region_participants: number;
+  cities: { name: string; province: string | null; count: number }[];
+  districts: { name: string; city: string; count: number }[];
   missions_completed: number;
   avg_score: number | null;
   prizes_pending_claim: number;

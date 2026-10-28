@@ -10,7 +10,7 @@ import { OrganizerAvatar } from "@/components/avatar";
 import { Icon } from "@/components/icons";
 import { cardClass, tagClass, backLinkClass } from "@/components/styles";
 import { DIFFICULTY_LABELS, LOCATION_MODE_LABELS, formatPrice, formatSchedule, targetLabel, typeLabel } from "@/lib/activities";
-import { getActivityCard, getCheckpoints, getMyParticipation, getPartners } from "@/lib/data/activities";
+import { getActivityCard, getCheckpoints, getMyParticipation, getPartners, isResidentOf } from "@/lib/data/activities";
 import { listGroupProgress, listMyGroups } from "@/lib/data/groups";
 import { getClaimDays, getLeaderboard, listPrizes } from "@/lib/data/global-events";
 import { getCitizenMissions } from "@/lib/data/missions";
@@ -34,7 +34,7 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
   const { id } = await params;
   const [card, user] = await Promise.all([getActivityCard(id), getCurrentUser()]);
   if (!card || !user) notFound();
-  const [checkpoints, partners, participation, groups, groupProgress, missions, payInfo, hostWhatsapp] = await Promise.all([
+  const [checkpoints, partners, participation, groups, groupProgress, missions, payInfo, hostWhatsapp, isResident] = await Promise.all([
     getCheckpoints(id),
     getPartners(id),
     getMyParticipation(id, user.id),
@@ -43,6 +43,7 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
     getCitizenMissions(id),
     card.is_paid ? getPaymentInstructions(id) : Promise.resolve(null),
     card.is_paid ? getHostWhatsapp(card.host_organizer_id, card.host_type) : Promise.resolve(null),
+    card.residency_rule === "residents_only" && card.scope_region_id ? isResidentOf(user.id, card.scope_region_id) : Promise.resolve(true),
   ]);
   // Event Global: papan peringkat (cuplikan 3 besar + posisi saya) dan hadiah per peringkat.
   const isGlobal = card.reach === "global";
@@ -52,7 +53,8 @@ async function Detail({ params }: Pick<PageProps<"/aktivitas/[id]">, "params">) 
   const tag = cardTag(card);
   const open = card.status === "published" || card.status === "running";
   const quotaFull = card.quota !== null && card.seats_taken >= card.quota;
-  const residentsBlocked = card.residency_rule === "residents_only" && !user.homeVillageId;
+  // Tampilan saja; join_activity tetap memeriksa domisili di database.
+  const residentsBlocked = card.residency_rule === "residents_only" && !isResident;
 
   let blockedReason: string | undefined;
   if (!open) blockedReason = card.status === "cancelled" ? "Aktivitas dibatalkan" : card.status === "ended" || card.status === "settled" ? "Aktivitas sudah selesai" : "Belum dibuka";

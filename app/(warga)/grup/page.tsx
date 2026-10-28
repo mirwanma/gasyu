@@ -125,7 +125,7 @@ async function Groups() {
                         {m.user_id === user.id ? " (kamu)" : ""}
                       </span>
                       <span className="text-[12px] text-fg-soft">
-                        {m.role === "leader" ? "Ketua" : "Anggota"} · {m.village_name ?? "Luar Cimahi"}
+                        {m.role === "leader" ? "Ketua" : "Anggota"} · {m.district_name ?? "Wilayah belum diisi"}
                       </span>
                     </span>
                     {g.isLeader && m.user_id !== user.id && (

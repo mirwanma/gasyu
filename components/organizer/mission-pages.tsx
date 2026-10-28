@@ -362,7 +362,7 @@ async function ManualMarker({ missionId, organizerId, type, aid }: { missionId: 
             <label key={c.user_id} className={`flex items-center gap-2.5 rounded-xl px-2 py-1.5 text-[15px] ${c.eligible ? "hover:bg-bg" : "opacity-60"}`}>
               <input type="checkbox" name="user_id" value={c.user_id} disabled={!c.eligible} />
               <span className="flex-1">
-                <b>{c.nickname}</b> <span className="text-fg-soft">· {c.village_name ?? "Luar Cimahi"}</span>
+                <b>{c.nickname}</b> <span className="text-fg-soft">· {c.district_name ?? "Wilayah belum diisi"}</span>
               </span>
               {!c.eligible && <span className="text-[12px] text-fg-soft">{c.self ? "kamu sendiri" : "belum check-in"}</span>}
             </label>

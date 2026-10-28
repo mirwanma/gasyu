@@ -47,7 +47,7 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000000a4', 'n4@uji.test'),
   ('00000000-0000-0000-0000-0000000000a5', 'n5@uji.test');
 update public.profiles set nickname = 'uji' || right(id::text, 2), full_name = 'Uji', terms_accepted_at = now(), onboarded_at = now(),
-  home_village_id = (select id from public.regions where name = 'Baros');
+  home_district_id = (select id from public.regions where name = 'Cimahi Tengah');
 update public.profiles set is_admin = true where id = '00000000-0000-0000-0000-00000000000e';
 -- Warga lama: akun dibuat 30 hari lalu (bukan akun baru)
 update public.profiles set created_at = now() - interval '30 days'
@@ -62,7 +62,7 @@ set local role authenticated;
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
 insert into ids select 'm', public.register_organizer('merchant', json_build_object('name', 'Kopi Lereng', 'whatsapp', '08120000000',
   'merchant_category', 'kopi', 'outlets', json_build_array(json_build_object('name', 'Cabang Baros', 'address', 'Jl. Baros 10',
-  'village_id', (select id from public.regions where name = 'Baros'), 'lat', -6.890000, 'lng', 107.540000)))::jsonb);
+  'district_id', (select id from public.regions where name = 'Cimahi Tengah'), 'lat', -6.890000, 'lng', 107.540000)))::jsonb);
 insert into ids select 'outlet', id from public.merchant_outlets where organizer_id = (select v from ids where k = 'm');
 select pg_temp.login('00000000-0000-0000-0000-00000000000b');
 insert into ids select 'k', public.register_organizer('community', json_build_object('name', 'Cimahi Runners', 'whatsapp', '08120000001',
@@ -166,7 +166,7 @@ select pg_temp.assert((select flagged_checkins from public.v_admin_overview) = 1
 select pg_temp.assert((select points_circulating from public.v_admin_overview) = 200, 'admin: 200 poin beredar');
 select pg_temp.assert((select count(*) from public.v_admin_weekly_active) = 12, 'grafik 12 minggu');
 select pg_temp.assert((select active_citizens from public.v_admin_weekly_active order by week_start desc limit 1) = 3, 'minggu ini 3 warga aktif');
-select pg_temp.assert((select active_citizens from public.v_village_active_month where village_id = (select id from public.regions where name = 'Baros')) = 3, 'Baros: 3 warga aktif bulan ini');
+select pg_temp.assert((select active_citizens from public.v_district_active_month where district_id = (select id from public.regions where name = 'Cimahi Tengah')) = 3, 'Baros: 3 warga aktif bulan ini');
 select pg_temp.assert((select nickname from public.v_moderation_checkins where review_status = 'flagged') = 'ujid2', 'antrean: check-in W2 dengan nickname');
 select pg_temp.assert((select xp_awarded from public.v_moderation_checkins where id = (select v from ids where k = 'ci_w1')) = 150, 'XP check-in W1 = 150 (dasar + kunjungan pertama)');
 select pg_temp.assert((select count(*) from public.v_admin_users where nickname = 'ujid1' and checkins = 1) = 1, 'daftar pengguna: W1 dengan 1 check-in');
@@ -290,16 +290,16 @@ select pg_temp.login('00000000-0000-0000-0000-0000000000d3');
 insert into res select 'home', public.get_citizen_dashboard();
 select pg_temp.assert(((select v from res where k = 'home') ->> 'total_xp')::int = 300, 'W3: total XP 300 (dua event + dua kunjungan pertama)');
 select pg_temp.assert(((select v from res where k = 'home') ->> 'points_balance')::int = 0, 'W3: saldo 0 (budget habis oleh W1 dan W2)');
-select pg_temp.assert(((select v from res where k = 'home') ->> 'rank_village')::int = 1, 'W3: peringkat 1 di kelurahan');
+select pg_temp.assert(((select v from res where k = 'home') ->> 'rank_district')::int = 1, 'W3: peringkat 1 di kecamatan');
 select pg_temp.assert(((select v from res where k = 'home') ->> 'rank_city')::int = 1, 'W3: peringkat 1 di kota');
-select pg_temp.assert(((select v from res where k = 'home') ->> 'village_active_citizens')::int = 7, 'W3: 7 warga aktif di Baros (W2, W3, 5 akun baru; W1 ditolak)');
+select pg_temp.assert(((select v from res where k = 'home') ->> 'district_active_citizens')::int = 7, 'W3: 7 warga aktif di Baros (W2, W3, 5 akun baru; W1 ditolak)');
 select pg_temp.login('00000000-0000-0000-0000-0000000000d2');
 select pg_temp.assert((public.get_citizen_dashboard() ->> 'points_balance')::int = 100, 'W2: saldo 100 poin (check-in flagged lalu disahkan)');
 select pg_temp.assert((select v from res where k = 'home') ? 'level_name', 'ada nama level');
 select pg_temp.assert(jsonb_typeof((select v from res where k = 'home') -> 'my_activities') = 'array', 'aktivitasku berupa array');
 select pg_temp.login('00000000-0000-0000-0000-0000000000a1');
 insert into res select 'home_n1', public.get_citizen_dashboard();
-select pg_temp.assert(((select v from res where k = 'home_n1') ->> 'rank_village')::int = 2, 'N1 (150 XP) peringkat 2 di kelurahan');
+select pg_temp.assert(((select v from res where k = 'home_n1') ->> 'rank_district')::int = 2, 'N1 (150 XP) peringkat 2 di kecamatan');
 
 rollback;
 \o

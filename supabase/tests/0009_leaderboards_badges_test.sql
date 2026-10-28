@@ -33,7 +33,7 @@ end;
 $$;
 grant execute on all functions in schema pg_temp to anon, authenticated;
 
--- Akun: O pemilik merchant, K ketua komunitas, A admin, W1 W2 (Baros), W3 (Cibabat), W4 luar Cimahi
+-- Akun: O pemilik merchant, K ketua komunitas, A admin, W1 W2 (Cimahi Tengah), W3 (Cimahi Utara), W4 Kota Bandung (belum dibuka)
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000a', 'o@uji.test'),
   ('00000000-0000-0000-0000-00000000000b', 'k@uji.test'),
@@ -43,9 +43,9 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000000d3', 'w3@uji.test'),
   ('00000000-0000-0000-0000-0000000000d4', 'w4@uji.test');
 update public.profiles set nickname = 'uji' || right(id::text, 2), full_name = 'Uji', terms_accepted_at = now(), onboarded_at = now(),
-  home_village_id = (select id from public.regions where name = 'Baros');
-update public.profiles set home_village_id = (select id from public.regions where name = 'Cibabat') where id = '00000000-0000-0000-0000-0000000000d3';
-update public.profiles set home_village_id = null where id = '00000000-0000-0000-0000-0000000000d4';
+  home_district_id = (select id from public.regions where name = 'Cimahi Tengah');
+update public.profiles set home_district_id = (select id from public.regions where name = 'Cimahi Utara') where id = '00000000-0000-0000-0000-0000000000d3';
+update public.profiles set home_district_id = (select id from public.regions where code = '32.73.01') where id = '00000000-0000-0000-0000-0000000000d4';
 update public.profiles set is_admin = true where id = '00000000-0000-0000-0000-00000000000e';
 update public.app_settings set value = '2' where key = 'leaderboard.min_active_citizens';
 
@@ -58,7 +58,7 @@ set local role authenticated;
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
 insert into ids select 'm', public.register_organizer('merchant', json_build_object('name', 'Kopi Lereng', 'whatsapp', '08120000000',
   'merchant_category', 'kopi', 'outlets', json_build_array(json_build_object('name', 'Cabang Baros', 'address', 'Jl. Baros 10',
-  'village_id', (select id from public.regions where name = 'Baros'), 'lat', -6.89, 'lng', 107.54)))::jsonb);
+  'district_id', (select id from public.regions where name = 'Cimahi Tengah'), 'lat', -6.89, 'lng', 107.54)))::jsonb);
 insert into ids select 'outlet', id from public.merchant_outlets where organizer_id = (select v from ids where k = 'm');
 select pg_temp.login('00000000-0000-0000-0000-00000000000b');
 insert into ids select 'k', public.register_organizer('community', json_build_object('name', 'Cimahi Runners', 'whatsapp', '08120000001',
@@ -110,7 +110,7 @@ select public.join_activity((select v from ids where k = 'ev2'));
 select public.perform_checkin((select v from ids where k = 'cp2'), (select v from tok where k = 'cp2'), -6.93, 107.54);
 select pg_temp.assert((select count(*) from public.user_badges where user_id = '00000000-0000-0000-0000-0000000000d1') = 1, 'kolaborator belum (baru 1 aktivitas kolaborasi)');
 
--- Warga lain: W2 (Baros) check-in ev1; W3 (Cibabat) check-in ev2; W4 (luar) check-in ev1
+-- Warga lain: W2 (Cimahi Tengah) check-in ev1; W3 (Cimahi Utara) check-in ev2; W4 (Bandung) check-in ev1
 select pg_temp.login('00000000-0000-0000-0000-0000000000d2');
 select public.join_activity((select v from ids where k = 'ev1'));
 select public.perform_checkin((select v from ids where k = 'cp1'), (select v from tok where k = 'cp1'), -6.8901, 107.5401);
@@ -129,39 +129,43 @@ select pg_temp.assert_fails($$select * from public.leaderboard_users(null)$$, 'p
 select pg_temp.assert_fails($$select * from public.v_leaderboard_users_month$$, 'permission denied', 'view warga lengkap tidak dibuka ke warga');
 select pg_temp.assert_fails($$select public.get_leaderboard('x', null, null)$$, 'invalid_scope', 'scope tak dikenal ditolak');
 insert into res select 'city', public.get_leaderboard('city', null, null);
-select pg_temp.assert(((select v from res where k = 'city') ->> 'total')::int = 4, 'se-kota: 4 warga termasuk luar Cimahi');
+select pg_temp.assert(((select v from res where k = 'city') ->> 'total')::int = 3, 'se-kota: 3 warga Cimahi (W4 dari kota yang belum dibuka)');
+select pg_temp.assert((select v from res where k = 'city') ->> 'city_name' = 'Kota Cimahi', 'nama kota ikut');
 select pg_temp.assert((select v from res where k = 'city') -> 'rows' -> 0 ->> 'nickname' = 'ujid1', 'peringkat 1 kota: W1');
 select pg_temp.assert(((select v from res where k = 'city') -> 'rows' -> 0 ->> 'xp')::int = 325, 'XP W1 bulan ini 325');
-select pg_temp.assert(((select v from res where k = 'city') -> 'me' ->> 'rank')::int = 3, 'W2 peringkat 3 kota (seri dengan W4)');
+select pg_temp.assert(((select v from res where k = 'city') -> 'me' ->> 'rank')::int = 3, 'W2 peringkat 3 kota');
 select pg_temp.assert((select count(*) from jsonb_array_elements((select v from res where k = 'city') -> 'rows') e where e ? 'user_id' or e ? 'full_name') = 0, 'baris leaderboard tanpa user_id/full_name');
-insert into res select 'village', public.get_leaderboard('village', null, null);
-select pg_temp.assert(((select v from res where k = 'village') ->> 'total')::int = 2, 'Baros: 2 warga (W1, W2)');
-select pg_temp.assert((select v from res where k = 'village') ->> 'village_name' = 'Baros', 'nama kelurahan ikut');
-select pg_temp.assert(((select v from res where k = 'village') -> 'me' ->> 'rank')::int = 2, 'W2 peringkat 2 di Baros');
+insert into res select 'district', public.get_leaderboard('district', null, null);
+select pg_temp.assert(((select v from res where k = 'district') ->> 'total')::int = 2, 'Cimahi Tengah: 2 warga (W1, W2)');
+select pg_temp.assert((select v from res where k = 'district') ->> 'district_name' = 'Cimahi Tengah', 'nama kecamatan ikut');
+select pg_temp.assert(((select v from res where k = 'district') -> 'me' ->> 'rank')::int = 2, 'W2 peringkat 2 di Cimahi Tengah');
 select pg_temp.login('00000000-0000-0000-0000-0000000000d4');
-insert into res select 'outside', public.get_leaderboard('village', null, null);
-select pg_temp.assert(jsonb_array_length((select v from res where k = 'outside') -> 'rows') = 0, 'warga luar Cimahi tidak punya peringkat kelurahan');
-select pg_temp.assert((public.get_leaderboard('city', null, null) -> 'me' ->> 'rank')::int = 3, 'warga luar Cimahi tetap masuk peringkat kota');
+insert into res select 'outside', public.get_leaderboard('district', null, null);
+select pg_temp.assert(jsonb_array_length((select v from res where k = 'outside') -> 'rows') = 0, 'kota belum dibuka: peringkat kecamatan kosong');
+select pg_temp.assert(not ((select v from res where k = 'outside') ->> 'city_active')::boolean, 'kota belum dibuka: city_active false');
+select pg_temp.assert(public.get_leaderboard('city', null, null) -> 'me' = 'null'::jsonb, 'kota belum dibuka: tidak masuk peringkat kota');
 
 -- ---------------------------------------------------------------------------
--- 3. Leaderboard kelurahan (min. 2 warga aktif di uji ini)
+-- 3. Leaderboard kecamatan (min. 2 warga aktif di uji ini)
 -- ---------------------------------------------------------------------------
-insert into res select 'villages', public.get_leaderboard('villages', null, null);
-select pg_temp.assert((select v from res where k = 'villages') -> 'rows' -> 0 ->> 'name' = 'Baros', 'Baros peringkat 1 kelurahan');
-select pg_temp.assert(((select v from res where k = 'villages') -> 'rows' -> 0 ->> 'active_citizens')::int = 2, 'Baros 2 warga aktif');
-select pg_temp.assert(((select v from res where k = 'villages') -> 'rows' -> 0 ->> 'avg_xp')::numeric = 237.5, 'rata-rata XP Baros (325+150)/2');
-select pg_temp.assert((select count(*) from jsonb_array_elements((select v from res where k = 'villages') -> 'rows') e where (e ->> 'name') = 'Cibabat' and (e ->> 'qualifies')::boolean = false) = 1, 'Cibabat (1 warga aktif) tidak memenuhi syarat');
-select pg_temp.assert((select count(*) from public.v_leaderboard_villages_month) = 1, 'view kelurahan hanya memuat yang memenuhi syarat');
-select pg_temp.assert((select rank from public.v_leaderboard_villages_month where village_name = 'Baros') = 1, 'Baros rank 1 di view');
--- Pindah kelurahan: XP lama tetap di Baros (snapshot)
+select pg_temp.login('00000000-0000-0000-0000-0000000000d1');
+insert into res select 'districts', public.get_leaderboard('districts', null, null);
+select pg_temp.assert((select v from res where k = 'districts') -> 'rows' -> 0 ->> 'name' = 'Cimahi Tengah', 'Cimahi Tengah peringkat 1 kecamatan');
+select pg_temp.assert(((select v from res where k = 'districts') -> 'rows' -> 0 ->> 'active_citizens')::int = 2, 'Cimahi Tengah 2 warga aktif');
+select pg_temp.assert(((select v from res where k = 'districts') -> 'rows' -> 0 ->> 'avg_xp')::numeric = 237.5, 'rata-rata XP Cimahi Tengah (325+150)/2');
+select pg_temp.assert((select count(*) from jsonb_array_elements((select v from res where k = 'districts') -> 'rows') e where (e ->> 'name') = 'Cimahi Utara' and (e ->> 'qualifies')::boolean = false) = 1, 'Cimahi Utara (1 warga aktif) tidak memenuhi syarat');
+select pg_temp.assert(jsonb_array_length((select v from res where k = 'districts') -> 'rows') = 3, 'hanya kecamatan di kota warga (Cimahi: 3)');
+select pg_temp.assert((select count(*) from public.v_leaderboard_districts_month) = 1, 'view kecamatan hanya memuat yang memenuhi syarat');
+select pg_temp.assert((select rank from public.v_leaderboard_districts_month where district_name = 'Cimahi Tengah') = 1, 'Cimahi Tengah rank 1 di view');
+-- Pindah kecamatan: XP lama tetap di Cimahi Tengah (snapshot)
 reset role;
-update public.profiles set home_village_id = (select id from public.regions where name = 'Cibabat') where id = '00000000-0000-0000-0000-0000000000d2';
+update public.profiles set home_district_id = (select id from public.regions where name = 'Cimahi Utara') where id = '00000000-0000-0000-0000-0000000000d2';
 set local role authenticated;
 select pg_temp.login('00000000-0000-0000-0000-0000000000d1');
-insert into res select 'villages2', public.get_leaderboard('villages', null, null);
-select pg_temp.assert((select (e ->> 'xp_total')::int from jsonb_array_elements((select v from res where k = 'villages2') -> 'rows') e where e ->> 'name' = 'Baros') = 475, 'XP W2 tetap tercatat di Baros setelah pindah');
+insert into res select 'districts2', public.get_leaderboard('districts', null, null);
+select pg_temp.assert((select (e ->> 'xp_total')::int from jsonb_array_elements((select v from res where k = 'districts2') -> 'rows') e where e ->> 'name' = 'Cimahi Tengah') = 475, 'XP W2 tetap tercatat di Cimahi Tengah setelah pindah');
 reset role;
-update public.profiles set home_village_id = (select id from public.regions where name = 'Baros') where id = '00000000-0000-0000-0000-0000000000d2';
+update public.profiles set home_district_id = (select id from public.regions where name = 'Cimahi Tengah') where id = '00000000-0000-0000-0000-0000000000d2';
 set local role authenticated;
 
 -- ---------------------------------------------------------------------------
@@ -192,8 +196,8 @@ select pg_temp.assert_fails($$select public.award_streak()$$, 'permission denied
 insert into res select 'home', public.get_citizen_dashboard();
 select pg_temp.assert(((select v from res where k = 'home') ->> 'streak_weeks')::int = 4, 'beranda: streak 4 minggu');
 select pg_temp.assert(jsonb_array_length((select v from res where k = 'home') -> 'badges') = 2, 'beranda: 2 badge');
-select pg_temp.assert(((select v from res where k = 'home') ->> 'rank_village')::int = 1, 'beranda: peringkat 1 kelurahan');
-select pg_temp.assert(((select v from res where k = 'home') ->> 'village_rank')::int = 1, 'beranda: kelurahan peringkat 1');
+select pg_temp.assert(((select v from res where k = 'home') ->> 'rank_district')::int = 1, 'beranda: peringkat 1 kecamatan');
+select pg_temp.assert(((select v from res where k = 'home') ->> 'district_rank')::int = 1, 'beranda: kecamatan peringkat 1');
 
 -- ---------------------------------------------------------------------------
 -- 5. Badge Langganan (5x di penyelenggara sama) dan Satu Tim
@@ -216,12 +220,12 @@ select pg_temp.assert(public.award_badges('00000000-0000-0000-0000-0000000000d1'
 -- 6. Juara bulanan (snapshot bulan lalu kosong → 0; bulan ini dipaksa)
 -- ---------------------------------------------------------------------------
 select pg_temp.assert(public.snapshot_monthly_winners() = 0, 'bulan lalu belum ada data');
-insert into public.monthly_village_winners (month, village_id, rank, avg_xp, active_citizens)
-select date_trunc('month', public.local_today())::date, village_id, rank, avg_xp, active_citizens from public.leaderboard_villages(null) where rank is not null;
+insert into public.monthly_district_winners (month, city_id, district_id, rank, avg_xp, active_citizens)
+select date_trunc('month', public.local_today())::date, city_id, district_id, rank, avg_xp, active_citizens from public.leaderboard_districts(null, null) where rank is not null;
 set local role authenticated;
 select pg_temp.login('00000000-0000-0000-0000-0000000000d3');
-select pg_temp.assert((select count(*) from public.monthly_village_winners) = 1, 'warga bisa membaca juara bulanan');
-select pg_temp.assert_fails($$insert into public.monthly_village_winners (month, village_id, rank, avg_xp, active_citizens) values (date '2020-01-01', (select id from public.regions where name = 'Baros'), 1, 1, 1)$$,
+select pg_temp.assert((select count(*) from public.monthly_district_winners) = 1, 'warga bisa membaca juara bulanan');
+select pg_temp.assert_fails($$insert into public.monthly_district_winners (month, city_id, district_id, rank, avg_xp, active_citizens) values (date '2020-01-01', (select id from public.regions where name = 'Kota Cimahi'), (select id from public.regions where name = 'Cimahi Tengah'), 1, 1, 1)$$,
   'permission denied', 'warga tidak bisa menulis juara bulanan');
 update public.badges set name = 'x' where code = 'first_step';
 select pg_temp.assert((select name from public.badges where code = 'first_step') = 'Langkah Pertama', 'warga tidak bisa mengubah badge (RLS: 0 baris berubah)');

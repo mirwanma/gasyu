@@ -154,27 +154,15 @@ export async function listWeeklyActive(): Promise<{ week_start: string; active_c
   return (data ?? []) as { week_start: string; active_citizens: number }[];
 }
 
-export type VillageRow = { village_id: string; name: string; active_citizens: number; avg_xp: number };
+export type DistrictRow = { district_id: string; name: string; city: string; active_citizens: number; avg_xp: number };
 
-// Kelurahan teraktif bulan ini: warga aktif dan rata-rata XP per warga aktif.
-export async function listActiveVillages(limit = 5): Promise<VillageRow[]> {
+// Kecamatan teraktif bulan ini di semua kota yang sudah dibuka: rata-rata XP per warga aktif.
+export async function listActiveDistricts(limit = 5): Promise<DistrictRow[]> {
   const supabase = await createClient();
-  const monthStart = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jakarta" }).format(new Date()).slice(0, 7) + "-01";
-  const [{ data: active }, { data: xp }, { data: regions }] = await Promise.all([
-    supabase.from("v_village_active_month").select("village_id, active_citizens"),
-    supabase.from("xp_ledger").select("village_id, amount").gte("local_date", monthStart).not("village_id", "is", null),
-    supabase.from("regions").select("id, name").eq("level", "village"),
-  ]);
-  const names = new Map((regions ?? []).map((r) => [r.id as string, r.name as string]));
-  const xpByVillage = new Map<string, number>();
-  for (const row of xp ?? []) xpByVillage.set(row.village_id as string, (xpByVillage.get(row.village_id as string) ?? 0) + (row.amount as number));
-  return (active ?? [])
-    .map((row) => ({
-      village_id: row.village_id as string,
-      name: names.get(row.village_id as string) ?? "?",
-      active_citizens: row.active_citizens as number,
-      avg_xp: Math.round((xpByVillage.get(row.village_id as string) ?? 0) / Math.max(row.active_citizens as number, 1)),
-    }))
+  const { data } = await supabase.rpc("leaderboard_districts", { p_month: null, p_city_id: null });
+  return (data ?? [])
+    .filter((row) => row.active_citizens > 0)
+    .map((row) => ({ district_id: row.district_id, name: row.district_name, city: row.city_name, active_citizens: row.active_citizens, avg_xp: Math.round(Number(row.avg_xp)) }))
     .sort((a, b) => b.avg_xp - a.avg_xp || b.active_citizens - a.active_citizens)
     .slice(0, limit);
 }
@@ -190,7 +178,7 @@ export type ModerationCheckin = {
   review_note: string | null;
   nickname: string;
   account_created_at: string;
-  village_name: string | null;
+  district_name: string | null;
   activity_title: string;
   activity_type: string;
   checkpoint_name: string;
@@ -218,7 +206,7 @@ export type ModerationFlag = {
   reviewed_at: string | null;
   nickname: string;
   suspended_at: string | null;
-  village_name: string | null;
+  district_name: string | null;
   activity_title: string | null;
   checkpoint_name: string | null;
   partner_name: string | null;
@@ -319,7 +307,7 @@ export type AdminUser = {
   suspended_at: string | null;
   deleted_at: string | null;
   created_at: string;
-  village_name: string | null;
+  district_name: string | null;
   total_xp: number;
   checkins: number;
   open_flags: number;
@@ -352,10 +340,15 @@ export type CitizenDashboard = {
   active_vouchers: number;
   unread_notifications: number;
   streak_weeks: number;
+  district_id: string | null;
+  district_name: string | null;
+  city_id: string | null;
+  city_name: string | null;
+  city_active: boolean;
   rank_city: number | null;
-  rank_village: number | null;
-  village_active_citizens: number | null;
-  village_rank: number | null;
+  rank_district: number | null;
+  district_active_citizens: number | null;
+  district_rank: number | null;
   badges: { code: string; name: string; awarded_at: string }[];
   badge_total: number;
   my_activities: { activity_id: string; title: string; type: string; status: string; progress: number }[];

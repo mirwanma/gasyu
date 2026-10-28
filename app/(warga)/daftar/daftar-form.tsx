@@ -7,8 +7,10 @@ import { cardClass, chipClass, inputClass, labelClass, textareaClass } from "@/c
 import { ErrorMessage, SubmitButton } from "@/components/ui";
 import { COMMUNITY_CATEGORIES, MERCHANT_CATEGORIES } from "@/lib/organizers";
 import { ImageFileInput } from "@/components/image-file-input";
+import { RegionPicker } from "@/components/region-picker";
+import type { CityChoice } from "@/lib/data/regions";
 
-type District = { id: string; name: string; villages: { id: string; name: string }[] };
+const CLOSED_NOTE = "Kamu tetap bisa mendaftar. Tim Gasyu meninjau pembukaan kota ini saat verifikasi.";
 type OrganizerKind = "merchant" | "community";
 
 const DAYS = [
@@ -21,7 +23,15 @@ const DAYS = [
   ["sun", "Min"],
 ] as const;
 
-export function DaftarForm({ districts, initialType }: { districts: District[]; initialType: OrganizerKind }) {
+export function DaftarForm({
+  cities,
+  home,
+  initialType,
+}: {
+  cities: CityChoice[];
+  home: { cityId: string; districtId: string } | null;
+  initialType: OrganizerKind;
+}) {
   const [state, formAction] = useActionState<RegisterState, FormData>(registerOrganizer, {});
   const [kind, setKind] = useState<OrganizerKind>(initialType);
   const [category, setCategory] = useState("");
@@ -118,7 +128,7 @@ export function DaftarForm({ districts, initialType }: { districts: District[]; 
           <span className="text-[13px] text-fg-soft">Outlet lain bisa ditambah dari dashboard setelah mendaftar.</span>
           <Field id="outlet_name" label="Nama outlet" placeholder="contoh: Cabang Baros" maxLength={80} />
           <Field id="outlet_address" label="Alamat" required maxLength={300} />
-          <VillageSelect id="outlet_village" districts={districts} />
+          <RegionPicker cities={cities} name="outlet_district" idPrefix="outlet" initialCityId={home?.cityId} initialDistrictId={home?.districtId} closedNote={CLOSED_NOTE} />
 
           <div className="flex flex-col gap-2">
             <span className="text-[15px] font-semibold">Titik lokasi</span>
@@ -183,7 +193,8 @@ export function DaftarForm({ districts, initialType }: { districts: District[]; 
       ) : (
         <section className={`${cardClass} flex flex-col gap-3 p-4`}>
           <h2 className="text-[16px] font-bold">Tentang komunitas</h2>
-          <VillageSelect id="area_village" districts={districts} label="Area kegiatan (kelurahan)" />
+          <span className="text-[15px] font-semibold">Area kegiatan</span>
+          <RegionPicker cities={cities} name="area_district" idPrefix="area" initialCityId={home?.cityId} initialDistrictId={home?.districtId} closedNote={CLOSED_NOTE} />
           <Field id="instagram" label="Instagram (opsional)" placeholder="nama akun tanpa @" />
           <Field id="tiktok" label="TikTok (opsional)" placeholder="nama akun tanpa @" />
           <Field id="est_members" label="Perkiraan jumlah anggota" type="number" min={0} />
@@ -251,28 +262,6 @@ function Field({
         {label}
       </label>
       <input id={id} name={id} type={type} className={inputClass} {...rest} />
-    </div>
-  );
-}
-
-function VillageSelect({ id, districts, label = "Kelurahan" }: { id: string; districts: District[]; label?: string }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className={labelClass}>
-        {label}
-      </label>
-      <select id={id} name={id} defaultValue="" className={inputClass}>
-        <option value="">Pilih kelurahan</option>
-        {districts.map((district) => (
-          <optgroup key={district.id} label={`Kec. ${district.name}`}>
-            {district.villages.map((village) => (
-              <option key={village.id} value={village.id}>
-                {village.name}
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
     </div>
   );
 }

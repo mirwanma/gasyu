@@ -32,7 +32,7 @@ end;
 $$;
 grant execute on all functions in schema pg_temp to anon, authenticated;
 
--- Akun: O pemilik merchant (sponsor hadiah), A admin, W1 warga Cimahi, W2–W4 warga luar Cimahi
+-- Akun: O pemilik merchant (sponsor hadiah), A admin, W1 warga Cimahi, W2 Kota Bandung, W3 Jakarta Pusat, W4 belum mengisi kecamatan
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000a', 'o@uji.test'),
   ('00000000-0000-0000-0000-00000000000e', 'a@uji.test'),
@@ -41,7 +41,7 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000000d3', 'w3@uji.test'),
   ('00000000-0000-0000-0000-0000000000d4', 'w4@uji.test');
 update public.profiles set nickname = 'uji' || right(id::text, 2), full_name = 'Nama Rahasia', terms_accepted_at = now(), onboarded_at = now();
-update public.profiles set home_village_id = (select id from public.regions where name = 'Baros')
+update public.profiles set home_district_id = (select id from public.regions where name = 'Cimahi Tengah')
   where id in ('00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000e', '00000000-0000-0000-0000-0000000000d1');
 update public.profiles set is_admin = true where id = '00000000-0000-0000-0000-00000000000e';
 
@@ -54,22 +54,17 @@ set local role authenticated;
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
 insert into ids select 'm', public.register_organizer('merchant', json_build_object('name', 'Kopi Lereng', 'whatsapp', '08120000000',
   'merchant_category', 'kopi', 'outlets', json_build_array(json_build_object('name', 'Cabang Baros', 'address', 'Jl. Baros 10',
-  'village_id', (select id from public.regions where name = 'Baros'), 'lat', -6.89, 'lng', 107.54)))::jsonb);
+  'district_id', (select id from public.regions where name = 'Cimahi Tengah'), 'lat', -6.89, 'lng', 107.54)))::jsonb);
 select pg_temp.login('00000000-0000-0000-0000-00000000000e');
 select public.review_organizer((select v from ids where k = 'm'), true, null);
 
 -- ---------------------------------------------------------------------------
--- 1. Kota asal warga luar Cimahi
+-- 1. Warga dari kota lain (kota belum dibuka) mengisi kecamatan asal
 -- ---------------------------------------------------------------------------
-select pg_temp.assert((select count(*) = 514 from public.cities), '514 kota/kabupaten tersedia');
 select pg_temp.login('00000000-0000-0000-0000-0000000000d2');
-select public.set_home_city('32.73');
-select pg_temp.assert((select home_city_code = '32.73' from public.profiles where id = auth.uid()), 'warga luar Cimahi menyimpan kota asal');
-select pg_temp.assert_fails($$select public.set_home_city('99.99')$$, 'invalid_city', 'kode kota tidak dikenal ditolak');
+select public.change_home_district((select id from public.regions where code = '32.73.01'));
 select pg_temp.login('00000000-0000-0000-0000-0000000000d3');
-select public.set_home_city('31.71');
-select pg_temp.login('00000000-0000-0000-0000-0000000000d1');
-select pg_temp.assert_fails($$select public.set_home_city('32.73')$$, 'city_only_outside_cimahi', 'warga Cimahi tidak mengisi kota asal');
+select public.change_home_district((select id from public.regions where code = '31.71.01'));
 
 -- ---------------------------------------------------------------------------
 -- 2. Membuat Event Global (admin, host platform)
@@ -238,11 +233,13 @@ reset role;
 select pg_temp.assert(public.activity_score('00000000-0000-0000-0000-0000000000d1', (select v from ids where k = 'g')) = 200, 'skor check-in dibalik');
 select pg_temp.assert((select count(*) = 1 from public.activity_score_ledger where reason = 'reversal' and amount = -100), 'pembalikan berupa baris negatif');
 
--- Statistik admin: warga Cimahi vs luar, sebaran kota
+-- Statistik admin: sebaran kota dan kecamatan asal
 set local role authenticated;
 select pg_temp.login('00000000-0000-0000-0000-00000000000e');
-select pg_temp.assert((select registrants = 4 and cimahi_participants = 1 and outside_participants = 3
-  and cities @> '[{"name":"Kota Bandung","count":1}]'::jsonb from public.v_global_event_stats where activity_id = (select v from ids where k = 'g')),
+select pg_temp.assert((select registrants = 4 and unknown_region_participants = 1
+  and cities @> '[{"name":"Kota Bandung","province":"Jawa Barat","count":1},{"name":"Kota Cimahi","count":1}]'::jsonb
+  and jsonb_array_length(cities) = 3
+  and districts @> '[{"name":"Cimahi Tengah","city":"Kota Cimahi","count":1}]'::jsonb from public.v_global_event_stats where activity_id = (select v from ids where k = 'g')),
   'statistik peserta per asal');
 select pg_temp.login('00000000-0000-0000-0000-0000000000d1');
 select pg_temp.assert((select count(*) = 0 from public.v_global_event_stats), 'statistik hanya untuk admin');
@@ -316,16 +313,13 @@ select public.process_prizes();
 select pg_temp.assert((select ship_address is null and ship_phone is null from public.activity_winners where id = (select v from ids where k = 'w1')), 'alamat dihapus 30 hari setelah terkirim');
 
 -- ---------------------------------------------------------------------------
--- 8. Kota asal ikut perubahan kelurahan dan hapus akun
+-- 8. Hapus akun mengosongkan kecamatan asal
 -- ---------------------------------------------------------------------------
 set local role authenticated;
-select pg_temp.login('00000000-0000-0000-0000-0000000000d3');
-select public.change_home_village((select id from public.regions where name = 'Baros'));
-select pg_temp.assert((select home_city_code is null from public.profiles where id = auth.uid()), 'pindah ke kelurahan Cimahi mengosongkan kota asal');
 select pg_temp.login('00000000-0000-0000-0000-0000000000d2');
 select public.delete_my_account('HAPUS');
 reset role;
-select pg_temp.assert((select home_city_code is null from public.profiles where id = '00000000-0000-0000-0000-0000000000d2'), 'hapus akun mengosongkan kota asal');
+select pg_temp.assert((select home_district_id is null from public.profiles where id = '00000000-0000-0000-0000-0000000000d2'), 'hapus akun mengosongkan kecamatan asal');
 
 rollback;
 \o

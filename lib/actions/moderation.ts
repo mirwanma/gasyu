@@ -22,6 +22,7 @@ const ERRORS: Record<string, string> = {
   not_suspended: "Penyelenggara tidak sedang dibekukan.",
   note_required: "Tulis alasan pembatalan misi.",
   invalid_completion: "Misi ini sudah dibatalkan atau belum disetujui.",
+  invalid_city: "Kota tidak ditemukan.",
 };
 
 function message(error: { message: string } | null) {
@@ -78,4 +79,14 @@ export async function suspendOrganizer(formData: FormData) {
   const suspend = formData.get("suspend") === "1";
   const { error } = await supabase.rpc("suspend_organizer", { p_organizer_id: String(formData.get("organizer_id")), p_suspend: suspend, p_note: String(formData.get("note") ?? "") || null });
   back("/admin/pengguna?tab=penyelenggara", error, suspend ? "beku" : "aktif");
+}
+
+// Buka atau tutup kota di Gasyu (Jelajah, cakupan aktivitas, dan peringkat).
+export async function setCityActive(formData: FormData) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_city_active", {
+    p_city_id: String(formData.get("city_id")),
+    p_active: formData.get("active") === "true",
+  });
+  back(safeNext(formData.get("back"), "/admin/wilayah"), error, formData.get("active") === "true" ? "kota_dibuka" : "kota_ditutup");
 }

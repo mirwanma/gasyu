@@ -5,7 +5,7 @@ import type { Database } from "./database.types";
 //
 // Generator menganggap argumen fungsi database tidak pernah null, padahal
 // banyak fungsi kita sengaja menerima null (mis. set_my_avatar(null) = hapus
-// foto, change_home_village(null) = Luar Cimahi). Tipe di bawah ini sama dengan
+// foto, update_activity tanpa cakupan). Tipe di bawah ini sama dengan
 // Database, hanya argumen fungsinya dibuat boleh null.
 
 type Fns = Database["public"]["Functions"];

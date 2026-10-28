@@ -114,7 +114,7 @@ async function Wallet({ searchParams }: Pick<PageProps<"/dompet">, "searchParams
           )}
           <div className="flex items-baseline justify-between">
             <h2 className="font-display text-[22px] font-semibold">Bisa ditukar</h2>
-            <span className="text-[15px] text-fg-soft">dari merchant Cimahi</span>
+            <span className="text-[15px] text-fg-soft">dari merchant Gasyu</span>
           </div>
           {rewards.length === 0 ? (
             <p className={`${cardClass} p-4 text-[15px] text-fg-soft`}>Belum ada reward yang bisa ditukar. Merchant akan menambahkannya segera.</p>

@@ -12,18 +12,18 @@ Semua email memakai domain `@dummy.ramein.id` dan id akun berawalan `dd000000-00
 
 ## Warga (10)
 
-| Email | Nickname | Nama | Kelurahan | Apa yang sudah ia lakukan |
+| Email | Nickname | Nama | Kecamatan | Apa yang sudah ia lakukan |
 | --- | --- | --- | --- | --- |
-| rani@dummy.ramein.id | rani | Rani Puspita | Baros | Ketua grup "Baros Squad", lunas Night Run, check-in Festival + misi kode (selesai, 40 poin), member Runners & Gowes |
-| dimas@dummy.ramein.id | dimas | Dimas Aditya | Cibabat | Bukti bayar Night Run menunggu konfirmasi, Festival selesai (misi kode, 40 poin) |
-| siti@dummy.ramein.id | siti_nur | Siti Nurhaliza | Melong | Belum bayar Night Run, check-in Festival, foto misi menunggu tinjauan, menang kuis kuliner |
-| bagas@dummy.ramein.id | bagas | Bagas Pratama | Padasuka | Anggota grup Night Run (lunas), 1 dari 3 checkpoint challenge kopi, member Creative Hub |
-| ayu@dummy.ramein.id | ayu | Ayu Lestari | Cipageran | Undangan grup Night Run belum dijawab, 2 dari 3 checkpoint challenge kopi, ulasan foto menunggu tinjauan |
-| fajar@dummy.ramein.id | fajar | Fajar Ramadhan | Leuwigajah | Belum bayar Night Run, check-in Festival di stand Kopi Lereng, foto misi disetujui, 2× salah kode misi, minta gabung Gowes (menunggu) |
-| nadia@dummy.ramein.id | nadia | Nadia Safitri | Cibeureum | Challenge kopi **selesai** (250 XP + 60 poin), Festival selesai, tukar poin jadi voucher kopi |
-| rizky@dummy.ramein.id | rizky | Rizky Maulana | Setiamanah | Terdaftar Festival dan challenge kopi, belum check-in |
-| tono@dummy.ramein.id | pak_tono | Tono Suharto | Karangmekar | Terdaftar Festival, member Sahabat Lingkungan |
-| vina@dummy.ramein.id | vina | Vina Anggraini | Luar Cimahi (Kota Bandung) | Check-in Festival dari luar radius → ditandai (muncul di Moderasi); peringkat 1 Lomba Foto Wisata (Event Global) |
+| rani@dummy.ramein.id | rani | Rani Puspita | Cimahi Tengah | Ketua grup "Baros Squad", lunas Night Run, check-in Festival + misi kode (selesai, 40 poin), member Runners & Gowes |
+| dimas@dummy.ramein.id | dimas | Dimas Aditya | Cimahi Utara | Bukti bayar Night Run menunggu konfirmasi, Festival selesai (misi kode, 40 poin) |
+| siti@dummy.ramein.id | siti_nur | Siti Nurhaliza | Cimahi Selatan | Belum bayar Night Run, check-in Festival, foto misi menunggu tinjauan, menang kuis kuliner |
+| bagas@dummy.ramein.id | bagas | Bagas Pratama | Cimahi Tengah | Anggota grup Night Run (lunas), 1 dari 3 checkpoint challenge kopi, member Creative Hub |
+| ayu@dummy.ramein.id | ayu | Ayu Lestari | Cimahi Utara | Undangan grup Night Run belum dijawab, 2 dari 3 checkpoint challenge kopi, ulasan foto menunggu tinjauan |
+| fajar@dummy.ramein.id | fajar | Fajar Ramadhan | Cimahi Selatan | Belum bayar Night Run, check-in Festival di stand Kopi Lereng, foto misi disetujui, 2× salah kode misi, minta gabung Gowes (menunggu) |
+| nadia@dummy.ramein.id | nadia | Nadia Safitri | Cimahi Selatan | Challenge kopi **selesai** (250 XP + 60 poin), Festival selesai, tukar poin jadi voucher kopi |
+| rizky@dummy.ramein.id | rizky | Rizky Maulana | Cimahi Tengah | Terdaftar Festival dan challenge kopi, belum check-in |
+| tono@dummy.ramein.id | pak_tono | Tono Suharto | Cimahi Tengah | Terdaftar Festival, member Sahabat Lingkungan |
+| vina@dummy.ramein.id | vina | Vina Anggraini | Sukasari, Kota Bandung (kota belum dibuka) | Check-in Festival dari luar radius → ditandai (muncul di Moderasi); peringkat 1 Lomba Foto Wisata (Event Global) |
 
 ## Merchant (6)
 

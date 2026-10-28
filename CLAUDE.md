@@ -16,9 +16,9 @@ Jika `CLAUDE.md` dan dokumen di `docs/` berbeda, ikuti `docs/` dan beri tahu pem
 
 Gasyu adalah platform gamifikasi kota sebagai alat marketing bergamifikasi untuk merchant/UMKM dan komunitas lokal.
 Merchant dan komunitas (disebut bersama **penyelenggara**) membuat event atau challenge, sendiri atau berkolaborasi, lengkap dengan misi.
-Warga ikut, check-in via QR, mengerjakan misi, dapat XP (status) dan poin (ditukar voucher merchant), dan kelurahannya bersaing di leaderboard.
+Warga ikut, check-in via QR, mengerjakan misi, dapat XP (status) dan poin (ditukar voucher merchant), dan kecamatannya bersaing di peringkat kotanya.
 Admin (tim Gasyu) memverifikasi, memoderasi, dan bisa membuat event atas nama Gasyu.
-Pilot: Kota Cimahi (3 kecamatan, 15 kelurahan). Struktur wilayah harus generik untuk kota lain.
+Pilot: Kota Cimahi, tetapi warga, merchant, dan komunitas dari seluruh Indonesia (514 kota/kabupaten, 7.285 kecamatan) boleh mendaftar. Admin membuka kota satu per satu (`regions.is_active`).
 
 ## Stack
 
@@ -34,7 +34,7 @@ Pilot: Kota Cimahi (3 kecamatan, 15 kelurahan). Struktur wilayah harus generik u
 
 | Istilah di aplikasi | Arti | Nama di kode |
 | --- | --- | --- |
-| Wilayah | kota / kecamatan / kelurahan | `regions` (`level`: city, district, village) |
+| Wilayah | kota/kabupaten / kecamatan (kelurahan hanya riwayat pilot) | `regions` (`level`: city, district, village) |
 | Penyelenggara | induk bersama merchant dan komunitas; kata "organizer" tidak tampil di UI | `organizers` (`type`: merchant, community, platform) |
 | Merchant/UMKM | usaha apa pun; punya outlet, budget poin, voucher, mode kasir | `merchant_profiles`, `merchant_outlets` |
 | Komunitas | komunitas apa pun; tanpa budget poin, punya member | `community_profiles`, `community_memberships` |
@@ -66,7 +66,7 @@ Pilot: Kota Cimahi (3 kecamatan, 15 kelurahan). Struktur wilayah harus generik u
 6. **Privasi:** partner hanya melihat identitas peserta yang check-in di checkpoint miliknya; data warga lain hanya `nickname`, tidak pernah `full_name`; bukti bayar dan foto misi di bucket privat.
 7. **Aktivitas penyelenggara selalu melalui persetujuan admin** sebelum `published`. Pengecualian: event Gasyu (host `platform`) langsung `published` saat diajukan admin.
 8. **Pembayaran di luar aplikasi.** Aktivitas boleh berbayar, tetapi Gasyu hanya mencatat harga dan `payment_status` yang dikonfirmasi manual. Jangan menambahkan payment gateway.
-9. **Warga luar Cimahi** boleh mendaftar (`home_village_id` NULL). Mereka dapat XP dan poin, tidak dihitung di leaderboard kelurahan, dan tidak lolos aktivitas `residents_only`.
+9. **Wilayah asal = kecamatan** (`home_district_id`, `organizers.district_id`), dari kota mana pun di Indonesia; wajib saat onboarding dan daftar penyelenggara. Kota yang belum dibuka admin tidak punya peringkat dan tidak bisa jadi cakupan aktivitas. Akun lama tanpa kecamatan dapat XP dan poin, tetapi tidak masuk peringkat dan tidak lolos aktivitas `residents_only` (`docs/ALUR-SISTEM.md` bagian 3a).
 10. **Zona waktu tunggal:** semua batas harian dan bulanan memakai `Asia/Jakarta`.
 11. **Merchant dan komunitas dipisah** di UI, registrasi, peran tim, dan dashboard. Cek tipe penyelenggara di server dan RLS, bukan hanya menyembunyikan tombol.
 12. **Angka aturan main** dibaca dari `app_settings`, jangan di-hardcode di banyak tempat.
@@ -132,4 +132,4 @@ docs/
 
 Ikuti `docs/DESAIN-DATABASE.md` bagian 9 (irisan 1–11).
 
-Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016), foto profil (0017), master misi (0018), pengingat kedaluwarsa (0019), uji E2E, keluar dari semua perangkat, ganti bukti bayar, chat panitia di WhatsApp, voucher per outlet dan deteksi peninjau cepat (0020), perbaikan review (0021), Event Global tahap 1 database + kota asal (0022), misi bonus setelah selesai (0023), Event Global tahap 2 halaman admin (0024), Event Global tahap 3 halaman warga, kartu Hadiah yang disponsori di dashboard merchant/komunitas, perbaikan keamanan (0025), daftar cek rilis, pemilih kota di Jelajah (0026), login dan daftar dengan email + kata sandi, tema Hangat & Menantang (BRAND v1.4: dua tema terang/gelap di Profil, Bricolage + Figtree, ikon Phosphor, beranda bento + misi hari ini + podium) — pemolesan dan rilis pilot — perbarui baris ini setiap pindah irisan.
+Irisan saat ini: **selesai (1–11)** + saran warga (0014), akun warga (0015), peran tim (0016), foto profil (0017), master misi (0018), pengingat kedaluwarsa (0019), uji E2E, keluar dari semua perangkat, ganti bukti bayar, chat panitia di WhatsApp, voucher per outlet dan deteksi peninjau cepat (0020), perbaikan review (0021), Event Global tahap 1 database + kota asal (0022), misi bonus setelah selesai (0023), Event Global tahap 2 halaman admin (0024), Event Global tahap 3 halaman warga, kartu Hadiah yang disponsori di dashboard merchant/komunitas, perbaikan keamanan (0025), daftar cek rilis, pemilih kota di Jelajah (0026), login dan daftar dengan email + kata sandi, tema Hangat & Menantang (BRAND v1.4: dua tema terang/gelap di Profil, Bricolage + Figtree, ikon Phosphor, beranda bento + misi hari ini + podium), wilayah se-Indonesia: kota + kecamatan, buka kota di admin Wilayah (0027) — pemolesan dan rilis pilot — perbarui baris ini setiap pindah irisan.

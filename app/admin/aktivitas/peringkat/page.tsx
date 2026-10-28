@@ -96,11 +96,11 @@ async function Body({ searchParams }: Pick<PageProps<"/admin/aktivitas/peringkat
 }
 
 function Stats({ stats }: { stats: NonNullable<Awaited<ReturnType<typeof getGlobalEventStats>>> }) {
-  const total = stats.cimahi_participants + stats.outside_participants;
+  const top = stats.cities[0];
   const kpis: [string, string, string][] = [
     ["Pendaftar", formatNumber(stats.registrants), `${formatNumber(stats.active_participants)} punya skor`],
-    ["Warga Cimahi", formatNumber(stats.cimahi_participants), total ? `${Math.round((stats.cimahi_participants / total) * 100)}% peserta` : "-"],
-    ["Luar Cimahi", formatNumber(stats.outside_participants), total ? `${Math.round((stats.outside_participants / total) * 100)}% peserta` : "-"],
+    ["Kota asal", formatNumber(stats.cities.length), top ? `terbanyak ${top.name} (${formatNumber(top.count)})` : "-"],
+    ["Wilayah belum diisi", formatNumber(stats.unknown_region_participants), stats.registrants ? `${Math.round((stats.unknown_region_participants / stats.registrants) * 100)}% peserta` : "-"],
     ["Misi selesai", formatNumber(stats.missions_completed), stats.avg_score !== null ? `rata-rata skor ${formatNumber(stats.avg_score)}` : "belum ada skor"],
   ];
   return (
@@ -115,8 +115,8 @@ function Stats({ stats }: { stats: NonNullable<Awaited<ReturnType<typeof getGlob
         ))}
       </div>
       <div className="grid gap-4 md:grid-cols-2">
-        <Breakdown title="Kota asal peserta luar Cimahi" rows={stats.cities.map((c) => [`${c.name}`, c.count, c.province])} empty="Belum ada peserta luar Cimahi yang mengisi kota asal." />
-        <Breakdown title="Kelurahan peserta Cimahi" rows={stats.villages.map((v) => [v.name, v.count, ""])} empty="Belum ada peserta warga Cimahi." />
+        <Breakdown title="Kota asal peserta" rows={stats.cities.map((c) => [c.name, c.count, c.province ?? ""])} empty="Belum ada peserta yang mengisi kota." />
+        <Breakdown title="Kecamatan asal peserta" rows={stats.districts.map((d) => [d.name, d.count, d.city])} empty="Belum ada peserta yang mengisi kecamatan." />
       </div>
       {stats.prizes_pending_claim + stats.prizes_claimed + stats.prizes_delivered + stats.prizes_forfeited > 0 && (
         <p className="text-[13px] text-fg-soft">

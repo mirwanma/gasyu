@@ -9,7 +9,7 @@ import { closeCollabPost, decideApplication, leaveActivity, withdrawApplication 
 import { STATUS_LABELS, formatSchedule } from "@/lib/activities";
 import { listOrganizerActivities } from "@/lib/data/activities";
 import { listMyApplications, listMyPartnerships, listMyPosts, listOpenPosts } from "@/lib/data/collab";
-import { getVillageOptions } from "@/lib/data/organizers";
+import { listScopeOptions } from "@/lib/data/regions";
 import { formatDate, timeAgo } from "@/lib/format";
 
 type Kind = "merchant" | "community";
@@ -29,13 +29,13 @@ export function KolaborasiPage({ id, type, filter, buka }: { id: string; type: K
 
 async function Body({ id, type, base, filter, buka, approved, isLeader }: { id: string; type: Kind; base: string; filter: { kind?: string; regionId?: string }; buka?: boolean; approved: boolean; isLeader: boolean }) {
   const ctx = { organizerId: id, typeOrg: type };
-  const [partnerships, openPosts, mine, myApps, activities, districts] = await Promise.all([
+  const [partnerships, openPosts, mine, myApps, activities, scopeCities] = await Promise.all([
     listMyPartnerships(id),
     listOpenPosts(id, filter),
     listMyPosts(id),
     listMyApplications(id),
     listOrganizerActivities(id),
-    getVillageOptions(),
+    listScopeOptions(),
   ]);
   const invites = partnerships.filter((p) => p.status === "invited");
   const active = partnerships.filter((p) => p.status === "accepted");
@@ -148,7 +148,7 @@ async function Body({ id, type, base, filter, buka, approved, isLeader }: { id: 
         )}
       </div>
       {buka && approved && isLeader && (
-        <NewPostForm ctx={ctx} activities={activities.filter((a) => ["draft", "awaiting_partners", "in_review", "published"].includes(a.status)).map((a) => ({ id: a.id, title: a.title }))} districts={districts} />
+        <NewPostForm ctx={ctx} activities={activities.filter((a) => ["draft", "awaiting_partners", "in_review", "published"].includes(a.status)).map((a) => ({ id: a.id, title: a.title }))} scopeCities={scopeCities} />
       )}
       <div className="flex flex-wrap gap-2">
         {([["", "Semua"], ["sponsor", "Sponsor"], ["collab", "Kolaborasi"]] as const).map(([v, l]) => (

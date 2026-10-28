@@ -25,7 +25,7 @@ export async function listQrCheckpoints(organizerId: string): Promise<QrCheckpoi
     .sort((a, b) => a.activity.starts_at.localeCompare(b.activity.starts_at)) as QrCheckpoint[];
 }
 
-export type CheckinFeedRow = { id: string; nickname: string; village_name: string | null; checked_in_at: string; distance_m: number | null; review_status: string };
+export type CheckinFeedRow = { id: string; nickname: string; district_name: string | null; checked_in_at: string; distance_m: number | null; review_status: string };
 
 // Check-in hari ini (WIB) di satu checkpoint, terbaru dulu.
 export async function listTodayCheckins(checkpointId: string): Promise<CheckinFeedRow[]> {
@@ -33,7 +33,7 @@ export async function listTodayCheckins(checkpointId: string): Promise<CheckinFe
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jakarta" }).format(new Date());
   const { data } = await supabase
     .from("v_checkpoint_checkins")
-    .select("id, nickname, village_name, checked_in_at, distance_m, review_status")
+    .select("id, nickname, district_name, checked_in_at, distance_m, review_status")
     .eq("checkpoint_id", checkpointId)
     .eq("local_date", today)
     .order("checked_in_at", { ascending: false })

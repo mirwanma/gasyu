@@ -7,7 +7,8 @@ import { TeamInvite } from "@/components/organizer/team-invite";
 import { cardClass, tagClass } from "@/components/styles";
 import { SubmitButton } from "@/components/ui";
 import { removeTeamMember, resubmitOrganizer, setTeamRole } from "@/lib/actions/organizer";
-import { ROLE_LABELS, STATUS_LABELS, getVillageOptions, type MemberRole } from "@/lib/data/organizers";
+import { ROLE_LABELS, STATUS_LABELS, type MemberRole } from "@/lib/data/organizers";
+import { getDistrictInfo, listCityChoices } from "@/lib/data/regions";
 import { formatDate } from "@/lib/format";
 import { countNewSuggestions } from "@/lib/data/suggestions";
 import { createClient } from "@/lib/supabase/server";
@@ -153,15 +154,15 @@ export function ProfilPage({ id, type, unggah }: { id: string; type: Kind; ungga
 
 async function ProfilBody({ ctx, id, type, uploadFailed }: { ctx: OrganizerContext; id: string; type: Kind; uploadFailed: boolean }) {
   const supabase = await createClient();
-  const [{ data: org }, districts] = await Promise.all([
+  const [{ data: org }, cities] = await Promise.all([
     supabase
       .from("organizers")
       .select(
-        "id, name, description, logo_url, status, review_note, village_id, merchant:merchant_profiles(merchant_category, nib, whatsapp, proof_url), community:community_profiles(interest_category, whatsapp, social_links, est_members, basecamp_address, activity_area_village_id, proof_url)",
+        "id, name, description, logo_url, status, review_note, district_id, merchant:merchant_profiles(merchant_category, nib, whatsapp, proof_url), community:community_profiles(interest_category, whatsapp, social_links, est_members, basecamp_address, activity_area_district_id, proof_url)",
       )
       .eq("id", id)
       .maybeSingle(),
-    getVillageOptions(),
+    listCityChoices(),
   ]);
   if (!org) return null;
   const one = <T,>(v: T | T[] | null): T | null => (Array.isArray(v) ? v[0] ?? null : v);
@@ -172,9 +173,10 @@ async function ProfilBody({ ctx, id, type, uploadFailed }: { ctx: OrganizerConte
     social_links: Record<string, string>;
     est_members: number | null;
     basecamp_address: string | null;
-    activity_area_village_id: string | null;
+    activity_area_district_id: string | null;
     proof_url: string | null;
   } | null;
+  const area = await getDistrictInfo(community?.activity_area_district_id ?? null);
   const status = org.status as keyof typeof STATUS_LABELS;
   const tone = { pending: tagClass.warn, approved: tagClass.success, rejected: tagClass.hot, suspended: tagClass.neutral }[status];
   const isLeader = ctx.org.role === "owner" || ctx.org.role === "chair";
@@ -219,7 +221,7 @@ async function ProfilBody({ ctx, id, type, uploadFailed }: { ctx: OrganizerConte
       <ProfileForm
         organizerId={id}
         type={type}
-        districts={districts}
+        cities={cities}
         values={{
           name: org.name,
           description: org.description ?? "",
@@ -230,7 +232,7 @@ async function ProfilBody({ ctx, id, type, uploadFailed }: { ctx: OrganizerConte
           tiktok: community?.social_links?.tiktok ?? "",
           estMembers: community?.est_members?.toString() ?? "",
           basecamp: community?.basecamp_address ?? "",
-          areaVillage: community?.activity_area_village_id ?? "",
+          area: area ? { cityId: area.cityId, districtId: area.districtId } : null,
           hasProof: Boolean(merchant?.proof_url ?? community?.proof_url),
         }}
       />

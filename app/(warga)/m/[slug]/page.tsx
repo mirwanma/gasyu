@@ -32,7 +32,7 @@ async function MerchantProfile({ params }: Pick<PageProps<"/m/[slug]">, "params"
 
   const { data: org } = await supabase
     .from("organizers")
-    .select("id, name, logo_url, description, status, profile:merchant_profiles(merchant_category), outlets:merchant_outlets(id, name, address, lat, lng, is_active, village:regions(name))")
+    .select("id, name, logo_url, description, status, profile:merchant_profiles(merchant_category), outlets:merchant_outlets(id, name, address, lat, lng, is_active, district:regions(name, city:parent_id(name)))")
     .eq("slug", slug)
     .eq("type", "merchant")
     .maybeSingle();
@@ -50,7 +50,7 @@ async function MerchantProfile({ params }: Pick<PageProps<"/m/[slug]">, "params"
     lat: number;
     lng: number;
     is_active: boolean;
-    village: { name: string } | { name: string }[] | null;
+    district: { name: string; city: { name: string } | { name: string }[] | null } | { name: string; city: { name: string } | { name: string }[] | null }[] | null;
   }[]).filter((o) => o.is_active);
 
   return (
@@ -86,7 +86,8 @@ async function MerchantProfile({ params }: Pick<PageProps<"/m/[slug]">, "params"
         <section className="flex flex-col gap-2.5">
           <h2 className="font-display text-[22px] font-semibold">Outlet</h2>
           {outlets.map((outlet) => {
-            const village = Array.isArray(outlet.village) ? outlet.village[0] : outlet.village;
+            const district = Array.isArray(outlet.district) ? outlet.district[0] : outlet.district;
+            const city = Array.isArray(district?.city) ? district.city[0] : district?.city;
             return (
               <div key={outlet.id} className={`${cardClass} flex items-start gap-3 p-4`}>
                 <span className="mt-0.5 text-hot">
@@ -96,7 +97,7 @@ async function MerchantProfile({ params }: Pick<PageProps<"/m/[slug]">, "params"
                   <span className="text-[15px] font-semibold">{outlet.name}</span>
                   <span className="text-[15px] text-fg-soft">
                     {outlet.address}
-                    {village ? ` · Kel. ${village.name}` : ""}
+                    {district ? ` · Kec. ${district.name}${city ? `, ${city.name}` : ""}` : ""}
                   </span>
                   <a
                     href={`https://www.openstreetmap.org/?mlat=${outlet.lat}&mlon=${outlet.lng}#map=17/${outlet.lat}/${outlet.lng}`}

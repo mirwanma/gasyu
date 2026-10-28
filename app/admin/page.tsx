@@ -1,19 +1,19 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { cardClass } from "@/components/styles";
-import { getAdminOverview, listActiveVillages, listWeeklyActive } from "@/lib/data/dashboards";
+import { getAdminOverview, listActiveDistricts, listWeeklyActive } from "@/lib/data/dashboards";
 import { countPrizesToDeliver } from "@/lib/data/global-events";
 import { formatDate, formatNumber } from "@/lib/format";
 
 // Ringkasan kota untuk admin, mengikuti artboard "Admin · Ringkasan".
-// Angka dari v_admin_overview, v_admin_weekly_active, v_village_active_month.
+// Angka dari v_admin_overview, v_admin_weekly_active, leaderboard_districts.
 export default function AdminRingkasanPage() {
   return (
     <>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="font-display text-[30px] font-bold">Ringkasan kota</h1>
-          <span className="text-[15px] text-fg-soft">Cimahi · pilot · 7 hari terakhir</span>
+          <span className="text-[15px] text-fg-soft">Semua kota · 7 hari terakhir</span>
         </div>
         <Link href="/admin/aktivitas/baru" className="flex h-11 items-center rounded-full bg-primary px-5 text-[15px] font-semibold text-on-primary">
           Buat event Gasyu
@@ -38,11 +38,11 @@ function short(n: number) {
 }
 
 async function Overview() {
-  const [o, weeks, villages, prizesToDeliver] = await Promise.all([getAdminOverview(), listWeeklyActive(), listActiveVillages(5), countPrizesToDeliver()]);
+  const [o, weeks, districts, prizesToDeliver] = await Promise.all([getAdminOverview(), listWeeklyActive(), listActiveDistricts(5), countPrizesToDeliver()]);
   if (!o) return <p className="text-[15px] text-fg-soft">Data ringkasan belum tersedia.</p>;
   const delta = o.weekly_active_prev > 0 ? Math.round(((o.weekly_active - o.weekly_active_prev) / o.weekly_active_prev) * 100) : null;
   const maxWeek = Math.max(1, ...weeks.map((w) => w.active_citizens));
-  const maxVillage = villages[0]?.avg_xp || 1;
+  const maxDistrict = districts[0]?.avg_xp || 1;
   const pendingDays = o.oldest_pending_activity_at ? daysSince(o.oldest_pending_activity_at) : 0;
   const flagged = o.flagged_checkins + o.open_pattern_flags;
 
@@ -89,22 +89,22 @@ async function Overview() {
 
         <section className={`${cardClass} flex min-w-0 flex-[1_1_300px] flex-col gap-3.5 p-5`}>
           <div className="flex items-baseline justify-between">
-            <h2 className="font-display text-[18px] font-semibold">Kelurahan teraktif</h2>
+            <h2 className="font-display text-[18px] font-semibold">Kecamatan teraktif</h2>
             <span className="text-[13px] text-fg-soft">bulan ini</span>
           </div>
-          {villages.length === 0 && <span className="text-[15px] text-fg-soft">Belum ada check-in bulan ini.</span>}
-          {villages.map((v, i) => (
-            <div key={v.village_id} className="flex flex-col gap-1.5">
+          {districts.length === 0 && <span className="text-[15px] text-fg-soft">Belum ada check-in bulan ini.</span>}
+          {districts.map((v, i) => (
+            <div key={v.district_id} className="flex flex-col gap-1.5">
               <div className="flex justify-between text-[15px]">
                 <span>
-                  <b>{i + 1}</b> {v.name}
+                  <b>{i + 1}</b> {v.name} <span className="text-fg-soft">· {v.city}</span>
                 </span>
                 <span className="text-fg-soft">
                   {formatNumber(v.avg_xp)} XP · {v.active_citizens} warga
                 </span>
               </div>
               <div className="h-2 overflow-hidden rounded-md bg-track">
-                <div className="h-full bg-primary" style={{ width: `${Math.round((v.avg_xp / maxVillage) * 100)}%` }} />
+                <div className="h-full bg-primary" style={{ width: `${Math.round((v.avg_xp / maxDistrict) * 100)}%` }} />
               </div>
             </div>
           ))}

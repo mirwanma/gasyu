@@ -1,7 +1,8 @@
 import { Suspense } from "react";
-import { OnboardingForm, type DistrictOption } from "./onboarding-form";
+import { OnboardingForm } from "./onboarding-form";
 import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "@/lib/safe-next";
+import { listCityChoices } from "@/lib/data/regions";
 
 export default function OnboardingPage({ searchParams }: PageProps<"/onboarding">) {
   return (
@@ -17,25 +18,10 @@ async function OnboardingContent({ searchParams }: Pick<PageProps<"/onboarding">
   const next = safeNext((await searchParams).next);
   const supabase = await createClient();
 
-  const [{ data: regions }, { data: xpSetting }] = await Promise.all([
-    supabase
-      .from("regions")
-      .select("id, name, level, parent_id")
-      .eq("is_active", true)
-      .in("level", ["district", "village"])
-      .order("name"),
+  const [cities, { data: xpSetting }] = await Promise.all([
+    listCityChoices(),
     supabase.from("app_settings").select("value").eq("key", "xp.profile_complete").maybeSingle(),
   ]);
 
-  const districts: DistrictOption[] = (regions ?? [])
-    .filter((region) => region.level === "district")
-    .map((district) => ({
-      id: district.id,
-      name: district.name,
-      villages: (regions ?? [])
-        .filter((region) => region.parent_id === district.id)
-        .map(({ id, name }) => ({ id, name })),
-    }));
-
-  return <OnboardingForm next={next} districts={districts} profileXp={Number(xpSetting?.value ?? 0)} />;
+  return <OnboardingForm next={next} cities={cities} profileXp={Number(xpSetting?.value ?? 0)} />;
 }

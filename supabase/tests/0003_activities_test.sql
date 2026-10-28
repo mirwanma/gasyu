@@ -31,7 +31,7 @@ end;
 $$;
 grant execute on all functions in schema pg_temp to anon, authenticated;
 
--- Akun: O pemilik merchant, K ketua komunitas, W warga Baros, L warga luar Cimahi, A admin
+-- Akun: O pemilik merchant, K ketua komunitas, W warga Cimahi Tengah, L akun lama tanpa kecamatan, A admin
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000a', 'o@uji.test'),
   ('00000000-0000-0000-0000-00000000000b', 'k@uji.test'),
@@ -39,7 +39,7 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000c', 'l@uji.test'),
   ('00000000-0000-0000-0000-00000000000e', 'a@uji.test');
 update public.profiles set nickname = 'uji' || right(id::text, 1), full_name = 'Uji', terms_accepted_at = now(), onboarded_at = now();
-update public.profiles set home_village_id = (select id from public.regions where name = 'Baros')
+update public.profiles set home_district_id = (select id from public.regions where name = 'Cimahi Tengah')
   where id in ('00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b', '00000000-0000-0000-0000-00000000000d');
 update public.profiles set is_admin = true where id = '00000000-0000-0000-0000-00000000000e';
 
@@ -51,7 +51,7 @@ set local role authenticated;
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
 insert into ids select 'merchant', public.register_organizer('merchant', json_build_object('name', 'Kopi Lereng', 'whatsapp', '08120000000',
   'merchant_category', 'kopi', 'outlets', json_build_array(json_build_object('name', 'Cabang Baros', 'address', 'Jl. Baros 10',
-  'village_id', (select id from public.regions where name = 'Baros'), 'lat', -6.89, 'lng', 107.54)))::jsonb);
+  'district_id', (select id from public.regions where name = 'Cimahi Tengah'), 'lat', -6.89, 'lng', 107.54)))::jsonb);
 insert into ids select 'outlet', id from public.merchant_outlets where organizer_id = (select v from ids where k = 'merchant');
 select pg_temp.login('00000000-0000-0000-0000-00000000000b');
 insert into ids select 'community', public.register_organizer('community', json_build_object('name', 'Cimahi Runners', 'whatsapp', '08120000001',
@@ -76,7 +76,7 @@ select pg_temp.assert_fails(
 
 insert into ids select 'event', public.create_activity((select v from ids where k = 'merchant'), json_build_object(
   'title', 'Ngopi Bareng Baros', 'goal', 'visit', 'description', 'Kopi gratis buat 50 pendaftar pertama.',
-  'scope_region_id', (select id from public.regions where name = 'Baros'),
+  'scope_region_id', (select id from public.regions where name = 'Cimahi Tengah'),
   'starts_at', '2030-01-01T10:00+07', 'ends_at', '2030-01-01T14:00+07', 'quota', 2, 'residency_rule', 'residents_only')::jsonb);
 select pg_temp.assert((select status from public.activities where id = (select v from ids where k = 'event')) = 'draft', 'aktivitas baru = draft');
 select pg_temp.assert((select xp_base from public.activities where id = (select v from ids where k = 'event')) = 100, 'xp_base event = 100 dari app_settings');
@@ -134,8 +134,8 @@ select pg_temp.assert_fails(
 -- 3. Warga join: domisili, kuota, batal
 -- ---------------------------------------------------------------------------
 select pg_temp.login('00000000-0000-0000-0000-00000000000c');
-select pg_temp.assert((select count(*) from public.v_activity_cards) = 1, 'warga luar Cimahi melihat event terbit');
-select pg_temp.assert_fails($$select public.join_activity((select v from ids where k = 'event'))$$, 'residents_only', 'warga luar Cimahi ditolak residents_only');
+select pg_temp.assert((select count(*) from public.v_activity_cards) = 1, 'warga tanpa kecamatan melihat event terbit');
+select pg_temp.assert_fails($$select public.join_activity((select v from ids where k = 'event'))$$, 'residents_only', 'warga tanpa kecamatan ditolak residents_only');
 
 select pg_temp.login('00000000-0000-0000-0000-00000000000d');
 insert into ids select 'part', public.join_activity((select v from ids where k = 'event'));

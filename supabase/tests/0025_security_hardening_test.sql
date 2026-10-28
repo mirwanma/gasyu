@@ -42,7 +42,7 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000000d3', 'w3@uji.test'),
   ('00000000-0000-0000-0000-0000000000d4', 'w4@uji.test');
 update public.profiles set nickname = 'uji' || right(id::text, 2), full_name = 'Uji', terms_accepted_at = now(), onboarded_at = now(),
-  home_village_id = (select id from public.regions where name = 'Baros');
+  home_district_id = (select id from public.regions where name = 'Cimahi Tengah');
 update public.profiles set is_admin = true where id = '00000000-0000-0000-0000-00000000000e';
 
 create temp table ids (k text primary key, v uuid);
@@ -54,11 +54,11 @@ set local role authenticated;
 select pg_temp.login('00000000-0000-0000-0000-00000000000a');
 insert into ids select 'm', public.register_organizer('merchant', json_build_object('name', 'Kopi Lereng', 'whatsapp', '08120000000',
   'merchant_category', 'kopi', 'outlets', json_build_array(json_build_object('name', 'Cabang Baros', 'address', 'Jl. Baros 10',
-  'village_id', (select id from public.regions where name = 'Baros'), 'lat', -6.89, 'lng', 107.54)))::jsonb);
+  'district_id', (select id from public.regions where name = 'Cimahi Tengah'), 'lat', -6.89, 'lng', 107.54)))::jsonb);
 select pg_temp.login('00000000-0000-0000-0000-00000000000b');
 insert into ids select 'm2', public.register_organizer('merchant', json_build_object('name', 'Seblak Teh Ai', 'whatsapp', '08120000002',
   'merchant_category', 'kuliner', 'outlets', json_build_array(json_build_object('name', 'Pasar Atas', 'address', 'Jl. Pasar Atas 1',
-  'village_id', (select id from public.regions where name = 'Baros'), 'lat', -6.88, 'lng', 107.53)))::jsonb);
+  'district_id', (select id from public.regions where name = 'Cimahi Tengah'), 'lat', -6.88, 'lng', 107.53)))::jsonb);
 select pg_temp.login('00000000-0000-0000-0000-00000000000e');
 select public.review_organizer((select v from ids where k = 'm'), true, null);
 select public.review_organizer((select v from ids where k = 'm2'), true, null);
@@ -237,14 +237,14 @@ select pg_temp.assert((select sum(amount) = 0 from public.xp_ledger where missio
 select pg_temp.assert((select status = 'rejected' from public.mission_completions where id = ((select v from res where k = 'code') ->> 'completion_id')::uuid), 'penyelesaian ditolak');
 select pg_temp.assert((select count(*) = 1 from public.notifications where kind = 'mission_reversed'), 'warga diberi tahu');
 
--- Pembalikan check-in memakai kelurahan saat XP diberikan, bukan kelurahan baru
-update public.profiles set home_village_id = (select id from public.regions where name = 'Cibabat') where id = '00000000-0000-0000-0000-0000000000d1';
+-- Pembalikan check-in memakai kecamatan saat XP diberikan, bukan kecamatan baru
+update public.profiles set home_district_id = (select id from public.regions where name = 'Cimahi Utara') where id = '00000000-0000-0000-0000-0000000000d1';
 set local role authenticated;
 select pg_temp.login('00000000-0000-0000-0000-00000000000e');
 select public.reverse_checkin((select id from public.checkins where user_id = '00000000-0000-0000-0000-0000000000d1'), 'Uji');
 reset role;
-select pg_temp.assert((select bool_and(village_id = (select id from public.regions where name = 'Baros')) from public.xp_ledger
-  where user_id = '00000000-0000-0000-0000-0000000000d1' and reason = 'reversal' and checkin_id is not null), 'pembalikan check-in tercatat di kelurahan asli');
+select pg_temp.assert((select bool_and(district_id = (select id from public.regions where name = 'Cimahi Tengah')) from public.xp_ledger
+  where user_id = '00000000-0000-0000-0000-0000000000d1' and reason = 'reversal' and checkin_id is not null), 'pembalikan check-in tercatat di kecamatan asli');
 set local role authenticated;
 
 -- ---------------------------------------------------------------------------
@@ -281,7 +281,7 @@ select pg_temp.login('00000000-0000-0000-0000-0000000000d4');
 select pg_temp.assert_fails($$select public.join_group((select v from tok where k = 'g'))$$, 'removed_from_group', 'anggota yang dikeluarkan tidak bisa masuk lagi');
 
 -- ---------------------------------------------------------------------------
--- 7. Aturan 13: check-in Event Global tidak dihitung untuk streak dan peringkat kelurahan
+-- 7. Aturan 13: check-in Event Global tidak dihitung untuk streak dan peringkat kecamatan
 -- ---------------------------------------------------------------------------
 select pg_temp.login('00000000-0000-0000-0000-00000000000e');
 insert into ids select 'g_ev', public.create_activity(public.platform_organizer_id(), json_build_object(
@@ -289,13 +289,13 @@ insert into ids select 'g_ev', public.create_activity(public.platform_organizer_
 select public.set_activity_reach((select v from ids where k = 'g_ev'), 'global', 'hybrid');
 insert into ids select 'g_cp', public.add_checkpoint((select v from ids where k = 'g_ev'), '{"name":"Alun-alun","lat":-6.87,"lng":107.54}');
 reset role;
-insert into res select 'lb_before', to_jsonb(l) from public.leaderboard_villages() l where l.village_name = 'Baros';
+insert into res select 'lb_before', to_jsonb(l) from public.leaderboard_districts() l where l.district_name = 'Cimahi Tengah';
 with p as (insert into public.participations (activity_id, user_id) values ((select v from ids where k = 'g_ev'), '00000000-0000-0000-0000-0000000000d3') returning id)
 insert into public.checkins (participation_id, activity_id, user_id, checkpoint_id, partner_organizer_id)
 select p.id, (select v from ids where k = 'g_ev'), '00000000-0000-0000-0000-0000000000d3', (select v from ids where k = 'g_cp'), public.platform_organizer_id() from p;
 select pg_temp.assert(public.user_streak_weeks('00000000-0000-0000-0000-0000000000d3') = 0, 'check-in Event Global tidak membentuk streak');
 select pg_temp.assert((select (to_jsonb(l) ->> 'active_citizens') = ((select v from res where k = 'lb_before') ->> 'active_citizens')
-  from public.leaderboard_villages() l where l.village_name = 'Baros'), 'check-in Event Global tidak menambah warga aktif kelurahan');
+  from public.leaderboard_districts() l where l.district_name = 'Cimahi Tengah'), 'check-in Event Global tidak menambah warga aktif kecamatan');
 
 rollback;
 \o

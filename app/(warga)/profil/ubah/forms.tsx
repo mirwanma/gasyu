@@ -1,7 +1,9 @@
 "use client";
 
 import { useActionState } from "react";
-import { changeVillage, updateProfile, type AccountState } from "@/lib/actions/account";
+import { changeDistrict, updateProfile, type AccountState } from "@/lib/actions/account";
+import { RegionPicker } from "@/components/region-picker";
+import type { CityChoice } from "@/lib/data/regions";
 import { cardClass, inputClass, labelClass } from "@/components/styles";
 import { ErrorMessage, SubmitButton } from "@/components/ui";
 
@@ -36,47 +38,40 @@ export function ProfileForm({ nickname, fullName }: { nickname: string; fullName
   );
 }
 
-export function VillageForm({
+export function RegionForm({
+  cities,
   current,
-  districts,
   lockedUntil,
   days,
 }: {
-  current: string;
-  districts: { id: string; name: string; villages: { id: string; name: string }[] }[];
+  cities: CityChoice[];
+  current: { label: string; cityId: string; districtId: string } | null;
   lockedUntil: string | null;
   days: number;
 }) {
-  const [state, action] = useActionState<AccountState, FormData>(changeVillage, {});
+  const [state, action] = useActionState<AccountState, FormData>(changeDistrict, {});
   return (
     <form action={action} className={`${cardClass} flex flex-col gap-3 p-4`}>
-      <span className="text-[16px] font-semibold">Kelurahan asal</span>
+      <span className="text-[16px] font-semibold">Tempat tinggal</span>
       <span className="text-[15px] leading-[1.5] text-fg-soft">
-        Menentukan leaderboard kelurahanmu dan aktivitas khusus warga yang bisa kamu ikuti. Hanya bisa diganti sekali setiap {days} hari.
+        Menentukan peringkat kota dan kecamatanmu, serta aktivitas khusus warga yang bisa kamu ikuti. Hanya bisa diganti sekali setiap {days} hari.
       </span>
+      {current ? (
+        <p className="text-[15px] text-fg-label">
+          Sekarang: <span className="font-semibold text-fg">{current.label}</span>
+        </p>
+      ) : (
+        <p className="rounded-[14px] bg-warn-tint px-4 py-3 text-[15px] text-warn">Kamu belum mengisi kota dan kecamatan. Isi sekarang supaya masuk peringkat kotamu.</p>
+      )}
       <Success text={state.success} />
       {lockedUntil ? (
-        <p className="rounded-[14px] bg-warn-tint px-4 py-3 text-[15px] text-warn">Kamu baru bisa mengganti kelurahan lagi mulai {lockedUntil}.</p>
+        <p className="rounded-[14px] bg-warn-tint px-4 py-3 text-[15px] text-warn">Kamu baru bisa mengganti wilayah lagi mulai {lockedUntil}.</p>
       ) : (
         <>
-          <label htmlFor="village" className={labelClass}>
-            Pilih kelurahan
-          </label>
-          <select id="village" name="village" defaultValue={current} className={inputClass}>
-            {districts.map((d) => (
-              <optgroup key={d.id} label={`Kec. ${d.name}`}>
-                {d.villages.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.name}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-            <option value="luar">Luar Cimahi</option>
-          </select>
+          <RegionPicker cities={cities} name="district" initialCityId={current?.cityId} initialDistrictId={current?.districtId} />
           <ErrorMessage message={state.error} />
-          <SubmitButton pendingText="Mengganti…" variant="ghost">
-            Ganti kelurahan
+          <SubmitButton pendingText="Menyimpan…" variant="ghost">
+            {current ? "Ganti wilayah" : "Simpan wilayah"}
           </SubmitButton>
         </>
       )}

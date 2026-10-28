@@ -23,7 +23,7 @@ type Row = {
   id: string;
   user_id: string;
   nickname: string;
-  village_name: string | null;
+  district_name: string | null;
   status: ParticipationStatus;
   payment_status: PaymentStatus;
   payment_due_at: string | null;
@@ -64,7 +64,7 @@ export async function PesertaBody({
     getActivityCard(aid),
     supabase
       .from("v_activity_participants")
-      .select("id, user_id, nickname, village_name, status, payment_status, payment_due_at, payment_proof_path, payment_note, payment_confirmed_at, refunded_at, created_at, group_id")
+      .select("id, user_id, nickname, district_name, status, payment_status, payment_due_at, payment_proof_path, payment_note, payment_confirmed_at, refunded_at, created_at, group_id")
       .eq("activity_id", aid)
       .order("created_at", { ascending: false }),
     getPaymentStats(aid),
@@ -164,7 +164,7 @@ export async function PesertaBody({
                   <span className="flex flex-1 flex-col">
                     <span className="text-[15px] font-semibold">{r.nickname}</span>
                     <span className="text-[13px] text-fg-soft">
-                      {r.village_name ?? "Luar Cimahi"} · {r.group_id ? "grup" : "pribadi"} · {timeAgo(r.created_at)}
+                      {r.district_name ?? "Wilayah belum diisi"} · {r.group_id ? "grup" : "pribadi"} · {timeAgo(r.created_at)}
                       {showPay && r.payment_status === "unpaid" && r.payment_due_at && r.status !== "cancelled" ? ` · batas ${formatDateTime(r.payment_due_at)}` : ""}
                       {showPay && r.payment_status === "paid" && r.payment_confirmed_at ? ` · lunas ${formatDateTime(r.payment_confirmed_at)}` : ""}
                       {r.payment_status === "refunded" && r.refunded_at ? ` · refund ${formatDateTime(r.refunded_at)}` : ""}

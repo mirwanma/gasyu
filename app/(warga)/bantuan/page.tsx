@@ -32,7 +32,7 @@ async function Content() {
   const { data } = await supabase
     .from("app_settings")
     .select("key, value")
-    .in("key", ["support.whatsapp", "support.email", "checkin.radius_m_default", "xp.daily_cap", "points.expiry_months", "profile.village_change_days"]);
+    .in("key", ["support.whatsapp", "support.email", "checkin.radius_m_default", "xp.daily_cap", "points.expiry_months", "profile.district_change_days"]);
   const s = Object.fromEntries((data ?? []).map((r) => [r.key as string, r.value as unknown]));
   const text = (k: string) => (typeof s[k] === "string" ? (s[k] as string).trim() : "");
   const num = (k: string, fallback: number) => Number(s[k] ?? fallback);
@@ -46,7 +46,8 @@ async function Content() {
     ["Check-in saya ditandai atau ditinjau, kenapa?", `Jika lokasimu lebih dari ${num("checkin.radius_m_default", 150)} m dari checkpoint atau tidak terbaca, check-in tetap dicatat tetapi ditinjau tim Gasyu. Nyalakan lokasi di HP saat scan.`],
     ["Bagaimana cara bayar aktivitas berbayar?", "Pembayaran langsung ke penyelenggara sesuai instruksi di halaman aktivitas, lalu unggah foto bukti bayar. Penyelenggara yang menandai lunas. Gasyu tidak memegang uang."],
     ["Bagaimana kalau aktivitas berbayar dibatalkan?", "Pengembalian dana diurus penyelenggara. Kamu mendapat notifikasi saat refund ditandai selesai. Jika lama tidak ada kabar, hubungi tim Gasyu lewat kontak di bawah."],
-    ["Bisakah saya ganti kelurahan?", `Bisa, di Profil, Ubah profil. Kelurahan hanya bisa diganti sekali setiap ${num("profile.village_change_days", 90)} hari supaya leaderboard tetap adil.`],
+    ["Bisakah saya ganti kota atau kecamatan?", `Bisa, di Profil, Ubah profil. Kota dan kecamatan hanya bisa diganti sekali setiap ${num("profile.district_change_days", 90)} hari supaya peringkat tetap adil.`],
+    ["Kotaku belum ada peringkatnya, kenapa?", "Gasyu membuka kota satu per satu. Kamu tetap bisa ikut aktivitas dan mengumpulkan XP; peringkat kota dan kecamatanmu tampil begitu kotamu dibuka."],
     ["Lupa kata sandi, bagaimana?", "Di halaman masuk, pilih Lupa kata sandi. Kami kirim kode 6 angka ke email, lalu kamu bisa membuat kata sandi baru. Kata sandi juga bisa diganti kapan saja di Profil, Kata sandi."],
     ["Bagaimana mendaftarkan usaha atau komunitas?", "Buka Profil, lalu Daftarkan merchant atau komunitas. Tim Gasyu memverifikasi data, biasanya 1–2 hari kerja."],
     ["Akun saya dibekukan, apa yang harus dilakukan?", "Hubungi tim Gasyu lewat kontak di bawah dan sebutkan nama panggilanmu. Kami akan meninjau ulang."],

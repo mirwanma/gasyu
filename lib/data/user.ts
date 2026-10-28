@@ -7,8 +7,9 @@ export type CurrentUser = {
   fullName: string | null;
   avatarUrl: string | null;
   isAdmin: boolean;
-  homeVillageId: string | null;
-  villageName: string | null;
+  homeDistrictId: string | null;
+  // "Cimahi Tengah, Kota Cimahi"; null untuk akun lama yang belum mengisi kecamatan.
+  regionLabel: string | null;
 };
 
 // Profil pengguna yang sedang login. Proxy sudah memastikan sesi dan onboarding,
@@ -21,20 +22,22 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 
   const { data } = await supabase
     .from("profiles")
-    .select("id, nickname, full_name, avatar_url, is_admin, home_village_id, home_village:regions(name)")
+    .select("id, nickname, full_name, avatar_url, is_admin, home_district_id, district:regions(name, city:parent_id(name))")
     .eq("id", userId)
     .maybeSingle();
   if (!data) return null;
 
-  const village = data.home_village as { name: string } | { name: string }[] | null;
+  const one = <T,>(v: T | T[] | null | undefined) => (Array.isArray(v) ? v[0] : v) ?? null;
+  const district = one(data.district as { name: string; city: { name: string } | { name: string }[] | null } | { name: string; city: { name: string } | { name: string }[] | null }[] | null);
+  const city = one(district?.city);
   return {
     id: data.id,
     nickname: data.nickname ?? "",
     fullName: data.full_name,
     avatarUrl: data.avatar_url,
     isAdmin: Boolean(data.is_admin),
-    homeVillageId: data.home_village_id,
-    villageName: (Array.isArray(village) ? village[0]?.name : village?.name) ?? null,
+    homeDistrictId: data.home_district_id,
+    regionLabel: district ? [district.name, city?.name].filter(Boolean).join(", ") : null,
   };
 }
 
